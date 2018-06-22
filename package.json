@@ -2,10 +2,10 @@
   "name": "testring",
   "version": "0.1.0",
   "author": "RingCentral",
-  "license": "ISC",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ringcentral/ringcentral-js-test-framework.git"
+    "url": "https://github.com/ringcentral/testring.git"
   },
   "scripts": {
     "preinstall": "lerna clean --yes",
