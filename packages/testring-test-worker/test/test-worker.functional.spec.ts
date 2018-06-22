@@ -6,7 +6,7 @@ import { transport } from '@testring/transport';
 import { SANDBOX_TRANSPORT_NAME, TestEvents } from '../src/constants';
 import { TestWorker, TestWorkerPlugin } from '../src/test-worker';
 
-describe('TestWorkerInstance', () => {
+xdescribe('TestWorkerInstance', () => {
     const defaultSyncTestContent = 'process.cwd()';
     const defaultFilename = './test.js';
 

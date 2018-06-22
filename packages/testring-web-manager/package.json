@@ -1,0 +1,24 @@
+{
+  "name": "@testring/web-manager",
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "typings": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/ringcentral-js-test-framework.git"
+  },
+  "author": "RingCentral",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^4.17.10",
+    "nanoid": "^1.0.3",
+    "@testring/browser-proxy": "0.1.0",
+    "@testring/logger": "0.1.0",
+    "@testring/pluggable-module": "0.1.0",
+    "@testring/transport": "0.1.0"
+  },
+  "devDependencies":{
+    "@types/lodash": "^4.14.110",
+    "@types/nanoid": "^1.0.0"
+  }
+}
