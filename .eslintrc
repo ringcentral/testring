@@ -1,0 +1,23 @@
+{
+  "extends": "ringcentral",
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 8,
+    "ecmaFeatures": {
+      "experimentalObjectRestSpread": true
+    }
+  },
+  "parser": "typescript-eslint-parser",
+  "plugins": ["typescript"],
+  "env": {
+    "es6": true
+  },
+  "rules": {
+    "typescript/no-unused-vars": 2,
+    "no-unused-vars": 0,
+    "no-undef": 0,
+    "no-void": 2,
+    "no-multiple-empty-lines": 2,
+    "quotes": ["error", "single"]
+  }
+}

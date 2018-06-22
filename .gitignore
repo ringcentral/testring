@@ -1,0 +1,13 @@
+packages/**/dist
+packages/**/node_modules
+packages/**/mocha.opts
+packages/**/tsconfig.json
+packages/**/.npmignore
+
+.idea
+.nyc_output
+node_modules
+coverage
+
+lerna-debug.log
+package-lock.json

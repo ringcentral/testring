@@ -1,0 +1,6 @@
+--require ../../utils/ts-mocha.js
+--watch-extensions ts
+--timeout 3000
+--reporter dot
+
+test/**/*.spec.ts

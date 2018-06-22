@@ -1,0 +1,68 @@
+{
+  "name": "testring",
+  "version": "0.1.0",
+  "author": "RingCentral",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/ringcentral-js-test-framework.git"
+  },
+  "scripts": {
+    "preinstall": "lerna clean --yes",
+    "postinstall": "lerna bootstrap && lerna exec --no-sort -- node \"../../bin/link\"",
+    "lint:src": "lerna exec --parallel --no-sort -- eslint \"./src/**/*.ts\"",
+    "lint:test": "lerna exec --parallel --no-sort -- eslint \"./test/**/*.ts\"",
+    "test": "lerna exec --parallel -- mocha --opts mocha.opts",
+    "test:watch": "lerna exec --no-sort -- mocha --opts mocha.opts --watch",
+    "test:e2e": "lerna run --stream --scope @testring/e2e-test-app e2e",
+    "test:coverage": "nyc npm test",
+    "cleanup": "lerna exec --parallel -- rimraf ./dist -G",
+    "build": "lerna exec -- tsc --target es2015",
+    "build:watch": "lerna exec -- tsc --target es2015 --watch",
+    "build:clear": "npm run lint:src && npm run lint:test && npm run build",
+    "build:precommit": "npm run build:clear && npm run test && npm run test:e2e",
+    "build:ci": "npm run build:clear && npm run test:coverage && npm run test:e2e"
+  },
+  "precommit": "build:precommit",
+  "nyc": {
+    "all": true,
+    "check-coverage": true,
+    "lines": 70,
+    "statements": 70,
+    "functions": 70,
+    "branches": 70,
+    "sourceMap": true,
+    "include": [
+      "packages/*/src/*.ts",
+      "packages/*/src/**/*.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "reporter": [
+      "lcov",
+      "text"
+    ]
+  },
+  "devDependencies": {
+    "@types/chai": "4.1.4",
+    "@types/mocha": "5.2.3",
+    "@types/node": "10.3.4",
+    "babel-eslint": "8.2.3",
+    "chai": "4.1.2",
+    "eslint": "4.19.1",
+    "eslint-config-ringcentral": "0.3.0",
+    "eslint-plugin-react": "7.9.1",
+    "eslint-plugin-typescript": "0.12.0",
+    "fs-extra": "6.0.1",
+    "lerna": "2.11.0",
+    "mocha": "5.2.0",
+    "nyc": "12.0.2",
+    "pre-commit": "1.2.2",
+    "rimraf": "2.6.2",
+    "sinon": "6.0.0",
+    "ts-node": "6.1.2",
+    "typescript": "2.9.2",
+    "typescript-eslint-parser": "16.0.0"
+  }
+}

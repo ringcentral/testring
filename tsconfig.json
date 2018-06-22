@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "allowJs": false,
+    "moduleResolution": "node",
+    "preserveConstEnums": true,
+    "noFallthroughCasesInSwitch": true,
+    "noEmitOnError": true,
+    "declaration": true,
+    "outDir": "dist",
+    "sourceMap": false,
+    "lib": [
+      "es5",
+      "es2015",
+      "es2016",
+      "es2017"
+    ],
+    "typeRoots": [
+      "./node_modules/@types",
+      "../../node_modules/@types"
+    ],
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "removeComments": false
+  },
+  "include": [
+    "*.ts",
+    "src/**/*.ts",
+    "src/**/*.json"
+  ],
+  "exclude": [
+    "./node_modules",
+    "../../node_modules"
+  ]
+}

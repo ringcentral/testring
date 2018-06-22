@@ -1,0 +1,15 @@
+{
+  "name": "@testring/child-process",
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "typings": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/ringcentral-js-test-framework.git"
+  },
+  "author": "RingCentral",
+  "license": "ISC",
+  "dependencies": {
+    "@testring/transport": "^0.1.0"
+  }
+}

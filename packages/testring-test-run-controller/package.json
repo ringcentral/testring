@@ -1,0 +1,18 @@
+{
+  "name": "@testring/test-run-controller",
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "typings": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/ringcentral-js-test-framework.git"
+  },
+  "author": "RingCentral",
+  "license": "ISC",
+  "dependencies": {
+    "@testring/test-finder": "^0.1.0",
+    "@testring/test-worker": "^0.1.0",
+    "@testring/logger": "^0.1.0",
+    "@testring/typings": "^0.1.0"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "lerna": "2.11.0",
+  "packages": [
+    "packages/*"
+  ],
+  "command": {
+    "exec": {
+      "ignore": "@testring/@(test-utils|typings|e2e-test-app)"
+    },
+    "bootstrap": {
+      "npmClientArgs": [
+        "--no-package-lock"
+      ]
+    }
+  },
+  "version": "0.1.0"
+}

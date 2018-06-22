@@ -1,0 +1,12 @@
+{
+  "name": "@testring/test-utils",
+  "version": "0.1.0",
+  "main": "./src/index.ts",
+  "typings": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/ringcentral-js-test-framework.git"
+  },
+  "author": "RingCentral",
+  "license": "ISC"
+}
