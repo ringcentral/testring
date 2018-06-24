@@ -1,3 +1,5 @@
+const DEFAULT_PREFIX = '@testring/plugin-';
+const EXTERNAL_DEFAULT_PREFIX = 'testring-plugin-';
 
 const normalizeExport = (module) => {
     // filtering null and other falsy values
@@ -14,12 +16,28 @@ const normalizeExport = (module) => {
     return module.default ? module.default : module;
 };
 
-// TODO: cover with tests
-export const findPlugin = (pluginName: string) => {
-    const fileName = require.resolve(pluginName);
-
+// TODO add tests for it (somehow)
+const resolvePluginNName = (pluginName: string): string => {
     try {
-        const plugin = require(fileName);
+        // Resolving shorten name
+        // 'selenium-driver' => '@testring/plugin-selenium-driver'
+        return require.resolve(DEFAULT_PREFIX + pluginName);
+    } catch (e) {
+        try {
+            // Resolving external shorten name
+            // 'selenium-driver' => 'testring-plugin-selenium-driver'
+            return require.resolve(EXTERNAL_DEFAULT_PREFIX + pluginName);
+        } catch (e) {
+            // Resolving default name
+            return require.resolve(pluginName);
+        }
+    }
+};
+
+export const findPlugin = (pluginName: string) => {
+    try {
+        const pluginPath = resolvePluginNName(pluginName);
+        const plugin = require(pluginPath);
 
         return normalizeExport(plugin);
     } catch (exception) {

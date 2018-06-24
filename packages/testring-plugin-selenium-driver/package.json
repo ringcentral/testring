@@ -1,18 +1,17 @@
 {
-  "name": "@testring/e2e-test-app",
+  "name": "@testring/plugin-selenium-driver",
   "version": "0.1.0",
   "main": "./dist/index.js",
+  "typings": "./src/index.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/ringcentral/testring.git"
   },
   "author": "RingCentral",
   "license": "ISC",
-  "scripts": {
-    "test:simple-run": "testring --tests='./test/simple/*.spec.js'",
-    "e2e": "npm run test:simple-run"
-  },
   "dependencies": {
-    "@testring/cli": "0.1.0"
+    "@testring/plugin-api": "0.1.0",
+    "@types/webdriverio": "^4.10.2",
+    "webdriverio": "^4.13.0"
   }
 }

@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ringcentral/ringcentral-js-test-framework.git"
+    "url": "https://github.com/ringcentral/testring.git"
   },
   "author": "RingCentral",
   "license": "ISC",
