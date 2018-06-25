@@ -17,7 +17,7 @@ const normalizeExport = (module) => {
 };
 
 // TODO add tests for it (somehow)
-const resolvePluginNName = (pluginName: string): string => {
+const resolvePluginName = (pluginName: string): string => {
     try {
         // Resolving shorten name
         // 'selenium-driver' => '@testring/plugin-selenium-driver'
@@ -35,12 +35,15 @@ const resolvePluginNName = (pluginName: string): string => {
 };
 
 export const findPlugin = (pluginName: string) => {
-    try {
-        const pluginPath = resolvePluginNName(pluginName);
-        const plugin = require(pluginPath);
+    let pluginPath;
 
-        return normalizeExport(plugin);
+    try {
+        pluginPath = resolvePluginName(pluginName);
     } catch (exception) {
         throw new ReferenceError(`Can't find plugin "${pluginName}". Is it installed?`);
     }
+
+    const plugin = require(pluginPath);
+
+    return normalizeExport(plugin);
 };

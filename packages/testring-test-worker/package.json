@@ -8,7 +8,7 @@
     "url": "https://github.com/ringcentral/ringcentral-js-test-framework.git"
   },
   "author": "RingCentral",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@testring/child-process": "0.1.0",
     "@testring/logger": "0.1.0",

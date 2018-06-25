@@ -8,7 +8,7 @@
     "url": "https://github.com/ringcentral/testring.git"
   },
   "author": "RingCentral",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@testring/logger": "0.1.0",
     "@testring/pluggable-module": "0.1.0",

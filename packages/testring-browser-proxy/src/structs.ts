@@ -4,7 +4,7 @@ export enum BrowserProxyMessageTypes {
 }
 
 export enum BrowserProxyPlugins {
-    onAction = 'BrowserProxy/ON_ACTION',
+    getPlugin = 'BrowserProxy/getPlugin',
 }
 
 export enum BrowserProxyActions {

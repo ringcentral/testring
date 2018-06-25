@@ -1,0 +1,8 @@
+{
+  "tests": "test/selenium/test/*.spec.js",
+  "plugins": [
+    ["@testring/plugin-selenium-driver", {
+
+    }]
+  ]
+}

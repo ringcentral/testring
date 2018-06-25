@@ -1,12 +1,10 @@
 import { Transport } from '@testring/transport';
-import { findPlugin } from '@testring/plugin-api';
-
-import { IBrowserProxyCommand, IBrowserProxyMessage } from '../interfaces';
-
-import { BrowserProxyMessageTypes } from './structs';
+import { IBrowserProxyCommand, IBrowserProxyMessage } from '../../interfaces';
+import { BrowserProxyMessageTypes } from '../structs';
 
 const resolvePlugin = (pluginPath: string): (command: IBrowserProxyCommand) => Promise<void> => {
-    const resolvedPlugin = findPlugin(pluginPath);
+    // TODO use findPlugin (not from plugin-api, causes circular dep)
+    const resolvedPlugin = require(pluginPath).default;
 
     if (typeof resolvedPlugin !== 'function') {
         throw new TypeError('plugin is not a function');

@@ -8,7 +8,7 @@
     "url": "https://github.com/ringcentral/testring.git"
   },
   "author": "RingCentral",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@types/tapable": "^1.0.2",
     "tapable": "^1.0.0"

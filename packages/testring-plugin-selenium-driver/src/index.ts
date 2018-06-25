@@ -1,11 +1,10 @@
+import * as path from 'path';
 import { Config } from 'webdriverio';
 import { PluginAPI } from '@testring/plugin-api';
 
-export default function(pluginAPI: PluginAPI, userConfig: Config | null) {
-    // const config = userConfig || undefined;
+export default function(pluginAPI: PluginAPI, userConfig: Config) {
+    const pluginPath = path.join(__dirname, './plugin');
+    const browserProxy = pluginAPI.getBrowserProxy();
 
-    // TODO get browserProxy API
-    // const browserProxyAPI = pluginAPI
-
-    // const browserClient = remote(config);
+    browserProxy.proxyPlugin(pluginPath, userConfig);
 }
