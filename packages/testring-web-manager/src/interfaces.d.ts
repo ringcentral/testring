@@ -1,4 +1,4 @@
-import { IBrowserProxyCommand } from '../../testring-browser-proxy/src';
+import { IBrowserProxyCommand } from '@testring/browser-proxy';
 
 interface IExecuteMessage {
     uid: string,

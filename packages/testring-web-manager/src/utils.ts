@@ -26,8 +26,12 @@ function normalizeXpath(xpath, allowMultipleNodesInResult) {
 
 function logXpath(xpath) {
     let result = xpath;
+
     if (xpath === undefined) {
-        return 'Path is incorrect, please check that your web test id map is correctly used in your test. Check the path that is used AFTER the upper mentioned path.';
+        throw [
+            'Path is incorrect, please check that your web test id map is correctly used in your test.',
+            'Check the path that is used AFTER the upper mentioned path.'
+        ].join('\n');
     } else {
         result = (typeof xpath === 'string') ? xpath : xpath.toString();
     }
@@ -133,8 +137,8 @@ class Element {
 
     toString() {
         const stringLiteral = str => {
-            if (str.indexOf("'") > -1) {
-                str = str.split("'").map(s => `'${s}'`).join(',"\'",');
+            if (str.indexOf('\'') > -1) {
+                str = str.split('\'').map(s => `'${s}'`).join(',"\'",');
                 return `concat(${str})`;
             } else {
                 return `'${str}'`;
@@ -143,21 +147,24 @@ class Element {
 
         let xpathStr = '.';
         this._path.forEach(item => {
-            if (item.kind === 'exactly')
+            if (item.kind === 'exactly') {
                 xpathStr += `/descendant::*[./@${TEST_ATTR} = ${stringLiteral(item.value)}]`;
+            }
 
             if (item.kind === 'pattern') {
-                let condition: string[] = [];
-                let id = item.value.id;
-                let text = item.value.text;
-                let normalizedId = stringLiteral(id.replace(/%/g, ''));
-                let normalizedText = text && stringLiteral(text.replace(/%/g, ''));
+                const condition: string[] = [];
+                const id = item.value.id;
+                const text = item.value.text;
+                const normalizedId = stringLiteral(id.replace(/%/g, ''));
+                const normalizedText = text && stringLiteral(text.replace(/%/g, ''));
 
                 if ((lodash.first(id) === '%') && (lodash.last(id) === '%')) {
                     condition.push(`contains(./@${TEST_ATTR}, ${normalizedId})`);
                 }
                 if ((lodash.first(id) === '%') && (lodash.last(id) !== '%')) {
-                    condition.push(`substring(./@${TEST_ATTR}, string-length(./@${TEST_ATTR}) - string-length(${normalizedId}) + 1, string-length(./@${TEST_ATTR}) = ${normalizedId}`);
+                    condition.push(
+                        `substring(./@${TEST_ATTR}, string-length(./@${TEST_ATTR}) - string-length(${normalizedId}) + 1, string-length(./@${TEST_ATTR}) = ${normalizedId}`
+                    );
                 }
                 if ((lodash.first(id) !== '%') && (lodash.last(id) === '%')) {
                     condition.push(`starts-with(./@${TEST_ATTR}, ${normalizedId})`);
@@ -194,7 +201,7 @@ function getTestJSONPath(testPath) {
 }
 
 function replaceHomePath(path) {
-    return path.replace(/^\~\//, ROOT_DIR + '/');
+    return path.replace(/^~\//, ROOT_DIR + '/');
 }
 
 function query(value) {

@@ -10,6 +10,8 @@ export enum BrowserProxyPlugins {
 export enum BrowserProxyActions {
     refresh = 'refresh',
     click = 'click',
+    execute = 'execute',
+    executeAsync = 'executeAsync',
     gridProxyDetails = 'gridProxyDetails',
     url = 'url',
     waitForExist = 'waitForExist',
@@ -50,5 +52,4 @@ export enum BrowserProxyActions {
     isSelected = 'isSelected',
     getText = 'getText',
     elementIdSelected ='elementIdSelected'
-
 }
