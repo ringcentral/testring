@@ -22,7 +22,7 @@ export abstract class AbstractLoggerClient {
     protected buildEntry(
         type: LogTypes,
         content: Array<any>,
-        level: number = this.logNesting,
+        nestingLevel: number = this.logNesting,
         logLevel: number = this.logLevel
     ): ILogEntry {
         const time = new Date();
@@ -31,7 +31,7 @@ export abstract class AbstractLoggerClient {
         return {
             time,
             type,
-            level,
+            nestingLevel,
             logLevel,
             content,
             formattedMessage
@@ -40,12 +40,12 @@ export abstract class AbstractLoggerClient {
 
     protected createLog(type: LogTypes,
                         content: Array<any>,
-                        level: number = this.logNesting,
+                        nestingLevel: number = this.logNesting,
                         logLevel: number = this.logLevel
     ): void {
         this.broadcast(
             LoggerMessageTypes.REPORT,
-            this.buildEntry(type, content, level, logLevel),
+            this.buildEntry(type, content, nestingLevel, logLevel),
         );
     }
 

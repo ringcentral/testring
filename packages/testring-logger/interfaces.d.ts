@@ -3,7 +3,7 @@ import { LogTypes } from './src/structs';
 export interface ILogEntry {
     time: Date,
     type: LogTypes,
-    level: number,
+    nestingLevel: number,
     logLevel: number,
     content: string[],
     formattedMessage: string

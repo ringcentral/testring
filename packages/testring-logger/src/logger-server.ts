@@ -1,4 +1,3 @@
-import { WriteStream } from 'tty';
 import { IConfig } from '@testring/typings';
 import { Transport } from '@testring/transport';
 import { PluggableModule } from '@testring/pluggable-module';
@@ -16,7 +15,7 @@ export class LoggerServer extends PluggableModule {
     constructor(
         private config: IConfig,
         private transportInstance: Transport,
-        private stdout: WriteStream,
+        private stdout: NodeJS.WritableStream,
         private numberOfRetries: number = 0,
         private shouldSkip: boolean = false,
     ) {

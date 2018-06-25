@@ -13,7 +13,7 @@ import { report } from './fixtures/constants';
 describe('Logger client', () => {
     it('should broadcast messages on log, info, warn and error with level 0 by default', (callback) => {
         const spy = sinon.spy((entry) => {
-            chai.expect(entry.level).to.be.equal(0);
+            chai.expect(entry.nestingLevel).to.be.equal(0);
         });
         const transport = new TransportMock();
         const loggerClient = new LoggerClient(transport as any);
@@ -40,7 +40,7 @@ describe('Logger client', () => {
         const loggerClient = new LoggerClient(transport as any);
 
         transport.on(LoggerMessageTypes.REPORT, (entry) => {
-            chai.expect(entry).to.have.property('level', manualLevel);
+            chai.expect(entry).to.have.property('nestingLevel', manualLevel);
             callback();
         });
 
@@ -53,11 +53,11 @@ describe('Logger client', () => {
         const spy = sinon.spy((entry) => {
             switch (entry.type) {
                 case LogTypes.log: {
-                    chai.expect(entry).to.have.property('level', forcedLevel);
+                    chai.expect(entry).to.have.property('nestingLevel', forcedLevel);
                     break;
                 }
                 case LogTypes.info: {
-                    chai.expect(entry).to.have.property('level', 0);
+                    chai.expect(entry).to.have.property('nestingLevel', 0);
                     break;
                 }
                 default: {

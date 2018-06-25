@@ -4,6 +4,6 @@ export const entry = {
     foo: 'foo',
     bar: 'bar',
     baz: 'baz',
-    level: 3,
+    nestingLevel: 3,
     formattedMessage: 'hello'
 };

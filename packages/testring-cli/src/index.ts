@@ -12,7 +12,7 @@ import { transport } from '@testring/transport';
 
 export const runTests = async (argv: typeof process.argv) => {
     const userConfig = await getConfig(argv);
-    const loggerServer = new LoggerServer(userConfig, transport, process.stdout as any);
+    const loggerServer = new LoggerServer(userConfig, transport, process.stdout);
     const testRunController = new TestRunController(userConfig, testWorker);
 
     applyPlugins({
