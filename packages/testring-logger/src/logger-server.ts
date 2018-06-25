@@ -1,4 +1,4 @@
-import * as process from 'process';
+import { WriteStream } from 'tty';
 import { IConfig } from '@testring/typings';
 import { Transport } from '@testring/transport';
 import { PluggableModule } from '@testring/pluggable-module';
@@ -16,6 +16,7 @@ export class LoggerServer extends PluggableModule {
     constructor(
         private config: IConfig,
         private transportInstance: Transport,
+        private stdout: WriteStream,
         private numberOfRetries: number = 0,
         private shouldSkip: boolean = false,
     ) {
@@ -67,9 +68,14 @@ export class LoggerServer extends PluggableModule {
     }
 
     private log(entry: ILogEntry): void {
-        if (!this.config.silent) {
-            process.stdout.write(entry.formattedMessage + '\n');
+        if (this.config.silent) {
+            return;
         }
+        if (entry.logLevel < this.config.loggerLevel) {
+            return;
+        }
+
+        this.stdout.write(entry.formattedMessage + '\n');
 
         const shouldRun = this.queue.length === 0;
 

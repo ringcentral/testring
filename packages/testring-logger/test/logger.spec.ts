@@ -12,13 +12,13 @@ import { entry } from './fixtures/constants';
 import { TransportMock } from './transport.mock';
 
 const DEFAULT_CONFIG: any = {
-    silent: true
+    silent: false
 };
 
 describe('Logger', () => {
     it('should relay message from client to server through transport', (callback) => {
         const transport = new TransportMock();
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport as any);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport as any, process.stdout as any);
         const loggerClient = new LoggerClient(transport as any);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
@@ -34,7 +34,7 @@ describe('Logger', () => {
     context('with server and local client on same process', () => {
         it('should relay message from client to server through transport', (callback) => {
             const transport = new Transport();
-            const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport);
+            const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport,  process.stdout as any);
             const loggerClient = new LoggerClientLocal(transport);
             const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 

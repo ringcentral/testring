@@ -13,13 +13,13 @@ import { voidLogger } from './fixtures/voidLogger';
 import { TransportMock } from './transport.mock';
 
 const DEFAULT_CONFIG: any = {
-    silent: true
+    silent: false
 };
 
 describe('Logger Server', () => {
     it('should call beforeLog hook and pass transformed entry to log', (callback) => {
         const transport = new TransportMock();
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport as any);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport as any, process.stdout as any);
         const beforeLog = loggerServer.getHook(LoggerPlugins.beforeLog);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
@@ -47,7 +47,7 @@ describe('Logger Server', () => {
 
     it('should call onError hook when fail to log report', (callback) => {
         const transport = new TransportMock();
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport as any, 0, true);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport as any, process.stdout as any, 0, true);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
         const onError = loggerServer.getHook(LoggerPlugins.onError);
 
@@ -72,7 +72,7 @@ describe('Logger Server', () => {
             callback();
         });
         const transport = new TransportMock();
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport as any, 1);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport as any, process.stdout as any, 1);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (onLog) {
@@ -95,7 +95,7 @@ describe('Logger Server', () => {
             callback();
         });
         const transport = new TransportMock();
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport as any, 0, true);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport as any, process.stdout as any, 0, true);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (onLog) {
@@ -108,7 +108,7 @@ describe('Logger Server', () => {
 
     it('should abort after log fail', (callback) => {
         const transport = new TransportMock();
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport as any);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport as any,  process.stdout as any);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (onLog) {

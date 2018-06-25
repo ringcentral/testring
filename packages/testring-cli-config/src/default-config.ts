@@ -1,4 +1,5 @@
 import { IConfig } from '@testring/typings';
+import { LogLevel } from '@testring/logger';
 
 export const defaultConfiguration: IConfig = {
     report: './.testring_reports',
@@ -10,5 +11,6 @@ export const defaultConfiguration: IConfig = {
     workerLimit: 30,
     retryCount: 3,
     retryDelay: 2000,
-    httpThrottle: 0
+    httpThrottle: 0,
+    loggerLevel: LogLevel.info
 };

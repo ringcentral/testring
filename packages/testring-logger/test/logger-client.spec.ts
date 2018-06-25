@@ -44,7 +44,7 @@ describe('Logger client', () => {
             callback();
         });
 
-        loggerClient.setLevel(manualLevel);
+        loggerClient.setLogNestingLevel(manualLevel);
         loggerClient.log(...report);
     });
 
