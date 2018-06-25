@@ -4,12 +4,12 @@
   "main": "./dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ringcentral/ringcentral-js-test-framework.git"
+    "url": "https://github.com/ringcentral/testring.git"
   },
   "author": "RingCentral",
-  "license": "ISC",
+  "license": "MIT",
   "scripts": {
-    "test:simple-run": "testring --tests='./test/simple/*.spec.js'",
+    "test:simple-run": "testring --tests='test/simple/*.spec.js'",
     "e2e": "npm run test:simple-run"
   },
   "dependencies": {

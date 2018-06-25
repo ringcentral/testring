@@ -8,7 +8,6 @@
     "url": "https://github.com/ringcentral/testring.git"
   },
   "scripts": {
-    "preinstall": "lerna clean --yes",
     "postinstall": "lerna bootstrap && lerna exec --no-sort -- node \"../../bin/link\"",
     "lint:src": "lerna exec --parallel --no-sort -- eslint \"./src/**/*.ts\"",
     "lint:test": "lerna exec --parallel --no-sort -- eslint \"./test/**/*.ts\"",
@@ -21,16 +20,17 @@
     "build:watch": "lerna exec -- tsc --target es2015 --watch",
     "build:clear": "npm run lint:src && npm run lint:test && npm run build",
     "build:precommit": "npm run build:clear && npm run test && npm run test:e2e",
-    "build:ci": "npm run build:clear && npm run test:coverage && npm run test:e2e"
+    "build:ci": "npm run build:clear && npm run test:coverage && npm run test:e2e",
+    "publish": "lerna publish --skip-npm"
   },
   "precommit": "build:precommit",
   "nyc": {
     "all": true,
     "check-coverage": true,
-    "lines": 70,
-    "statements": 70,
-    "functions": 70,
-    "branches": 70,
+    "lines": 50,
+    "statements": 50,
+    "functions": 50,
+    "branches": 50,
     "sourceMap": true,
     "include": [
       "packages/*/src/*.ts",
@@ -47,10 +47,10 @@
   "devDependencies": {
     "@types/chai": "4.1.4",
     "@types/mocha": "5.2.3",
-    "@types/node": "10.3.4",
-    "babel-eslint": "8.2.3",
+    "@types/node": "10.3.5",
+    "babel-eslint": "8.2.5",
     "chai": "4.1.2",
-    "eslint": "4.19.1",
+    "eslint": "5.0.0",
     "eslint-config-ringcentral": "0.3.0",
     "eslint-plugin-react": "7.9.1",
     "eslint-plugin-typescript": "0.12.0",
@@ -60,8 +60,8 @@
     "nyc": "12.0.2",
     "pre-commit": "1.2.2",
     "rimraf": "2.6.2",
-    "sinon": "6.0.0",
-    "ts-node": "6.1.2",
+    "sinon": "6.0.1",
+    "ts-node": "7.0.0",
     "typescript": "2.9.2",
     "typescript-eslint-parser": "16.0.0"
   }
