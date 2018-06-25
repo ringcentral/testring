@@ -10,15 +10,13 @@
   "author": "RingCentral",
   "license": "ISC",
   "dependencies": {
-    "lodash": "^4.17.10",
-    "nanoid": "^1.0.3",
     "@testring/browser-proxy": "0.1.0",
     "@testring/logger": "0.1.0",
     "@testring/pluggable-module": "0.1.0",
-    "@testring/transport": "0.1.0"
-  },
-  "devDependencies":{
+    "@testring/transport": "0.1.0",
     "@types/lodash": "^4.14.110",
-    "@types/nanoid": "^1.0.0"
+    "@types/nanoid": "^1.0.0",
+    "lodash": "^4.17.10",
+    "nanoid": "^1.0.4"
   }
 }

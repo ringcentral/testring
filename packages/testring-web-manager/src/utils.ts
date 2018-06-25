@@ -16,6 +16,7 @@ function delay(timeout) {
 
 function normalizeXpath(xpath, allowMultipleNodesInResult) {
     let result;
+
     try {
         result = (typeof xpath === 'string') ? query(xpath).toString() : xpath.toString(allowMultipleNodesInResult);
     } catch (e) {
@@ -35,6 +36,7 @@ function logXpath(xpath) {
     } else {
         result = (typeof xpath === 'string') ? xpath : xpath.toString();
     }
+
     return result;
 }
 
@@ -42,32 +44,31 @@ function uid() {
     return nanoid();
 }
 
-let ROOTID = 'root';
-let TEST_ATTR = 'data-test-automation-id';
+const ROOTID = 'root';
+const TEST_ATTR = 'data-test-automation-id';
 
 class Element {
 
-    private _path;
+    private path;
 
-    constructor(rootPath) {
-        rootPath = rootPath || [];
-        this._path = [...rootPath];
+    constructor(rootPath: Array<any> = []) {
+        this.path = [...rootPath];
     }
 
     query(value) {
         if (lodash.isEmpty(value)) {
             throw new Error('Invalid selector');
         }
-        let p = [...this._path];
+
+        const p: Array<any> = [...this.path];
 
         if (typeof value === 'string') {
-            let arr = lodash.compact(value.split('.'));
-            let arrRes = arr.map(value => {
-                return {
-                    kind: 'exactly',
-                    value
-                };
-            });
+            const arr = lodash.compact(value.split('.'));
+            const arrRes = arr.map(value => ({
+                kind: 'exactly',
+                value
+            }));
+
             p.push(...arrRes);
         }
 
@@ -75,11 +76,13 @@ class Element {
             if (typeof value.id !== 'string') {
                 throw new Error('Invalid selector');
             }
+
             p.push({
                 kind: 'pattern',
                 value
             });
         }
+
         return new Element(p);
     }
 
@@ -104,11 +107,11 @@ class Element {
     }
 
     getChildren() {
-        return new Element([...this._path, {kind: 'children'}]);
+        return new Element([...this.path, { kind: 'children' }]);
     }
 
     at(value) {
-        let p = [...this._path];
+        let p = [...this.path];
         p.push({
             kind: 'index',
             value
@@ -118,7 +121,7 @@ class Element {
 
     log() {
         let hr: string[] = [];
-        this._path.forEach(item => {
+        this.path.forEach(item => {
             if (item.kind === 'exactly') {
                 hr.push(item.value);
             }
@@ -146,7 +149,7 @@ class Element {
         };
 
         let xpathStr = '.';
-        this._path.forEach(item => {
+        this.path.forEach(item => {
             if (item.kind === 'exactly') {
                 xpathStr += `/descendant::*[./@${TEST_ATTR} = ${stringLiteral(item.value)}]`;
             }
