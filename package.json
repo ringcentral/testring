@@ -20,7 +20,8 @@
     "build:watch": "lerna exec -- tsc --target es2015 --watch",
     "build:clear": "npm run lint:src && npm run lint:test && npm run build",
     "build:precommit": "npm run build:clear && npm run test && npm run test:e2e",
-    "build:ci": "npm run build:clear && npm run test:coverage && npm run test:e2e"
+    "build:ci": "npm run build:clear && npm run test:coverage && npm run test:e2e",
+    "publish": "lerna publish --skip-npm"
   },
   "precommit": "build:precommit",
   "nyc": {
