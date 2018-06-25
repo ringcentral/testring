@@ -1,6 +1,6 @@
-import {BrowserProxyController} from '@testring/browser-proxy';
-import {Transport} from '@testring/transport';
-import {WebManagerMessageType} from './structs';
+import { BrowserProxyController } from '@testring/browser-proxy';
+import { Transport } from '@testring/transport';
+import { WebManagerMessageType } from './structs';
 
 export class WebManagerController {
 

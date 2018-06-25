@@ -13,6 +13,7 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
+    "@testring/browser-proxy": "0.1.0",
     "@testring/cli-config": "0.1.0",
     "@testring/logger": "0.1.0",
     "@testring/plugin-api": "0.1.0",
