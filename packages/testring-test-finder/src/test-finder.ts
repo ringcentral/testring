@@ -23,7 +23,7 @@ export class TestsFinder extends PluggableModule {
         const testsAfterPlugin = await this.callHook(TestsFinderPlugins.beforeResolve, tests);
 
         if (!testsAfterPlugin || testsAfterPlugin.length === 0) {
-            throw new Error(`No test files found by pattern: ${pattern}`);
+            throw new Error(`No test files found by pattern: ${pattern} \nFiles: ${testsAfterPlugin}`);
         }
 
         const resolverTests = await resolveTests(testsAfterPlugin);
