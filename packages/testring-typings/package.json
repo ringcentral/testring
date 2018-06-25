@@ -2,7 +2,7 @@
   "name": "@testring/typings",
   "version": "0.1.0",
   "main": "./index.d.ts",
-  "typings": "./index.d.ts",
+  "types": "./index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/ringcentral/testring.git"
