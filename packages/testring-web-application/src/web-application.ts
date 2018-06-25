@@ -10,18 +10,16 @@ const utils = require('./utils');
 const WAIT_TIMEOUT = 45000;
 const TICK_TIMEOUT = 500;
 
-export class WebManager extends PluggableModule {
+export class WebApplication extends PluggableModule {
 
-    private host: string;
+    private mainTabID = 1;
+
     private client: WebClient;
-    private mainTabID: number = 1;
 
-    constructor(host) {
+    constructor(testUID: string) {
         super();
 
-        this.host = host;
-
-        this.client = new WebClient();
+        this.client = new WebClient(testUID)
     }
 
     public async waitForExist(xpath, timeout = WAIT_TIMEOUT, skipMoveToObject = false) {
@@ -104,11 +102,11 @@ export class WebManager extends PluggableModule {
         return this.client.waitForVisible(xpath, waitTime);
     }
 
-    public async openPage(val) {
-        if (typeof val === 'string') {
-            return this._open(this.host + val);
-        } else if (typeof val === 'function') {
-            return val(this);
+    public async openPage(uri) {
+        if (typeof uri === 'string') {
+            return this._open(uri);
+        } else if (typeof uri === 'function') {
+            return uri(this);
         } else {
             throw new Error('Unsupported path type for openPage');
         }

@@ -8,11 +8,14 @@ const nanoid = require('nanoid');
 
 export class WebClient {
 
+    constructor(private applicant: string) {}
+
     private makeRequest(action: BrowserProxyActions, args: Array<any>): Promise<any> {
         return new Promise((resolve, reject) => {
             const uid = nanoid();
             const request: IExecuteMessage = {
                 uid: uid,
+                applicant: this.applicant,
                 command: {
                     action: action,
                     args: args
