@@ -20,6 +20,7 @@
     "nanoid": "^1.0.4"
   },
   "devDependencies": {
+    "@testring/child-process": "0.1.0",
     "@testring/test-utils": "0.1.0"
   }
 }

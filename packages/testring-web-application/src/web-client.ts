@@ -1,7 +1,7 @@
 import { transport } from '@testring/transport';
 import { BrowserProxyActions } from '@testring/types';
 import { IExecuteMessage, IResponseMessage } from './interfaces';
-import { WebManagerMessageType } from './structs';
+import { WebApplicationMessageType } from './structs';
 
 const nanoid = require('nanoid');
 
@@ -21,7 +21,7 @@ export class WebClient {
                 }
             };
 
-            const removeListener = transport.on(WebManagerMessageType.response, (message: IResponseMessage) => {
+            const removeListener = transport.on(WebApplicationMessageType.response, (message: IResponseMessage) => {
                 if (message.uid === uid) {
                     removeListener();
 
@@ -33,7 +33,7 @@ export class WebClient {
                 }
             });
 
-            transport.broadcast(WebManagerMessageType.execute, request);
+            transport.broadcast(WebApplicationMessageType.execute, request);
 
         });
     }

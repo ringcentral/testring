@@ -177,6 +177,7 @@ export class WebApplication extends PluggableModule {
 
     public async click(xpath, timeout = WAIT_TIMEOUT) {
         loggerClient.log(`Click on ${utils.logXpath(xpath)}`);
+
         await this.waitForExist(xpath, timeout);
 
         //await this.makeScreenshot();

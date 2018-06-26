@@ -1,27 +1,44 @@
+import { EventEmitter } from 'events';
+import { loggerClientLocal } from '@testring/logger';
 import { IBrowserProxyController } from '@testring/types';
 import { Transport } from '@testring/transport';
-import { WebManagerMessageType } from './structs';
+import { IExecuteMessage } from './interfaces';
+import { WebApplicationMessageType, WebApplicationControllerEventType } from './structs';
 
-export class WebApplicationController {
+export class WebApplicationController extends EventEmitter {
+
+    private onExecuteRequest = async (message: IExecuteMessage, source: string) => {
+        this.emit(WebApplicationControllerEventType.execute, message);
+
+        try {
+            const response = await this.browserProxy.execute(message.command);
+
+            this.emit(WebApplicationControllerEventType.response, response);
+
+            await this.transport.send(source, WebApplicationMessageType.response, {
+                uid: message.uid,
+                response: response
+            });
+
+            this.emit(WebApplicationControllerEventType.afterResponse, message, response);
+        } catch (error) {
+            loggerClientLocal.error(error);
+
+            this.emit(WebApplicationControllerEventType.error, error);
+
+            await this.transport.send(source, WebApplicationMessageType.response, {
+                uid: message.uid,
+                error: error
+            });
+        }
+    };
 
     constructor(
         private browserProxy: IBrowserProxyController,
         private transport: Transport
     ) {
-        this.transport.on(WebManagerMessageType.execute, async (message) => {
-            try {
-                const response = await this.browserProxy.execute(message.command);
+        super();
 
-                this.transport.send(message.uid, WebManagerMessageType.response, {
-                    uid: message.uid,
-                    response: response
-                });
-            } catch (error) {
-                this.transport.send(message.uid, WebManagerMessageType.response, {
-                    uid: message.uid,
-                    error: error
-                });
-            }
-        });
+        this.transport.on(WebApplicationMessageType.execute, this.onExecuteRequest);
     }
 }
