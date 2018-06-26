@@ -31,19 +31,19 @@ export class TestRunController extends PluggableModule {
     }
 
     public async runQueue(testSet: Array<ITestFile>): Promise<Error[] | void> {
-        const testSetAfterHook = await this.callHook(TestRunControllerHooks.beforeRun, testSet);
-        const testQueue = this.prepareTests(testSetAfterHook);
+        const testQueue = this.prepareTests(testSet);
+        const testQueueAfterHook = await this.callHook(TestRunControllerHooks.beforeRun, testQueue);
         const configWorkerLimit = this.config.workerLimit || 0;
 
-        const workerLimit = configWorkerLimit < testQueue.length ?
+        const workerLimit = configWorkerLimit < testQueueAfterHook.length ?
             configWorkerLimit :
-            testQueue.length;
+            testQueueAfterHook.length;
 
         const workers = this.createWorkers(workerLimit);
 
         try {
             await Promise.all(
-                workers.map(worker => this.executeWorker(worker, testQueue))
+                workers.map(worker => this.executeWorker(worker, testQueueAfterHook))
             );
         } catch (e) {
             loggerClientLocal.error(...this.errors);
