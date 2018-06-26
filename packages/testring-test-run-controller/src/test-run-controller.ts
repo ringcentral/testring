@@ -1,10 +1,10 @@
 import { loggerClientLocal } from '@testring/logger';
 import { TestWorker, TestWorkerInstance } from '@testring/test-worker';
-
+import { PluggableModule } from '@testring/pluggable-module';
 import { IConfig } from '@testring/typings';
 import { ITestFile } from '@testring/test-finder';
 
-interface IQueuedTest {
+export interface IQueuedTest {
     retryCount: number,
     test: ITestFile
 }
@@ -13,7 +13,11 @@ const delay = (milliseconds: number) => new Promise((resolve) => {
     setTimeout(resolve, milliseconds);
 });
 
-export class TestRunController {
+export enum TestRunControllerHooks {
+    beforeRun = 'beforeRun',
+}
+
+export class TestRunController extends PluggableModule {
 
     private errors: Array<Error> = [];
 
@@ -21,21 +25,25 @@ export class TestRunController {
         private config: Partial<IConfig>,
         private testWorker: TestWorker,
     ) {
+        super([
+            TestRunControllerHooks.beforeRun,
+        ]);
     }
 
     public async runQueue(testSet: Array<ITestFile>): Promise<Error[] | void> {
         const testQueue = this.prepareTests(testSet);
+        const testQueueAfterHook = await this.callHook(TestRunControllerHooks.beforeRun, testQueue);
         const configWorkerLimit = this.config.workerLimit || 0;
 
-        const workerLimit = configWorkerLimit < testQueue.length ?
+        const workerLimit = configWorkerLimit < testQueueAfterHook.length ?
             configWorkerLimit :
-            testQueue.length;
+            testQueueAfterHook.length;
 
         const workers = this.createWorkers(workerLimit);
 
         try {
             await Promise.all(
-                workers.map(worker => this.executeWorker(worker, testQueue))
+                workers.map(worker => this.executeWorker(worker, testQueueAfterHook))
             );
         } catch (e) {
             loggerClientLocal.error(...this.errors);
