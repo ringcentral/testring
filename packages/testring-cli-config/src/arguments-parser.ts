@@ -68,6 +68,12 @@ createField('loggerLevel', {
     type: 'number'
 });
 
+createField('envConfig', {
+    describe: 'path to environment config which overrides main config',
+    type: 'string',
+    default: undefined,
+});
+
 const normalize = (args: yargs.Arguments): IConfig => {
     const normalizedArgs = {};
 

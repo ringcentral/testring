@@ -1,10 +1,10 @@
 import * as deepmerge from 'deepmerge';
 import { IConfig } from '@testring/typings';
 import { getArguments } from './arguments-parser';
-import { getFileConfig } from './config-file-reader';
+import { readConfig, getFileConfig } from './config-file-reader';
 import { defaultConfiguration } from './default-config';
 
-const getConfig = async (argv: Array<string>): Promise<IConfig> => {
+const getConfig = async (argv: Array<string> = []): Promise<IConfig> => {
     const args = getArguments(argv);
 
     const temporaryConfig = deepmerge.all<IConfig>([
@@ -13,11 +13,13 @@ const getConfig = async (argv: Array<string>): Promise<IConfig> => {
     ]);
 
     const fileConfig = await getFileConfig(temporaryConfig);
+    const envConfig = await readConfig(temporaryConfig.envConfig);
 
     return deepmerge.all<IConfig>([
         defaultConfiguration,
         fileConfig || {},
-        args || {}
+        envConfig || {},
+        args || {},
     ]);
 };
 
