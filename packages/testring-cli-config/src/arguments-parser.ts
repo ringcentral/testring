@@ -17,7 +17,7 @@ createField('debug', {
     default: undefined
 });
 
-createField('verbose', {
+createField('bail', {
     describe: 'shut down app after test fail',
     type: 'boolean',
     default: undefined

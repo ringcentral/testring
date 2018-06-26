@@ -37,6 +37,9 @@
       "packages/*/src/*.ts",
       "packages/*/src/**/*.ts"
     ],
+    "exclude": [
+      "packages/testring-web-application/src/web-application.ts"
+    ],
     "extension": [
       ".ts"
     ],

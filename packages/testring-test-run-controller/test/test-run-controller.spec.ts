@@ -17,8 +17,8 @@ describe('Controller', () => {
         ];
 
         const testWorkerMock: any = new TestWorkerMock();
+        const testRunController = new TestRunController({ bail: false }, testWorkerMock);
 
-        const testRunController = new TestRunController({ verbose: false }, testWorkerMock);
         await testRunController.runQueue(tests);
     });
 });

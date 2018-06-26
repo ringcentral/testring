@@ -85,7 +85,7 @@ export class TestRunController {
         test: IQueuedTest,
         queue: Array<IQueuedTest>
     ): Promise<void> {
-        if (this.config.verbose) {
+        if (this.config.bail) {
             this.errors.push(exception.error);
             throw exception.error;
         }

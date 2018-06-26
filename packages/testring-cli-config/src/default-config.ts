@@ -7,7 +7,7 @@ export const defaultConfiguration: IConfig = {
     tests: './tests/**/*.js',
     debug: false,
     silent: false,
-    verbose: false,
+    bail: false,
     workerLimit: 30,
     retryCount: 3,
     retryDelay: 2000,
