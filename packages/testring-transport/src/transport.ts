@@ -33,8 +33,8 @@ export class Transport {
     }
 
     public send<T = any>(processID: string, messageType: string, payload: T): Promise<void> {
-        loggerClient.debug(`Send message ${messageType} to process [id= ${processID}]`);
-        loggerClientLocal.debug(`Send message ${messageType} to process [id= ${processID}]`);
+        loggerClient.debug(`Send message [type=${messageType}] to process [id= ${processID}]`);
+        loggerClientLocal.debug(`Send message [type=${messageType}] to process [id= ${processID}]`);
         return this.directTransport.send(processID, messageType, payload);
     }
 

@@ -3,6 +3,7 @@ import { locateTestFiles } from './test-files-locator';
 import { resolveTests } from './resolve-tests';
 
 import { ITestFile } from '../interfaces';
+import {loggerClientLocal} from '@testring/logger';
 
 export enum TestsFinderPlugins {
     beforeResolve = 'beforeResolve',
@@ -23,7 +24,8 @@ export class TestsFinder extends PluggableModule {
         const testsAfterPlugin = await this.callHook(TestsFinderPlugins.beforeResolve, tests);
 
         if (!testsAfterPlugin || testsAfterPlugin.length === 0) {
-            throw new Error(`No test files found by pattern: ${pattern} \nFiles: ${testsAfterPlugin}`);
+            loggerClientLocal.error(`No test files found by pattern: ${pattern}`);
+            throw new Error(`No test files found by pattern: ${pattern}`);
         }
 
         const resolverTests = await resolveTests(testsAfterPlugin);

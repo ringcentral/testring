@@ -5,10 +5,13 @@ import { IBrowserProxyCommand, IBrowserProxyMessage } from '../interfaces';
 
 import { BrowserProxyMessageTypes } from './structs';
 
+import { loggerClientLocal } from '@testring/logger';
+
 const resolvePlugin = (pluginPath: string): (command: IBrowserProxyCommand) => Promise<void> => {
     const resolvedPlugin = findPlugin(pluginPath);
 
     if (typeof resolvedPlugin !== 'function') {
+        loggerClientLocal.error('plugin is not a function');
         throw new TypeError('plugin is not a function');
     }
 

@@ -21,9 +21,9 @@ export const runTests = async (argv: typeof process.argv) => {
         testWorker: testWorker
     }, userConfig);
 
-    loggerClientLocal.log(`User config: ${userConfig}`);
+    loggerClientLocal.log(`User config: ${JSON.stringify(userConfig)}`);
     const tests = await testFinder.find(userConfig.tests);
-    loggerClientLocal.debug(`Found ${tests.length} test(s) to run.`);
+    loggerClientLocal.info(`Found ${tests.length} test(s) to run.`);
     const testRunResult = await testRunController.runQueue(tests);
 
     if (testRunResult) {

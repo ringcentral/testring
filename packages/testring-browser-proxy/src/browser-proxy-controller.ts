@@ -7,6 +7,8 @@ import { IBrowserProxyCommand, IBrowserProxyCommandResponse, IBrowserProxyPendin
 
 import { BrowserProxyMessageTypes, BrowserProxyPlugins } from './structs';
 
+import { loggerClientLocal } from '@testring/logger';
+
 const nanoid = require('nanoid');
 
 export class BrowserProxyController extends PluggableModule {
@@ -51,11 +53,13 @@ export class BrowserProxyController extends PluggableModule {
 
             return resolve();
         } else {
+            loggerClientLocal.error(`Cannot find command with uid ${uid}`);
             throw new ReferenceError(`Cannot find command with uid ${uid}`);
         }
     }
 
     private onProxyConnect(): void {
+        loggerClientLocal.debug('Browser Proxy: create new worker');
         this.pendingCommandsQueue.forEach((item) => this.send(item));
         this.pendingCommandsQueue.clear();
     }
@@ -67,7 +71,7 @@ export class BrowserProxyController extends PluggableModule {
 
     private onExit = (code: number, signal: string): void => {
         delete this.workerId;
-
+        loggerClientLocal.debug(`Browser Proxy: miss connection with worker [code = ${code} signal = ${signal}]`);
         this.onProxyDisconnect();
 
         this.spawn();
@@ -97,6 +101,7 @@ export class BrowserProxyController extends PluggableModule {
 
             this.worker = this.workerCreator(onActionPluginPath);
         } else {
+            loggerClientLocal.error(`Unsupported worker type "${typeof this.workerCreator}"`);
             throw new Error(`Unsupported worker type "${typeof this.workerCreator}"`);
         }
 
