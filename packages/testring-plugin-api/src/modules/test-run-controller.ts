@@ -1,11 +1,10 @@
-import { TestRunControllerHooks } from '@testring/test-run-controller';
-import { ITestFile } from '@testring/test-finder';
+import { TestRunControllerHooks, IQueuedTest } from '@testring/test-run-controller';
 
 import { AbstractAPI } from './abstract';
 
 export class TestRunControllerAPI extends AbstractAPI {
 
-    beforeRun(handler: (tests: Array<ITestFile>) => Array<ITestFile>) {
+    beforeRun(handler: (queue: Array<IQueuedTest>) => Array<IQueuedTest>) {
         this.registrySyncPlugin(TestRunControllerHooks.beforeRun, handler);
     }
 }

@@ -4,7 +4,7 @@ import { PluggableModule } from '@testring/pluggable-module';
 import { IConfig } from '@testring/typings';
 import { ITestFile } from '@testring/test-finder';
 
-interface IQueuedTest {
+export interface IQueuedTest {
     retryCount: number,
     test: ITestFile
 }

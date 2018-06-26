@@ -1,1 +1,1 @@
-export { TestRunController, TestRunControllerHooks } from './test-run-controller';
+export { IQueuedTest, TestRunController, TestRunControllerHooks } from './test-run-controller';
