@@ -3,11 +3,9 @@
 
 import * as chai from 'chai';
 import * as sinon from 'sinon';
-
+import { TransportMock } from '@testring/test-utils';
 import { LoggerClient } from '../src/logger-client';
 import { LoggerMessageTypes, LogTypes } from '../src/structs';
-
-import { TransportMock } from './transport.mock';
 import { report } from './fixtures/constants';
 
 describe('Logger client', () => {
@@ -16,7 +14,7 @@ describe('Logger client', () => {
             chai.expect(entry.nestingLevel).to.be.equal(0);
         });
         const transport = new TransportMock();
-        const loggerClient = new LoggerClient(transport as any);
+        const loggerClient = new LoggerClient(transport);
 
         transport.on(LoggerMessageTypes.REPORT, spy);
 
@@ -37,7 +35,7 @@ describe('Logger client', () => {
     it('should allow to set it\'slevel manually and then broadcast it in entries', (callback) => {
         const manualLevel = 1337;
         const transport = new TransportMock();
-        const loggerClient = new LoggerClient(transport as any);
+        const loggerClient = new LoggerClient(transport);
 
         transport.on(LoggerMessageTypes.REPORT, (entry) => {
             chai.expect(entry).to.have.property('nestingLevel', manualLevel);
@@ -66,7 +64,7 @@ describe('Logger client', () => {
             }
         });
         const transport = new TransportMock();
-        const loggerClient = new LoggerClient(transport as any);
+        const loggerClient = new LoggerClient(transport);
 
         transport.on(LoggerMessageTypes.REPORT, (entry) => {
             spy(entry);

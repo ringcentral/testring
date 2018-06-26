@@ -1,5 +1,4 @@
-import { IConfig } from '@testring/types';
-import { Transport } from '@testring/transport';
+import { IConfig, ITransport } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { ILogEntry } from '../interfaces';
 import { LoggerMessageTypes, LogQueueStatus } from './structs';
@@ -14,7 +13,7 @@ export class LoggerServer extends PluggableModule {
 
     constructor(
         private config: IConfig,
-        private transportInstance: Transport,
+        private transportInstance: ITransport,
         private stdout: NodeJS.WritableStream,
         private numberOfRetries: number = 0,
         private shouldSkip: boolean = false,
