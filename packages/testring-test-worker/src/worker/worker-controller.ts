@@ -2,6 +2,7 @@ import { Transport } from '@testring/transport';
 import { IExecutionMessage, IExecutionCompleteMessage } from '../../interfaces';
 import { WorkerAction, TestStatus, TestEvents } from '../constants';
 import { Sandbox } from './sandbox';
+import {loggerClientLocal} from "../../../testring-logger/src";
 
 export class WorkerController {
 
@@ -12,6 +13,7 @@ export class WorkerController {
     public init() {
         this.transportInstance.on(WorkerAction.executeTest, async (message: IExecutionMessage) => {
             if (this.status === TestStatus.pending) {
+                loggerClientLocal.debug('Worker already busy with another test!');
                 throw new EvalError('Worker already busy with another test!');
             }
 

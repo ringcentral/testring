@@ -61,7 +61,7 @@ export class TestWorkerInstance {
                         });
                     } else {
                         loggerClientLocal.log(`Test success: ${relativePath}`);
-
+                        loggerClientLocal.debug(`Test result: ${message.status}`);
                         resolve();
                     }
 
@@ -70,10 +70,11 @@ export class TestWorkerInstance {
             );
 
             this.abortTestExecution = () => {
+                loggerClientLocal.error('Aborted test execution');
                 removeListener();
                 reject();
             };
-
+            loggerClientLocal.debug('Executing test ...');
             this.makeRequest(WorkerAction.executeTest, testData);
         });
     }
@@ -81,14 +82,17 @@ export class TestWorkerInstance {
     public kill() {
         if (this.worker !== null) {
             this.worker.kill();
+            loggerClientLocal.debug(`Killed child process ${this.workerName}`);
             this.worker = null;
         }
     }
 
     private async compileSource(source: string, filename: string): Promise<string> {
         try {
+            loggerClientLocal.debug(`Compile source file ${filename}`);
             return await this.compile(source, filename);
         } catch (error) {
+            loggerClientLocal.error(`Compilation ${filename} failed`);
             throw {
                 error,
                 test: {
@@ -122,6 +126,7 @@ export class TestWorkerInstance {
         });
 
         this.transport.registerChildProcess(this.workerName, worker);
+        loggerClientLocal.debug(`Registered child process ${this.workerName}`);
 
         return worker;
     }

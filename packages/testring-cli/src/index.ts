@@ -21,10 +21,13 @@ export const runTests = async (argv: typeof process.argv) => {
         testWorker: testWorker
     }, userConfig);
 
+    loggerClientLocal.log(`User config: ${userConfig}`);
     const tests = await testFinder.find(userConfig.tests);
+    loggerClientLocal.debug(`Found ${tests.length} test(s) to run.`);
     const testRunResult = await testRunController.runQueue(tests);
 
     if (testRunResult) {
+        loggerClientLocal.error(`Failed ${testRunResult.length}/${tests.length} tests.`);
         throw new Error(`Failed ${testRunResult.length}/${tests.length} tests.`);
     }
 };

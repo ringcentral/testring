@@ -25,6 +25,8 @@ export class TestRunController {
 
     public async runQueue(testSet: Array<ITestFile>): Promise<Error[] | void> {
         const testQueue = this.prepareTests(testSet);
+        loggerClientLocal.debug('Created tests queue');
+
         const configWorkerLimit = this.config.workerLimit || 0;
 
         const workerLimit = configWorkerLimit < testQueue.length ?
@@ -32,6 +34,7 @@ export class TestRunController {
             testQueue.length;
 
         const workers = this.createWorkers(workerLimit);
+        loggerClientLocal.debug(`Created workers: ${workerLimit}`);
 
         try {
             await Promise.all(

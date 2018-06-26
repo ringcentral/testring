@@ -16,7 +16,7 @@ const readTestFile = (file: string): Promise<ITestFile | null> => {
                 if (err) {
                     return reject(err);
                 }
-
+                loggerClientLocal.debug(`Test file: ${filePath}`);
                 return resolve({
                     path: filePath,
                     content: data.toString(),
@@ -24,7 +24,8 @@ const readTestFile = (file: string): Promise<ITestFile | null> => {
                 });
             });
         } else {
-            reject(new Error(`file doesn't exist: ${filePath}`));
+            loggerClientLocal.error(`File doesn't exist: ${filePath}`);
+            reject(new Error(`File doesn't exist: ${filePath}`));
         }
     });
 
@@ -37,6 +38,7 @@ const readTestFile = (file: string): Promise<ITestFile | null> => {
 
 export const resolveTests = async (files: Array<string>): Promise<ITestFile[]> => {
     if (!files || files.length === 0) {
+        loggerClientLocal.error('No test files found');
         throw ERR_NO_FILES;
     }
 
@@ -45,6 +47,7 @@ export const resolveTests = async (files: Array<string>): Promise<ITestFile[]> =
     const compacted = testFiles.filter(isTestFile);
 
     if (compacted.length === 0) {
+        loggerClientLocal.error('No tests are found for this criteria.');
         throw ERR_NO_FILES;
     }
 
