@@ -13,5 +13,6 @@ export interface IConfig {
     retryDelay: number,
     tests: string,
     httpThrottle: number,
+    loggerLevel: number,
     plugins?: Array<ConfigPluginDescriptor>
 }

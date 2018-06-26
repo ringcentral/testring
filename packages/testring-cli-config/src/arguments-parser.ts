@@ -63,6 +63,11 @@ createField('httpThrottle', {
     type: 'number'
 });
 
+createField('loggerLevel', {
+    describe: 'flag for filtering log records',
+    type: 'number'
+});
+
 const normalize = (args: yargs.Arguments): IConfig => {
     const normalizedArgs = {};
 
