@@ -2,7 +2,7 @@ import * as request from 'request';
 import * as requestPromise from 'request-promise';
 import { Transport } from '@testring/transport';
 import { PluggableModule } from '@testring/pluggable-module';
-import { IConfig } from '@testring/typings';
+import { IConfig } from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
 import { HttpMessageType, HttpServerPlugins } from './structs';
 import { Request, Response, ResponseReject } from './interfaces';

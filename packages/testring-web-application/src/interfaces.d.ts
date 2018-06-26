@@ -1,12 +1,12 @@
-import { IBrowserProxyCommand } from '@testring/browser-proxy';
+import { IBrowserProxyCommand } from '@testring/types';
 
-interface IExecuteMessage {
+export interface IExecuteMessage {
     uid: string,
     applicant: string,
     command: IBrowserProxyCommand
 }
 
-interface IResponseMessage {
+export interface IResponseMessage {
     uid: string,
     response?: any,
     error?: Error

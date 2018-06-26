@@ -51,5 +51,34 @@ export enum BrowserProxyActions {
     getTagName = 'getTagName',
     isSelected = 'isSelected',
     getText = 'getText',
-    elementIdSelected ='elementIdSelected'
+    elementIdSelected = 'elementIdSelected'
+}
+
+export interface IBrowserProxyCommand {
+    action: BrowserProxyActions,
+    args: Array<string>,
+}
+
+export interface IBrowserProxyMessage {
+    uid: string,
+    command: IBrowserProxyCommand,
+}
+
+export interface IBrowserProxyCommandResponse {
+    uid: string,
+    exception: Error | void,
+}
+
+export interface IBrowserProxyPendingCommand {
+    resolve: () => void,
+    reject: (exception: Error) => void,
+    command: IBrowserProxyCommand,
+}
+
+export interface IBrowserProxyController {
+    spawn(): Promise<number>;
+
+    execute(command: IBrowserProxyCommand): Promise<void>;
+
+    kill();
 }

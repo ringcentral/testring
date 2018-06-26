@@ -1,4 +1,4 @@
-import { IConfig } from '@testring/typings';
+import { IConfig } from '@testring/types';
 import { Transport } from '@testring/transport';
 import { PluggableModule } from '@testring/pluggable-module';
 import { ILogEntry } from '../interfaces';

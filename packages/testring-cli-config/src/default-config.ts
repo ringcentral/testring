@@ -1,4 +1,4 @@
-import { IConfig } from '@testring/typings';
+import { IConfig } from '@testring/types';
 import { LogLevel } from '@testring/logger';
 
 export const defaultConfiguration: IConfig = {

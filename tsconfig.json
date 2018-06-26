@@ -4,7 +4,6 @@
     "module": "commonjs",
     "allowJs": false,
     "moduleResolution": "node",
-    "preserveConstEnums": true,
     "noFallthroughCasesInSwitch": true,
     "noEmitOnError": true,
     "declaration": true,

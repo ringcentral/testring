@@ -1,5 +1,5 @@
 {
-  "name": "@testring/typings",
+  "name": "@testring/types",
   "version": "0.1.0",
   "main": "./index.d.ts",
   "types": "./index.d.ts",

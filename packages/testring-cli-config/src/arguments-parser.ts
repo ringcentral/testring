@@ -1,5 +1,5 @@
 import * as yargs from 'yargs';
-import { IConfig } from '@testring/typings';
+import { IConfig } from '@testring/types';
 
 const pkg = require('../package.json');
 

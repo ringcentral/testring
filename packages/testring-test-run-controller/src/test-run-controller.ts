@@ -1,7 +1,7 @@
 import { loggerClientLocal } from '@testring/logger';
 import { TestWorker, TestWorkerInstance } from '@testring/test-worker';
 
-import { IConfig } from '@testring/typings';
+import { IConfig } from '@testring/types';
 import { ITestFile } from '@testring/test-finder';
 
 interface IQueuedTest {

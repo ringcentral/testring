@@ -1,13 +1,13 @@
-import { ISerializedStruct } from '../../interfaces';
+import { ITransportSerializedStruct } from '@testring/types';
 
-export interface ISerializedObject extends ISerializedStruct {
+export interface ISerializedObject extends ITransportSerializedStruct {
     $key: string,
     dictionary: object
 }
 
 export const OBJECT_KEY = 'Object';
 
-export const serializeObject = (object: object, serialize: (v: any) => ISerializedStruct): ISerializedObject => {
+export const serializeObject = (object: object, serialize: (v: any) => ITransportSerializedStruct): ISerializedObject => {
     const dictionary = {};
 
     for (let key in object) {
@@ -26,7 +26,7 @@ export const serializeObject = (object: object, serialize: (v: any) => ISerializ
 
 export const deserializeObject = (
     serializedObject: ISerializedObject,
-    deserialize: (v: ISerializedStruct) => any
+    deserialize: (v: ITransportSerializedStruct) => any
 ): object => {
     const dictionary = serializedObject.dictionary;
     const object = {};

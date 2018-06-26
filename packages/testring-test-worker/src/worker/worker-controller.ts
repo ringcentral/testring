@@ -1,4 +1,4 @@
-import { Transport } from '@testring/transport';
+import { ITransport } from '@testring/types';
 import { IExecutionMessage, IExecutionCompleteMessage } from '../../interfaces';
 import { WorkerAction, TestStatus, TestEvents } from '../constants';
 import { Sandbox } from './sandbox';
@@ -7,7 +7,7 @@ export class WorkerController {
 
     private status: TestStatus = TestStatus.idle;
 
-    constructor(private transportInstance: Transport) {}
+    constructor(private transportInstance: ITransport) {}
 
     public init() {
         this.transportInstance.on(WorkerAction.executeTest, async (message: IExecutionMessage) => {

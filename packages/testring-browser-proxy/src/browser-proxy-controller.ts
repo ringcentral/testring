@@ -1,11 +1,14 @@
 import { ChildProcess } from 'child_process';
 
+import {
+    IBrowserProxyCommand,
+    IBrowserProxyCommandResponse,
+    IBrowserProxyPendingCommand,
+    BrowserProxyMessageTypes,
+    BrowserProxyPlugins
+} from '@testring/types';
 import { Transport } from '@testring/transport';
 import { PluggableModule } from '@testring/pluggable-module';
-
-import { IBrowserProxyCommand, IBrowserProxyCommandResponse, IBrowserProxyPendingCommand } from '../interfaces';
-
-import { BrowserProxyMessageTypes, BrowserProxyPlugins } from './structs';
 
 const nanoid = require('nanoid');
 

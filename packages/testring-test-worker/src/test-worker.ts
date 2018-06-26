@@ -1,4 +1,4 @@
-import { Transport } from '@testring/transport';
+import { ITransport } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { TestWorkerInstance } from './test-worker-instance';
 
@@ -12,7 +12,7 @@ export class TestWorker extends PluggableModule {
         return this.callHook(TestWorkerPlugin.compile, source, filename);
     };
 
-    constructor(private transport: Transport) {
+    constructor(private transport: ITransport) {
         super([
             [TestWorkerPlugin.compile, 2]
         ]);

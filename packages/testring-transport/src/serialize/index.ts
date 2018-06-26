@@ -1,4 +1,4 @@
-import { ISerializedStruct } from '../../interfaces';
+import { ITransportSerializedStruct } from '@testring/types';
 import { ISerializedArray, serializeArray, deserializeArray, ARRAY_KEY } from './array';
 import { ISerializedError, serializeError, deserializeError, ERROR_KEY } from './error';
 import { ISerializedObject, serializeObject, deserializeObject, OBJECT_KEY } from './object';
@@ -34,7 +34,7 @@ export const serialize = (struct: any) => {
     }
 };
 
-export const deserialize = (struct: ISerializedStruct) => {
+export const deserialize = (struct: ITransportSerializedStruct) => {
     if (isAcceptable(struct)) {
         return struct;
     }

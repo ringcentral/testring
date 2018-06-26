@@ -1,11 +1,11 @@
-import { BrowserProxyController } from '@testring/browser-proxy';
+import { IBrowserProxyController } from '@testring/types';
 import { Transport } from '@testring/transport';
 import { WebManagerMessageType } from './structs';
 
 export class WebApplicationController {
 
     constructor(
-        private browserProxy: BrowserProxyController,
+        private browserProxy: IBrowserProxyController,
         private transport: Transport
     ) {
         this.transport.on(WebManagerMessageType.execute, async (message) => {

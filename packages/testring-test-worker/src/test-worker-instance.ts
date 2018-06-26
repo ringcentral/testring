@@ -1,8 +1,8 @@
 import * as path from 'path';
 import { ChildProcess } from 'child_process';
 import { loggerClientLocal } from '@testring/logger';
-import { Transport } from '@testring/transport';
 import { fork } from '@testring/child-process';
+import { ITransport } from '@testring/types';
 import { IExecutionCompleteMessage, IExecutionMessage } from '../interfaces';
 import { WorkerAction } from './constants';
 
@@ -23,7 +23,7 @@ export class TestWorkerInstance {
     private worker: ChildProcess | null = null;
 
     constructor(
-        private transport: Transport,
+        private transport: ITransport,
         private compile: Compiler
     ) {
     }

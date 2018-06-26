@@ -1,6 +1,5 @@
 import { transport } from '@testring/transport';
-import { BrowserProxyActions } from '@testring/browser-proxy';
-
+import { BrowserProxyActions } from '@testring/types';
 import { IExecuteMessage, IResponseMessage } from './interfaces';
 import { WebManagerMessageType } from './structs';
 
