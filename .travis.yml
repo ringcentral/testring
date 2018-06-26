@@ -8,3 +8,6 @@ node_js:
 
 script:
   - npm run build:ci
+
+after_script:
+  - npm run test:publish
