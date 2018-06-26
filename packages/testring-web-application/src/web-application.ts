@@ -1,11 +1,10 @@
 /* eslint-disable */
 
+import * as url from 'url';
 import { PluggableModule } from '@testring/pluggable-module';
 import { loggerClient } from '@testring/logger';
 import { WebClient } from './web-client';
-
-const url = require('url');
-const utils = require('./utils');
+import * as utils from './utils';
 
 const WAIT_TIMEOUT = 45000;
 const TICK_TIMEOUT = 500;

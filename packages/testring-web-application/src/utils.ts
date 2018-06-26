@@ -14,7 +14,7 @@ function delay(timeout) {
     return new Promise((resolve, reject) => setTimeout(() => resolve(), timeout));
 }
 
-function normalizeXpath(xpath, allowMultipleNodesInResult) {
+function normalizeXpath(xpath, allowMultipleNodesInResult = false) {
     let result;
 
     try {
@@ -215,7 +215,7 @@ function query(value) {
     return value ? el.query(value) : el;
 }
 
-module.exports = {
+export {
     replaceHomePath,
     getTestJSONPath,
     getTestDataPath,
