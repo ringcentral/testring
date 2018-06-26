@@ -1,6 +1,5 @@
 import * as path from 'path';
 import { Transport } from '@testring/transport';
-
 import { BrowserProxy } from '../../src/browser-proxy';
 
 const onActionPlugin = path.resolve(__dirname, './on-action.ts');

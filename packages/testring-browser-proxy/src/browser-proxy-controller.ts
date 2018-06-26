@@ -1,6 +1,7 @@
 import { ChildProcess } from 'child_process';
 
 import {
+    IBrowserProxyController,
     IBrowserProxyCommand,
     IBrowserProxyCommandResponse,
     IBrowserProxyPendingCommand,
@@ -12,7 +13,7 @@ import { PluggableModule } from '@testring/pluggable-module';
 
 const nanoid = require('nanoid');
 
-export class BrowserProxyController extends PluggableModule {
+export class BrowserProxyController extends PluggableModule implements IBrowserProxyController {
     constructor(
         private transportInstance: Transport,
         private workerCreator: (onActionPluginPath: string) => ChildProcess,
@@ -68,11 +69,10 @@ export class BrowserProxyController extends PluggableModule {
         this.pendingCommandsPool.clear();
     }
 
-    private onExit = (code: number, signal: string): void => {
+    private onExit = (): void => {
         delete this.workerId;
 
         this.onProxyDisconnect();
-
         this.spawn();
     };
 
