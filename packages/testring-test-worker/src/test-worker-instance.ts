@@ -2,9 +2,13 @@ import * as path from 'path';
 import { ChildProcess } from 'child_process';
 import { loggerClientLocal } from '@testring/logger';
 import { fork } from '@testring/child-process';
-import { ITransport } from '@testring/types';
-import { IExecutionCompleteMessage, IExecutionMessage } from '../interfaces';
-import { WorkerAction } from './constants';
+import {
+    ITransport,
+    ITestWorkerInstance,
+    ITestExecutionCompleteMessage,
+    ITestExecutionMessage,
+    TestWorkerAction
+} from '@testring/types';
 
 const nanoid = require('nanoid');
 
@@ -14,7 +18,7 @@ const WORKER_ROOT = require.resolve(
     path.resolve(__dirname, 'worker')
 );
 
-export class TestWorkerInstance {
+export class TestWorkerInstance implements ITestWorkerInstance {
 
     private abortTestExecution: Function | null = null;
 
@@ -50,8 +54,8 @@ export class TestWorkerInstance {
         loggerClientLocal.log(`Running test: ${relativePath}`);
 
         return new Promise(async (resolve, reject) => {
-            const removeListener = this.transport.onceFrom(this.workerName, WorkerAction.executionComplete,
-                (message: IExecutionCompleteMessage) => {
+            const removeListener = this.transport.onceFrom(this.workerName, TestWorkerAction.executionComplete,
+                (message: ITestExecutionCompleteMessage) => {
                     if (message.error) {
                         loggerClientLocal.error(`Test failed: ${relativePath}\n`, message.error);
 
@@ -74,7 +78,7 @@ export class TestWorkerInstance {
                 reject();
             };
 
-            this.makeRequest(WorkerAction.executeTest, testData);
+            this.makeRequest(TestWorkerAction.executeTest, testData);
         });
     }
 
@@ -99,7 +103,7 @@ export class TestWorkerInstance {
         }
     }
 
-    private makeRequest(requestName: string, data: IExecutionMessage) {
+    private makeRequest(requestName: string, data: ITestExecutionMessage) {
         return this.transport.send(this.workerName, requestName, data);
     }
 

@@ -2,8 +2,9 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
+import { TestEvents } from '@testring/types';
 import { Transport } from '@testring/transport';
-import { SANDBOX_TRANSPORT_NAME, TestEvents } from '../src/constants';
+import { SANDBOX_TRANSPORT_NAME } from '../src/constants';
 import { TestWorker, TestWorkerPlugin } from '../src/test-worker';
 
 xdescribe('TestWorkerInstance', () => {

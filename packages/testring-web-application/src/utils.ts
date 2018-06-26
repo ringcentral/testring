@@ -165,9 +165,11 @@ class Element {
                     condition.push(`contains(./@${TEST_ATTR}, ${normalizedId})`);
                 }
                 if ((lodash.first(id) === '%') && (lodash.last(id) !== '%')) {
-                    condition.push(
-                        `substring(./@${TEST_ATTR}, string-length(./@${TEST_ATTR}) - string-length(${normalizedId}) + 1, string-length(./@${TEST_ATTR}) = ${normalizedId}`
-                    );
+                    condition.push([
+                        `substring(./@${TEST_ATTR},`,
+                        `string-length(./@${TEST_ATTR}) - string-length(${normalizedId}) + 1,`,
+                        `string-length(./@${TEST_ATTR}) = ${normalizedId}`
+                    ].join(' '));
                 }
                 if ((lodash.first(id) !== '%') && (lodash.last(id) === '%')) {
                     condition.push(`starts-with(./@${TEST_ATTR}, ${normalizedId})`);
@@ -180,7 +182,12 @@ class Element {
                         condition.push(`descendant-or-self::*[contains(./text(), ${normalizedText})]`);
                     }
                 }
-                let conditionStr: string = '/descendant::*[' + ((condition.length > 1) ? '(' + condition.join(' and ') + ')' : condition[0]) + ']';
+                const conditionStr: string = (
+                    '/descendant::*[' +
+                    ((condition.length > 1) ? '(' + condition.join(' and ') + ')' : condition[0]) +
+                    ']'
+                );
+
                 xpathStr += conditionStr;
             }
 

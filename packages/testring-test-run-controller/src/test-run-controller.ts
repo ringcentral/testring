@@ -1,8 +1,7 @@
+import { ITestWorker, ITestWorkerInstance } from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
-import { TestWorker, TestWorkerInstance } from '@testring/test-worker';
-
-import { IConfig } from '@testring/types';
 import { ITestFile } from '@testring/test-finder';
+import { IConfig } from '@testring/types';
 
 interface IQueuedTest {
     retryCount: number,
@@ -19,7 +18,7 @@ export class TestRunController {
 
     constructor(
         private config: Partial<IConfig>,
-        private testWorker: TestWorker,
+        private testWorker: ITestWorker,
     ) {
     }
 
@@ -47,8 +46,8 @@ export class TestRunController {
         }
     }
 
-    private createWorkers(limit: number): Array<TestWorkerInstance> {
-        const workers: Array<TestWorkerInstance> = [];
+    private createWorkers(limit: number): Array<ITestWorkerInstance> {
+        const workers: Array<ITestWorkerInstance> = [];
 
         for (let index = 0; index < limit; index++) {
             workers.push(this.testWorker.spawn());
@@ -71,7 +70,7 @@ export class TestRunController {
         return testQueue;
     }
 
-    private async occupyWorker(worker: TestWorkerInstance, queue: Array<IQueuedTest>): Promise<void> {
+    private async occupyWorker(worker: ITestWorkerInstance, queue: Array<IQueuedTest>): Promise<void> {
         if (queue.length > 0) {
             return this.executeWorker(worker, queue);
         } else {
@@ -81,7 +80,7 @@ export class TestRunController {
 
     private async onTestFailed(
         exception: any,
-        worker: TestWorkerInstance,
+        worker: ITestWorkerInstance,
         test: IQueuedTest,
         queue: Array<IQueuedTest>
     ): Promise<void> {
@@ -105,7 +104,7 @@ export class TestRunController {
         }
     }
 
-    private async executeWorker(worker: TestWorkerInstance, queue: Array<IQueuedTest>): Promise<void> {
+    private async executeWorker(worker: ITestWorkerInstance, queue: Array<IQueuedTest>): Promise<void> {
         const queuedTest = queue.pop();
 
         if (!queuedTest) {

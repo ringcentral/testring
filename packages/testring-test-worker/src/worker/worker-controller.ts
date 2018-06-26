@@ -1,6 +1,11 @@
-import { ITransport } from '@testring/types';
-import { IExecutionMessage, IExecutionCompleteMessage } from '../../interfaces';
-import { WorkerAction, TestStatus, TestEvents } from '../constants';
+import { 
+    ITransport, 
+    ITestExecutionMessage, 
+    ITestExecutionCompleteMessage, 
+    TestWorkerAction, 
+    TestStatus, 
+    TestEvents 
+} from '@testring/types';
 import { Sandbox } from './sandbox';
 
 export class WorkerController {
@@ -10,7 +15,7 @@ export class WorkerController {
     constructor(private transportInstance: ITransport) {}
 
     public init() {
-        this.transportInstance.on(WorkerAction.executeTest, async (message: IExecutionMessage) => {
+        this.transportInstance.on(TestWorkerAction.executeTest, async (message: ITestExecutionMessage) => {
             if (this.status === TestStatus.pending) {
                 throw new EvalError('Worker already busy with another test!');
             }
@@ -20,14 +25,14 @@ export class WorkerController {
             try {
                 const testResult = await this.executeTest(message);
 
-                this.transportInstance.broadcast<IExecutionCompleteMessage>(WorkerAction.executionComplete, {
+                this.transportInstance.broadcast<ITestExecutionCompleteMessage>(TestWorkerAction.executionComplete, {
                     status: testResult,
                     error: null
                 });
 
                 this.status = testResult;
             } catch (error) {
-                this.transportInstance.broadcast<IExecutionCompleteMessage>(WorkerAction.executionComplete, {
+                this.transportInstance.broadcast<ITestExecutionCompleteMessage>(TestWorkerAction.executionComplete, {
                     status: TestStatus.failed,
                     error
                 });
@@ -37,7 +42,7 @@ export class WorkerController {
         });
     }
 
-    private async executeTest(message: IExecutionMessage): Promise<TestStatus> {
+    private async executeTest(message: ITestExecutionMessage): Promise<TestStatus> {
         let isAsync = false;
 
         // TODO pass message.parameters somewhere inside webmanager

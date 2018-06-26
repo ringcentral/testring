@@ -4,6 +4,10 @@ type RemoveHandlerFunction = () => void;
 
 export type TransportMessageHandler<T = any> = (payload: T, source?: string) => void;
 
+export type TransportSerializer = (v: any) => ITransportSerializedStruct;
+
+export type TransportDeserializer = (struct: ITransportSerializedStruct) => any;
+
 export enum TransportInternalMessageType {
     messageResponse = '_messageResponse_'
 }
