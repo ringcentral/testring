@@ -63,7 +63,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.log(`Waiting for not visible ${path} for ${timeout}`);
 
         try {
-            await this.client.waitForExist(/*normalizeXpath(this.root)*/ xpath, timeout);
+            await this.client.waitForExist(xpath, timeout);
         } catch (error) {
             throw new Error('Wait for not visible is failed, root element is still pending');
         }
@@ -166,12 +166,17 @@ export class WebApplication extends PluggableModule {
 
     public async waitElementByLocator(xpath, timeout = WAIT_TIMEOUT) {
         const waitUntil = Date.now() + timeout;
+
         xpath = utils.normalizeXpath(xpath);
+
         let isElementVisible = false;
+
         while (!isElementVisible && Date.now() < waitUntil) {
-            isElementVisible = await this.client.isVisible(xpath) ? true : false;
+            isElementVisible = await this.client.isVisible(xpath);
+
             await this.pause(TICK_TIMEOUT);
         }
+
         return isElementVisible;
     }
 
@@ -202,8 +207,10 @@ export class WebApplication extends PluggableModule {
             let i = 0;
             let result = false;
             while (i < attemptCount) {
-                let ready = { value: '' };
-                /*await this.execute(() => document.readyState === 'complete');*/
+                const ready = { value: '' };
+
+                await this.execute(() => document.readyState === 'complete');
+
                 if (ready && ready.value) {
                     result = true;
                     break;
@@ -246,26 +253,27 @@ export class WebApplication extends PluggableModule {
             let result = await this.client.executeAsync(function(xpath, value, done) {
 
                 function getElementByXPath(xpath) {
-                    /*var element = document.evaluate(xpath, document, null,
+                    var element = document.evaluate(xpath, document, null,
                         XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
                     if (element.snapshotLength > 0) {
-                        return element.snapshotItem(0);
-                    }*/
+                        return element.snapshotItem(0) as any;
+                    }
+
                     return null;
                 }
 
                 try {
                     let element = getElementByXPath(xpath);
-                    //let evt = document.createEvent("HTMLEvents");
+                    let evt = document.createEvent("HTMLEvents");
 
                     if (element) {
-                        /*element.focus();
+                        element.focus();
                         element.value = value;
 
                         evt.initEvent("input", true, true);
                         element.dispatchEvent(evt);
                         element.blur();
-                        done(null);*/
+                        done(null);
                     } else {
                         done(`Element not found ${xpath}`);
                     }
@@ -292,21 +300,21 @@ export class WebApplication extends PluggableModule {
         let result = await this.client.executeAsync(function(xpath, done) {
 
             function getElementByXPath(xpath) {
-                /*var element = document.evaluate(xpath, document, null,
+                var element = document.evaluate(xpath, document, null,
                     XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
                 if (element.snapshotLength > 0) {
-                    return element.snapshotItem(0);
-                }*/
+                    return element.snapshotItem(0) as any;
+                }
                 return null;
             }
 
             try {
                 let element = getElementByXPath(xpath);
                 if (element) {
-                    /*element.className = element.className.replace(/invisible/gi,'');
+                    element.className = element.className.replace(/invisible/gi,'');
                     element.focus();
                     element.click();
-                    done(null);*/
+                    done(null);
                 } else {
                     done(`Element not found ${xpath}`);
                 }
@@ -366,7 +374,7 @@ export class WebApplication extends PluggableModule {
         let result = await this.client.executeAsync(function(xpath, prop, done) {
             function getElementByXPath(xpath) {
 
-                var element = document.evaluate(
+                const element = document.evaluate(
                     xpath,
                     document,
                     null,
@@ -374,7 +382,7 @@ export class WebApplication extends PluggableModule {
                 );
 
                 if (element.snapshotLength > 0) {
-                    return element.snapshotItem(0);
+                    return element.snapshotItem(0) as any;
                 }
 
                 return null;
@@ -383,12 +391,14 @@ export class WebApplication extends PluggableModule {
             try {
                 let element = getElementByXPath(xpath);
 
-                if (element /*&& element.tagName.toLowerCase() === 'select'*/) {
-                    /*let texts = [];
+                if (element && element.tagName.toLowerCase() === 'select') {
+                    const texts: Array<any> = [];
+
                     for (let i = 0, len = element.options.length; i < len; i++) {
                         texts.push(element.options[i][prop]);
                     }
-                    done(texts);*/
+
+                    done(texts);
                 } else {
                     throw Error(`Element not found ${xpath}`);
                 }
@@ -398,7 +408,7 @@ export class WebApplication extends PluggableModule {
         }, xpath, prop);
 
         console.log(result);
-        return /*result.value*/ [];
+        return result.value;
     }
 
     public async getSelectTexts(xpath, trim = true) {
@@ -591,8 +601,9 @@ export class WebApplication extends PluggableModule {
         ) {
             return true;
         }
-        let disabled: string = (await this.client.getAttribute(xpath, 'disabled')).toString();
-        ;
+
+        const disabled: string = (await this.client.getAttribute(xpath, 'disabled')).toString();
+
         return (
             disabled === 'true' ||
             disabled === 'disabled'
@@ -754,17 +765,6 @@ export class WebApplication extends PluggableModule {
         return isAlertVisible;
     }
 
-    /*
-    async dispose() {
-        if (this.singleBrowser) {
-            return await super.dispose();
-        } else {
-            await super.dispose();
-            return this.client.end();
-        }
-    }
-    */
-
     public async closeBrowserWindow(focusToTabId = null) {
         return this.client.close(focusToTabId || this.mainTabID);
     }
@@ -851,15 +851,15 @@ export class WebApplication extends PluggableModule {
         return await this.client.deleteCookie(cookieName);
     }
 
-    async getPlaceHolderValue(xpath) {
-        let value = await this.getAttribute(xpath, 'placeholder');
-        return value;
+    getPlaceHolderValue(xpath) {
+        return this.getAttribute(xpath, 'placeholder');
     }
 
     async switchToFrame(name) {
         this.client.addCommand('toFrame', function(frameName) {
             return this.frame(frameName);
         });
+
         return this.client.toFrame(name);
     }
 
