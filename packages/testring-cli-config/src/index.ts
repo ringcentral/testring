@@ -4,6 +4,8 @@ import { getArguments } from './arguments-parser';
 import { getFileConfig } from './config-file-reader';
 import { defaultConfiguration } from './default-config';
 
+export { defaultConfiguration } from './default-config';
+
 export const getConfig = async (argv: Array<string>): Promise<IConfig> => {
     const args = getArguments(argv);
 
