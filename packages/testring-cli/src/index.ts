@@ -18,7 +18,8 @@ export const runTests = async (argv: typeof process.argv) => {
     applyPlugins({
         logger: loggerServer,
         testFinder: testFinder,
-        testWorker: testWorker
+        testWorker: testWorker,
+        testRunController: testRunController,
     }, userConfig);
 
     const tests = await testFinder.find(userConfig.tests);

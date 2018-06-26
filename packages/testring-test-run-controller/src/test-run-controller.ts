@@ -1,6 +1,6 @@
 import { loggerClientLocal } from '@testring/logger';
 import { TestWorker, TestWorkerInstance } from '@testring/test-worker';
-
+import { PluggableModule } from '@testring/pluggable-module';
 import { IConfig } from '@testring/typings';
 import { ITestFile } from '@testring/test-finder';
 
@@ -13,7 +13,11 @@ const delay = (milliseconds: number) => new Promise((resolve) => {
     setTimeout(resolve, milliseconds);
 });
 
-export class TestRunController {
+export enum TestRunControllerHooks {
+    beforeRun = 'beforeRun',
+}
+
+export class TestRunController extends PluggableModule {
 
     private errors: Array<Error> = [];
 
@@ -21,10 +25,14 @@ export class TestRunController {
         private config: Partial<IConfig>,
         private testWorker: TestWorker,
     ) {
+        super([
+            TestRunControllerHooks.beforeRun,
+        ]);
     }
 
     public async runQueue(testSet: Array<ITestFile>): Promise<Error[] | void> {
-        const testQueue = this.prepareTests(testSet);
+        const testSetAfterHook = await this.callHook(TestRunControllerHooks.beforeRun, testSet);
+        const testQueue = this.prepareTests(testSetAfterHook);
         const configWorkerLimit = this.config.workerLimit || 0;
 
         const workerLimit = configWorkerLimit < testQueue.length ?
