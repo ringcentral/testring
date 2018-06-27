@@ -7,7 +7,6 @@ const resolvePlugin = (pluginPath: string): (command: IBrowserProxyCommand) => P
     const resolvedPlugin = findPlugin(pluginPath);
 
     if (typeof resolvedPlugin !== 'function') {
-        loggerClient.error('Plugin is not a function');
         throw new TypeError('plugin is not a function');
     }
 

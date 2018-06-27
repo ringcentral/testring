@@ -31,7 +31,6 @@ export const runTests = async (argv: typeof process.argv) => {
     const testRunResult = await testRunController.runQueue(tests);
 
     if (testRunResult) {
-        loggerClientLocal.error(`Failed ${testRunResult.length}/${tests.length} tests.`);
         throw new Error(`Failed ${testRunResult.length}/${tests.length} tests.`);
     }
 };
