@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { IConfig } from '@testring/types';
 
-const findFile = (configPath) => {
+const findFile = (configPath: string) => {
     const filePath = path.resolve(configPath);
     const configExists = fs.existsSync(filePath);
 
@@ -13,25 +13,25 @@ const findFile = (configPath) => {
     return null;
 };
 
-const readJSConfig = async (userConfig: IConfig): Promise<IConfig | null> => {
+const readJSConfig = async (configPath: string, config: IConfig): Promise<IConfig | null> => {
     try {
-        const configFile = require(userConfig.config);
+        const configFile = require(configPath);
 
         if (typeof configFile === 'function') {
-            return await configFile(userConfig);
+            return await configFile(config);
         } else {
             return configFile;
         }
     } catch (exception) {
         throw new SyntaxError(`
-            Config file ${userConfig.config} can't be parsed: invalid JS.
+            Config file ${configPath} can't be parsed: invalid JS.
             ${exception.message}
         `);
     }
 };
 
-const readJSONConfig = async (userConfig: IConfig): Promise<IConfig | null> => {
-    const fileContent = findFile(userConfig.config);
+const readJSONConfig = async (configPath: string): Promise<IConfig | null> => {
+    const fileContent = findFile(configPath);
 
     if (fileContent === null) {
         return null;
@@ -41,21 +41,36 @@ const readJSONConfig = async (userConfig: IConfig): Promise<IConfig | null> => {
         return JSON.parse(fileContent);
     } catch (exception) {
         throw new SyntaxError(`
-            Config file ${userConfig.config} can't be parsed: invalid JSON.
+            Config file ${configPath} can't be parsed: invalid JSON.
             ${exception.message}
         `);
     }
 };
 
-export const getFileConfig = async (userConfig: IConfig) => {
-    const extension = path.extname(userConfig.config);
+const readConfig = async (
+    configPath: string | void,
+    config: IConfig,
+): Promise<IConfig | null> => {
+    if (!configPath) {
+        return null;
+    }
+
+    const extension = path.extname(configPath);
 
     switch (extension) {
         case '.js' :
-            return readJSConfig(userConfig);
+            return readJSConfig(configPath, config);
         case '.json' :
-            return readJSONConfig(userConfig);
+            return readJSONConfig(configPath);
         default:
             throw new Error(`${extension} is not supported`);
     }
+};
+
+export const getFileConfig = async (userConfig: IConfig) => {
+    return await readConfig(userConfig.config, userConfig);
+};
+
+export const getEnvConfig = async (userConfig: IConfig) => {
+    return await readConfig(userConfig.envConfig, userConfig);
 };
