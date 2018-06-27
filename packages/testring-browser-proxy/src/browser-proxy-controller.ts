@@ -56,13 +56,12 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
             return resolve();
         } else {
-            loggerClientLocal.error(`Cannot find command with uid ${uid}`);
+            loggerClientLocal.error(`Browser Proxy controller: cannot find command with uid ${uid}`);
             throw new ReferenceError(`Cannot find command with uid ${uid}`);
         }
     }
 
     private onProxyConnect(): void {
-        loggerClientLocal.debug('Browser Proxy: create new worker');
         this.pendingCommandsQueue.forEach((item) => this.send(item));
         this.pendingCommandsQueue.clear();
     }
@@ -74,7 +73,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
     private onExit = (): void => {
         delete this.workerId;
-        loggerClientLocal.debug('Browser Proxy: miss connection with worker');
+        loggerClientLocal.debug('Browser Proxy controller: miss connection with child process');
         this.onProxyDisconnect();
         this.spawn();
     };
@@ -109,6 +108,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
         this.workerId = `proxy-${this.worker.pid}`;
 
+        loggerClientLocal.debug(`Browser Proxy controller: register child process [id = ${this.workerId}]`);
         this.transportInstance.registerChildProcess(this.workerId, this.worker);
         this.worker.on('exit', this.onExit);
         this.onProxyConnect();

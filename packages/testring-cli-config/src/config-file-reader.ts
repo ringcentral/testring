@@ -52,6 +52,7 @@ const readJSONConfig = async (userConfig: IConfig): Promise<IConfig | null> => {
 
 export const getFileConfig = async (userConfig: IConfig) => {
     const extension = path.extname(userConfig.config);
+    loggerClientLocal.log(`Read config file: ${userConfig.config}`);
 
     switch (extension) {
         case '.js' :
