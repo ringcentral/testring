@@ -1,21 +1,20 @@
-import { IConfig, ITestWorker, ITestWorkerInstance, ITestFile } from '@testring/types';
+import {
+    IConfig,
+    ITestWorker,
+    ITestWorkerInstance,
+    ITestFile,
+    IQueuedTest,
+    ITestRunController,
+    TestRunControllerHooks
+} from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { loggerClientLocal } from '@testring/logger';
-
-export interface IQueuedTest {
-    retryCount: number,
-    test: ITestFile
-}
 
 const delay = (milliseconds: number) => new Promise((resolve) => {
     setTimeout(resolve, milliseconds);
 });
 
-export enum TestRunControllerHooks {
-    beforeRun = 'beforeRun',
-}
-
-export class TestRunController extends PluggableModule {
+export class TestRunController extends PluggableModule implements ITestRunController {
 
     private errors: Array<Error> = [];
 
