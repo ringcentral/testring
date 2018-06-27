@@ -2,7 +2,7 @@ import { Transport } from '@testring/transport';
 import { IExecutionMessage, IExecutionCompleteMessage } from '../../interfaces';
 import { WorkerAction, TestStatus, TestEvents } from '../constants';
 import { Sandbox } from './sandbox';
-import {loggerClientLocal} from "../../../testring-logger/src";
+import {loggerClientLocal} from '../../../testring-logger/src';
 
 export class WorkerController {
 
