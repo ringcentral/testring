@@ -1,7 +1,6 @@
-import { ITestWorker, ITestWorkerInstance, IConfig } from '@testring/types';
-import { loggerClientLocal } from '@testring/logger';
+import { IConfig, ITestWorker, ITestWorkerInstance, ITestFile } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
-import { ITestFile } from '@testring/test-finder';
+import { loggerClientLocal } from '@testring/logger';
 
 export interface IQueuedTest {
     retryCount: number,

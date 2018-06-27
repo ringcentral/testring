@@ -7,12 +7,12 @@ import {
     ITestWorkerInstance,
     ITestExecutionCompleteMessage,
     ITestExecutionMessage,
-    TestWorkerAction
+    TestWorkerAction,
+    TestCompiler
 } from '@testring/types';
 
 const nanoid = require('nanoid');
 
-type Compiler = (source: string, filename: string) => Promise<string>;
 
 const WORKER_ROOT = require.resolve(
     path.resolve(__dirname, 'worker')
@@ -28,7 +28,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     constructor(
         private transport: ITransport,
-        private compile: Compiler
+        private compile: TestCompiler
     ) {
     }
 

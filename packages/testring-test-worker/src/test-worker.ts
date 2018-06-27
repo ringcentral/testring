@@ -1,4 +1,4 @@
-import { ITransport, ITestWorker } from '@testring/types';
+import { ITransport, ITestWorker, TestCompiler } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { TestWorkerInstance } from './test-worker-instance';
 
@@ -8,7 +8,7 @@ export enum TestWorkerPlugin {
 
 export class TestWorker extends PluggableModule implements ITestWorker {
 
-    private compile = (source: string, filename: string) => {
+    private compile: TestCompiler = (source: string, filename: string) => {
         return this.callHook(TestWorkerPlugin.compile, source, filename);
     };
 

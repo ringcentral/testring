@@ -10,7 +10,6 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/test-finder": "0.1.0",
     "@testring/pluggable-module": "^0.1.0",
     "@testring/logger": "0.1.0",
     "@testring/types": "0.1.0"
