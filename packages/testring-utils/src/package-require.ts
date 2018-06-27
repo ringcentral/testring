@@ -14,8 +14,7 @@ const normalizeExport = (module) => {
     return module.default ? module.default : module;
 };
 
-// TODO: cover with tests
-export const findPlugin = (pluginName: string) => {
+export const requirePackage = (pluginName: string) => {
     const fileName = require.resolve(pluginName);
 
     try {
