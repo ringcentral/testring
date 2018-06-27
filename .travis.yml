@@ -4,9 +4,13 @@ git:
 language: node_js
 
 node_js:
-  - "7"
   - "8"
   - "10"
+
+cache:
+  directories:
+  - $HOME/.npm
+  - node_modules
 
 script:
   - npm run build:ci

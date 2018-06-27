@@ -1,17 +1,20 @@
 import { ChildProcess } from 'child_process';
 
+import {
+    IBrowserProxyController,
+    IBrowserProxyCommand,
+    IBrowserProxyCommandResponse,
+    IBrowserProxyPendingCommand,
+    BrowserProxyMessageTypes,
+    BrowserProxyPlugins
+} from '@testring/types';
 import { Transport } from '@testring/transport';
 import { PluggableModule } from '@testring/pluggable-module';
-
-import { IBrowserProxyCommand, IBrowserProxyCommandResponse, IBrowserProxyPendingCommand } from '../interfaces';
-
-import { BrowserProxyMessageTypes, BrowserProxyPlugins } from './structs';
-
 import { loggerClientLocal } from '@testring/logger';
 
 const nanoid = require('nanoid');
 
-export class BrowserProxyController extends PluggableModule {
+export class BrowserProxyController extends PluggableModule implements IBrowserProxyController {
     constructor(
         private transportInstance: Transport,
         private workerCreator: (onActionPluginPath: string) => ChildProcess,
@@ -69,11 +72,10 @@ export class BrowserProxyController extends PluggableModule {
         this.pendingCommandsPool.clear();
     }
 
-    private onExit = (code: number, signal: string): void => {
+    private onExit = (): void => {
         delete this.workerId;
-        loggerClientLocal.debug(`Browser Proxy: miss connection with worker [code = ${code} signal = ${signal}]`);
+        loggerClientLocal.debug('Browser Proxy: miss connection with worker');
         this.onProxyDisconnect();
-
         this.spawn();
     };
 

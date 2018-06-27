@@ -7,8 +7,13 @@ Config:
 {
     "plugins": [
       "testring-plugin-logger-fs",
+      
       ["testring-plugin-test-metadata", {
         "format": "json"
+      }],
+      
+      ["selenium-driver", {
+        "seleniumHub": "10.313.441.302:3232"
       }]
     ]
 }

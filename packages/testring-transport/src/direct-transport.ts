@@ -1,7 +1,11 @@
 import { ChildProcess } from 'child_process';
-import { Callback, IDirectMessage, IMessage } from '../interfaces';
+import {
+    TransportInternalMessageType,
+    TransportMessageHandler,
+    ITransportDirectMessage,
+    ITransportMessage
+} from '@testring/types';
 import { serialize, deserialize } from './serialize';
-import { InternalMessageType } from './structs';
 
 const nanoid = require('nanoid');
 
@@ -19,7 +23,7 @@ class DirectTransport {
 
     private responseHandlers: Map<string, Function> = new Map();
 
-    constructor(private triggerListeners: Callback) {}
+    constructor(private triggerListeners: TransportMessageHandler) {}
 
     public getProcessesList(): Array<string> {
         return Array.from(this.childProcessRegistry.keys());
@@ -40,7 +44,7 @@ class DirectTransport {
             }
 
             const uid = DirectTransport.createMessageUID(processID);
-            const message: IDirectMessage = {
+            const message: ITransportDirectMessage = {
                 type,
                 payload: serialize(payload),
                 uid
@@ -90,19 +94,19 @@ class DirectTransport {
         }
     }
 
-    private handleChildProcessMessage(message: IDirectMessage, processID: string) {
+    private handleChildProcessMessage(message: ITransportDirectMessage, processID: string) {
         // incorrect message filtering
         if (!message || typeof message.type !== 'string') {
             return;
         }
 
-        const normalizedMessage: IDirectMessage = {
+        const normalizedMessage: ITransportDirectMessage = {
             ...message,
             payload: deserialize(message.payload)
         };
 
         switch (message.type) {
-            case InternalMessageType.messageResponse:
+            case TransportInternalMessageType.messageResponse:
                 this.handleMessageResponse(normalizedMessage);
                 break;
 
@@ -111,7 +115,7 @@ class DirectTransport {
         }
     }
 
-    private handleMessageResponse(message: IMessage<string>) {
+    private handleMessageResponse(message: ITransportMessage<string>) {
         const messageUID = message.payload;
         const responseHandler = this.responseHandlers.get(messageUID);
 

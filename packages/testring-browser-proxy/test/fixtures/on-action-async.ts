@@ -1,4 +1,4 @@
-import {BrowserProxyActions} from '../../src/structs';
+import { BrowserProxyActions } from '@testring/types';
 
 export default (command) => new Promise((resolve, reject) => {
     setTimeout(() => {

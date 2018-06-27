@@ -1,10 +1,6 @@
+import { IBrowserProxyCommand, IBrowserProxyMessage, BrowserProxyMessageTypes } from '@testring/types';
 import { Transport } from '@testring/transport';
 import { findPlugin } from '@testring/plugin-api';
-
-import { IBrowserProxyCommand, IBrowserProxyMessage } from '../interfaces';
-
-import { BrowserProxyMessageTypes } from './structs';
-
 import { loggerClientLocal } from '@testring/logger';
 
 const resolvePlugin = (pluginPath: string): (command: IBrowserProxyCommand) => Promise<void> => {

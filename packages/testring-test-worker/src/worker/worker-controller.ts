@@ -1,18 +1,23 @@
-import { Transport } from '@testring/transport';
-import { IExecutionMessage, IExecutionCompleteMessage } from '../../interfaces';
-import { WorkerAction, TestStatus, TestEvents } from '../constants';
-import { Sandbox } from './sandbox';
+import {
+    ITransport,
+    ITestExecutionMessage,
+    ITestExecutionCompleteMessage,
+    TestWorkerAction,
+    TestStatus,
+    TestEvents
+} from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
+import { Sandbox } from './sandbox';
 
 export class WorkerController {
 
     private status: TestStatus = TestStatus.idle;
 
-    constructor(private transportInstance: Transport) {
+    constructor(private transportInstance: ITransport) {
     }
 
     public init() {
-        this.transportInstance.on(WorkerAction.executeTest, async (message: IExecutionMessage) => {
+        this.transportInstance.on(TestWorkerAction.executeTest, async (message: ITestExecutionMessage) => {
             if (this.status === TestStatus.pending) {
                 loggerClientLocal.debug('Worker already busy with another test!');
                 throw new EvalError('Worker already busy with another test!');
@@ -23,14 +28,14 @@ export class WorkerController {
             try {
                 const testResult = await this.executeTest(message);
 
-                this.transportInstance.broadcast<IExecutionCompleteMessage>(WorkerAction.executionComplete, {
+                this.transportInstance.broadcast<ITestExecutionCompleteMessage>(TestWorkerAction.executionComplete, {
                     status: testResult,
                     error: null
                 });
 
                 this.status = testResult;
             } catch (error) {
-                this.transportInstance.broadcast<IExecutionCompleteMessage>(WorkerAction.executionComplete, {
+                this.transportInstance.broadcast<ITestExecutionCompleteMessage>(TestWorkerAction.executionComplete, {
                     status: TestStatus.failed,
                     error
                 });
@@ -40,7 +45,7 @@ export class WorkerController {
         });
     }
 
-    private async executeTest(message: IExecutionMessage): Promise<TestStatus> {
+    private async executeTest(message: ITestExecutionMessage): Promise<TestStatus> {
         let isAsync = false;
 
         // TODO pass message.parameters somewhere inside webmanager

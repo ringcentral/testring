@@ -5,7 +5,6 @@
 
 import * as path from 'path';
 import * as chai from 'chai';
-
 import { TestsFinder } from '../src/test-finder';
 
 const glob = path.resolve(__dirname, './fixtures/testfiles/**/**/*.test.js');

@@ -1,8 +1,9 @@
 import { AsyncSeriesWaterfallHook } from 'tapable';
+import { IPluggableModule } from '@testring/types';
 
 type HookDescriptor = string | [string, number];
 
-export class PluggableModule {
+export class PluggableModule implements IPluggableModule<AsyncSeriesWaterfallHook> {
 
     private pluginHooks: Map<string, AsyncSeriesWaterfallHook> = new Map();
 
@@ -55,7 +56,7 @@ export class PluggableModule {
         return Promise.reject(`There is no plugin called ${name}.`);
     }
 
-    public getHook(name) {
+    public getHook(name: string) {
         return this.pluginHooks.get(name);
     }
 }

@@ -4,7 +4,7 @@
 import * as chai from 'chai';
 import { Request } from '../src/interfaces';
 import { TransportMock } from '@testring/test-utils';
-import { HttpClient } from '../src/index';
+import { HttpClient } from '../src/http-client';
 import { HttpMessageType } from '../src/structs';
 
 

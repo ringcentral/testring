@@ -5,7 +5,7 @@
   ],
   "command": {
     "exec": {
-      "ignore": "@testring/@(test-utils|typings|e2e-test-app)"
+      "ignore": "@testring/@(test-utils|e2e-test-app)"
     },
     "bootstrap": {
       "npmClientArgs": [
