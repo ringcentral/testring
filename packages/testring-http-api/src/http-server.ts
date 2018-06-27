@@ -1,8 +1,7 @@
 import * as request from 'request';
 import * as requestPromise from 'request-promise';
-import { Transport } from '@testring/transport';
 import { PluggableModule } from '@testring/pluggable-module';
-import { IConfig } from '@testring/typings';
+import { IConfig, ITransport } from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
 import { HttpMessageType, HttpServerPlugins } from './structs';
 import { Request, Response, ResponseReject } from './interfaces';
@@ -20,7 +19,7 @@ export class HttpServer extends PluggableModule {
     private isBusy: boolean = false;
 
     constructor(
-        private transportInstance: Transport,
+        private transportInstance: ITransport,
         private config: IConfig,
         private request: MakeRequest
     ) {

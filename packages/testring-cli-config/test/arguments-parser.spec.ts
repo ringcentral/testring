@@ -2,7 +2,7 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { IConfig } from '@testring/typings';
+import { IConfig } from '@testring/types';
 import { getArguments } from '../src/arguments-parser';
 
 describe('argument parser', () => {

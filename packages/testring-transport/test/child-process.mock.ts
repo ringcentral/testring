@@ -1,6 +1,5 @@
 import { EventEmitter } from 'events';
-import { IDirectMessage } from '../interfaces';
-import { InternalMessageType } from '../src/structs';
+import { ITransportDirectMessage, TransportInternalMessageType } from '@testring/types';
 
 class ChildProcessMock extends EventEmitter {
 
@@ -8,7 +7,7 @@ class ChildProcessMock extends EventEmitter {
         super();
     }
 
-    send(message: IDirectMessage, callback) {
+    send(message: ITransportDirectMessage, callback) {
 
         if (this.shouldFail) {
             callback(new Error('Some error happened'));
@@ -17,7 +16,7 @@ class ChildProcessMock extends EventEmitter {
 
         // sending response back
         super.emit('message', {
-            type: InternalMessageType.messageResponse,
+            type: TransportInternalMessageType.messageResponse,
             payload: message.uid
         });
 

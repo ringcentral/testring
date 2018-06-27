@@ -2,16 +2,18 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { transport } from '@testring/transport';
-import { SANDBOX_TRANSPORT_NAME, TestEvents } from '../src/constants';
+import { TestEvents } from '@testring/types';
+import { Transport } from '@testring/transport';
+import { SANDBOX_TRANSPORT_NAME } from '../src/constants';
 import { TestWorker, TestWorkerPlugin } from '../src/test-worker';
 
-describe('TestWorkerInstance', () => {
+xdescribe('TestWorkerInstance', () => {
     const defaultSyncTestContent = 'process.cwd()';
     const defaultFilename = './test.js';
 
     context('test execution', () => {
         it('should run sync test', async () => {
+            const transport = new Transport();
             const testWorker = new TestWorker(transport);
             const instance = testWorker.spawn();
 
@@ -26,7 +28,7 @@ describe('TestWorkerInstance', () => {
 
         it('should fail sync test correctly',  (callback) => {
             const rawSource = 'throw new Error("Something happened")';
-
+            const transport = new Transport();
             const testWorker = new TestWorker(transport);
             const instance = testWorker.spawn();
 
@@ -56,6 +58,7 @@ describe('TestWorkerInstance', () => {
                 }, 0);
             `;
 
+            const transport = new Transport();
             const testWorker = new TestWorker(transport);
             const instance = testWorker.spawn();
 
@@ -82,6 +85,7 @@ describe('TestWorkerInstance', () => {
                 });
             `;
 
+            const transport = new Transport();
             const testWorker = new TestWorker(transport);
             const instance = testWorker.spawn();
 
@@ -105,6 +109,7 @@ describe('TestWorkerInstance', () => {
     });
 
     it('should fail execution, if process was killed', (callback) => {
+        const transport = new Transport();
         const testWorker = new TestWorker(transport);
         const instance = testWorker.spawn();
 
@@ -121,6 +126,7 @@ describe('TestWorkerInstance', () => {
 
     context('compilation', () => {
         it('should compile source without errors', (callback) => {
+            const transport = new Transport();
             const testWorker = new TestWorker(transport);
             const instance = testWorker.spawn();
 
@@ -141,6 +147,7 @@ describe('TestWorkerInstance', () => {
         });
 
         it('should handle compilation exception', (callback) => {
+            const transport = new Transport();
             const testWorker = new TestWorker(transport);
             const instance = testWorker.spawn();
 

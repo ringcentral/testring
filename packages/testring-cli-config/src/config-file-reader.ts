@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { IConfig } from '@testring/typings';
+import { IConfig } from '@testring/types';
 
 const findFile = (configPath) => {
     const filePath = path.resolve(configPath);

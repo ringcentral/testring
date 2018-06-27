@@ -1,5 +1,5 @@
+import { TestWorkerMock } from '@testring/test-utils';
 import { TestRunController } from '../src/test-run-controller';
-import { TestWorkerMock } from './test-worker.mock';
 
 describe('Controller', () => {
     it('should run tests queue', async () => {
@@ -16,9 +16,9 @@ describe('Controller', () => {
             }
         ];
 
-        const testWorkerMock: any = new TestWorkerMock();
+        const testWorkerMock = new TestWorkerMock();
+        const testRunController = new TestRunController({ bail: false }, testWorkerMock);
 
-        const testRunController = new TestRunController({ verbose: false }, testWorkerMock);
         await testRunController.runQueue(tests);
     });
 });

@@ -1,4 +1,4 @@
-import { IConfig, IPluginDestinationMap } from '@testring/typings';
+import { IConfig, IPluginDestinationMap } from '@testring/types';
 import { PluginController } from './plugin-controller';
 
 export * from './plugin-finder';

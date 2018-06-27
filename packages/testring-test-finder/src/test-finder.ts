@@ -1,15 +1,9 @@
+import { ITestFinder, ITestFile, TestsFinderPlugins } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { locateTestFiles } from './test-files-locator';
 import { resolveTests } from './resolve-tests';
 
-import { ITestFile } from '../interfaces';
-
-export enum TestsFinderPlugins {
-    beforeResolve = 'beforeResolve',
-    afterResolve = 'afterResolve'
-}
-
-export class TestsFinder extends PluggableModule {
+export class TestsFinder extends PluggableModule implements ITestFinder {
 
     constructor() {
         super([

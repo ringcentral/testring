@@ -1,29 +1,26 @@
-import { loggerClientLocal } from '@testring/logger';
-import { TestWorker, TestWorkerInstance } from '@testring/test-worker';
+import {
+    IConfig,
+    ITestWorker,
+    ITestWorkerInstance,
+    ITestFile,
+    IQueuedTest,
+    ITestRunController,
+    TestRunControllerHooks
+} from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
-import { IConfig } from '@testring/typings';
-import { ITestFile } from '@testring/test-finder';
-
-export interface IQueuedTest {
-    retryCount: number,
-    test: ITestFile
-}
+import { loggerClientLocal } from '@testring/logger';
 
 const delay = (milliseconds: number) => new Promise((resolve) => {
     setTimeout(resolve, milliseconds);
 });
 
-export enum TestRunControllerHooks {
-    beforeRun = 'beforeRun',
-}
-
-export class TestRunController extends PluggableModule {
+export class TestRunController extends PluggableModule implements ITestRunController {
 
     private errors: Array<Error> = [];
 
     constructor(
         private config: Partial<IConfig>,
-        private testWorker: TestWorker,
+        private testWorker: ITestWorker,
     ) {
         super([
             TestRunControllerHooks.beforeRun,
@@ -55,8 +52,8 @@ export class TestRunController extends PluggableModule {
         }
     }
 
-    private createWorkers(limit: number): Array<TestWorkerInstance> {
-        const workers: Array<TestWorkerInstance> = [];
+    private createWorkers(limit: number): Array<ITestWorkerInstance> {
+        const workers: Array<ITestWorkerInstance> = [];
 
         for (let index = 0; index < limit; index++) {
             workers.push(this.testWorker.spawn());
@@ -79,7 +76,7 @@ export class TestRunController extends PluggableModule {
         return testQueue;
     }
 
-    private async occupyWorker(worker: TestWorkerInstance, queue: Array<IQueuedTest>): Promise<void> {
+    private async occupyWorker(worker: ITestWorkerInstance, queue: Array<IQueuedTest>): Promise<void> {
         if (queue.length > 0) {
             return this.executeWorker(worker, queue);
         } else {
@@ -89,11 +86,11 @@ export class TestRunController extends PluggableModule {
 
     private async onTestFailed(
         exception: any,
-        worker: TestWorkerInstance,
+        worker: ITestWorkerInstance,
         test: IQueuedTest,
         queue: Array<IQueuedTest>
     ): Promise<void> {
-        if (this.config.verbose) {
+        if (this.config.bail) {
             this.errors.push(exception.error);
             throw exception.error;
         }
@@ -113,7 +110,7 @@ export class TestRunController extends PluggableModule {
         }
     }
 
-    private async executeWorker(worker: TestWorkerInstance, queue: Array<IQueuedTest>): Promise<void> {
+    private async executeWorker(worker: ITestWorkerInstance, queue: Array<IQueuedTest>): Promise<void> {
         const queuedTest = queue.pop();
 
         if (!queuedTest) {

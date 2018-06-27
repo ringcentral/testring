@@ -2,8 +2,8 @@ import * as process from 'process';
 import { applyPlugins } from '@testring/plugin-api';
 import { getConfig } from '@testring/cli-config';
 import { LoggerServer, loggerClientLocal } from '@testring/logger';
-import { testFinder } from '@testring/test-finder';
-import { testWorker } from '@testring/test-worker';
+import { TestsFinder } from '@testring/test-finder';
+import { TestWorker } from '@testring/test-worker';
 import { TestRunController } from '@testring/test-run-controller';
 import { transport } from '@testring/transport';
 
@@ -12,7 +12,10 @@ import { transport } from '@testring/transport';
 
 export const runTests = async (argv: typeof process.argv) => {
     const userConfig = await getConfig(argv);
+
     const loggerServer = new LoggerServer(userConfig, transport, process.stdout);
+    const testFinder = new TestsFinder();
+    const testWorker = new TestWorker(transport);
     const testRunController = new TestRunController(userConfig, testWorker);
 
     applyPlugins({

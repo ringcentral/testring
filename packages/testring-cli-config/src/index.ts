@@ -1,5 +1,5 @@
 import * as deepmerge from 'deepmerge';
-import { IConfig } from '@testring/typings';
+import { IConfig } from '@testring/types';
 import { getArguments } from './arguments-parser';
 import { readConfig, getFileConfig } from './config-file-reader';
 import { defaultConfiguration } from './default-config';

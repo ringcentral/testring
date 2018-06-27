@@ -3,11 +3,9 @@
 
 import * as path from 'path';
 import * as chai from 'chai';
-
+import { BrowserProxyMessageTypes, BrowserProxyActions } from '@testring/types';
+import { TransportMock } from '@testring/test-utils';
 import { BrowserProxy } from '../src/browser-proxy';
-import { BrowserProxyMessageTypes, BrowserProxyActions } from '../src/structs';
-
-import { TransportMock } from './transport.mock';
 
 const onActionPlugin = path.resolve(__dirname, './fixtures/on-action.ts');
 const onActionAsyncPlugin = path.resolve(__dirname, './fixtures/on-action-async.ts');

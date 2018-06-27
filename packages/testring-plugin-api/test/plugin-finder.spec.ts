@@ -3,14 +3,14 @@
 
 import * as path from 'path';
 import * as chai from 'chai';
-import * as pluggableModuleImport from '@testring/pluggable-module';
+import * as typesModuleImport from '@testring/types';
 import { findPlugin } from '../src/plugin-finder';
 
 describe('pluginFinder', () => {
     it('should resolve npm modules', () => {
-        const plugin = findPlugin('@testring/pluggable-module');
+        const plugin = findPlugin('@testring/types');
 
-        chai.expect(plugin).to.be.equal(pluggableModuleImport);
+        chai.expect(plugin).to.be.equal(typesModuleImport);
     });
 
     it('should resolve local node modules', () => {

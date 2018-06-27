@@ -22,7 +22,8 @@
     "build:clear": "npm run lint:src && npm run lint:test && npm run build",
     "build:precommit": "npm run build:clear && npm run test && npm run test:e2e",
     "build:ci": "npm run build:clear && npm run test:coverage && npm run test:e2e",
-    "publish": "lerna publish --skip-npm"
+    "publish": "lerna publish --skip-npm",
+    "check-deps": "lerna exec -- npm-check --skip-unused --ignore @testring/*"
   },
   "precommit": "build:precommit",
   "nyc": {
@@ -37,6 +38,10 @@
       "packages/*/src/*.ts",
       "packages/*/src/**/*.ts"
     ],
+    "exclude": [
+      "packages/testring-web-application/src/web-application.ts",
+      "packages/testring-web-application/src/web-client.ts"
+    ],
     "extension": [
       ".ts"
     ],
@@ -48,7 +53,7 @@
   "devDependencies": {
     "@types/chai": "4.1.4",
     "@types/mocha": "5.2.3",
-    "@types/node": "10.3.5",
+    "@types/node": "10.3.6",
     "babel-eslint": "8.2.5",
     "chai": "4.1.2",
     "coveralls": "3.0.1",
@@ -59,6 +64,7 @@
     "fs-extra": "6.0.1",
     "lerna": "2.11.0",
     "mocha": "5.2.0",
+    "npm-check": "5.7.1",
     "nyc": "12.0.2",
     "pre-commit": "1.2.2",
     "rimraf": "2.6.2",

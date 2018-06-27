@@ -1,13 +1,11 @@
 import * as process from 'process';
 import { ChildProcess } from 'child_process';
-import { Callback, IDirectMessage } from '../interfaces';
+import { ITransport, TransportMessageHandler, ITransportDirectMessage } from '@testring/types';
 import { DirectTransport } from './direct-transport';
 import { BroadcastTransport } from './broadcast-transport';
 import { EventEmitter } from 'events';
 
-type RemoveHandlerFunction = () => void;
-
-export class Transport {
+export class Transport implements ITransport {
 
     private emitter: EventEmitter = new EventEmitter();
 
@@ -47,23 +45,19 @@ export class Transport {
         this.directTransport.registerChildProcess(processID, childProcess);
     }
 
-    public on<T = any>(messageType: string, callback: Callback<T>): RemoveHandlerFunction {
+    public on<T = any>(messageType: string, callback: TransportMessageHandler<T>) {
         this.emitter.on(messageType, callback);
 
-        return () => {
-            this.emitter.removeListener(messageType, callback);
-        };
+        return () => this.emitter.removeListener(messageType, callback);
     }
 
-    public once<T = any>(messageType: string, callback: Callback<T>): RemoveHandlerFunction {
+    public once<T = any>(messageType: string, callback: TransportMessageHandler<T>) {
         this.emitter.once(messageType, callback);
 
-        return () => {
-            this.emitter.removeListener(messageType, callback);
-        };
+        return () => this.emitter.removeListener(messageType, callback);
     }
 
-    public onceFrom<T = any>(processID: string, messageType: string, callback: Callback<T>): RemoveHandlerFunction {
+    public onceFrom<T = any>(processID: string, messageType: string, callback: TransportMessageHandler<T>) {
         const handler = (message, source) => {
             if (processID === source) {
                 callback(message);
@@ -73,12 +67,10 @@ export class Transport {
 
         this.emitter.on(messageType, handler);
 
-        return () => {
-            this.emitter.removeListener(messageType, handler);
-        };
+        return () => this.emitter.removeListener(messageType, handler);
     }
 
-    private triggerListeners(message: IDirectMessage, source?: string) {
+    private triggerListeners(message: ITransportDirectMessage, source?: string) {
         this.emitter.emit(message.type, message.payload, source);
     }
 }
