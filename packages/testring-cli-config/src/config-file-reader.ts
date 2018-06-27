@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { IConfig } from '@testring/types';
 
-const findFile = (configPath) => {
+const findFile = (configPath: string) => {
     const filePath = path.resolve(configPath);
     const configExists = fs.existsSync(filePath);
 
@@ -13,12 +13,12 @@ const findFile = (configPath) => {
     return null;
 };
 
-const readJSConfig = async (configPath: string): Promise<IConfig | null> => {
+const readJSConfig = async (configPath: string, config: IConfig): Promise<IConfig | null> => {
     try {
         const configFile = require(configPath);
 
         if (typeof configFile === 'function') {
-            return await configFile(configPath);
+            return await configFile(config);
         } else {
             return configFile;
         }
@@ -47,7 +47,10 @@ const readJSONConfig = async (configPath: string): Promise<IConfig | null> => {
     }
 };
 
-export const readConfig = async (configPath: string | void): Promise<IConfig | null> => {
+const readConfig = async (
+    configPath: string | void,
+    config: IConfig,
+): Promise<IConfig | null> => {
     if (!configPath) {
         return null;
     }
@@ -56,7 +59,7 @@ export const readConfig = async (configPath: string | void): Promise<IConfig | n
 
     switch (extension) {
         case '.js' :
-            return readJSConfig(configPath);
+            return readJSConfig(configPath, config);
         case '.json' :
             return readJSONConfig(configPath);
         default:
@@ -65,5 +68,9 @@ export const readConfig = async (configPath: string | void): Promise<IConfig | n
 };
 
 export const getFileConfig = async (userConfig: IConfig) => {
-    return await readConfig(userConfig.config);
+    return await readConfig(userConfig.config, userConfig);
+};
+
+export const getEnvConfig = async (userConfig: IConfig) => {
+    return await readConfig(userConfig.envConfig, userConfig);
 };

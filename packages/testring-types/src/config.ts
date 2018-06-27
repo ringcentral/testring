@@ -14,6 +14,6 @@ export interface IConfig {
     tests: string,
     httpThrottle: number,
     loggerLevel: number,
-    envConfig: string | void,
+    envConfig?: string,
     plugins?: Array<ConfigPluginDescriptor>
 }

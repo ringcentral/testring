@@ -1,7 +1,7 @@
 import * as deepmerge from 'deepmerge';
 import { IConfig } from '@testring/types';
 import { getArguments } from './arguments-parser';
-import { readConfig, getFileConfig } from './config-file-reader';
+import { getFileConfig, getEnvConfig } from './config-file-reader';
 import { defaultConfiguration } from './default-config';
 
 const getConfig = async (argv: Array<string> = []): Promise<IConfig> => {
@@ -13,7 +13,7 @@ const getConfig = async (argv: Array<string> = []): Promise<IConfig> => {
     ]);
 
     const fileConfig = await getFileConfig(temporaryConfig);
-    const envConfig = await readConfig(temporaryConfig.envConfig);
+    const envConfig = await getEnvConfig(temporaryConfig);
 
     return deepmerge.all<IConfig>([
         defaultConfiguration,
