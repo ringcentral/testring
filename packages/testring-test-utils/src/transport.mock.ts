@@ -3,10 +3,6 @@ import { ITransport } from '@testring/types';
 
 export class TransportMock extends EventEmitter implements ITransport {
 
-    public getProcessStdioConfig() {
-        return [];
-    }
-
     public getProcessesList() {
         return [];
     }

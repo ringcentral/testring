@@ -21,10 +21,6 @@ export class Transport implements ITransport {
         this.broadcastTransport = new BroadcastTransport(handler, rootProcess);
     }
 
-    public getProcessStdioConfig(): Array<any> {
-        return [null, null, null, 'ipc'];
-    }
-
     public getProcessesList(): Array<string> {
         return this.directTransport.getProcessesList();
     }
