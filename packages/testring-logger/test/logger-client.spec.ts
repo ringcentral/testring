@@ -9,7 +9,7 @@ import { LoggerMessageTypes, LogTypes } from '../src/structs';
 import { report } from './fixtures/constants';
 
 describe('Logger client', () => {
-    it('should broadcast messages on log, info, warn and error', (callback) => {
+    it('should broadcast messages on log, info, warn, error and debug', (callback) => {
         const spy = sinon.spy();
         const transport = new TransportMock();
         const loggerClient = new LoggerClient(transport);
@@ -20,9 +20,10 @@ describe('Logger client', () => {
         loggerClient.info(...report);
         loggerClient.warn(...report);
         loggerClient.error(...report);
+        loggerClient.debug(...report);
 
         setImmediate(() => {
-            if (spy.callCount === 4) {
+            if (spy.callCount === 5) {
                 callback();
             } else {
                 callback(new Error(`broadcasted ${spy.callCount} times`));
