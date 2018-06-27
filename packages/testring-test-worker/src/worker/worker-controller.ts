@@ -2,13 +2,14 @@ import { Transport } from '@testring/transport';
 import { IExecutionMessage, IExecutionCompleteMessage } from '../../interfaces';
 import { WorkerAction, TestStatus, TestEvents } from '../constants';
 import { Sandbox } from './sandbox';
-import {loggerClientLocal} from '../../../testring-logger/src';
+import { loggerClientLocal } from '@testring/logger';
 
 export class WorkerController {
 
     private status: TestStatus = TestStatus.idle;
 
-    constructor(private transportInstance: Transport) {}
+    constructor(private transportInstance: Transport) {
+    }
 
     public init() {
         this.transportInstance.on(WorkerAction.executeTest, async (message: IExecutionMessage) => {
