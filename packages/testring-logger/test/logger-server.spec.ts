@@ -129,4 +129,28 @@ describe('Logger Server', () => {
         transport.broadcast(LoggerMessageTypes.REPORT, entry);
         transport.broadcast(LoggerMessageTypes.REPORT, entry);
     });
+
+    it('should accept batch reports from logger clients, and pass individual entries to queue', (callback) => {
+        const spy = sinon.spy();
+        const transport = new TransportMock();
+        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport,  stdout);
+        const onLog = loggerServer.getHook(LoggerPlugins.onLog);
+
+        if (onLog) {
+            onLog.tap('testPlugin', () => {
+                spy();
+
+                if (spy.callCount === 5) {
+                    callback();
+                } else if (spy.callCount > 5) {
+                    callback(`hook called ${spy.callCount} times`);
+                }
+            });
+        }
+
+        transport.broadcast(LoggerMessageTypes.REPORT_BATCH, [
+            entry, entry, entry, entry, entry,
+        ]);
+    });
 });
