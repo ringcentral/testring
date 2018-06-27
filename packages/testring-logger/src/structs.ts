@@ -6,6 +6,15 @@ export enum LogTypes {
     debug = 'debug',
 }
 
+export enum LogLevel {
+    verbose,
+    debug,
+    info,
+    warning,
+    error,
+    silent
+}
+
 export enum LoggerMessageTypes {
     REPORT = 'logger/REPORT',
 }

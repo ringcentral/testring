@@ -12,13 +12,14 @@ import { transport } from '@testring/transport';
 
 export const runTests = async (argv: typeof process.argv) => {
     const userConfig = await getConfig(argv);
-    const loggerServer = new LoggerServer(userConfig, transport);
+    const loggerServer = new LoggerServer(userConfig, transport, process.stdout);
     const testRunController = new TestRunController(userConfig, testWorker);
 
     applyPlugins({
         logger: loggerServer,
         testFinder: testFinder,
-        testWorker: testWorker
+        testWorker: testWorker,
+        testRunController: testRunController,
     }, userConfig);
 
     loggerClientLocal.log(`User config: ${JSON.stringify(userConfig)}`);

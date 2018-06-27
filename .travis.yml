@@ -1,10 +1,20 @@
+git:
+  depth: 10
+
 language: node_js
 
 node_js:
   - "7"
   - "8"
-  - "9"
   - "10"
 
 script:
   - npm run build:ci
+
+after_script:
+  - npm run test:publish
+
+  # publishing to npm
+  # uncomment when package will be ready to publish
+  # if: tag IS present
+  #   - npm run publish:ci
