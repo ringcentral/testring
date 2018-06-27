@@ -1,4 +1,4 @@
-import { TestRunControllerHooks, IQueuedTest } from '@testring/test-run-controller';
+import { TestRunControllerHooks, IQueuedTest } from '@testring/types';
 
 import { AbstractAPI } from './abstract';
 

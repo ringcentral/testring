@@ -1,11 +1,11 @@
 import { EventEmitter } from 'events';
-import { IDirectMessage } from '../interfaces';
+import { ITransportDirectMessage } from '@testring/types';
 
 class RootProcessMock extends EventEmitter {
 
-    private messageStack: Array<IDirectMessage> = [];
+    private messageStack: Array<ITransportDirectMessage> = [];
 
-    send(message: IDirectMessage) {
+    send(message: ITransportDirectMessage) {
         this.messageStack.push(message);
     }
 

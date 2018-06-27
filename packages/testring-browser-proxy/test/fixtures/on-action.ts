@@ -1,4 +1,4 @@
-import {BrowserProxyActions} from '../../src/structs';
+import { BrowserProxyActions } from '@testring/types';
 
 export default (command) => {
     const { action } = command;

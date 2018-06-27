@@ -1,10 +1,14 @@
-import { Callback, IBroadcastMessage, IDirectMessage } from '../interfaces';
+import {
+    TransportInternalMessageType,
+    TransportMessageHandler,
+    ITransportBroadcastMessage,
+    ITransportDirectMessage
+} from '@testring/types';
 import { deserialize, serialize } from './serialize';
-import { InternalMessageType } from './structs';
 
 class BroadcastTransport {
     constructor(
-        private triggerListeners: Callback,
+        private triggerListeners: TransportMessageHandler,
         private rootProcess: NodeJS.Process
     ) {
         this.registerRootProcess();
@@ -31,7 +35,7 @@ class BroadcastTransport {
         this.rootProcess.on('message', (message) => this.handleRootProcessMessage(message));
     }
 
-    private handleRootProcessMessage(message: IDirectMessage) {
+    private handleRootProcessMessage(message: ITransportDirectMessage) {
         // incorrect message filtering
         if (!message || typeof message.type !== 'string') {
             return;
@@ -48,12 +52,12 @@ class BroadcastTransport {
 
         this.triggerListeners(normalizedMessage);
         this.sendMessage({
-            type: InternalMessageType.messageResponse,
+            type: TransportInternalMessageType.messageResponse,
             payload: normalizedMessage.uid
         });
     }
 
-    private sendMessage(message: IBroadcastMessage) {
+    private sendMessage(message: ITransportBroadcastMessage) {
         if (typeof this.rootProcess.send === 'function') {
             this.rootProcess.send(message);
         }

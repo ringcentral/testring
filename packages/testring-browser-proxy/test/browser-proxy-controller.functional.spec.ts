@@ -3,12 +3,10 @@
 
 import * as path from 'path';
 import * as chai from 'chai';
-
 import { Transport } from '@testring/transport';
 import { fork } from '@testring/child-process';
-
+import { BrowserProxyActions, BrowserProxyPlugins } from '@testring/types';
 import { BrowserProxyController } from '../src/browser-proxy-controller';
-import { BrowserProxyActions, BrowserProxyPlugins } from '../src/structs';
 
 const workerPath = path.resolve(__dirname, './fixtures/worker.ts');
 const onActionPlugin = path.resolve(__dirname, './fixtures/on-action.ts');

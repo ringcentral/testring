@@ -1,11 +1,12 @@
 import * as util from 'util';
-import { Transport, transport } from '@testring/transport';
+import { ITransport } from '@testring/types';
+import { transport } from '@testring/transport';
 import { ILogEntry } from '../interfaces';
 import { LoggerMessageTypes, LogTypes, LogLevel } from './structs';
 
 export abstract class AbstractLoggerClient {
     constructor(
-        protected transportInstance: Transport = transport,
+        protected transportInstance: ITransport = transport,
         protected logNesting: number = 0,
         protected logLevel: number = LogLevel.info
     ) {

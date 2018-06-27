@@ -1,4 +1,4 @@
-import { IPluginDestinationMap } from '@testring/typings';
+import { IPluginDestinationMap } from '@testring/types';
 import { TestFinderAPI } from './modules/test-finder';
 import { LoggerAPI } from './modules/logger';
 import { TestRunControllerAPI } from './modules/test-run-controller';

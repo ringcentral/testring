@@ -1,4 +1,4 @@
-import { ConfigPluginDescriptor, IConfig, IPluginDestinationMap } from '@testring/typings';
+import { ConfigPluginDescriptor, IConfig, IPluginDestinationMap } from '@testring/types';
 import { PluginAPI } from './plugin-api';
 import { findPlugin } from './plugin-finder';
 
