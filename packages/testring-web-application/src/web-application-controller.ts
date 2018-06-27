@@ -1,7 +1,6 @@
 import { EventEmitter } from 'events';
 import { loggerClientLocal } from '@testring/logger';
-import { IBrowserProxyController } from '@testring/types';
-import { Transport } from '@testring/transport';
+import { ITransport, IBrowserProxyController } from '@testring/types';
 import { IExecuteMessage } from './interfaces';
 import { WebApplicationMessageType, WebApplicationControllerEventType } from './structs';
 
@@ -35,7 +34,7 @@ export class WebApplicationController extends EventEmitter {
 
     constructor(
         private browserProxy: IBrowserProxyController,
-        private transport: Transport
+        private transport: ITransport
     ) {
         super();
 

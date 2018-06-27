@@ -1,6 +1,7 @@
 import { ChildProcess } from 'child_process';
 
 import {
+    ITransport,
     IBrowserProxyController,
     IBrowserProxyCommand,
     IBrowserProxyCommandResponse,
@@ -8,14 +9,13 @@ import {
     BrowserProxyMessageTypes,
     BrowserProxyPlugins
 } from '@testring/types';
-import { Transport } from '@testring/transport';
 import { PluggableModule } from '@testring/pluggable-module';
 
 const nanoid = require('nanoid');
 
 export class BrowserProxyController extends PluggableModule implements IBrowserProxyController {
     constructor(
-        private transportInstance: Transport,
+        private transportInstance: ITransport,
         private workerCreator: (onActionPluginPath: string) => ChildProcess,
     ) {
         super([
