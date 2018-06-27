@@ -5,13 +5,15 @@ const emptyTarget = value => Array.isArray(value) ? [] : {};
 const clone = (value, options) => deepmerge(emptyTarget(value), value, options);
 
 function compressPlugins(target, source, options) {
-    const destination = target.slice();
-
+    const destination = Array.from(target);
     source.forEach(function(e, i) {
+        /*
+        if destination array has undefined element, we replace it with source element
+        if destination array element can be merged, we merge it with source element
+        if in destination array there is no such element we just push it into array,
+        */
         if (typeof destination[i] === 'undefined') {
-            const cloneRequested = options.clone !== false;
-            const shouldClone = cloneRequested && options.isMergeableObject(e);
-            destination[i] = shouldClone ? clone(e, options) : e;
+            destination[i] = options.isMergeableObject(e) ? clone(e, options) : e;
         } else if (options.isMergeableObject(e)) {
             destination[i] = deepmerge(target[i], e, options);
         } else if (target.indexOf(e) === -1) {
