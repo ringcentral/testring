@@ -4,7 +4,6 @@ import { ITransport, TransportMessageHandler, ITransportDirectMessage } from '@t
 import { DirectTransport } from './direct-transport';
 import { BroadcastTransport } from './broadcast-transport';
 import { EventEmitter } from 'events';
-import {loggerClient, loggerClientLocal} from '../../testring-logger/src';
 
 export class Transport implements ITransport {
 
@@ -31,49 +30,34 @@ export class Transport implements ITransport {
     }
 
     public send<T = any>(processID: string, messageType: string, payload: T): Promise<void> {
-        loggerClient.debug(`Send message [type=${messageType}] to process [id= ${processID}]`);
-        loggerClientLocal.debug(`Send message [type=${messageType}] to process [id= ${processID}]`);
         return this.directTransport.send(processID, messageType, payload);
     }
 
     public broadcast<T = any>(messageType: string, payload: T): void {
-        loggerClient.debug(`Send message [type=${messageType}] to parent process`);
-        loggerClientLocal.debug(`Send message [type = ${messageType}] to parent process`);
         this.broadcastTransport.broadcast(messageType, payload);
     }
 
     public broadcastLocal<T = any>(messageType: string, payload: T): void {
-        loggerClient.debug(`Send local message [type = ${messageType}]`);
-        loggerClientLocal.debug(`Send local message [type = ${messageType}]`);
         this.broadcastTransport.broadcastLocal(messageType, payload);
     }
 
     public registerChildProcess(processID: string, childProcess: ChildProcess) {
-        loggerClient.debug(`Register child process [id = ${processID}]`);
-        loggerClientLocal.debug(`Register child process [id = ${processID}]`);
         this.directTransport.registerChildProcess(processID, childProcess);
     }
 
     public on<T = any>(messageType: string, callback: TransportMessageHandler<T>) {
-        loggerClient.debug(`Register listener for messages [type = ${messageType}]`);
-        loggerClientLocal.debug(`Register listener for messages [type = ${messageType}]`);
-
         this.emitter.on(messageType, callback);
 
         return () => this.emitter.removeListener(messageType, callback);
     }
 
     public once<T = any>(messageType: string, callback: TransportMessageHandler<T>) {
-        loggerClient.debug(`Register listener for one message [type = ${messageType}]`);
-        loggerClientLocal.debug(`Register listener for one message [type = ${messageType}]`);
         this.emitter.once(messageType, callback);
 
         return () => this.emitter.removeListener(messageType, callback);
     }
 
     public onceFrom<T = any>(processID: string, messageType: string, callback: TransportMessageHandler<T>) {
-        loggerClient.debug(`Register listener for one message [type = ${messageType}] from process [id = ${processID}]`);
-        loggerClientLocal.debug(`Register listener for one message [type = ${messageType}] from process [id = ${processID}]`);
         const handler = (message, source) => {
             if (processID === source) {
                 callback(message);
@@ -87,8 +71,6 @@ export class Transport implements ITransport {
     }
 
     private triggerListeners(message: ITransportDirectMessage, source?: string) {
-        loggerClient.debug(`New message [type = ${message.type}]`);
-        loggerClientLocal.debug(`New message [type = ${message.type}]`);
         this.emitter.emit(message.type, message.payload, source);
     }
 }
