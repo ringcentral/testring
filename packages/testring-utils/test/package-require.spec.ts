@@ -4,17 +4,17 @@
 import * as path from 'path';
 import * as chai from 'chai';
 import * as typesModuleImport from '@testring/types';
-import { findPlugin } from '../src/plugin-finder';
+import { requirePackage } from '../src/package-require';
 
-describe('pluginFinder', () => {
+describe('packageRequire', () => {
     it('should resolve npm modules', () => {
-        const plugin = findPlugin('@testring/types');
+        const plugin = requirePackage('@testring/types');
 
         chai.expect(plugin).to.be.equal(typesModuleImport);
     });
 
     it('should resolve local node modules', () => {
-        const plugin = findPlugin(
+        const plugin = requirePackage(
             path.resolve(__dirname, './fixtures/node-export')
         );
 
@@ -22,7 +22,7 @@ describe('pluginFinder', () => {
     });
 
     it('should resolve local node modules', () => {
-        const plugin = findPlugin(
+        const plugin = requirePackage(
             path.resolve(__dirname, './fixtures/babel-export')
         );
 

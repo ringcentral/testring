@@ -1,6 +1,7 @@
 /* eslint-disable */
 
 import * as url from 'url';
+import { ITransport } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { loggerClient } from '@testring/logger';
 import { WebClient } from './web-client';
@@ -15,10 +16,10 @@ export class WebApplication extends PluggableModule {
 
     private client: WebClient;
 
-    constructor(testUID: string) {
+    constructor(testUID: string, transport: ITransport) {
         super();
 
-        this.client = new WebClient(testUID)
+        this.client = new WebClient(testUID, transport)
     }
 
     public async waitForExist(xpath, timeout = WAIT_TIMEOUT, skipMoveToObject = false) {

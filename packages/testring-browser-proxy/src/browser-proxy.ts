@@ -1,9 +1,8 @@
-import { IBrowserProxyCommand, IBrowserProxyMessage, BrowserProxyMessageTypes } from '@testring/types';
-import { Transport } from '@testring/transport';
-import { findPlugin } from '@testring/plugin-api';
+import { ITransport, IBrowserProxyCommand, IBrowserProxyMessage, BrowserProxyMessageTypes } from '@testring/types';
+import { requirePackage } from '@testring/utils';
 
 const resolvePlugin = (pluginPath: string): (command: IBrowserProxyCommand) => Promise<void> => {
-    const resolvedPlugin = findPlugin(pluginPath);
+    const resolvedPlugin = requirePackage(pluginPath);
 
     if (typeof resolvedPlugin !== 'function') {
         throw new TypeError('plugin is not a function');
@@ -14,7 +13,7 @@ const resolvePlugin = (pluginPath: string): (command: IBrowserProxyCommand) => P
 
 export class BrowserProxy {
     constructor(
-        private transportInstance: Transport,
+        private transportInstance: ITransport,
         private onActionPlugin: string,
     ) {
         this.onAction = resolvePlugin(this.onActionPlugin);

@@ -11,7 +11,7 @@ import { HttpMessageType } from '../src/structs';
 describe('HttpClient', () => {
     it('should get an error if request is null', (callback) => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport as any);
+        const httpClient = new HttpClient(transport);
 
         httpClient.post(null as any)
             .then(() => {
@@ -26,7 +26,7 @@ describe('HttpClient', () => {
 
     it('should get response from server', async () => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport as any);
+        const httpClient = new HttpClient(transport);
         const response = {};
         //imitate a server
         transport.on(HttpMessageType.send, (data: Request, src: string) => {
@@ -42,7 +42,7 @@ describe('HttpClient', () => {
     });
     it('should get an error if response has no uid', (callback) => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport as any);
+        const httpClient = new HttpClient(transport);
 
         //imitate a server
         transport.on(HttpMessageType.send, (data: Request, src: string) => {
