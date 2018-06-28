@@ -16,7 +16,7 @@
     "test:e2e": "lerna run --stream --scope @testring/e2e-test-app e2e",
     "test:coverage": "nyc npm test",
     "test:publish": "coveralls < ./coverage/lcov.info && rimraf ./coverage -G",
-    "cleanup": "lerna exec --parallel -- rimraf ./dist -G",
+    "cleanup": "lerna clean --yes && lerna exec --parallel -- rimraf ./dist -G",
     "build": "lerna exec -- tsc --target es2015",
     "build:watch": "lerna exec -- tsc --target es2015 --watch",
     "build:clear": "npm run lint:src && npm run lint:test && npm run build",

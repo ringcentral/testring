@@ -1,4 +1,4 @@
 
-export const run = (test: Function) => {
+export const run = (...tests: Array<Function>) => {
     
 };
