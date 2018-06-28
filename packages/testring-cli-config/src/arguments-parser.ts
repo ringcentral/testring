@@ -1,5 +1,5 @@
 import * as yargs from 'yargs';
-import { IConfig } from '@testring/typings';
+import { IConfig } from '@testring/types';
 
 const pkg = require('../package.json');
 
@@ -17,7 +17,7 @@ createField('debug', {
     default: undefined
 });
 
-createField('verbose', {
+createField('bail', {
     describe: 'shut down app after test fail',
     type: 'boolean',
     default: undefined
@@ -61,6 +61,16 @@ createField('plugins', {
 createField('httpThrottle', {
     describe: 'time of delay before next http request',
     type: 'number'
+});
+
+createField('loggerLevel', {
+    describe: 'flag for filtering log records',
+    type: 'number'
+});
+
+createField('envConfig', {
+    describe: 'path to environment config which overrides main config',
+    type: 'string',
 });
 
 const normalize = (args: yargs.Arguments): IConfig => {

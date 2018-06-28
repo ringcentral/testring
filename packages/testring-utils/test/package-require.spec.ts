@@ -3,18 +3,18 @@
 
 import * as path from 'path';
 import * as chai from 'chai';
-import * as pluggableModuleImport from '@testring/pluggable-module';
-import { findPlugin } from '../src/plugin-finder';
+import * as typesModuleImport from '@testring/types';
+import { requirePackage } from '../src/package-require';
 
-describe('pluginFinder', () => {
+describe('packageRequire', () => {
     it('should resolve npm modules', () => {
-        const plugin = findPlugin('@testring/pluggable-module');
+        const plugin = requirePackage('@testring/types');
 
-        chai.expect(plugin).to.be.equal(pluggableModuleImport);
+        chai.expect(plugin).to.be.equal(typesModuleImport);
     });
 
     it('should resolve local node modules', () => {
-        const plugin = findPlugin(
+        const plugin = requirePackage(
             path.resolve(__dirname, './fixtures/node-export')
         );
 
@@ -22,7 +22,7 @@ describe('pluginFinder', () => {
     });
 
     it('should resolve local node modules', () => {
-        const plugin = findPlugin(
+        const plugin = requirePackage(
             path.resolve(__dirname, './fixtures/babel-export')
         );
 

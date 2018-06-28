@@ -1,4 +1,4 @@
-import { IBrowserProxyPlugin } from '@testring/typings';
+import { IBrowserProxyPlugin } from '@testring/types';
 import { Config, Client, remote } from 'webdriverio';
 
 class SeleniumPlugin implements IBrowserProxyPlugin {

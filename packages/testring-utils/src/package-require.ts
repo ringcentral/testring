@@ -34,7 +34,7 @@ const resolvePluginName = (pluginName: string): string => {
     }
 };
 
-export const findPlugin = (pluginName: string) => {
+export const requirePackage = (pluginName: string) => {
     let pluginPath;
 
     try {

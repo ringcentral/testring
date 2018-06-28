@@ -4,10 +4,9 @@
     "module": "commonjs",
     "allowJs": false,
     "moduleResolution": "node",
-    "preserveConstEnums": true,
     "noFallthroughCasesInSwitch": true,
     "noEmitOnError": true,
-    "declaration": true,
+    "declaration": false,
     "outDir": "dist",
     "sourceMap": false,
     "lib": [

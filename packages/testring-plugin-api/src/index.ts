@@ -1,6 +1,5 @@
-import { IConfig, IPluginDestinationMap } from '@testring/typings';
+import { IConfig, IPluginDestinationMap } from '@testring/types';
 import { PluginController } from './plugin-controller';
-import { findPlugin } from './plugin-finder';
 import { PluginAPI } from './plugin-api';
 
 const applyPlugins = (pluginsDestinations: IPluginDestinationMap, config: IConfig) => {
@@ -9,4 +8,4 @@ const applyPlugins = (pluginsDestinations: IPluginDestinationMap, config: IConfi
     controller.initialize(config.plugins);
 };
 
-export { PluginAPI, findPlugin, applyPlugins };
+export { PluginAPI, applyPlugins };

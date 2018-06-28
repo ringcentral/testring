@@ -1,0 +1,26 @@
+{
+  "name": "@testring/web-application",
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "typings": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "dependencies": {
+    "@testring/logger": "0.1.0",
+    "@testring/pluggable-module": "0.1.0",
+    "@testring/types": "0.1.0",
+    "@types/lodash": "^4.14.110",
+    "@types/nanoid": "^1.0.0",
+    "lodash": "^4.17.10",
+    "nanoid": "^1.0.4"
+  },
+  "devDependencies": {
+    "@testring/child-process": "0.1.0",
+    "@testring/test-utils": "0.1.0",
+    "@testring/transport": "0.1.0"
+  }
+}

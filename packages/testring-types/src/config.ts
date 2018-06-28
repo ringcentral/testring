@@ -7,11 +7,13 @@ export interface IConfig {
     report: string,
     debug: boolean,
     silent: boolean,
-    verbose: boolean,
+    bail: boolean,
     workerLimit: number,
     retryCount: number,
     retryDelay: number,
     tests: string,
     httpThrottle: number,
+    loggerLevel: number,
+    envConfig?: string,
     plugins?: Array<ConfigPluginDescriptor>
 }

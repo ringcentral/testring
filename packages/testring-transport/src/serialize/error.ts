@@ -1,6 +1,6 @@
-import { ISerializedStruct } from '../../interfaces';
+import { ITransportSerializedStruct } from '@testring/types';
 
-export interface ISerializedError extends ISerializedStruct {
+export interface ISerializedError extends ITransportSerializedStruct {
     $key: string,
     type: string,
     message: string,

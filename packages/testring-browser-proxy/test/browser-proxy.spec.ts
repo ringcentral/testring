@@ -3,10 +3,10 @@
 
 import * as path from 'path';
 import * as chai from 'chai';
+import { BrowserProxyMessageTypes, BrowserProxyActions } from '@testring/types';
 import { TransportMock } from '@testring/test-utils';
-
 import { BrowserProxy } from '../src/browser-proxy';
-import { BrowserProxyMessageTypes, BrowserProxyActions } from '../src/structs';
+
 
 const onActionPlugin = path.resolve(__dirname, './fixtures/on-action.ts');
 const onActionAsyncPlugin = path.resolve(__dirname, './fixtures/on-action-async.ts');
@@ -19,7 +19,7 @@ describe('Browser proxy', () => {
     it('should listen to incoming messages and call onAction hook when gets message', (callback) => {
         const uid = 'testUid';
         const transport = new TransportMock();
-        new BrowserProxy(transport as any, onActionPlugin);
+        new BrowserProxy(transport, onActionPlugin);
 
         transport.on(BrowserProxyMessageTypes.response, (response) => {
             chai.expect(response).to.have.property('uid', uid);
@@ -40,7 +40,7 @@ describe('Browser proxy', () => {
     it('should work with async hooks', (callback) => {
         const uid = 'testUid';
         const transport = new TransportMock();
-        new BrowserProxy(transport as any, onActionAsyncPlugin);
+        new BrowserProxy(transport, onActionAsyncPlugin);
 
         transport.on(BrowserProxyMessageTypes.response, (response) => {
             chai.expect(response).to.have.property('uid', uid);
@@ -61,7 +61,7 @@ describe('Browser proxy', () => {
     it('should broadcast response with exception if onAction hook fails', (callback) => {
         const uid = 'testUid';
         const transport = new TransportMock();
-        new BrowserProxy(transport as any, onActionPlugin);
+        new BrowserProxy(transport, onActionPlugin);
 
         transport.on(
             BrowserProxyMessageTypes.response,

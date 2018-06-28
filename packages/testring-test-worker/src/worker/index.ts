@@ -4,5 +4,5 @@ import { WorkerController } from './worker-controller';
 
 const controller = new WorkerController(transport);
 
-loggerClient.setLevel(3);
+loggerClient.setLogNestingLevel(3);
 controller.init();

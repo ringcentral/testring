@@ -2,8 +2,8 @@ import * as process from 'process';
 import { LoggerServer, loggerClientLocal } from '@testring/logger';
 import { TestRunController } from '@testring/test-run-controller';
 import { applyPlugins } from '@testring/plugin-api';
-import { testFinder } from '@testring/test-finder';
-import { testWorker } from '@testring/test-worker';
+import { TestsFinder } from '@testring/test-finder';
+import { TestWorker } from '@testring/test-worker';
 import { getConfig } from '@testring/cli-config';
 import { transport } from '@testring/transport';
 import { browserProxyControllerFactory } from '@testring/browser-proxy';
@@ -13,7 +13,10 @@ import { browserProxyControllerFactory } from '@testring/browser-proxy';
 
 export const runTests = async (argv: typeof process.argv) => {
     const userConfig = await getConfig(argv);
-    const loggerServer = new LoggerServer(userConfig, transport);
+
+    const loggerServer = new LoggerServer(userConfig, transport, process.stdout);
+    const testFinder = new TestsFinder();
+    const testWorker = new TestWorker(transport);
     const testRunController = new TestRunController(userConfig, testWorker);
     const browserProxyController = browserProxyControllerFactory(transport);
 
@@ -21,7 +24,8 @@ export const runTests = async (argv: typeof process.argv) => {
         logger: loggerServer,
         testFinder: testFinder,
         testWorker: testWorker,
-        browserProxy: browserProxyController
+        browserProxy: browserProxyController,
+        testRunController: testRunController,
     }, userConfig);
 
     const tests = await testFinder.find(userConfig.tests);

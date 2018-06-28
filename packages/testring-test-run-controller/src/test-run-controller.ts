@@ -1,41 +1,46 @@
+import {
+    IConfig,
+    ITestWorker,
+    ITestWorkerInstance,
+    ITestFile,
+    IQueuedTest,
+    ITestRunController,
+    TestRunControllerHooks
+} from '@testring/types';
+import { PluggableModule } from '@testring/pluggable-module';
 import { loggerClientLocal } from '@testring/logger';
-import { TestWorker, TestWorkerInstance } from '@testring/test-worker';
-
-import { IConfig } from '@testring/typings';
-import { ITestFile } from '@testring/test-finder';
-
-interface IQueuedTest {
-    retryCount: number,
-    test: ITestFile
-}
 
 const delay = (milliseconds: number) => new Promise((resolve) => {
     setTimeout(resolve, milliseconds);
 });
 
-export class TestRunController {
+export class TestRunController extends PluggableModule implements ITestRunController {
 
     private errors: Array<Error> = [];
 
     constructor(
         private config: Partial<IConfig>,
-        private testWorker: TestWorker,
+        private testWorker: ITestWorker,
     ) {
+        super([
+            TestRunControllerHooks.beforeRun,
+        ]);
     }
 
     public async runQueue(testSet: Array<ITestFile>): Promise<Error[] | void> {
         const testQueue = this.prepareTests(testSet);
+        const testQueueAfterHook = await this.callHook(TestRunControllerHooks.beforeRun, testQueue);
         const configWorkerLimit = this.config.workerLimit || 0;
 
-        const workerLimit = configWorkerLimit < testQueue.length ?
+        const workerLimit = configWorkerLimit < testQueueAfterHook.length ?
             configWorkerLimit :
-            testQueue.length;
+            testQueueAfterHook.length;
 
         const workers = this.createWorkers(workerLimit);
 
         try {
             await Promise.all(
-                workers.map(worker => this.executeWorker(worker, testQueue))
+                workers.map(worker => this.executeWorker(worker, testQueueAfterHook))
             );
         } catch (e) {
             loggerClientLocal.error(...this.errors);
@@ -47,8 +52,8 @@ export class TestRunController {
         }
     }
 
-    private createWorkers(limit: number): Array<TestWorkerInstance> {
-        const workers: Array<TestWorkerInstance> = [];
+    private createWorkers(limit: number): Array<ITestWorkerInstance> {
+        const workers: Array<ITestWorkerInstance> = [];
 
         for (let index = 0; index < limit; index++) {
             workers.push(this.testWorker.spawn());
@@ -71,7 +76,7 @@ export class TestRunController {
         return testQueue;
     }
 
-    private async occupyWorker(worker: TestWorkerInstance, queue: Array<IQueuedTest>): Promise<void> {
+    private async occupyWorker(worker: ITestWorkerInstance, queue: Array<IQueuedTest>): Promise<void> {
         if (queue.length > 0) {
             return this.executeWorker(worker, queue);
         } else {
@@ -81,11 +86,11 @@ export class TestRunController {
 
     private async onTestFailed(
         exception: any,
-        worker: TestWorkerInstance,
+        worker: ITestWorkerInstance,
         test: IQueuedTest,
         queue: Array<IQueuedTest>
     ): Promise<void> {
-        if (this.config.verbose) {
+        if (this.config.bail) {
             this.errors.push(exception.error);
             throw exception.error;
         }
@@ -105,7 +110,7 @@ export class TestRunController {
         }
     }
 
-    private async executeWorker(worker: TestWorkerInstance, queue: Array<IQueuedTest>): Promise<void> {
+    private async executeWorker(worker: ITestWorkerInstance, queue: Array<IQueuedTest>): Promise<void> {
         const queuedTest = queue.pop();
 
         if (!queuedTest) {

@@ -1,5 +1,5 @@
 import { OptionsWithUrl } from 'request-promise';
-import { Transport } from '@testring/transport';
+import { ITransport } from '@testring/types';
 import { HttpMessageType } from './structs';
 import { Response, Request, ResponseReject } from './interfaces';
 
@@ -8,7 +8,7 @@ const nanoid = require('nanoid');
 
 export abstract class AbstractHttpClient {
     constructor(
-        protected transportInstance: Transport,
+        protected transportInstance: ITransport,
     ) {
     }
     protected abstract broadcast(options: Request): void;

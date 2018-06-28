@@ -1,6 +1,4 @@
-import * as process from 'process';
-import { IConfig } from '@testring/typings';
-import { Transport } from '@testring/transport';
+import { IConfig, ITransport } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { ILogEntry } from '../interfaces';
 import { LoggerMessageTypes, LogQueueStatus } from './structs';
@@ -15,7 +13,8 @@ export class LoggerServer extends PluggableModule {
 
     constructor(
         private config: IConfig,
-        private transportInstance: Transport,
+        private transportInstance: ITransport,
+        private stdout: NodeJS.WritableStream,
         private numberOfRetries: number = 0,
         private shouldSkip: boolean = false,
     ) {
@@ -67,9 +66,14 @@ export class LoggerServer extends PluggableModule {
     }
 
     private log(entry: ILogEntry): void {
-        if (!this.config.silent) {
-            process.stdout.write(entry.formattedMessage + '\n');
+        if (this.config.silent) {
+            return;
         }
+        if (entry.logLevel < this.config.loggerLevel) {
+            return;
+        }
+
+        this.stdout.write(entry.formattedMessage + '\n');
 
         const shouldRun = this.queue.length === 0;
 

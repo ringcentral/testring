@@ -3,20 +3,18 @@
 
 import * as chai from 'chai';
 import * as sinon from 'sinon';
-
+import { TransportMock } from '@testring/test-utils';
 import { LoggerClient } from '../src/logger-client';
 import { LoggerMessageTypes, LogTypes } from '../src/structs';
-
-import { TransportMock } from './transport.mock';
 import { report } from './fixtures/constants';
 
 describe('Logger client', () => {
     it('should broadcast messages on log, info, warn and error with level 0 by default', (callback) => {
         const spy = sinon.spy((entry) => {
-            chai.expect(entry.level).to.be.equal(0);
+            chai.expect(entry.nestingLevel).to.be.equal(0);
         });
         const transport = new TransportMock();
-        const loggerClient = new LoggerClient(transport as any);
+        const loggerClient = new LoggerClient(transport);
 
         transport.on(LoggerMessageTypes.REPORT, spy);
 
@@ -37,14 +35,14 @@ describe('Logger client', () => {
     it('should allow to set it\'slevel manually and then broadcast it in entries', (callback) => {
         const manualLevel = 1337;
         const transport = new TransportMock();
-        const loggerClient = new LoggerClient(transport as any);
+        const loggerClient = new LoggerClient(transport);
 
         transport.on(LoggerMessageTypes.REPORT, (entry) => {
-            chai.expect(entry).to.have.property('level', manualLevel);
+            chai.expect(entry).to.have.property('nestingLevel', manualLevel);
             callback();
         });
 
-        loggerClient.setLevel(manualLevel);
+        loggerClient.setLogNestingLevel(manualLevel);
         loggerClient.log(...report);
     });
 
@@ -53,11 +51,11 @@ describe('Logger client', () => {
         const spy = sinon.spy((entry) => {
             switch (entry.type) {
                 case LogTypes.log: {
-                    chai.expect(entry).to.have.property('level', forcedLevel);
+                    chai.expect(entry).to.have.property('nestingLevel', forcedLevel);
                     break;
                 }
                 case LogTypes.info: {
-                    chai.expect(entry).to.have.property('level', 0);
+                    chai.expect(entry).to.have.property('nestingLevel', 0);
                     break;
                 }
                 default: {
@@ -66,7 +64,7 @@ describe('Logger client', () => {
             }
         });
         const transport = new TransportMock();
-        const loggerClient = new LoggerClient(transport as any);
+        const loggerClient = new LoggerClient(transport);
 
         transport.on(LoggerMessageTypes.REPORT, (entry) => {
             spy(entry);

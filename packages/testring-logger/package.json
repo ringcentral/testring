@@ -11,7 +11,10 @@
   "license": "MIT",
   "dependencies": {
     "@testring/transport": "0.1.0",
-    "@testring/typings": "0.1.0",
+    "@testring/types": "0.1.0",
     "@testring/pluggable-module": "0.1.0"
+  },
+  "devDependencies": {
+    "@testring/test-utils": "0.1.0"
   }
 }

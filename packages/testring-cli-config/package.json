@@ -10,7 +10,8 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/typings": "^0.1.0",
+    "@testring/types": "^0.1.0",
+    "@testring/logger": "^0.1.0",
     "@types/deepmerge": "^2.1.0",
     "@types/yargs": "^11.0.0",
     "deepmerge": "^2.1.1",

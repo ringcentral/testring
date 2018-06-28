@@ -1,12 +1,14 @@
 import * as util from 'util';
-import { Transport, transport } from '@testring/transport';
+import { ITransport } from '@testring/types';
+import { transport } from '@testring/transport';
 import { ILogEntry } from '../interfaces';
-import { LoggerMessageTypes, LogTypes } from './structs';
+import { LoggerMessageTypes, LogTypes, LogLevel } from './structs';
 
 export abstract class AbstractLoggerClient {
     constructor(
-        protected transportInstance: Transport = transport,
-        protected logLevel: number = 0,
+        protected transportInstance: ITransport = transport,
+        protected logNesting: number = 0,
+        protected logLevel: number = LogLevel.info
     ) {
     }
 
@@ -21,7 +23,8 @@ export abstract class AbstractLoggerClient {
     protected buildEntry(
         type: LogTypes,
         content: Array<any>,
-        level: number = this.logLevel,
+        nestingLevel: number = this.logNesting,
+        logLevel: number = this.logLevel
     ): ILogEntry {
         const time = new Date();
         const formattedMessage = this.formatLog(time, content);
@@ -29,41 +32,46 @@ export abstract class AbstractLoggerClient {
         return {
             time,
             type,
-            level,
+            nestingLevel,
+            logLevel,
             content,
             formattedMessage
         };
     }
 
-    protected createLog(type: LogTypes, content: Array<any>, level: number = this.logLevel): void {
+    protected createLog(type: LogTypes,
+                        content: Array<any>,
+                        nestingLevel: number = this.logNesting,
+                        logLevel: number = this.logLevel
+    ): void {
         this.broadcast(
             LoggerMessageTypes.REPORT,
-            this.buildEntry(type, content, level),
+            this.buildEntry(type, content, nestingLevel, logLevel),
         );
     }
 
-    public setLevel(level: number): void {
-        this.logLevel = level;
+    public setLogNestingLevel(level: number): void {
+        this.logNesting = level;
     }
 
     public log(...args): void {
-        this.createLog(LogTypes.log, args, this.logLevel);
+        this.createLog(LogTypes.log, args, this.logNesting, LogLevel.info);
     }
 
     public info(...args): void {
-        this.createLog(LogTypes.info, args, this.logLevel);
+        this.createLog(LogTypes.info, args, this.logNesting, LogLevel.info);
     }
 
     public warn(...args): void {
-        this.createLog(LogTypes.warning, args, this.logLevel);
+        this.createLog(LogTypes.warning, args, this.logNesting, LogLevel.warning);
     }
 
     public error(...args): void {
-        this.createLog(LogTypes.error, args, this.logLevel);
+        this.createLog(LogTypes.error, args, this.logNesting, LogLevel.error);
     }
 
     public debug(...args): void {
-        this.createLog(LogTypes.debug, args, this.logLevel);
+        this.createLog(LogTypes.debug, args, this.logNesting, LogLevel.debug);
     }
 
     public withLevel(level: number) {

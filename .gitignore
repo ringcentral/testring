@@ -11,3 +11,5 @@ coverage
 
 lerna-debug.log
 package-lock.json
+
+.DS_Store
