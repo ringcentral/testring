@@ -1,5 +1,5 @@
 {
-  "name": "@testring/plugin-api",
+  "name": "@testring/utils",
   "version": "0.1.0",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
@@ -10,7 +10,6 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/types": "0.1.0",
-    "@testring/utils": "0.1.0"
+    "@testring/types": "0.1.0"
   }
 }

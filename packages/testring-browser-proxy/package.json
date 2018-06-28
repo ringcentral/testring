@@ -16,10 +16,12 @@
     "@testring/transport": "0.1.0",
     "@testring/types": "0.1.0",
     "@testring/logger": "0.1.0",
+    "@testring/utils": "0.1.0",
     "@types/nanoid": "^1.0.0",
     "nanoid": "^1.0.4"
   },
   "devDependencies": {
-    "@testring/test-utils": "0.1.0"
+    "@testring/test-utils": "0.1.0",
+    "@testring/transport": "0.1.0"
   }
 }

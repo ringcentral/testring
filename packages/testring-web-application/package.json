@@ -12,7 +12,6 @@
   "dependencies": {
     "@testring/logger": "0.1.0",
     "@testring/pluggable-module": "0.1.0",
-    "@testring/transport": "0.1.0",
     "@testring/types": "0.1.0",
     "@types/lodash": "^4.14.110",
     "@types/nanoid": "^1.0.0",
@@ -21,6 +20,7 @@
   },
   "devDependencies": {
     "@testring/child-process": "0.1.0",
-    "@testring/test-utils": "0.1.0"
+    "@testring/test-utils": "0.1.0",
+    "@testring/transport": "0.1.0"
   }
 }
