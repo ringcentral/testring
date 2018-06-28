@@ -234,4 +234,22 @@ describe('Logger client', () => {
         loggerClient.log('baz');
         loggerClient.endStep();
     });
+
+    it('should not try to send log batch if endStep was invoked when step stack is empty', (callback) => {
+        const transport = new TransportMock();
+        const loggerClient = new LoggerClient(transport);
+
+        transport.on(
+            LoggerMessageTypes.REPORT_BATCH,
+            () => {
+                callback('batch was sent');
+            }
+        );
+
+        loggerClient.endStep();
+
+        setTimeout(() => {
+            callback();
+        }, 0);
+    });
 });

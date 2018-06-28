@@ -118,9 +118,9 @@ export abstract class AbstractLoggerClient {
     }
 
     public endStep(): void {
-        this.stepStack.pop();
+        const pop = this.stepStack.pop();
 
-        if (this.stepStack.length <= 0) {
+        if (pop && this.stepStack.length <= 0) {
             this.sendLogBatch();
         }
     }
