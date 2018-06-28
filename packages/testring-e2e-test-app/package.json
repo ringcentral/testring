@@ -9,7 +9,7 @@
   "author": "RingCentral",
   "license": "MIT",
   "scripts": {
-    "test:simple-run": "testring --tests='test/simple/*.spec.js'",
+    "test:simple-run": "testring --tests=test/simple/*.spec.js",
     "e2e": "npm run test:simple-run"
   },
   "dependencies": {

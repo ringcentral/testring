@@ -30,6 +30,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     public async runQueue(testSet: Array<ITestFile>): Promise<Error[] | void> {
         const testQueue = this.prepareTests(testSet);
         const testQueueAfterHook = await this.callHook(TestRunControllerHooks.beforeRun, testQueue);
+        loggerClientLocal.debug('Run controller: tests queue created.');
         const configWorkerLimit = this.config.workerLimit || 0;
 
         const workerLimit = configWorkerLimit < testQueueAfterHook.length ?
@@ -37,6 +38,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             testQueueAfterHook.length;
 
         const workers = this.createWorkers(workerLimit);
+        loggerClientLocal.debug(`Run controller: ${workerLimit} worker(s) created.`);
 
         try {
             await Promise.all(

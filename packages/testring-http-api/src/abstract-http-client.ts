@@ -2,6 +2,7 @@ import { OptionsWithUrl } from 'request-promise';
 import { ITransport } from '@testring/types';
 import { HttpMessageType } from './structs';
 import { Response, Request, ResponseReject } from './interfaces';
+import { loggerClient } from '@testring/logger';
 
 
 const nanoid = require('nanoid');
@@ -23,6 +24,7 @@ export abstract class AbstractHttpClient {
 
     public async post(options: OptionsWithUrl): Promise<any> {
         if (!this.isValidRequest(options)) {
+            loggerClient.error(`Http Client: ${options} request is not valid`);
             throw new Error('request is not valid');
         }
 
@@ -31,6 +33,7 @@ export abstract class AbstractHttpClient {
 
     public async get(options: OptionsWithUrl): Promise<any> {
         if (!this.isValidRequest(options)) {
+            loggerClient.error(`Http Client: ${options} request is not valid`);
             throw new Error('request is not valid');
         }
 
@@ -39,6 +42,7 @@ export abstract class AbstractHttpClient {
 
     public async delete(options: OptionsWithUrl): Promise<any> {
         if (!this.isValidRequest(options)) {
+            loggerClient.error(`Http Client: ${options} request is not valid`);
             throw new Error('request is not valid');
         }
 
@@ -47,6 +51,7 @@ export abstract class AbstractHttpClient {
 
     public async put(options: OptionsWithUrl): Promise<any> {
         if (!this.isValidRequest(options)) {
+            loggerClient.error(`Http Client: ${options} request is not valid`);
             throw new Error('request is not valid');
         }
 
@@ -55,6 +60,7 @@ export abstract class AbstractHttpClient {
 
     public async send(options: OptionsWithUrl, method: string): Promise<any> {
         if (!this.isValidRequest(options)) {
+            loggerClient.error(`Http Client: ${options} request is not valid`);
             throw new Error('request is not valid');
         }
 
@@ -69,6 +75,7 @@ export abstract class AbstractHttpClient {
                 HttpMessageType.response,
                 (response: Response) => {
                     if (!response.uid) {
+                        loggerClient.error('Http Client: no response uid');
                         throw new Error('no uid');
                     }
                     if (response.uid === requestUID) {
@@ -83,11 +90,13 @@ export abstract class AbstractHttpClient {
                 HttpMessageType.reject,
                 (response: ResponseReject) => {
                     if (!response.uid) {
+                        loggerClient.error('Http Client: no response uid');
                         throw new Error('no uid');
                     }
                     if (response.uid === requestUID) {
                         removeRejectHandler();
                         removeResponseHandler();
+                        loggerClient.error(`Http Client: failed with error ${response.error}`);
                         reject(response.error);
                     }
                 }
