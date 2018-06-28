@@ -96,6 +96,7 @@ export class HttpServer extends PluggableModule {
     }
 
     private registerTransportListener(): void {
+        loggerClientLocal.debug(`Http server: Register listener for messages [type = ${HttpMessageType.send}]`);
         this.transportInstance.on(HttpMessageType.send, (data: Request, src: string) => {
 
             // todo validate data

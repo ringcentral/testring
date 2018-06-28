@@ -12,7 +12,10 @@
   "dependencies": {
     "@testring/child-process": "0.1.0",
     "@testring/pluggable-module": "0.1.0",
+    "@testring/plugin-api": "0.1.0",
+    "@testring/transport": "0.1.0",
     "@testring/types": "0.1.0",
+    "@testring/logger": "0.1.0",
     "@testring/utils": "0.1.0",
     "@types/nanoid": "^1.0.0",
     "nanoid": "^1.0.4"

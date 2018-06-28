@@ -31,7 +31,6 @@ export interface ITransportBroadcastMessage extends ITransportMessage {
 }
 
 export interface ITransport {
-    getProcessStdioConfig(): Array<any>;
 
     getProcessesList(): Array<string>
 

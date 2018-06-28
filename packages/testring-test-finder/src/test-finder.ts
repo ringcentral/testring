@@ -2,6 +2,7 @@ import { ITestFinder, ITestFile, TestsFinderPlugins } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { locateTestFiles } from './test-files-locator';
 import { resolveTests } from './resolve-tests';
+import {loggerClientLocal} from '@testring/logger';
 
 export class TestsFinder extends PluggableModule implements ITestFinder {
 
@@ -17,7 +18,8 @@ export class TestsFinder extends PluggableModule implements ITestFinder {
         const testsAfterPlugin = await this.callHook(TestsFinderPlugins.beforeResolve, tests);
 
         if (!testsAfterPlugin || testsAfterPlugin.length === 0) {
-            throw new Error(`No test files found by pattern: ${pattern} \nFiles: ${testsAfterPlugin}`);
+            loggerClientLocal.error(`No test files found by pattern: ${pattern}`);
+            throw new Error(`No test files found by pattern: ${pattern}`);
         }
 
         const resolverTests = await resolveTests(testsAfterPlugin);

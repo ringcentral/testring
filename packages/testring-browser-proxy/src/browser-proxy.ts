@@ -1,5 +1,6 @@
 import { ITransport, IBrowserProxyCommand, IBrowserProxyMessage, BrowserProxyMessageTypes } from '@testring/types';
 import { requirePackage } from '@testring/utils';
+import { loggerClient } from '@testring/logger';
 
 const resolvePlugin = (pluginPath: string): (command: IBrowserProxyCommand) => Promise<void> => {
     const resolvedPlugin = requirePackage(pluginPath);
@@ -24,6 +25,7 @@ export class BrowserProxy {
     private readonly onAction: (command: IBrowserProxyCommand) => Promise<void>;
 
     private registerCommandListener() {
+        loggerClient.debug(`Browser Proxy: Register listener for messages [type = ${BrowserProxyMessageTypes.execute}]`);
         this.transportInstance.on(
             BrowserProxyMessageTypes.execute,
             (message) => this.onMessage(message),
@@ -35,7 +37,7 @@ export class BrowserProxy {
 
         try {
             await this.onAction(command);
-
+            loggerClient.debug(`Browser Proxy: Send message [type=${BrowserProxyMessageTypes.response}] to parent process`);
             this.transportInstance.broadcast(
                 BrowserProxyMessageTypes.response,
                 {
