@@ -25,11 +25,11 @@ export abstract class AbstractLoggerClient {
 
     protected logBatch: Array<ILogEntry> = [];
 
-    protected get currentStep() {
+    protected getCurrentStep(): string | null {
         return this.stepStack[this.stepStack.length - 1] || null;
     }
 
-    protected get previousStep() {
+    protected getPreviousStep(): string | null {
         return this.stepStack[this.stepStack.length - 2] || null;
     }
 
@@ -40,14 +40,16 @@ export abstract class AbstractLoggerClient {
     ): ILogEntry {
         const time = new Date();
         const formattedMessage = formatLog(time, content);
+        const currentStep = this.getCurrentStep();
+        const previousStep = this.getPreviousStep();
 
-        const stepUid = type === LogTypes.step && this.currentStep
-            ? this.currentStep
+        const stepUid = type === LogTypes.step && currentStep
+            ? currentStep
             : undefined;
 
         const parentStep = type === LogTypes.step
-            ? this.previousStep
-            : this.currentStep;
+            ? previousStep
+            : currentStep;
 
         return {
             time,
@@ -67,7 +69,7 @@ export abstract class AbstractLoggerClient {
     ): void {
         const logEntry = this.buildEntry(type, content, logLevel);
 
-        if (this.currentStep) {
+        if (this.getCurrentStep()) {
             this.logBatch.push(logEntry);
         } else {
             this.broadcast(
@@ -77,7 +79,7 @@ export abstract class AbstractLoggerClient {
         }
     }
 
-    protected sendLogBatch(): void {
+    protected sendBatchedLog(): void {
         this.broadcast(
             LoggerMessageTypes.REPORT_BATCH,
             this.logBatch,
@@ -121,7 +123,7 @@ export abstract class AbstractLoggerClient {
         const pop = this.stepStack.pop();
 
         if (pop && this.stepStack.length <= 0) {
-            this.sendLogBatch();
+            this.sendBatchedLog();
         }
     }
 
