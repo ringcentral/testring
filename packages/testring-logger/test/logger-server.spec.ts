@@ -153,4 +153,56 @@ describe('Logger Server', () => {
             entry, entry, entry, entry, entry,
         ]);
     });
+
+    it('should not call onLog hook if config.silent is true', (callback) => {
+        const config = {
+            ...DEFAULT_CONFIG,
+            silent: true,
+        };
+        const transport = new TransportMock();
+        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
+        const loggerServer = new LoggerServer(config, transport,  stdout);
+        const onLog = loggerServer.getHook(LoggerPlugins.onLog);
+
+        if (onLog) {
+            onLog.tap('testPlugin', () => {
+                callback('hook called');
+            });
+        }
+
+        transport.broadcast(LoggerMessageTypes.REPORT, entry);
+
+        setTimeout(() => {
+            callback();
+        }, 0);
+    });
+
+    it('should not call onLog hook if config.loggerLevel is greater than entry.logLevel', (callback) => {
+        const config = {
+            ...DEFAULT_CONFIG,
+            loggerLevel: 1,
+        };
+        const transport = new TransportMock();
+        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
+        const loggerServer = new LoggerServer(config, transport,  stdout);
+        const onLog = loggerServer.getHook(LoggerPlugins.onLog);
+
+        if (onLog) {
+            onLog.tap('testPlugin', () => {
+                callback('hook called');
+            });
+        }
+
+        transport.broadcast(
+            LoggerMessageTypes.REPORT,
+            {
+                ...entry,
+                logLevel: 0,
+            },
+        );
+
+        setTimeout(() => {
+            callback();
+        }, 0);
+    });
 });
