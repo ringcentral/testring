@@ -1,5 +1,6 @@
 import * as yargs from 'yargs';
 import { IConfig } from '@testring/types';
+import { LogLevel } from '@testring/logger';
 
 const pkg = require('../package.json');
 
@@ -13,14 +14,12 @@ yargs.version(pkg.version);
 
 createField('debug', {
     describe: 'specify test data section',
-    type: 'boolean',
-    default: undefined
+    type: 'boolean'
 });
 
 createField('bail', {
     describe: 'shut down app after test fail',
-    type: 'boolean',
-    default: undefined
+    type: 'boolean'
 });
 
 createField('workerLimit', {
@@ -63,7 +62,7 @@ createField('httpThrottle', {
     type: 'number'
 });
 
-createField('loggerLevel', {
+createField('logLevel', {
     describe: 'flag for filtering log records',
     type: 'number'
 });
@@ -83,7 +82,17 @@ const normalize = (args: yargs.Arguments): IConfig => {
             continue;
         }
 
-        arg = args[key];
+        // TODO move normalization to higher level
+        switch (key) {
+            case 'logLevel':
+                arg = LogLevel[args[key]];
+                break;
+
+            default:
+                arg = args[key];
+                break;
+        }
+
 
         if (arg === undefined) {
             continue;
