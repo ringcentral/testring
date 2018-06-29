@@ -8,4 +8,5 @@ export interface ILogEntry {
     formattedMessage: string,
     stepUid?: string,
     parentStep: string | null,
+    logEnvironment?: any,
 }
