@@ -21,10 +21,10 @@ const formatJSON = (obj: any) => {
             item = JSON.stringify(obj[key]);
         }
 
-        str += `    ${(key + ' ').padEnd(20, '⋅')} ${item}\n`;
+        str += `  ${(key + ' ').padEnd(20, '⋅')} ${item}\n`;
     }
 
-    return str;
+    return str + '\n';
 };
 
 export const runTests = async (argv: Array<string>, stdout: NodeJS.WritableStream) => {

@@ -1,6 +1,5 @@
 import * as yargs from 'yargs';
 import { IConfig } from '@testring/types';
-import { LogLevel } from '@testring/logger';
 
 const pkg = require('../package.json');
 
@@ -64,7 +63,7 @@ createField('httpThrottle', {
 
 createField('logLevel', {
     describe: 'flag for filtering log records',
-    type: 'number'
+    type: 'string'
 });
 
 createField('envConfig', {
@@ -82,17 +81,7 @@ const normalize = (args: yargs.Arguments): IConfig => {
             continue;
         }
 
-        // TODO move normalization to higher level
-        switch (key) {
-            case 'logLevel':
-                arg = LogLevel[args[key]];
-                break;
-
-            default:
-                arg = args[key];
-                break;
-        }
-
+        arg = args[key];
 
         if (arg === undefined) {
             continue;

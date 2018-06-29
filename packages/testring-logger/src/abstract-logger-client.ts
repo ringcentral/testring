@@ -2,13 +2,13 @@ import * as util from 'util';
 import { ITransport } from '@testring/types';
 import { transport } from '@testring/transport';
 import { ILogEntry } from '../interfaces';
-import { LoggerMessageTypes, LogTypes, LogLevel } from './structs';
+import { LoggerMessageTypes, LogTypes, LogLevelNumeric } from './structs';
 
 export abstract class AbstractLoggerClient {
     constructor(
         protected transportInstance: ITransport = transport,
         protected logNesting: number = 0,
-        protected logLevel: number = LogLevel.info
+        protected logLevel: number = LogLevelNumeric.info
     ) {
     }
 
@@ -55,23 +55,23 @@ export abstract class AbstractLoggerClient {
     }
 
     public log(...args): void {
-        this.createLog(LogTypes.log, args, this.logNesting, LogLevel.info);
+        this.createLog(LogTypes.log, args, this.logNesting, LogLevelNumeric.info);
     }
 
     public info(...args): void {
-        this.createLog(LogTypes.info, args, this.logNesting, LogLevel.info);
+        this.createLog(LogTypes.info, args, this.logNesting, LogLevelNumeric.info);
     }
 
     public warn(...args): void {
-        this.createLog(LogTypes.warning, args, this.logNesting, LogLevel.warning);
+        this.createLog(LogTypes.warning, args, this.logNesting, LogLevelNumeric.warning);
     }
 
     public error(...args): void {
-        this.createLog(LogTypes.error, args, this.logNesting, LogLevel.error);
+        this.createLog(LogTypes.error, args, this.logNesting, LogLevelNumeric.error);
     }
 
     public debug(...args): void {
-        this.createLog(LogTypes.debug, args, this.logNesting, LogLevel.debug);
+        this.createLog(LogTypes.debug, args, this.logNesting, LogLevelNumeric.debug);
     }
 
     public withLevel(level: number) {

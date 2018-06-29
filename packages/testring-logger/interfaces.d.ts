@@ -5,6 +5,6 @@ export interface ILogEntry {
     type: LogTypes,
     nestingLevel: number,
     logLevel: number,
-    content: string[],
+    content: Array<any>,
     formattedMessage: string
 }

@@ -7,6 +7,15 @@ export enum LogTypes {
 }
 
 export enum LogLevel {
+    verbose = 'verbose',
+    debug = 'debug',
+    info = 'info',
+    warning = 'warning',
+    error = 'error',
+    silent = 'silent'
+}
+
+export enum LogLevelNumeric {
     verbose,
     debug,
     info,

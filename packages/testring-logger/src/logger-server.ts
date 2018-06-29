@@ -1,7 +1,7 @@
 import { IConfig, ITransport } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { ILogEntry } from '../interfaces';
-import { LoggerMessageTypes, LogQueueStatus } from './structs';
+import { LoggerMessageTypes, LogLevelNumeric, LogQueueStatus } from './structs';
 
 export enum LoggerPlugins {
     beforeLog = 'beforeLog',
@@ -69,7 +69,7 @@ export class LoggerServer extends PluggableModule {
         if (this.config.silent) {
             return;
         }
-        if (entry.logLevel < this.config.logLevel) {
+        if (entry.logLevel < LogLevelNumeric[this.config.logLevel]) {
             return;
         }
 
