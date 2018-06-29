@@ -12,9 +12,16 @@ import { transport } from '@testring/transport';
 
 const formatJSON = (obj: any) => {
     let str = '\n';
+    let item;
 
     for (const key in obj) {
-        str += `    ${(key + ' ').padEnd(20, '⋅')} ${JSON.stringify(obj[key])}\n`;
+        if (key === 'plugins') {
+            item = obj[key].toString().replace('[object Object]', '');
+        } else {
+            item = JSON.stringify(obj[key]);
+        }
+
+        str += `    ${(key + ' ').padEnd(20, '⋅')} ${item}\n`;
     }
 
     return str;
