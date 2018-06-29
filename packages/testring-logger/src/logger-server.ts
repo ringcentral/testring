@@ -32,7 +32,13 @@ export class LoggerServer extends PluggableModule {
     private status: LogQueueStatus = LogQueueStatus.EMPTY;
 
     private registerTransportListeners(): void {
-        this.transportInstance.on(LoggerMessageTypes.REPORT, (entry: ILogEntry) => this.log(entry));
+        this.transportInstance.on(LoggerMessageTypes.REPORT, (entry: ILogEntry) => {
+            this.log(entry);
+        });
+
+        this.transportInstance.on(LoggerMessageTypes.REPORT_BATCH, (batch: Array<ILogEntry>) => {
+            batch.forEach((entry) => this.log(entry));
+        });
     }
 
     private async runQueue(retry: number = this.numberOfRetries): Promise<void> {

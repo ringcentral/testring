@@ -1,23 +1,25 @@
-import * as deepmerge from 'deepmerge';
 import { IConfig } from '@testring/types';
 import { getArguments } from './arguments-parser';
-import { getFileConfig } from './config-file-reader';
+import { getFileConfig, getEnvConfig } from './config-file-reader';
 import { defaultConfiguration } from './default-config';
+import { mergeConfigs } from './merge-configs';
 
-const getConfig = async (argv: Array<string>): Promise<IConfig> => {
+const getConfig = async (argv: Array<string> = []): Promise<IConfig> => {
     const args = getArguments(argv);
 
-    const temporaryConfig = deepmerge.all<IConfig>([
+    const temporaryConfig = mergeConfigs([
         defaultConfiguration,
         args || {}
     ]);
 
     const fileConfig = await getFileConfig(temporaryConfig);
+    const envConfig = await getEnvConfig(temporaryConfig);
 
-    return deepmerge.all<IConfig>([
+    return mergeConfigs([
         defaultConfiguration,
         fileConfig || {},
-        args || {}
+        envConfig || {},
+        args || {},
     ]);
 };
 

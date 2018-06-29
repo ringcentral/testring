@@ -1,5 +1,4 @@
-import { transport } from '@testring/transport';
-import { BrowserProxyActions } from '@testring/types';
+import { ITransport, BrowserProxyActions } from '@testring/types';
 import { IExecuteMessage, IResponseMessage } from './interfaces';
 import { WebApplicationMessageType } from './structs';
 
@@ -7,9 +6,11 @@ const nanoid = require('nanoid');
 
 export class WebClient {
 
-    constructor(private applicant: string) {}
+    constructor(private applicant: string, private transport: ITransport) {}
 
     private makeRequest(action: BrowserProxyActions, args: Array<any>): Promise<any> {
+        const transport = this.transport;
+
         return new Promise((resolve, reject) => {
             const uid = nanoid();
             const request: IExecuteMessage = {
@@ -34,7 +35,6 @@ export class WebClient {
             });
 
             transport.broadcast(WebApplicationMessageType.execute, request);
-
         });
     }
 

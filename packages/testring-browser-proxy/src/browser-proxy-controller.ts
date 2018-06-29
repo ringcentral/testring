@@ -1,6 +1,7 @@
 import { ChildProcess } from 'child_process';
 
 import {
+    ITransport,
     IBrowserProxyController,
     IBrowserProxyCommand,
     IBrowserProxyCommandResponse,
@@ -8,14 +9,14 @@ import {
     BrowserProxyMessageTypes,
     BrowserProxyPlugins
 } from '@testring/types';
-import { Transport } from '@testring/transport';
 import { PluggableModule } from '@testring/pluggable-module';
+import { loggerClientLocal } from '@testring/logger';
 
 const nanoid = require('nanoid');
 
 export class BrowserProxyController extends PluggableModule implements IBrowserProxyController {
     constructor(
-        private transportInstance: Transport,
+        private transportInstance: ITransport,
         private workerCreator: (onActionPluginPath: string) => ChildProcess,
     ) {
         super([
@@ -55,6 +56,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
             return resolve();
         } else {
+            loggerClientLocal.error(`Browser Proxy controller: cannot find command with uid ${uid}`);
             throw new ReferenceError(`Cannot find command with uid ${uid}`);
         }
     }
@@ -71,7 +73,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
     private onExit = (): void => {
         delete this.workerId;
-
+        loggerClientLocal.debug('Browser Proxy controller: miss connection with child process');
         this.onProxyDisconnect();
         this.spawn();
     };
@@ -100,11 +102,13 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
             this.worker = this.workerCreator(onActionPluginPath);
         } else {
+            loggerClientLocal.error(`Unsupported worker type "${typeof this.workerCreator}"`);
             throw new Error(`Unsupported worker type "${typeof this.workerCreator}"`);
         }
 
         this.workerId = `proxy-${this.worker.pid}`;
 
+        loggerClientLocal.debug(`Browser Proxy controller: register child process [id = ${this.workerId}]`);
         this.transportInstance.registerChildProcess(this.workerId, this.worker);
         this.worker.on('exit', this.onExit);
         this.onProxyConnect();

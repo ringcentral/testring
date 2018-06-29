@@ -1,22 +1,25 @@
-import { 
-    ITransport, 
-    ITestExecutionMessage, 
-    ITestExecutionCompleteMessage, 
-    TestWorkerAction, 
-    TestStatus, 
-    TestEvents 
+import {
+    ITransport,
+    ITestExecutionMessage,
+    ITestExecutionCompleteMessage,
+    TestWorkerAction,
+    TestStatus,
+    TestEvents
 } from '@testring/types';
+import { loggerClientLocal } from '@testring/logger';
 import { Sandbox } from './sandbox';
 
 export class WorkerController {
 
     private status: TestStatus = TestStatus.idle;
 
-    constructor(private transportInstance: ITransport) {}
+    constructor(private transportInstance: ITransport) {
+    }
 
     public init() {
         this.transportInstance.on(TestWorkerAction.executeTest, async (message: ITestExecutionMessage) => {
             if (this.status === TestStatus.pending) {
+                loggerClientLocal.debug('Worker already busy with another test!');
                 throw new EvalError('Worker already busy with another test!');
             }
 

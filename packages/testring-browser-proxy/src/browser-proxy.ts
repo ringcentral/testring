@@ -1,9 +1,9 @@
-import { IBrowserProxyCommand, IBrowserProxyMessage, BrowserProxyMessageTypes } from '@testring/types';
-import { Transport } from '@testring/transport';
-import { findPlugin } from '@testring/plugin-api';
+import { ITransport, IBrowserProxyCommand, IBrowserProxyMessage, BrowserProxyMessageTypes } from '@testring/types';
+import { requirePackage } from '@testring/utils';
+import { loggerClient } from '@testring/logger';
 
 const resolvePlugin = (pluginPath: string): (command: IBrowserProxyCommand) => Promise<void> => {
-    const resolvedPlugin = findPlugin(pluginPath);
+    const resolvedPlugin = requirePackage(pluginPath);
 
     if (typeof resolvedPlugin !== 'function') {
         throw new TypeError('plugin is not a function');
@@ -14,7 +14,7 @@ const resolvePlugin = (pluginPath: string): (command: IBrowserProxyCommand) => P
 
 export class BrowserProxy {
     constructor(
-        private transportInstance: Transport,
+        private transportInstance: ITransport,
         private onActionPlugin: string,
     ) {
         this.onAction = resolvePlugin(this.onActionPlugin);
@@ -25,6 +25,7 @@ export class BrowserProxy {
     private readonly onAction: (command: IBrowserProxyCommand) => Promise<void>;
 
     private registerCommandListener() {
+        loggerClient.debug(`Browser Proxy: Register listener for messages [type = ${BrowserProxyMessageTypes.execute}]`);
         this.transportInstance.on(
             BrowserProxyMessageTypes.execute,
             (message) => this.onMessage(message),
@@ -36,7 +37,7 @@ export class BrowserProxy {
 
         try {
             await this.onAction(command);
-
+            loggerClient.debug(`Browser Proxy: Send message [type=${BrowserProxyMessageTypes.response}] to parent process`);
             this.transportInstance.broadcast(
                 BrowserProxyMessageTypes.response,
                 {

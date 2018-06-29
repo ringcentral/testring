@@ -1,9 +1,12 @@
+/* eslint no-unused-expressions: 0 */
+
 /// <reference types="node" />
 /// <reference types="mocha" />
 
 import * as path from 'path';
 import * as chai from 'chai';
-import { getFileConfig } from '../src/config-file-reader';
+import { getFileConfig, getEnvConfig } from '../src/config-file-reader';
+import { defaultConfiguration } from '../src/default-config';
 
 describe('config-file-reader', () => {
 
@@ -85,6 +88,23 @@ describe('config-file-reader', () => {
                 chai.expect(exception).to.be.an.instanceof(SyntaxError);
                 callback();
             });
+    });
 
-   });
+    it('should resolve env config if it is present in config', async () => {
+        const envConfigPath = path.join(__dirname, './fixtures/envConfig.json');
+        const envConfig = require(envConfigPath);
+
+        const resolvedEnvConfig = await getEnvConfig({
+            ...defaultConfiguration,
+            envConfig: envConfigPath,
+        });
+
+        chai.expect(resolvedEnvConfig).to.be.deep.equal(envConfig);
+    });
+
+    it('should not resolve env config if it is not in config', async () => {
+        const resolvedEnvConfig = await getEnvConfig(defaultConfiguration);
+
+        chai.expect(resolvedEnvConfig).to.be.null;
+    });
 });
