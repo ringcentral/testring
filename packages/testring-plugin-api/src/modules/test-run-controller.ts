@@ -4,7 +4,15 @@ import { AbstractAPI } from './abstract';
 
 export class TestRunControllerAPI extends AbstractAPI {
 
-    beforeRun(handler: (queue: Array<IQueuedTest>) => Array<IQueuedTest>) {
-        this.registrySyncPlugin(TestRunControllerHooks.beforeRun, handler);
+    prepareQueue(handler: (queue: Array<IQueuedTest>) => Promise<IQueuedTest[]>) {
+        this.registryAsyncPlugin(TestRunControllerHooks.prepareQueue, handler);
+    }
+
+    prepareParams(handler: (params: object) => Promise<object>) {
+        this.registryAsyncPlugin(TestRunControllerHooks.prepareParams, handler);
+    }
+
+    afterFinish(handler: (params: object) => Promise<void>) {
+        this.registryAsyncPlugin(TestRunControllerHooks.afterFinish, handler);
     }
 }
