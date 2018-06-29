@@ -51,7 +51,10 @@ export enum BrowserProxyActions {
     getTagName = 'getTagName',
     isSelected = 'isSelected',
     getText = 'getText',
-    elementIdSelected = 'elementIdSelected'
+    elementIdSelected = 'elementIdSelected',
+    timeoutsAsyncScript = 'timeoutsAsyncScript',
+    makeScreenshot = 'makeScreenshot',
+    uploadFile = 'uploadFile'
 }
 
 export interface IBrowserProxyCommand {
