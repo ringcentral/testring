@@ -69,7 +69,7 @@ export class LoggerServer extends PluggableModule {
         if (this.config.silent) {
             return;
         }
-        if (entry.logLevel < LogLevelNumeric[this.config.logLevel]) {
+        if (LogLevelNumeric[entry.logLevel] < LogLevelNumeric[this.config.logLevel]) {
             return;
         }
 
