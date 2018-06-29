@@ -4,6 +4,14 @@ import { transport } from '@testring/transport';
 import { ILogEntry } from '../interfaces';
 import { LoggerMessageTypes, LogTypes, LogLevel } from './structs';
 
+const nanoid = require('nanoid');
+
+const formatLog = (logLevel: LogLevel, time: Date, content: Array<any>): string => {
+    return util.format(
+        `[${logLevel}], [${time.toLocaleTimeString()}]`, ...content
+    );
+};
+
 export abstract class AbstractLoggerClient {
     constructor(
         protected transportInstance: ITransport = transport,
@@ -12,75 +20,123 @@ export abstract class AbstractLoggerClient {
     ) {
     }
 
-    private formatLog(logLevel, time: Date, content: Array<any>): string {
-        return util.format(
-            `[${logLevel}] [${time.toLocaleTimeString()}]`, ...content
-        );
+    protected abstract broadcast(messageType: string, payload: any): void;
+
+    protected stepStack: Array<string> = [];
+
+    protected logBatch: Array<ILogEntry> = [];
+
+    protected getCurrentStep(): string | null {
+        return this.stepStack[this.stepStack.length - 1] || null;
     }
 
-    protected abstract broadcast(messageType: string, payload: any): void;
+    protected getPreviousStep(): string | null {
+        return this.stepStack[this.stepStack.length - 2] || null;
+    }
 
     protected buildEntry(
         type: LogTypes,
         content: Array<any>,
-        nestingLevel: number = this.logNesting,
         logLevel: LogLevel = this.logLevel
     ): ILogEntry {
         const time = new Date();
-        const formattedMessage = this.formatLog(logLevel, time, content);
+        const formattedMessage = formatLog(logLevel, time, content);
+        const currentStep = this.getCurrentStep();
+        const previousStep = this.getPreviousStep();
+
+        const stepUid = type === LogTypes.step && currentStep
+            ? currentStep
+            : undefined;
+
+        const parentStep = type === LogTypes.step
+            ? previousStep
+            : currentStep;
 
         return {
             time,
             type,
-            nestingLevel,
             logLevel,
             content,
-            formattedMessage
+            formattedMessage,
+            stepUid,
+            parentStep,
         };
     }
 
-    protected createLog(type: LogTypes,
-                        content: Array<any>,
-                        nestingLevel: number = this.logNesting,
-                        logLevel: LogLevel = this.logLevel
+    protected createLog(
+        type: LogTypes,
+        content: Array<any>,
+        logLevel: LogLevel = this.logLevel
     ): void {
-        this.broadcast(
-            LoggerMessageTypes.REPORT,
-            this.buildEntry(type, content, nestingLevel, logLevel),
-        );
+        const logEntry = this.buildEntry(type, content, logLevel);
+
+        if (this.getCurrentStep()) {
+            this.logBatch.push(logEntry);
+        } else {
+            this.broadcast(
+                LoggerMessageTypes.REPORT,
+                logEntry,
+            );
+        }
     }
 
-    public setLogNestingLevel(level: number): void {
-        this.logNesting = level;
+    protected sendBatchedLog(): void {
+        this.broadcast(
+            LoggerMessageTypes.REPORT_BATCH,
+            this.logBatch,
+        );
+
+        this.logBatch = [];
     }
 
     public log(...args): void {
-        this.createLog(LogTypes.log, args, this.logNesting, LogLevel.info);
+        this.createLog(LogTypes.log, args, LogLevel.info);
     }
 
     public info(...args): void {
-        this.createLog(LogTypes.info, args, this.logNesting, LogLevel.info);
+        this.createLog(LogTypes.info, args, LogLevel.info);
     }
 
     public warn(...args): void {
-        this.createLog(LogTypes.warning, args, this.logNesting, LogLevel.warning);
+        this.createLog(LogTypes.warning, args, LogLevel.warning);
     }
 
     public error(...args): void {
-        this.createLog(LogTypes.error, args, this.logNesting, LogLevel.error);
+        this.createLog(LogTypes.error, args, LogLevel.error);
     }
 
     public debug(...args): void {
-        this.createLog(LogTypes.debug, args, this.logNesting, LogLevel.debug);
+        this.createLog(LogTypes.debug, args, LogLevel.debug);
     }
 
-    public withLevel(level: number) {
-        return {
-            log: (...args) => this.createLog(LogTypes.log, args, level),
-            info: (...args) => this.createLog(LogTypes.info, args, level),
-            warn: (...args) => this.createLog(LogTypes.warning, args, level),
-            error: (...args) => this.createLog(LogTypes.error, args, level),
-            debug: (...args) => this.createLog(LogTypes.debug, args, level),
-        };
+    public startStep(message: string): void {
+        const step = nanoid();
+
+        this.stepStack.push(step);
+
+        this.createLog(
+            LogTypes.step,
+            [ message ],
+        );
+    }
+
+    public endStep(): void {
+        const pop = this.stepStack.pop();
+
+        if (pop && this.stepStack.length <= 0) {
+            this.sendBatchedLog();
+        }
+    }
+
+    public async step(message: string, callback: () => any): Promise<void> {
+        this.startStep(message);
+
+        const result = callback();
+
+        if (result && result.then && typeof result.then === 'function') {
+            await result;
+        }
+
+        this.endStep();
     }
 }

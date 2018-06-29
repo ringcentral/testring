@@ -78,6 +78,10 @@ export class WebClient {
         return this.makeRequest(BrowserProxyActions.executeAsync, [fn, args]);
     }
 
+    public timeoutsAsyncScript(timeout, fn) {
+        return this.makeRequest(BrowserProxyActions.timeoutsAsyncScript, [timeout, fn]);
+    }
+
     public getTitle() {
         return this.makeRequest(BrowserProxyActions.getTitle, []);
     }
@@ -216,5 +220,13 @@ export class WebClient {
 
     public elementIdSelected(id) {
         return this.makeRequest(BrowserProxyActions.elementIdSelected, [id]);
+    }
+
+    public makeScreenshot() {
+        return this.makeRequest(BrowserProxyActions.makeScreenshot, []);
+    }
+
+    public uploadFile(path) {
+        return this.makeRequest(BrowserProxyActions.uploadFile, [path]);
     }
 }

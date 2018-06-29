@@ -1,9 +1,10 @@
+import {LogTypes} from '../../src';
+
 export const report = ['foo', ['bar'], {baz: 'baz'}];
 
 export const entry = {
-    foo: 'foo',
-    bar: 'bar',
-    baz: 'baz',
-    nestingLevel: 3,
+    type: LogTypes.log,
+    logLevel: 1,
+    message: [ 'foo', 'bar' ],
     formattedMessage: 'hello'
 };

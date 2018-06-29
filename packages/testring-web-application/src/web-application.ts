@@ -14,12 +14,20 @@ export class WebApplication extends PluggableModule {
 
     private mainTabID = 1;
 
-    private client: WebClient;
+    protected client: WebClient;
 
     constructor(testUID: string, transport: ITransport) {
         super();
 
         this.client = new WebClient(testUID, transport)
+    }
+
+    protected logXpath(xpath) {
+        return utils.logXpath(xpath);
+    }
+
+    protected normalizeXpath(xpath) {
+        return utils.normalizeXpath(xpath);
     }
 
     public async waitForExist(xpath, timeout = WAIT_TIMEOUT, skipMoveToObject = false) {
@@ -928,6 +936,14 @@ export class WebApplication extends PluggableModule {
 
     async getTextsAsArray(xpath, trim = true, timeout = WAIT_TIMEOUT) {
         return this.getTexts(xpath, trim, timeout);
+    }
+
+    public async makeScreenshot() {
+        await this.client.makeScreenshot();
+    }
+
+    public async uploadFile(fullPath) {
+        await this.client.uploadFile(fullPath);
     }
 
 }
