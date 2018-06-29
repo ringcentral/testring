@@ -1,5 +1,4 @@
 import { TestRunControllerHooks, IQueuedTest } from '@testring/types';
-
 import { AbstractAPI } from './abstract';
 
 export class TestRunControllerAPI extends AbstractAPI {

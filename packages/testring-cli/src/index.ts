@@ -10,10 +10,20 @@ import { transport } from '@testring/transport';
 // CLI entry point, it makes all initialization job and
 // handles all errors, that was not cached inside framework
 
-export const runTests = async (argv: typeof process.argv) => {
+const formatJSON = (obj: any) => {
+    let str = '\n';
+
+    for (const key in obj) {
+        str += `    ${(key + ' ').padEnd(20, '⋅')} ${JSON.stringify(obj[key])}\n`;
+    }
+
+    return str;
+};
+
+export const runTests = async (argv: Array<string>, stdout: NodeJS.WritableStream) => {
     const userConfig = await getConfig(argv);
 
-    const loggerServer = new LoggerServer(userConfig, transport, process.stdout);
+    const loggerServer = new LoggerServer(userConfig, transport, stdout);
     const testFinder = new TestsFinder();
     const testWorker = new TestWorker(transport);
     const testRunController = new TestRunController(userConfig, testWorker);
@@ -25,9 +35,12 @@ export const runTests = async (argv: typeof process.argv) => {
         testRunController: testRunController,
     }, userConfig);
 
-    loggerClientLocal.log(`User config: ${JSON.stringify(userConfig)}`);
+    loggerClientLocal.log('User config:\n', formatJSON(userConfig));
+
     const tests = await testFinder.find(userConfig.tests);
+
     loggerClientLocal.info(`Found ${tests.length} test(s) to run.`);
+
     const testRunResult = await testRunController.runQueue(tests);
 
     if (testRunResult) {
@@ -35,8 +48,8 @@ export const runTests = async (argv: typeof process.argv) => {
     }
 };
 
-export const runCLI = (argv: typeof process.argv) => {
-    runTests(argv).catch((exception) => {
+export const runCLI = (argv: Array<string>) => {
+    runTests(argv, process.stdout).catch((exception) => {
         loggerClientLocal.error(exception);
         process.exit(1);
     });

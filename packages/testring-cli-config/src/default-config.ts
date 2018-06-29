@@ -12,6 +12,5 @@ export const defaultConfiguration: IConfig = {
     retryCount: 3,
     retryDelay: 2000,
     httpThrottle: 0,
-    loggerLevel: LogLevel.info,
-    envConfig: undefined,
+    loggerLevel: LogLevel.info
 };

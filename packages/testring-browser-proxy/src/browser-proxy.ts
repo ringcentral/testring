@@ -1,9 +1,9 @@
 import { ITransport, IBrowserProxyCommand, IBrowserProxyMessage, BrowserProxyMessageTypes } from '@testring/types';
-import { requirePackage } from '@testring/utils';
+import { requirePlugin } from '@testring/utils';
 import { loggerClient } from '@testring/logger';
 
 const resolvePlugin = (pluginPath: string): (command: IBrowserProxyCommand) => Promise<void> => {
-    const resolvedPlugin = requirePackage(pluginPath);
+    const resolvedPlugin = requirePlugin(pluginPath);
 
     if (typeof resolvedPlugin !== 'function') {
         throw new TypeError('plugin is not a function');

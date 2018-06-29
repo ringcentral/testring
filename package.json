@@ -18,7 +18,7 @@
     "test:publish": "coveralls < ./coverage/lcov.info && rimraf ./coverage -G",
     "cleanup": "lerna clean --yes && lerna exec --parallel -- rimraf ./dist -G",
     "build": "lerna exec -- tsc --target es2015",
-    "build:watch": "lerna exec -- tsc --target es2015 --watch",
+    "build:watch": "lerna exec --parallel -- tsc --target es2015 --watch",
     "build:clear": "npm run lint:src && npm run lint:test && npm run build",
     "build:precommit": "npm run build:clear && npm run test && npm run test:e2e",
     "build:ci": "npm run build:clear && npm run test:coverage && npm run test:e2e",

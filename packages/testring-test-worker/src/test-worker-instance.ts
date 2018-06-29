@@ -13,18 +13,19 @@ import {
 
 const nanoid = require('nanoid');
 
-
 const WORKER_ROOT = require.resolve(
     path.resolve(__dirname, 'worker')
 );
 
 export class TestWorkerInstance implements ITestWorkerInstance {
 
+    private compileCache: Map<string, string> = new Map();
+
     private abortTestExecution: Function | null = null;
 
-    private workerName = `worker/${nanoid()}`;
-
     private worker: ChildProcess | null = null;
+
+    private workerName = `worker/${nanoid()}`;
 
     constructor(
         private transport: ITransport,
@@ -92,11 +93,23 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     }
 
     private async compileSource(source: string, filename: string): Promise<string> {
+        const cachedSource = this.compileCache.get(source);
+
+        if (cachedSource) {
+            return cachedSource;
+        }
+
         try {
             loggerClientLocal.debug(`Compile source file ${filename}`);
-            return await this.compile(source, filename);
+
+            const compiledSource = await this.compile(source, filename);
+
+            this.compileCache.set(source, compiledSource);
+
+            return compiledSource;
         } catch (error) {
             loggerClientLocal.error(`Compilation ${filename} failed`);
+
             throw {
                 error,
                 test: {

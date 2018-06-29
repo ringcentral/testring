@@ -1,27 +1,21 @@
+import * as resolve from 'resolve';
 
-const normalizeExport = (module) => {
-    // filtering null and other falsy values
-    if (!module) {
-        return module;
+const getFilename = (modulePath: string): string => {
+    try {
+        return require.resolve(modulePath);
+    } catch {
+        return resolve.sync(modulePath, {
+            basedir: process.cwd()
+        });
     }
-
-    // returning original module, if it wasn't transformed by babel
-    if (!module['__esModule']) {
-        return module;
-    }
-
-    // returning default as default
-    return module.default ? module.default : module;
 };
 
-export const requirePackage = (pluginName: string) => {
-    const fileName = require.resolve(pluginName);
+export const requirePackage = (modulePath: string) => {
+    const fileName = getFilename(modulePath);
 
     try {
-        const plugin = require(fileName);
-
-        return normalizeExport(plugin);
+        return require(fileName);
     } catch (exception) {
-        throw new ReferenceError(`Can't find plugin "${pluginName}". Is it installed?`);
+        throw new ReferenceError(`Can't find plugin "${modulePath}". Is it installed?`);
     }
 };

@@ -2,12 +2,11 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { TestEvents } from '@testring/types';
 import { Transport } from '@testring/transport';
-import { SANDBOX_TRANSPORT_NAME } from '../src/constants';
-import { TestWorker, TestWorkerPlugin } from '../src/test-worker';
+import { TestWorkerPlugin } from '@testring/types';
+import { TestWorker } from '../src/test-worker';
 
-xdescribe('TestWorkerInstance', () => {
+describe('TestWorkerInstance', () => {
     const defaultSyncTestContent = 'process.cwd()';
     const defaultFilename = './test.js';
 
@@ -38,64 +37,6 @@ xdescribe('TestWorkerInstance', () => {
                 })
                 .catch((message) => {
                     chai.expect(message.error).to.be.an.instanceof(Error);
-                    chai.expect(message.test.source).to.be.equal(rawSource);
-                    chai.expect(message.test.filename).to.be.equal(defaultFilename);
-
-                    callback();
-                })
-                .catch(callback)
-                .then(() => {
-                    instance.kill();
-                });
-        });
-
-        it('should run async test', async () => {
-            const rawSource = `
-                global['${SANDBOX_TRANSPORT_NAME}'].emit('${TestEvents.started}');
-                
-                setTimeout(() => {
-                    global['${SANDBOX_TRANSPORT_NAME}'].emit('${TestEvents.finished}');
-                }, 0);
-            `;
-
-            const transport = new Transport();
-            const testWorker = new TestWorker(transport);
-            const instance = testWorker.spawn();
-
-            try {
-                await instance.execute(rawSource, defaultFilename, {});
-            } catch (e) {
-                throw e.error;
-            } finally {
-                instance.kill();
-            }
-        });
-
-        it('should fail async test correctly',  (callback) => {
-            const errorText = 'oops';
-            const rawSource = `
-                global['${SANDBOX_TRANSPORT_NAME}'].emit('${TestEvents.started}');
-                
-                async function test() {
-                    throw new Error('${errorText}');
-                }
-                
-                test().catch((e) => {
-                    global['${SANDBOX_TRANSPORT_NAME}'].emit('${TestEvents.failed}', e);
-                });
-            `;
-
-            const transport = new Transport();
-            const testWorker = new TestWorker(transport);
-            const instance = testWorker.spawn();
-
-            instance.execute(rawSource, defaultFilename, {})
-                .then(() => {
-                    callback('Test was completed somehow');
-                })
-                .catch((message) => {
-                    chai.expect(message.error).to.be.an.instanceof(Error);
-                    chai.expect(message.error.message).to.be.equal(errorText);
                     chai.expect(message.test.source).to.be.equal(rawSource);
                     chai.expect(message.test.filename).to.be.equal(defaultFilename);
 
