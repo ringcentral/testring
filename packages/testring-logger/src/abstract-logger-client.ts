@@ -1,8 +1,6 @@
 import * as util from 'util';
-import { ITransport } from '@testring/types';
 import { transport } from '@testring/transport';
-import { ILogEntry } from '../interfaces';
-import { LoggerMessageTypes, LogTypes, LogLevel } from './structs';
+import { ITransport, ILogEntry, ILoggerClient, LoggerMessageTypes, LogTypes, LogLevel } from '@testring/types';
 
 const nanoid = require('nanoid');
 
@@ -12,7 +10,7 @@ const formatLog = (logLevel: LogLevel, time: Date, content: Array<any>): string 
     );
 };
 
-export abstract class AbstractLoggerClient {
+export abstract class AbstractLoggerClient implements ILoggerClient {
     constructor(
         protected transportInstance: ITransport = transport,
         protected logNesting: number = 0,

@@ -1,5 +1,4 @@
-import { IConfig } from '@testring/types';
-import { LogLevel } from '@testring/logger';
+import { IConfig, LogLevel } from '@testring/types';
 
 export const defaultConfiguration: IConfig = {
     report: './.testring_reports',

@@ -1,7 +1,6 @@
 import { IConfig, ITransport } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
-import { ILogEntry } from '../interfaces';
-import { LoggerMessageTypes, LogLevelNumeric, LogQueueStatus } from './structs';
+import { ILogEntry, ILoggerServer, LoggerMessageTypes, LogLevelNumeric, LogQueueStatus } from '@testring/types';
 
 export enum LoggerPlugins {
     beforeLog = 'beforeLog',
@@ -9,7 +8,7 @@ export enum LoggerPlugins {
     onError = 'onError',
 }
 
-export class LoggerServer extends PluggableModule {
+export class LoggerServer extends PluggableModule implements ILoggerServer {
 
     constructor(
         private config: IConfig,
