@@ -2,12 +2,18 @@ import { loggerClient } from '@testring/logger';
 
 // const nanoid = require('nanoid');
 
-// const DEFAULT_DIRECTORY_SETTING = 'WEBDRIVER.desiredCapabilities.chromeOptions.prefs.download.default_directory';
-
 export class TestManager {
 
+    private hasLoggedBusinessEvent = false;
+
     async logBusiness(message: string) {
-        // loggerClient.step(message);
+        if (this.hasLoggedBusinessEvent) {
+            loggerClient.endStep();
+        } else {
+            this.hasLoggedBusinessEvent = true;
+        }
+
+        loggerClient.startStep(message);
     }
 
     async logError(message) {
@@ -89,7 +95,7 @@ export class TestManager {
     //     await loggerClient.custom({registerStep: false, type: 'debug'}, 'Managers released.');
     // }
 
-    // async freeManager(instance, failed = false) {
+    // private async freeManager(instance, failed = false) {
     //     if (_.isFunction(instance.dispose)) {
     //         try {
     //             await instance.dispose(failed);
@@ -100,7 +106,7 @@ export class TestManager {
     //     _.remove(this._managers, instance);
     // }
 
-    // getCapabilities() {
+    // private getCapabilities() {
     //     // TODO make array work
     //     if (config.WEBDRIVER && _.has(config.WEBDRIVER, 'capabilities')) {
     //         return config.WEBDRIVER.capabilities;
@@ -111,31 +117,6 @@ export class TestManager {
     //     }
     //
     //     return null;
-    // }
-
-    /**
-     * @return {string[]}
-     * @private
-     */
-    // getChromeDriverArgs() {
-    //     const chromeDriver = require('chromedriver');
-    //
-    //     return [`-Dwebdriver.chrome.driver=${chromeDriver.path}`];
-    // }
-
-    /**
-     * @return {string[]}
-     * @private
-     */
-    // getFirefoxDriverArgs() {
-    //     let args = ['-browser', 'browserName=firefox'];
-    //     let capabilities = this.getCapabilities();
-    //
-    //     if (capabilities && capabilities.driver) {
-    //         args.push(`-Dwebdriver.firefox.bin=${capabilities.driver}`);
-    //     }
-    //
-    //     return args;
     // }
 
     /**
