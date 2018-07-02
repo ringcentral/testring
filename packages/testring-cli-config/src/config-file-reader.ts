@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import {loggerClientLocal} from '@testring/logger';
 import { IConfig } from '@testring/types';
 
 const findFile = (configPath: string) => {
@@ -47,15 +48,18 @@ const readJSONConfig = async (configPath: string): Promise<IConfig | null> => {
     }
 };
 
+
 const readConfig = async (
-    configPath: string | void,
-    config: IConfig,
-): Promise<IConfig | null> => {
+        configPath: string | void,
+        config: IConfig,
+    ): Promise<IConfig | null> => {
+  
     if (!configPath) {
         return null;
     }
 
     const extension = path.extname(configPath);
+    loggerClientLocal.log(`Read config file: ${configPath}`);
 
     switch (extension) {
         case '.js' :
