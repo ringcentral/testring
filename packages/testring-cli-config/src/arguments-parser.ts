@@ -13,14 +13,12 @@ yargs.version(pkg.version);
 
 createField('debug', {
     describe: 'debugging flag',
-    type: 'boolean',
-    default: undefined
+    type: 'boolean'
 });
 
 createField('bail', {
     describe: 'shut down app after test fail',
-    type: 'boolean',
-    default: undefined
+    type: 'boolean'
 });
 
 createField('workerLimit', {
@@ -63,9 +61,9 @@ createField('httpThrottle', {
     type: 'number'
 });
 
-createField('loggerLevel', {
+createField('logLevel', {
     describe: 'flag for filtering log records',
-    type: 'number'
+    type: 'string'
 });
 
 createField('envConfig', {

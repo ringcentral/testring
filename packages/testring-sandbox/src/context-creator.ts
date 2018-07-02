@@ -1,7 +1,5 @@
 import * as path from 'path';
-import { EventEmitter } from 'events';
 import { requirePackage } from '@testring/utils';
-import { SANDBOX_TRANSPORT_NAME } from '../../constants';
 import { Sandbox } from './sandbox';
 
 export const createContext = (sandbox: Sandbox, filename: string) => {
@@ -36,10 +34,7 @@ export const createContext = (sandbox: Sandbox, filename: string) => {
         }
     });
 
-    const innerBus = new EventEmitter();
-
     const ownContext = {
-        [SANDBOX_TRANSPORT_NAME]: innerBus,
         __dirname: path.dirname(filename),
         __filename: filename,
         require: requirePackage,

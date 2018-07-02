@@ -1,8 +1,6 @@
 import * as vm from 'vm';
-import { EventEmitter } from 'events';
-import { SANDBOX_TRANSPORT_NAME } from '../../constants';
 import { Script } from './script';
-import { createContext } from './content-creator';
+import { createContext } from './context-creator';
 
 class Sandbox {
 
@@ -18,10 +16,6 @@ class Sandbox {
 
     public getContext() {
         return this.context;
-    }
-
-    public getTransport(): EventEmitter {
-        return this.context[SANDBOX_TRANSPORT_NAME];
     }
 
     public execute(): any {

@@ -3,7 +3,7 @@
 
 import * as chai from 'chai';
 import { fileReaderFactory } from './utils';
-import { Sandbox } from '../src/worker/sandbox';
+import { Sandbox } from '../src/sandbox';
 
 const fixturesFileReader = fileReaderFactory(__dirname, 'fixtures', 'sandbox');
 
@@ -17,7 +17,6 @@ describe('Sandbox', () => {
     context('Compilation', () => {
         it('should compile module', async () => {
             const source = await fixturesFileReader('simple-module.js');
-
             const sandbox = new Sandbox(source, 'simple-module.js');
             const module = sandbox.execute();
 
@@ -26,7 +25,6 @@ describe('Sandbox', () => {
 
         it('should throw exception, if code have some inner exceptions', async () => {
             const source = await fixturesFileReader('eval-error.js');
-
             const sandbox = new Sandbox(source, 'eval-error.js');
 
             try {
@@ -40,7 +38,6 @@ describe('Sandbox', () => {
 
         it('should throw SyntaxError, when can\'t compile code', async () => {
             const source = await fixturesFileReader('es6-export.js');
-
             const sandbox = new Sandbox(source, 'es6-export.js');
 
             try {
@@ -69,7 +66,6 @@ describe('Sandbox', () => {
     context('Environment', () => {
         it('should have all primitives provided', async () => {
             const source = await fixturesFileReader('primitives.js');
-
             const sandbox = new Sandbox(source, 'primitives.js');
 
             sandbox.execute(); // should not throw
@@ -195,26 +191,6 @@ describe('Sandbox', () => {
             const sandbox = new Sandbox(source, 'commonjs-exports.js');
 
             chai.expect(sandbox.execute().equals).to.be.equal(true);
-        });
-    });
-
-    context('Transport', () => {
-        it('should send data by ref', (callback) => {
-            const data = {};
-
-            fixturesFileReader('transport-triggering.js').then((source) => {
-                const sandbox = new Sandbox(source, 'transport-triggering.js');
-                const transport = sandbox.getTransport();
-
-                transport.once('response', (responseData) => {
-                    chai.expect(responseData).to.be.equal(data);
-
-                    callback();
-                });
-
-                sandbox.execute();
-                transport.emit('request', data);
-            });
         });
     });
 });

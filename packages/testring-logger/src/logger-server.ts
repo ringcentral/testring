@@ -1,7 +1,6 @@
 import { IConfig, ITransport } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
-import { ILogEntry } from '../interfaces';
-import { LoggerMessageTypes, LogQueueStatus } from './structs';
+import { ILogEntry, ILoggerServer, LoggerMessageTypes, LogLevelNumeric, LogQueueStatus } from '@testring/types';
 
 export enum LoggerPlugins {
     beforeLog = 'beforeLog',
@@ -9,7 +8,7 @@ export enum LoggerPlugins {
     onError = 'onError',
 }
 
-export class LoggerServer extends PluggableModule {
+export class LoggerServer extends PluggableModule implements ILoggerServer {
 
     constructor(
         private config: IConfig,
@@ -75,10 +74,12 @@ export class LoggerServer extends PluggableModule {
         if (this.config.silent) {
             return;
         }
-        if (entry.logLevel < this.config.loggerLevel) {
+
+        if (LogLevelNumeric[entry.logLevel] < LogLevelNumeric[this.config.logLevel]) {
             return;
         }
 
+        // TODO add winton to log into FS and wrap this stream
         this.stdout.write(entry.formattedMessage + '\n');
 
         const shouldRun = this.queue.length === 0;

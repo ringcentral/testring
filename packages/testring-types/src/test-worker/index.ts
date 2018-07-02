@@ -1,6 +1,10 @@
 
 export type TestCompiler = (source: string, filename: string) => Promise<string>;
 
+export enum TestWorkerPlugin {
+    compile = 'compile'
+}
+
 export enum TestEvents {
     started = 'started',
     finished = 'finished',

@@ -1,1 +1,6 @@
-global.console.log(2);
+import { run } from 'testring';
+
+run(() => {
+    global.console.log(2);
+});
+

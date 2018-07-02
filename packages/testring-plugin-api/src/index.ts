@@ -8,4 +8,4 @@ const applyPlugins = (pluginsDestinations: IPluginDestinationMap, config: IConfi
     controller.initialize(config.plugins);
 };
 
-export { PluginAPI, applyPlugins };
+export { applyPlugins, PluginAPI };

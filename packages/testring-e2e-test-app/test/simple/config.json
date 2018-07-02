@@ -1,0 +1,7 @@
+{
+  "plugins": [
+    ["babel", {
+      "presets": ["es2015"]
+    }]
+  ]
+}

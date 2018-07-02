@@ -10,9 +10,11 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
+    "@testring/api": "0.1.0",
     "@testring/child-process": "0.1.0",
     "@testring/logger": "0.1.0",
     "@testring/pluggable-module": "0.1.0",
+    "@testring/sandbox": "0.1.0",
     "@testring/transport": "0.1.0",
     "@testring/types": "0.1.0",
     "@testring/utils": "0.1.0",

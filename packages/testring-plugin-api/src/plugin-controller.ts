@@ -1,5 +1,5 @@
 import { ConfigPluginDescriptor, IConfig, IPluginDestinationMap } from '@testring/types';
-import { requirePackage } from '@testring/utils';
+import { requirePlugin } from '@testring/utils';
 import { PluginAPI } from './plugin-api';
 
 export class PluginController {
@@ -30,7 +30,7 @@ export class PluginController {
             throw new SyntaxError(`Invalid plugin. Index: ${index}, got ${JSON.stringify(plugin)}`);
         }
 
-        const importedPlugin = requirePackage(pluginName);
+        const importedPlugin = requirePlugin(pluginName);
 
         if (typeof importedPlugin !== 'function') {
             throw new SyntaxError([

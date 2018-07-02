@@ -1,21 +1,20 @@
 import * as util from 'util';
-import { ITransport } from '@testring/types';
 import { transport } from '@testring/transport';
-import { ILogEntry } from '../interfaces';
-import { LoggerMessageTypes, LogTypes, LogLevel } from './structs';
+import { ITransport, ILogEntry, ILoggerClient, LoggerMessageTypes, LogTypes, LogLevel } from '@testring/types';
 
 const nanoid = require('nanoid');
 
-const formatLog = (time: Date, content: Array<any>): string => {
+const formatLog = (logLevel: LogLevel, time: Date, content: Array<any>): string => {
     return util.format(
-        `[${time.toLocaleTimeString()}]`, ...content
+        `[${logLevel}], [${time.toLocaleTimeString()}]`, ...content
     );
 };
 
-export abstract class AbstractLoggerClient {
+export abstract class AbstractLoggerClient implements ILoggerClient {
     constructor(
         protected transportInstance: ITransport = transport,
-        protected logLevel: number = LogLevel.info
+        protected logNesting: number = 0,
+        protected logLevel: LogLevel = LogLevel.info
     ) {
     }
 
@@ -36,10 +35,10 @@ export abstract class AbstractLoggerClient {
     protected buildEntry(
         type: LogTypes,
         content: Array<any>,
-        logLevel: number = this.logLevel
+        logLevel: LogLevel = this.logLevel
     ): ILogEntry {
         const time = new Date();
-        const formattedMessage = formatLog(time, content);
+        const formattedMessage = formatLog(logLevel, time, content);
         const currentStep = this.getCurrentStep();
         const previousStep = this.getPreviousStep();
 
@@ -65,7 +64,7 @@ export abstract class AbstractLoggerClient {
     protected createLog(
         type: LogTypes,
         content: Array<any>,
-        logLevel: number = this.logLevel
+        logLevel: LogLevel = this.logLevel
     ): void {
         const logEntry = this.buildEntry(type, content, logLevel);
 

@@ -5,8 +5,8 @@ import { Writable } from 'stream';
 import * as sinon from 'sinon';
 import * as chai from 'chai';
 import { TransportMock } from '@testring/test-utils';
+import { LoggerMessageTypes, LogLevel, LogTypes } from '@testring/types';
 import { LoggerServer, LoggerPlugins } from '../src/logger-server';
-import { LoggerMessageTypes, LogTypes } from '../src/structs';
 import { entry } from './fixtures/constants';
 import { voidLogger } from './fixtures/voidLogger';
 
@@ -180,7 +180,7 @@ describe('Logger Server', () => {
     it('should not call onLog hook if config.loggerLevel is greater than entry.logLevel', (callback) => {
         const config = {
             ...DEFAULT_CONFIG,
-            loggerLevel: 1,
+            logLevel: LogLevel.debug,
         };
         const transport = new TransportMock();
         const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
@@ -197,7 +197,7 @@ describe('Logger Server', () => {
             LoggerMessageTypes.REPORT,
             {
                 ...entry,
-                logLevel: 0,
+                logLevel: LogLevel.verbose,
             },
         );
 

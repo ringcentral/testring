@@ -1,5 +1,5 @@
 {
-  "name": "testring",
+  "name": "testring-build",
   "version": "0.1.0",
   "author": "RingCentral",
   "license": "MIT",
@@ -17,9 +17,9 @@
     "test:e2e-simple": "lerna run --stream --scope @testring/e2e-test-app e2e-simple",
     "test:coverage": "nyc npm test",
     "test:publish": "coveralls < ./coverage/lcov.info && rimraf ./coverage -G",
-    "cleanup": "lerna exec --parallel -- rimraf ./dist -G",
+    "cleanup": "lerna clean --yes && lerna exec --parallel -- rimraf ./dist -G",
     "build": "lerna exec -- tsc --target es2015",
-    "build:watch": "lerna exec -- tsc --target es2015 --watch",
+    "build:watch": "lerna exec --parallel -- tsc --target es2015 --watch",
     "build:clear": "npm run lint:src && npm run lint:test && npm run build",
     "build:precommit": "npm run build:clear && npm run test && npm run test:e2e-simple",
     "build:ci": "npm run build:clear && npm run test:coverage && npm run test:e2e",
@@ -53,11 +53,11 @@
   },
   "devDependencies": {
     "@types/chai": "4.1.4",
-    "@types/mocha": "5.2.3",
-    "@types/node": "10.3.6",
+    "@types/mocha": "5.2.4",
+    "@types/node": "10.5.1",
     "babel-eslint": "8.2.5",
     "chai": "4.1.2",
-    "coveralls": "3.0.1",
+    "coveralls": "3.0.2",
     "eslint": "5.0.1",
     "eslint-config-ringcentral": "0.3.0",
     "eslint-plugin-react": "7.9.1",
@@ -72,6 +72,6 @@
     "sinon": "6.0.1",
     "ts-node": "7.0.0",
     "typescript": "2.9.2",
-    "typescript-eslint-parser": "16.0.0"
+    "typescript-eslint-parser": "16.0.1"
   }
 }
