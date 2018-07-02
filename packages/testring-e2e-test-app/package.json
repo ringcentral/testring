@@ -9,7 +9,7 @@
   "author": "RingCentral",
   "license": "MIT",
   "scripts": {
-    "test:selenium": "testring --config='test/selenium/config.json'",
+    "test:selenium": "testring --config=test/selenium/config.json",
     "test:simple-run": "testring --tests='test/simple/*.spec.js'",
     "e2e-simple": "npm run test:simple-run",
     "e2e": "npm run test:simple-run && npm run test:selenium"

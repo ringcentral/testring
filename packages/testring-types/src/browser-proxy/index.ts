@@ -84,5 +84,88 @@ export interface IBrowserProxyController {
 }
 
 export interface IBrowserProxyPlugin {
-    click(selector: string): Promise<void>,
+    refresh(): Promise<any>,
+
+    click(selector: string): Promise<any>,
+
+    gridProxyDetails(): Promise<any>,
+
+    url(val: string): Promise<any>,
+
+    waitForExist(xpath: string, timeout: number): Promise<any>,
+
+    waitForVisible(xpath: string, timeout: number): Promise<any>,
+
+    isVisible(xpath: string): Promise<any>,
+
+    moveToObject(xpath: string, x: number, y: number): Promise<any>,
+
+    execute(fn: any, args: Array<any>): Promise<any>,
+
+    executeAsync(fn: any, args: Array<any>): Promise<any>,
+
+    getTitle(): Promise<any>,
+
+    clearElement(xpath: string): Promise<any>,
+
+    keys(value: any): Promise<any>,
+
+    elementIdText(elementId: string): Promise<any>,
+
+    elements(xpath: string): Promise<any>,
+
+    getValue(xpath: string): Promise<any>,
+
+    setValue(xpath: string, value: any): Promise<any>,
+
+    selectByIndex(xpath: string, value: any): Promise<any>,
+
+    selectByValue(xpath: string, value: any): Promise<any>,
+
+    selectByVisibleText(xpath: string, str: string): Promise<any>,
+
+    getAttribute(xpath: string, attr: any): Promise<any>,
+
+    windowHandleMaximize(): Promise<any>,
+
+    isEnabled(xpath: string): Promise<any>,
+
+    scroll(xpath: string, x: number, y: number): Promise<any>,
+
+    alertAccept(): Promise<any>,
+
+    alertDismiss(): Promise<any>,
+
+    alertText(): Promise<any>,
+
+    dragAndDrop(xpathSource: string, xpathDestination: string): Promise<any>,
+
+    addCommand(str: string, fn: any): Promise<any>,
+
+    getCookie(cookieName: string): Promise<any>,
+
+    deleteCookie(cookieName: string): Promise<any>,
+
+    getHTML(xpath: string, b: any): Promise<any>,
+
+    getCurrentTableId(): Promise<any>,
+
+    switchTab(tabId: string): Promise<any>,
+
+    close(tabId: string): Promise<any>,
+
+    getTabIds(): Promise<any>,
+
+    window(fn: any): Promise<any>,
+
+    windowHandles(): Promise<any>,
+
+    getTagName(xpath: string): Promise<any>,
+
+    isSelected(xpath: string): Promise<any>,
+
+    getText(xpath: string): Promise<any>,
+
+    elementIdSelected(id: string): Promise<any>,
+
 }
