@@ -9,9 +9,9 @@ export type createElementPathOptions = {
 export function createElementPath(options: createElementPathOptions = {}): any {
     const {
         strictMode,
-        ...elementPathOptions
+        flows,
     } = options;
 
-    let obj = new ElementPath(elementPathOptions);
+    let obj = new ElementPath({flows});
     return proxyfy(obj, strictMode);
 }
