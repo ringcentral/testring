@@ -1,5 +1,5 @@
 {
-  "name": "@testring/elementpath",
+  "name": "@testring/element-path",
   "version": "0.1.0",
   "main": "./dist/index.js",
   "typings": "./src/index.ts",
