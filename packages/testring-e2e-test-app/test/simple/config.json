@@ -1,6 +1,6 @@
 {
   "plugins": [
-    ["@testring/plugin-babel", {
+    ["babel", {
       "presets": ["es2015"]
     }]
   ]

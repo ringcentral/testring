@@ -11,7 +11,10 @@ import { transport } from '@testring/transport';
 // handles all errors, that was not cached inside framework
 
 const formatJSON = (obj: any) => {
-    let str = '\n';
+    const separator = '⋅';
+    const padding = 20;
+
+    let str = separator.repeat(padding) + '\n';
     let item;
 
     for (const key in obj) {
@@ -21,10 +24,10 @@ const formatJSON = (obj: any) => {
             item = JSON.stringify(obj[key]);
         }
 
-        str += `  ${(key + ' ').padEnd(20, '⋅')} ${item}\n`;
+        str += `${(key + ' ').padEnd(padding, separator)} ${item}\n`;
     }
 
-    return str + '\n';
+    return str + separator.repeat(padding);
 };
 
 export const runTests = async (argv: Array<string>, stdout: NodeJS.WritableStream) => {

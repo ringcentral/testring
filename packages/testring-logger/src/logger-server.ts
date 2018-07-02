@@ -80,6 +80,7 @@ export class LoggerServer extends PluggableModule {
             return;
         }
 
+        // TODO add winton to log into FS and wrap this stream
         this.stdout.write(entry.formattedMessage + '\n');
 
         const shouldRun = this.queue.length === 0;

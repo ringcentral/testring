@@ -1,4 +1,9 @@
-import { requirePackage } from './package-require';
+import { requirePackage, resolvePackage } from './package-require';
+
+const PREFIXES = [
+    '@testring/plugin-',
+    'testring-plugin-'
+];
 
 const normalizeExport = (module) => {
     // filtering null and other falsy values
@@ -15,8 +20,22 @@ const normalizeExport = (module) => {
     return module.default ? module.default : module;
 };
 
-export const requirePlugin = (pluginPath: string) => {
-    const plugin = requirePackage(pluginPath);
+export const requirePlugin = (pluginPath: string): any => {
+    let resolvedPlugin;
+
+    for (let index = 0; index < PREFIXES.length; index++) {
+        try {
+            resolvedPlugin = resolvePackage(PREFIXES[index] + pluginPath);
+        } catch (e) {
+            continue;
+        }
+    }
+
+    if (!resolvedPlugin) {
+        resolvedPlugin = resolvePackage(pluginPath);
+    }
+
+    const plugin = requirePackage(resolvedPlugin);
 
     return normalizeExport(plugin);
 };

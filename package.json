@@ -52,11 +52,11 @@
   },
   "devDependencies": {
     "@types/chai": "4.1.4",
-    "@types/mocha": "5.2.3",
-    "@types/node": "10.3.6",
+    "@types/mocha": "5.2.4",
+    "@types/node": "10.5.1",
     "babel-eslint": "8.2.5",
     "chai": "4.1.2",
-    "coveralls": "3.0.1",
+    "coveralls": "3.0.2",
     "eslint": "5.0.1",
     "eslint-config-ringcentral": "0.3.0",
     "eslint-plugin-react": "7.9.1",
@@ -71,6 +71,6 @@
     "sinon": "6.0.1",
     "ts-node": "7.0.0",
     "typescript": "2.9.2",
-    "typescript-eslint-parser": "16.0.0"
+    "typescript-eslint-parser": "16.0.1"
   }
 }

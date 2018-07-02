@@ -1,6 +1,6 @@
 import * as resolve from 'resolve';
 
-const getFilename = (modulePath: string): string => {
+export const resolvePackage = (modulePath: string): string => {
     try {
         return require.resolve(modulePath);
     } catch {
@@ -10,8 +10,8 @@ const getFilename = (modulePath: string): string => {
     }
 };
 
-export const requirePackage = (modulePath: string) => {
-    const fileName = getFilename(modulePath);
+export const requirePackage = (modulePath: string): any => {
+    const fileName = resolvePackage(modulePath);
 
     try {
         return require(fileName);
