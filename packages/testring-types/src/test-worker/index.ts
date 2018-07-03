@@ -1,24 +1,24 @@
 
 export type TestCompiler = (source: string, filename: string) => Promise<string>;
 
-export enum TestWorkerPlugin {
+export const enum TestWorkerPlugin {
     compile = 'compile'
 }
 
-export enum TestEvents {
-    started = 'started',
-    finished = 'finished',
-    failed = 'failed'
+export const enum TestEvents {
+    started = 'test/started',
+    finished = 'test/finished',
+    failed = 'test/failed'
 }
 
-export enum TestStatus {
+export const enum TestStatus {
     idle = 'idle',
     pending = 'pending',
     done = 'done',
     failed = 'failed'
 }
 
-export enum TestWorkerAction {
+export const enum TestWorkerAction {
     executeTest = 'executeTest',
     executionComplete = 'executionComplete'
 }

@@ -22,7 +22,7 @@ describe('Browser proxy controller functional test', () => {
             return fork(workerPath);
         });
 
-        const onAction = controller.getHook(BrowserProxyPlugins.onAction);
+        const onAction = controller.getHook(BrowserProxyPlugins.getPlugin);
 
         if (onAction) {
             onAction.tapPromise('testPlugin', async () => {

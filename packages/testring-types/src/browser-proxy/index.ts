@@ -1,13 +1,13 @@
-export enum BrowserProxyMessageTypes {
+export const enum BrowserProxyMessageTypes {
     execute = 'BrowserProxy/EXEC',
     response = 'BrowserProxy/RESPONSE',
 }
 
-export enum BrowserProxyPlugins {
-    onAction = 'BrowserProxy/ON_ACTION',
+export const enum BrowserProxyPlugins {
+    getPlugin = 'getPlugin'
 }
 
-export enum BrowserProxyActions {
+export const enum BrowserProxyActions {
     refresh = 'refresh',
     click = 'click',
     execute = 'execute',

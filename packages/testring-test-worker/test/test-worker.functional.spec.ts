@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
@@ -18,8 +17,8 @@ describe('TestWorkerInstance', () => {
 
             try {
                 await instance.execute(defaultSyncTestContent, defaultFilename, {});
-            } catch (e) {
-                throw e.error;
+            } catch (error) {
+                throw error;
             } finally {
                 instance.kill();
             }
