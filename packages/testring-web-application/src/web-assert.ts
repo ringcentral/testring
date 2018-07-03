@@ -13,7 +13,9 @@ export class WebAssert {
 
             const callback = chai.assert[methodName];
             const methodAsString = this[methodName].toString().replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg, '');
-            const methodArgs = methodAsString.slice(methodAsString.indexOf('(') + 1, methodAsString.indexOf(')')).match(/([^\s,]+)/g) || [];
+            const stringStart = methodAsString.indexOf('(') + 1;
+            const stringEnd = methodAsString.indexOf(')');
+            const methodArgs = methodAsString.slice(stringStart, stringEnd).match(/([^\s,]+)/g) || [];
 
             return async (...args) => {
                 let successMessage = callback.length === args.length ? args.pop() : '';
@@ -23,7 +25,8 @@ export class WebAssert {
                     if (index === args.length) {
                         break;
                     }
-                    assertArguments.push(methodArgs[index] + ' = ' + (typeof args[index] !== 'undefined' ? JSON.stringify(args[index]) : 'undefined'));
+                    let argsString = typeof args[index] !== 'undefined' ? JSON.stringify(args[index]) : 'undefined';
+                    assertArguments.push(methodArgs[index] + ' = ' + argsString);
                 }
                 assertMessage += '(' + assertArguments.join(', ') + ')';
 
