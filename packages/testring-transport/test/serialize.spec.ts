@@ -23,12 +23,30 @@ describe('serialize', () => {
     });
 
     it('should serialize error', () => {
-        const error = new TypeError('test');
+        const errorTypes = ['EvalError', 'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError'];
+
+
+        for (const errorType of errorTypes) {
+            const error = new global[errorType]('test');
+
+            const serializedError = serialize(error);
+            const deserializedError = deserialize(serializedError);
+
+            chai.expect(deserializedError.name).to.be.equal(error.name);
+            chai.expect(deserializedError.message).to.be.equal(error.message);
+            chai.expect(deserializedError.stack).to.be.equal(error.stack);
+        }
+    });
+
+    it('should serialize custom error', () => {
+        class CustomError extends Error {}
+
+        const error = new CustomError('test');
 
         const serializedError = serialize(error);
         const deserializedError = deserialize(serializedError);
 
-        chai.expect(deserializedError.name).to.be.equal(error.name);
+        chai.expect(deserializedError.name).to.be.equal('Error');
         chai.expect(deserializedError.message).to.be.equal(error.message);
         chai.expect(deserializedError.stack).to.be.equal(error.stack);
     });

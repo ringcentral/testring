@@ -58,9 +58,7 @@ describe('HttpServer', () => {
     });
 
     it('Should throw exception if response isn`t correct', (callback) => {
-        const rp = () => {
-            return Promise.resolve();
-        };
+        const rp = () => Promise.resolve();
 
         const transport = new TransportMock();
 
