@@ -6,7 +6,7 @@ const nanoid = require('nanoid');
 
 const formatLog = (logLevel: LogLevel, time: Date, content: Array<any>): string => {
     return util.format(
-        `[${logLevel}], [${time.toLocaleTimeString()}]`, ...content
+        `[${logLevel}] [${time.toLocaleTimeString()}]`, ...content
     );
 };
 
