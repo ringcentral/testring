@@ -17,10 +17,10 @@ const nanoid = require('nanoid');
 export class BrowserProxyController extends PluggableModule implements IBrowserProxyController {
     constructor(
         private transportInstance: ITransport,
-        private workerCreator: (onActionPluginPath: string) => ChildProcess,
+        private workerCreator: (onActionPluginPath: string, config: any) => ChildProcess,
     ) {
         super([
-            BrowserProxyPlugins.onAction,
+            BrowserProxyPlugins.getPlugin,
         ]);
 
         this.registerResponseListener();
@@ -98,9 +98,10 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
         this.kill();
 
         if (typeof this.workerCreator === 'function') {
-            let onActionPluginPath = await this.callHook(BrowserProxyPlugins.onAction, 'default');
+            // TODO add types to browser proxy plugin config
+            const externalPlugin = await this.callHook(BrowserProxyPlugins.getPlugin, 'default');
 
-            this.worker = this.workerCreator(onActionPluginPath);
+            this.worker = this.workerCreator(externalPlugin.plugin, externalPlugin.config);
         } else {
             loggerClientLocal.error(`Unsupported worker type "${typeof this.workerCreator}"`);
             throw new Error(`Unsupported worker type "${typeof this.workerCreator}"`);

@@ -4,8 +4,8 @@
 import * as chai from 'chai';
 import * as sinon from 'sinon';
 import { TransportMock } from '@testring/test-utils';
+import { LoggerMessageTypes, LogTypes, LogLevel } from '@testring/types';
 import { LoggerClient } from '../src/logger-client';
-import {LoggerMessageTypes, LogLevel, LogTypes} from '../src/structs';
 import { report } from './fixtures/constants';
 
 describe('Logger client', () => {

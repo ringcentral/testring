@@ -8,7 +8,7 @@ export class Script {
         this.script = new vm.Script(source, { filename });
     }
 
-    runInContext(context: vm.Context): void {
-        this.script.runInContext(context);
+    runInContext(context: vm.Context, options?: vm.RunningScriptOptions): void {
+        this.script.runInContext(context, options);
     }
 }

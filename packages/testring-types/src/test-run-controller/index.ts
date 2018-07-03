@@ -1,6 +1,6 @@
 import { ITestFile } from '../test-finder';
 
-export enum TestRunControllerHooks {
+export const enum TestRunControllerHooks {
     prepareQueue = 'prepareQueue',
     prepareParams = 'prepareParams',
     afterFinish = 'afterFinish',

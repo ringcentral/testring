@@ -1,15 +1,23 @@
 import { IConfig, ITransport } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
-import { ILogEntry } from '../interfaces';
-import { LoggerMessageTypes, LogQueueStatus } from './structs';
+import {
+    ILogEntry,
+    ILoggerServer,
+    LoggerMessageTypes,
+    LogQueueStatus,
+    LoggerPlugins
+} from '@testring/types';
 
-export enum LoggerPlugins {
-    beforeLog = 'beforeLog',
-    onLog = 'onLog',
-    onError = 'onError',
+export enum LogLevelNumeric {
+    verbose,
+    debug,
+    info,
+    warning,
+    error,
+    silent
 }
 
-export class LoggerServer extends PluggableModule {
+export class LoggerServer extends PluggableModule implements ILoggerServer {
 
     constructor(
         private config: IConfig,
@@ -72,17 +80,19 @@ export class LoggerServer extends PluggableModule {
     }
 
     private log(entry: ILogEntry): void {
+        // fast checking aliases
         if (this.config.silent) {
             return;
         }
-        if (entry.logLevel < this.config.loggerLevel) {
+
+        // filtering by log level
+        if (LogLevelNumeric[entry.logLevel] < LogLevelNumeric[this.config.logLevel]) {
             return;
         }
 
-        this.stdout.write(entry.formattedMessage + '\n');
-
         const shouldRun = this.queue.length === 0;
 
+        this.stdout.write(`${entry.formattedMessage}\n`);
         this.queue.push(entry);
 
         if (shouldRun) {

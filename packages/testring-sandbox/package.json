@@ -1,0 +1,16 @@
+{
+  "name": "@testring/sandbox",
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "dependencies": {
+    "@testring/api": "0.1.0",
+    "@testring/utils": "0.1.0"
+  }
+}

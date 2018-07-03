@@ -1,0 +1,19 @@
+{
+  "name": "testring",
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "bin": {
+    "testring": "./bin/testring.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "dependencies": {
+    "@testring/api": "0.1.0",
+    "@testring/cli": "0.1.0"
+  }
+}

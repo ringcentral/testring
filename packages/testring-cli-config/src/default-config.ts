@@ -1,8 +1,6 @@
-import { IConfig } from '@testring/types';
-import { LogLevel } from '@testring/logger';
+import { IConfig, LogLevel } from '@testring/types';
 
 export const defaultConfiguration: IConfig = {
-    report: './.testring_reports',
     config: './testring.json',
     tests: './tests/**/*.js',
     debug: false,
@@ -12,6 +10,5 @@ export const defaultConfiguration: IConfig = {
     retryCount: 3,
     retryDelay: 2000,
     httpThrottle: 0,
-    loggerLevel: LogLevel.info,
-    envConfig: undefined,
+    logLevel: LogLevel.info
 };

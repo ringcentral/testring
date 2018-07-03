@@ -1,4 +1,4 @@
-export enum TestsFinderPlugins {
+export const enum TestsFinderPlugins {
     beforeResolve = 'beforeResolve',
     afterResolve = 'afterResolve'
 }

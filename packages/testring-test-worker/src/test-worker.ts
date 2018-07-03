@@ -1,10 +1,7 @@
-import { ITransport, ITestWorker, TestCompiler } from '@testring/types';
+import { ITransport, ITestWorker, TestCompiler, TestWorkerPlugin } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { TestWorkerInstance } from './test-worker-instance';
 
-export enum TestWorkerPlugin {
-    compile = 'compile'
-}
 
 export class TestWorker extends PluggableModule implements ITestWorker {
 

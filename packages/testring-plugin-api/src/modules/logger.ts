@@ -1,11 +1,17 @@
 import { AbstractAPI } from './abstract';
-
-// TODO implement, when logger will be ready
+import { LoggerPlugins } from '@testring/types';
 
 export class LoggerAPI extends AbstractAPI {
 
+    beforeLog(handler: (log) => void) {
+        this.registrySyncPlugin(LoggerPlugins.beforeLog, handler);
+    }
+
     onLog(handler: (log) => void) {
-        // TODO replace string name with enum from logger
-        this.registrySyncPlugin('logReceived', handler);
+        this.registrySyncPlugin(LoggerPlugins.onLog, handler);
+    }
+
+    onError(handler: (log) => void) {
+        this.registrySyncPlugin(LoggerPlugins.onError, handler);
     }
 }

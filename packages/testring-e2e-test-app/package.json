@@ -9,10 +9,12 @@
   "author": "RingCentral",
   "license": "MIT",
   "scripts": {
-    "test:simple-run": "testring --tests=test/simple/*.spec.js",
+    "test:simple-run": "testring --config=test/simple/config.json --tests=test/simple/*.spec.js",
     "e2e": "npm run test:simple-run"
   },
   "dependencies": {
-    "@testring/cli": "0.1.0"
+    "@testring/plugin-babel": "0.1.0",
+    "babel-preset-es2015": "^6.24.1",
+    "testring": "0.1.0"
   }
 }

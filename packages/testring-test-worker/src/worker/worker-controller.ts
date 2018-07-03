@@ -7,11 +7,12 @@ import {
     TestEvents
 } from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
-import { Sandbox } from './sandbox';
+import { Sandbox } from '@testring/sandbox';
+import { bus } from '@testring/api';
 
 export class WorkerController {
 
-    private status: TestStatus = TestStatus.idle;
+    private status = TestStatus.idle;
 
     constructor(private transportInstance: ITransport) {
     }
@@ -20,6 +21,7 @@ export class WorkerController {
         this.transportInstance.on(TestWorkerAction.executeTest, async (message: ITestExecutionMessage) => {
             if (this.status === TestStatus.pending) {
                 loggerClientLocal.debug('Worker already busy with another test!');
+
                 throw new EvalError('Worker already busy with another test!');
             }
 
@@ -50,9 +52,8 @@ export class WorkerController {
 
         // TODO pass message.parameters somewhere inside webmanager
         const sandbox = new Sandbox(message.source, message.filename);
-        const sandboxTransport = sandbox.getTransport();
 
-        sandboxTransport.once(TestEvents.started, () => isAsync = true);
+        bus.once(TestEvents.started, () => isAsync = true);
 
         try {
             sandbox.execute();
@@ -63,10 +64,15 @@ export class WorkerController {
 
         if (isAsync) {
             return new Promise<TestStatus>((resolve, reject) => {
-                sandboxTransport.once(TestEvents.finished, () => {
+                bus.once(TestEvents.finished, () => {
+                    bus.removeAllListeners(TestEvents.finished);
+                    bus.removeAllListeners(TestEvents.failed);
                     resolve(TestStatus.done);
                 });
-                sandboxTransport.once(TestEvents.failed, (error) => {
+
+                bus.once(TestEvents.failed, (error) => {
+                    bus.removeAllListeners(TestEvents.finished);
+                    bus.removeAllListeners(TestEvents.failed);
                     reject(error);
                 });
             });

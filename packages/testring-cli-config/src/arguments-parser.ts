@@ -13,14 +13,12 @@ yargs.version(pkg.version);
 
 createField('debug', {
     describe: 'specify test data section',
-    type: 'boolean',
-    default: undefined
+    type: 'boolean'
 });
 
 createField('bail', {
     describe: 'shut down app after test fail',
-    type: 'boolean',
-    default: undefined
+    type: 'boolean'
 });
 
 createField('workerLimit', {
@@ -43,11 +41,6 @@ createField('config', {
     type: 'string'
 });
 
-createField('report', {
-    describe: 'report directory (logs, screenshots)',
-    type: 'string'
-});
-
 createField('tests', {
     describe: 'search path for test files (supports glob)',
     type: 'string'
@@ -63,9 +56,9 @@ createField('httpThrottle', {
     type: 'number'
 });
 
-createField('loggerLevel', {
+createField('logLevel', {
     describe: 'flag for filtering log records',
-    type: 'number'
+    type: 'string'
 });
 
 createField('envConfig', {

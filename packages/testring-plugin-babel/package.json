@@ -1,0 +1,17 @@
+{
+  "name": "@testring/plugin-babel",
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "dependencies": {
+    "@testring/plugin-api": "0.1.0",
+    "@types/babel-core": "6.25.5",
+    "babel-core": "^6.26.3"
+  }
+}
