@@ -1,7 +1,6 @@
 import { IConfig, LogLevel } from '@testring/types';
 
 export const defaultConfiguration: IConfig = {
-    report: './.testring_reports',
     config: './testring.json',
     tests: './tests/**/*.js',
     debug: false,

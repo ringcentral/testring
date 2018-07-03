@@ -41,11 +41,6 @@ createField('config', {
     type: 'string'
 });
 
-createField('report', {
-    describe: 'report directory (logs, screenshots)',
-    type: 'string'
-});
-
 createField('tests', {
     describe: 'search path for test files (supports glob)',
     type: 'string'

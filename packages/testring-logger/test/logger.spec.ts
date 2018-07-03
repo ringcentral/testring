@@ -2,8 +2,9 @@
 /// <reference types="mocha" />
 
 import { Writable } from 'stream';
+import { LoggerPlugins } from '@testring/types';
 import { TransportMock } from '@testring/test-utils';
-import { LoggerServer, LoggerPlugins } from '../src/logger-server';
+import { LoggerServer } from '../src/logger-server';
 import { LoggerClient } from '../src/logger-client';
 import { LoggerClientLocal } from '../src/logger-client-local';
 import { entry } from './fixtures/constants';

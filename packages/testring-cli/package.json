@@ -17,6 +17,7 @@
     "@testring/test-finder": "0.1.0",
     "@testring/test-run-controller": "0.1.0",
     "@testring/test-worker": "0.1.0",
-    "@testring/transport": "0.1.0"
+    "@testring/transport": "0.1.0",
+    "@testring/web-application": "0.1.0"
   }
 }

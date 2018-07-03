@@ -1,4 +1,4 @@
-export enum LogTypes {
+export const enum LogTypes {
     log = 'log',
     info = 'info',
     warning = 'warning',
@@ -7,7 +7,7 @@ export enum LogTypes {
     step = 'step',
 }
 
-export enum LogLevel {
+export const enum LogLevel {
     verbose = 'verbose',
     debug = 'debug',
     info = 'info',
@@ -16,23 +16,20 @@ export enum LogLevel {
     silent = 'silent'
 }
 
-export enum LogLevelNumeric {
-    verbose,
-    debug,
-    info,
-    warning,
-    error,
-    silent
-}
-
-export enum LoggerMessageTypes {
+export const enum LoggerMessageTypes {
     REPORT = 'logger/REPORT',
     REPORT_BATCH = 'logger/REPORT_BATCH',
 }
 
-export enum LogQueueStatus {
+export const enum LogQueueStatus {
     EMPTY = 'EMPTY',
     RUNNING = 'RUNNING',
+}
+
+export const enum LoggerPlugins {
+    beforeLog = 'beforeLog',
+    onLog = 'onLog',
+    onError = 'onError',
 }
 
 export interface ILogEntry {

@@ -5,6 +5,7 @@
     "allowJs": false,
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
+    "preserveConstEnums": true,
     "noEmitOnError": true,
     "declaration": false,
     "outDir": "dist",

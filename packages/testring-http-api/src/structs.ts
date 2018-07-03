@@ -1,10 +1,10 @@
-export enum HttpMessageType {
+export const enum HttpMessageType {
     send = 'sendHttpRequest',
     response = 'responseHttpRequest',
     reject = 'rejectHttpRequest'
 }
 
-export enum HttpServerPlugins {
+export const enum HttpServerPlugins {
     beforeRequest = 'beforeRequest',
     beforeResponse = 'beforeResponse'
 }

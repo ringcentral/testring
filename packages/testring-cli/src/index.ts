@@ -5,6 +5,8 @@ import { LoggerServer, loggerClientLocal } from '@testring/logger';
 import { TestsFinder } from '@testring/test-finder';
 import { TestWorker } from '@testring/test-worker';
 import { TestRunController } from '@testring/test-run-controller';
+import { WebApplicationController } from '@testring/web-application';
+import { browserProxyControllerFactory } from '@testring/browser-proxy';
 import { transport } from '@testring/transport';
 
 // CLI entry point, it makes all initialization job and
@@ -37,6 +39,8 @@ export const runTests = async (argv: Array<string>, stdout: NodeJS.WritableStrea
     const testFinder = new TestsFinder();
     const testWorker = new TestWorker(transport);
     const testRunController = new TestRunController(userConfig, testWorker);
+    const browserProxyController = browserProxyControllerFactory(transport);
+    const webApplicationController = new WebApplicationController(browserProxyController, transport);
 
     applyPlugins({
         logger: loggerServer,
@@ -50,6 +54,8 @@ export const runTests = async (argv: Array<string>, stdout: NodeJS.WritableStrea
     const tests = await testFinder.find(userConfig.tests);
 
     loggerClientLocal.info(`Found ${tests.length} test(s) to run.`);
+
+    webApplicationController.init();
 
     const testRunResult = await testRunController.runQueue(tests);
 

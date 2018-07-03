@@ -10,7 +10,9 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
+    "@testring/transport": "0.1.0",
     "@testring/types": "0.1.0",
-    "@testring/logger": "0.1.0"
+    "@testring/logger": "0.1.0",
+    "@testring/web-application": "0.1.0"
   }
 }

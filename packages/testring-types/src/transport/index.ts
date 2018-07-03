@@ -8,7 +8,7 @@ export type TransportSerializer = (v: any) => ITransportSerializedStruct;
 
 export type TransportDeserializer = (struct: ITransportSerializedStruct) => any;
 
-export enum TransportInternalMessageType {
+export const enum TransportInternalMessageType {
     messageResponse = '_messageResponse_'
 }
 
