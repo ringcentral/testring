@@ -13,7 +13,7 @@
     "unlink": "lerna exec --no-sort -- node \"../../bin/unlink\"",
     "lint:src": "lerna exec --parallel --no-sort -- eslint \"./src/**/*.ts\"",
     "lint:test": "lerna exec --parallel --no-sort -- eslint \"./test/**/*.ts\"",
-    "test": "lerna exec --parallel -- mocha --opts mocha.opts",
+    "test": "lerna exec -- mocha --opts mocha.opts",
     "test:watch": "lerna exec --no-sort -- mocha --opts mocha.opts --watch",
     "test:e2e": "lerna run --stream --scope @testring/e2e-test-app e2e",
     "test:coverage": "nyc npm test",

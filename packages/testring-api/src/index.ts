@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { TestEvents } from '@testring/types';
-import { TestContent } from './test-content';
+import { TestContext } from './test-context';
 
 const bus = new EventEmitter();
 
@@ -10,7 +10,7 @@ const run = async (...tests: Array<Function>) => {
 
     try {
         for (let test of tests) {
-            const context = new TestContent();
+            const context = new TestContext();
 
             await test.call(context);
         }

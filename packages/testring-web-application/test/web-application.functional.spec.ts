@@ -10,22 +10,22 @@ import { WebApplicationControllerEventType } from '../src/structs';
 import { ELEMENT_NAME, TEST_NAME } from './fixtures/constants';
 import { WebApplicationController } from '../src/web-application-controller';
 
+const nanoid = require('nanoid');
+
 const testProcessPath = path.resolve(__dirname, './fixtures/test-process.ts');
 
 // TODO add more tests
 describe('WebApplication functional', () => {
     it('should get messages from', (callback) => {
+        const processID = nanoid();
+
         const transport = new Transport();
         const browserProxyMock = new BrowserProxyControllerMock();
         const controller = new WebApplicationController(browserProxyMock, transport);
         const testProcess = fork(testProcessPath);
 
-        testProcess.stderr.on('data', (message) => {
-            callback(message);
-        });
-
         controller.init();
-        transport.registerChildProcess('test', testProcess);
+        transport.registerChildProcess(processID, testProcess);
 
         controller.on(WebApplicationControllerEventType.afterResponse, (message) => {
             try {
@@ -47,6 +47,10 @@ describe('WebApplication functional', () => {
                     testProcess.kill();
                 });
             }
+        });
+
+        testProcess.stderr.on('data', (message) => {
+            callback(message);
         });
     });
 });

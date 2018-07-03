@@ -2,7 +2,7 @@ import { loggerClient } from '@testring/logger';
 import { transport } from '@testring/transport';
 import { WebApplication } from '@testring/web-application';
 
-export class TestContent {
+export class TestContext {
 
     private hasLoggedBusinessEvent = false;
 
