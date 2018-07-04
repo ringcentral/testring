@@ -108,6 +108,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
                 loggerClientLocal.log(`[browser-proxy] [logged] ${message.toString()}`);
             });
 
+            this.worker = this.workerCreator(externalPlugin.plugin, externalPlugin.config);
         } else {
             loggerClientLocal.error(`Unsupported worker type "${typeof this.workerCreator}"`);
             throw new Error(`Unsupported worker type "${typeof this.workerCreator}"`);

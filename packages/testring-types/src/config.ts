@@ -4,7 +4,6 @@ export type ConfigPluginDescriptor = string | [string, PluginConfig];
 
 export interface IConfig {
     config: string,
-    report: string,
     debug: boolean,
     silent: boolean,
     bail: boolean,

@@ -37,7 +37,9 @@ export class WebApplicationController extends EventEmitter {
         private transport: ITransport
     ) {
         super();
+    }
 
+    public init() {
         this.transport.on(WebApplicationMessageType.execute, this.onExecuteRequest);
     }
 }

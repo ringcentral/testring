@@ -34,11 +34,28 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     }
 
     public async execute(rawSource: string, filename: string, parameters: object): Promise<any> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                return await this.makeExecutionRequest(rawSource, filename, parameters, resolve, reject);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    public kill() {
+        if (this.worker !== null) {
+            this.worker.kill();
+            loggerClientLocal.debug(`Killed child process ${this.workerName}`);
+            this.worker = null;
+        }
+    }
+
+    private async makeExecutionRequest(rawSource: string, filename: string, parameters: object, resolve, reject) {
         if (this.worker === null) {
             this.worker = this.createWorker();
         }
 
-        // TODO add cache
         // Calling external hooks to compile source
         const compiledSource = await this.compileSource(rawSource, filename);
 
@@ -54,42 +71,34 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         loggerClientLocal.log(`Running test: ${relativePath}`);
 
-        return new Promise(async (resolve, reject) => {
-            const removeListener = this.transport.onceFrom(this.workerName, TestWorkerAction.executionComplete,
-                (message: ITestExecutionCompleteMessage) => {
-                    if (message.error) {
-                        loggerClientLocal.error(`Test failed: ${relativePath}\n`, message.error);
+        const removeListener = this.transport.onceFrom(this.workerName, TestWorkerAction.executionComplete,
+            (message: ITestExecutionCompleteMessage) => {
+                if (message.error) {
+                    loggerClientLocal.error(`Test failed: ${relativePath}\n`, message.error);
 
-                        reject({
-                            error: message.error,
-                            test: testData
-                        });
-                    } else {
-                        loggerClientLocal.log(`Test success: ${relativePath}`);
-                        loggerClientLocal.debug(`Test result: ${message.status}`);
-                        resolve();
-                    }
-
-                    this.abortTestExecution = null;
+                    reject({
+                        error: message.error,
+                        test: testData
+                    });
+                } else {
+                    loggerClientLocal.log(`Test success: ${relativePath}`);
+                    loggerClientLocal.debug(`Test result: ${message.status}`);
+                    resolve();
                 }
-            );
 
-            this.abortTestExecution = () => {
-                loggerClientLocal.error('Aborted test execution');
-                removeListener();
-                reject();
-            };
-            loggerClientLocal.debug('Executing test ...');
-            this.makeRequest(TestWorkerAction.executeTest, testData);
-        });
-    }
+                this.abortTestExecution = null;
+            }
+        );
 
-    public kill() {
-        if (this.worker !== null) {
-            this.worker.kill();
-            loggerClientLocal.debug(`Killed child process ${this.workerName}`);
-            this.worker = null;
-        }
+        this.abortTestExecution = () => {
+            loggerClientLocal.error('Aborted test execution');
+            removeListener();
+            reject();
+        };
+
+        loggerClientLocal.debug('Executing test ...');
+
+        this.makeRequest(TestWorkerAction.executeTest, testData);
     }
 
     private async compileSource(source: string, filename: string): Promise<string> {
@@ -132,7 +141,8 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         });
 
         worker.stderr.on('data', (data) => {
-            loggerClientLocal.log(`[${this.workerName}] [error] ${data.toString().trim()}`);
+            console.log(data.toString());
+            loggerClientLocal.error(`[${this.workerName}] [error] ${data.toString().trim()}`);
         });
 
         worker.on('close', (error) => {

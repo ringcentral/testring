@@ -1,9 +1,9 @@
-export enum WebApplicationMessageType {
-    execute = 'WebManager/execute',
-    response = 'WebManager/response'
+export const enum WebApplicationMessageType {
+    execute = 'WebApplication/execute',
+    response = 'WebApplication/response'
 }
 
-export enum WebApplicationControllerEventType {
+export const enum WebApplicationControllerEventType {
     execute = 'execute',
     response = 'response',
     afterResponse = 'afterResponse',

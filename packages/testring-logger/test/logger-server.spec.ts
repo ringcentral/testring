@@ -5,8 +5,8 @@ import { Writable } from 'stream';
 import * as sinon from 'sinon';
 import * as chai from 'chai';
 import { TransportMock } from '@testring/test-utils';
-import { LoggerMessageTypes, LogLevel, LogTypes } from '@testring/types';
-import { LoggerServer, LoggerPlugins } from '../src/logger-server';
+import { LoggerMessageTypes, LogLevel, LogTypes, LoggerPlugins } from '@testring/types';
+import { LoggerServer } from '../src/logger-server';
 import { entry } from './fixtures/constants';
 import { voidLogger } from './fixtures/voidLogger';
 

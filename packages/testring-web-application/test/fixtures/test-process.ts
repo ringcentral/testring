@@ -6,5 +6,5 @@ const transport = new Transport();
 const application = new WebApplication(TEST_NAME, transport);
 
 setTimeout(() => {
-    application.waitForExist(ELEMENT_NAME);
+    application.waitForNotExists(ELEMENT_NAME);
 }, 200);
