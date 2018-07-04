@@ -62,6 +62,8 @@ export const runTests = async (argv: Array<string>, stdout: NodeJS.WritableStrea
 
     const testRunResult = await testRunController.runQueue(tests);
 
+    browserProxyController.kill();
+
     if (testRunResult) {
         throw new Error(`Failed ${testRunResult.length}/${tests.length} tests.`);
     }

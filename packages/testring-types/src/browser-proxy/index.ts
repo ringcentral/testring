@@ -64,16 +64,18 @@ export interface IBrowserProxyCommand {
 
 export interface IBrowserProxyMessage {
     uid: string,
+    applicant: string,
     command: IBrowserProxyCommand,
 }
 
 export interface IBrowserProxyCommandResponse {
     uid: string,
+    response: any,
     exception: Error | void,
 }
 
 export interface IBrowserProxyPendingCommand {
-    resolve: () => void,
+    resolve: (data?: any) => void,
     reject: (exception: Error) => void,
     command: IBrowserProxyCommand,
     applicant: string

@@ -11,7 +11,9 @@ const browserProxyControllerFactory = (transport: Transport) => {
         console.log(WORKER_PATH, pluginName, config);
 
         return fork(WORKER_PATH, [
+            '--name',
             pluginName,
+            '--config',
             JSON.stringify(config)
         ]);
     });

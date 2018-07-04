@@ -44,24 +44,28 @@ export class BrowserProxy {
             (message) => this.onMessage(message),
         );
 
-        process.on('exit', () => {
-            this.plugin.kill();
+        process.on('exit', async () => {
+            await this.plugin.kill();
         });
     }
 
     private async onMessage(message: IBrowserProxyMessage) {
-        const {uid, command} = message;
+        const {uid, applicant, command} = message;
+
+        console.log('message', command);
 
         try {
-            await this.plugin[command.action](message.uid, ...command.args);
+            const response = await this.plugin[command.action](applicant, ...command.args);
 
             loggerClient.debug(
                 `Browser Proxy: Send message [type=${BrowserProxyMessageTypes.response}] to parent process`
             );
+
             this.transportInstance.broadcast(
                 BrowserProxyMessageTypes.response,
                 {
                     uid,
+                    response
                 },
             );
         } catch (exception) {

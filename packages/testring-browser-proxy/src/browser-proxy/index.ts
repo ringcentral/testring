@@ -1,4 +1,10 @@
-//export { BrowserProxy } from './browser-proxy';
+import * as yargs from 'yargs';
+import { transport } from '@testring/transport';
+import { BrowserProxy } from './browser-proxy';
 
+const args = yargs.argv;
 
-// new BrowserProxy();
+const name = args.name;
+const config = JSON.parse(args.config);
+
+new BrowserProxy(transport, name, config);

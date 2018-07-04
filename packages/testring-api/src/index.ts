@@ -14,7 +14,7 @@ const run = async (...tests: Array<Function>) => {
         for (let test of tests) {
             const context = new TestContext();
 
-            await test.call(context);
+            await test.call(context, context);
         }
 
         bus.emit(TestEvents.finished);

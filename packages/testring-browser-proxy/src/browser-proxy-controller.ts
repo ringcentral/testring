@@ -41,8 +41,8 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
         );
     }
 
-    private onCommandResponse(response: IBrowserProxyCommandResponse): void {
-        const { uid, exception } = response;
+    private onCommandResponse(commandResponse: IBrowserProxyCommandResponse): void {
+        const { uid, response, exception } = commandResponse;
         const item = this.pendingCommandsPool.get(uid);
 
         if (item) {
@@ -54,7 +54,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
                 return reject(exception);
             }
 
-            return resolve();
+            return resolve(response);
         } else {
             loggerClientLocal.error(`Browser Proxy controller: cannot find command with uid ${uid}`);
             throw new ReferenceError(`Cannot find command with uid ${uid}`);
@@ -71,9 +71,13 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
         this.pendingCommandsPool.clear();
     }
 
-    private onExit = (): void => {
+    private onExit = (...error): void => {
+        console.log(...error);
+
         delete this.workerId;
+
         loggerClientLocal.debug('Browser Proxy controller: miss connection with child process');
+
         this.onProxyDisconnect();
         this.spawn();
     };
@@ -96,30 +100,35 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
     }
 
     public async spawn(): Promise<number> {
-        this.kill();
+        // this.kill();
 
-        if (typeof this.workerCreator === 'function') {
-            // TODO add types to browser proxy plugin config
-            const externalPlugin = await this.callHook(BrowserProxyPlugins.getPlugin, 'default', {});
+        console.trace('spawn');
 
-            this.worker = this.workerCreator(externalPlugin.plugin, externalPlugin.config);
-
-            this.worker.stdout.on('data', (message) => {
-                loggerClientLocal.log(`[browser-proxy] [logged] ${message.toString()}`);
-            });
-
-            this.worker = this.workerCreator(externalPlugin.plugin, externalPlugin.config);
-        } else {
+        if (typeof this.workerCreator !== 'function') {
             loggerClientLocal.error(`Unsupported worker type "${typeof this.workerCreator}"`);
             throw new Error(`Unsupported worker type "${typeof this.workerCreator}"`);
         }
 
+        // TODO add types to browser proxy plugin config
+        const externalPlugin = await this.callHook(BrowserProxyPlugins.getPlugin, 'default', {});
+
+
+        this.worker = this.workerCreator(externalPlugin.plugin, externalPlugin.config);
+
         this.workerId = `proxy-${this.worker.pid}`;
 
-        loggerClientLocal.debug(`Browser Proxy controller: register child process [id = ${this.workerId}]`);
-        this.transportInstance.registerChildProcess(this.workerId, this.worker);
+
         this.worker.on('exit', this.onExit);
+
+        this.worker.stdout.on('data', (message) => {
+            loggerClientLocal.log(`[browser-proxy] [logged] ${message.toString()}`);
+        });
+
+        this.transportInstance.registerChildProcess(this.workerId, this.worker);
+
         this.onProxyConnect();
+
+        loggerClientLocal.debug(`Browser Proxy controller: register child process [id = ${this.workerId}]`);
 
         return this.worker.pid;
     }

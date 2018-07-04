@@ -2,11 +2,19 @@ import { IBrowserProxyPlugin } from '@testring/types';
 import { spawn } from '@testring/child-process';
 import { Config, Client, remote } from 'webdriverio';
 import { ChildProcess } from 'child_process';
+import { loggerClient } from '@testring/logger';
 
-/*
-    TODO merge with master
- */
 
+const DEFAULT_CONFIG: Config = {
+    port: 3031,
+    desiredCapabilities: {
+        browserName: 'chrome'
+    }
+};
+
+function delay(timeout) {
+    return new Promise((resolve) => setTimeout(() => resolve(), timeout));
+}
 
 export class SeleniumPlugin implements IBrowserProxyPlugin {
 
@@ -20,11 +28,21 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    private getClient(applicant) {
-        if (!this.browserClients.has(applicant)) {
-            this.browserClients.set(applicant, remote(this.config));
+    private async createClient(applicant: string): Promise<any> {
+        if (this.browserClients.has(applicant)) {
+            return;
         }
-        return this.browserClients.get(applicant);
+
+        await delay(1000);
+
+        const client = remote({
+            ...DEFAULT_CONFIG,
+            ...this.config
+        } as any);
+
+        await client.init();
+
+        this.browserClients.set(applicant, client);
     }
 
     private getChromeDriverArgs() {
@@ -38,309 +56,375 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const seleniumJarPath = seleniumServer.path;
         let args = [
             ...this.getChromeDriverArgs(),
-            '-jar', seleniumJarPath
+            '-jar', seleniumJarPath,
+            '-port', DEFAULT_CONFIG.port
         ];
 
         this.localSelenium = spawn('java', args);
 
+        this.localSelenium.stdout.on('data', (data) => {
+            loggerClient.debug(data.toString());
+        });
+
+        this.localSelenium.stderr.on('data', (data) => {
+            loggerClient.debug(data.toString());
+        });
+
     }
 
-    public kill() {
+    public async kill() {
+        const requests: Array<any> = [];
+
+        this.browserClients.forEach((client) => {
+            requests.push(client.end());
+        });
+
+        await Promise.all(requests);
+
         this.localSelenium.kill();
     }
 
     async refresh(applicant: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
+
         if (client) {
-            return this.browserClients[applicant].refresh();
+            return client.refresh();
         }
     }
 
     async click(applicant: string, selector: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].click(selector);
+            return client.click(selector);
         }
     }
 
     async gridProxyDetails(applicant: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].gridProxyDetails();
+            return client.gridProxyDetails();
         }
     }
 
     async url(applicant: string, val: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+
+        const client = this.browserClients.get(applicant);
+
         if (client) {
-            return this.browserClients[applicant].url(val);
+            return client.url(val);
         }
     }
 
     async waitForExist(applicant: string, xpath: string, timeout: number) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].waitForExist(xpath, timeout);
+            return client.waitForExist(xpath, timeout);
         }
     }
 
     async waitForVisible(applicant: string, xpath: string, timeout: number) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].waitForVisible(xpath, timeout);
+            return client.waitForVisible(xpath, timeout);
         }
     }
 
     async isVisible(applicant: string, xpath: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].isVisible(xpath);
+            return client.isVisible(xpath);
         }
     }
 
     async moveToObject(applicant: string, xpath: string, x: number, y: number) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].moveToObject(xpath, x, y);
+            return client.moveToObject(xpath, x, y);
         }
     }
 
     async execute(applicant: string, fn: any, args: Array<any>) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].execute(fn, ...args);
+            return client.execute(fn, ...args);
         }
     }
 
     async executeAsync(applicant: string, fn: any, args: Array<any>) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].executeAsync(fn, ...args);
+            return client.executeAsync(fn, ...args);
         }
     }
 
     async getTitle(applicant: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+
+        const client = this.browserClients.get(applicant);
+
         if (client) {
-            return this.browserClients[applicant].getTitle();
+            return client.getTitle();
         }
     }
 
     async clearElement(applicant: string, xpath: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+
+        const client = this.browserClients.get(applicant);
+
         if (client) {
-            return this.browserClients[applicant].clearElement(xpath);
+            return client.clearElement(xpath);
         }
     }
 
     async keys(applicant: string, value: any) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            this.browserClients[applicant].keys(value);
+            client.keys(value);
         }
     }
 
     async elementIdText(applicant: string, elementId: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].elementIdText(elementId);
+            return client.elementIdText(elementId);
         }
     }
 
     async elements(applicant: string, xpath: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].elements(xpath);
+            return client.elements(xpath);
         }
     }
 
     async getValue(applicant: string, xpath: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].getValue(xpath);
+            return client.getValue(xpath);
         }
     }
 
     async setValue(applicant: string, xpath: string, value: any) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].setValue(xpath, value);
+            return client.setValue(xpath, value);
         }
     }
 
     async selectByIndex(applicant: string, xpath: string, value: any) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].selectByIndex(xpath, value);
+            return client.selectByIndex(xpath, value);
         }
     }
 
     async selectByValue(applicant: string, xpath: string, value: any) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].selectByValue(xpath, value);
+            return client.selectByValue(xpath, value);
         }
     }
 
     async selectByVisibleText(applicant: string, xpath: string, str: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].selectByVisibleText(xpath, str);
+            return client.selectByVisibleText(xpath, str);
         }
     }
 
     async getAttribute(applicant: string, xpath: string, attr: any) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            this.browserClients[applicant].getAttribute(xpath, attr);
+            client.getAttribute(xpath, attr);
         }
     }
 
     async windowHandleMaximize(applicant: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].windowHandleMaximize();
+            return client.windowHandleMaximize();
         }
     }
 
     async isEnabled(applicant: string, xpath: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].isEnabled(xpath);
+            return client.isEnabled(xpath);
         }
     }
 
     async scroll(applicant: string, xpath: string, x: number, y: number) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].scroll(xpath, x, y);
+            return client.scroll(xpath, x, y);
         }
     }
 
     async alertAccept(applicant: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].alertAccept();
+            return client.alertAccept();
         }
     }
 
     async alertDismiss(applicant: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].alertDismiss();
+            return client.alertDismiss();
         }
     }
 
     async alertText(applicant: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].alertText();
+            return client.alertText();
         }
     }
 
     async dragAndDrop(applicant: string, xpathSource: string, xpathDestination: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].dragAndDrop(xpathSource, xpathDestination);
+            return client.dragAndDrop(xpathSource, xpathDestination);
         }
     }
 
     async addCommand(applicant: string, str: string, fn: any) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].addCommand(str, fn);
+            return client.addCommand(str, fn);
         }
     }
 
     async getCookie(applicant: string, cookieName: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].getCookie(cookieName);
+            return client.getCookie(cookieName);
         }
     }
 
     async deleteCookie(applicant: string, cookieName: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].deleteCookie(cookieName);
+            return client.deleteCookie(cookieName);
         }
     }
 
     async getHTML(applicant: string, xpath: string, b: any) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].getHTML(xpath, b);
+            return client.getHTML(xpath, b);
         }
     }
 
     async getCurrentTableId(applicant: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].getCurrentTabId();
+            return client.getCurrentTabId();
         }
     }
 
     async switchTab(applicant: string, tabId: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].switchTab(tabId);
+            return client.switchTab(tabId);
         }
     }
 
     async close(applicant: string, tabId: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].close(tabId);
+            return client.close(tabId);
         }
     }
 
     async getTabIds(applicant: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].getTabIds();
+            return client.getTabIds();
         }
     }
 
     async window(applicant: string, fn: any) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].window(fn);
+            return client.window(fn);
         }
     }
 
     async windowHandles(applicant: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].windowHandles();
+            return client.windowHandles();
         }
     }
 
 
     async getTagName(applicant: string, xpath: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].getTagName(xpath);
+            return client.getTagName(xpath);
         }
     }
 
     async isSelected(applicant: string, xpath: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].isSelected(xpath);
+            return client.isSelected(xpath);
         }
     }
 
     async getText(applicant: string, xpath: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].getText(xpath);
+            return client.getText(xpath);
         }
     }
 
     async elementIdSelected(applicant: string, id: string) {
-        const client = this.getClient(applicant);
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
         if (client) {
-            return this.browserClients[applicant].elementIdSelected(id);
+            return client.elementIdSelected(id);
         }
     }
 }
