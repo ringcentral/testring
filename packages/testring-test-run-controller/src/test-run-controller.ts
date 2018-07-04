@@ -115,6 +115,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         } else {
             this.errors.push(exception.error);
 
+            await this.callHook(TestRunControllerHooks.afterTest, test);
+
             await this.occupyWorker(worker, queue);
         }
     }
