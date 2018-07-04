@@ -1,6 +1,8 @@
 import { EventEmitter } from 'events';
 import { TestEvents } from '@testring/types';
 
+export { WebApplication } from '@testring/web-application';
+
 const bus = new EventEmitter();
 
 const run = async (...tests: Array<Function>) => {

@@ -20,7 +20,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
         private workerCreator: (onActionPluginPath: string, config: any) => ChildProcess,
     ) {
         super([
-            BrowserProxyPlugins.getPlugin,
+            [BrowserProxyPlugins.getPlugin, 2],
         ]);
 
         this.registerResponseListener();
@@ -79,7 +79,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
     };
 
     private send(item: IBrowserProxyPendingCommand): void {
-        const { command } = item;
+        const { command, applicant } = item;
         const uid = nanoid();
 
         this.pendingCommandsPool.set(uid, item);
@@ -90,6 +90,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
             {
                 uid,
                 command,
+                applicant
             },
         );
     }
@@ -99,9 +100,14 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
         if (typeof this.workerCreator === 'function') {
             // TODO add types to browser proxy plugin config
-            const externalPlugin = await this.callHook(BrowserProxyPlugins.getPlugin, 'default');
+            const externalPlugin = await this.callHook(BrowserProxyPlugins.getPlugin, 'default', {});
 
             this.worker = this.workerCreator(externalPlugin.plugin, externalPlugin.config);
+
+            this.worker.stdout.on('data', (message) => {
+                loggerClientLocal.log(`[browser-proxy] [logged] ${message.toString()}`);
+            });
+
         } else {
             loggerClientLocal.error(`Unsupported worker type "${typeof this.workerCreator}"`);
             throw new Error(`Unsupported worker type "${typeof this.workerCreator}"`);
@@ -117,12 +123,13 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
         return this.worker.pid;
     }
 
-    public execute(command: IBrowserProxyCommand): Promise<void> {
+    public execute(applicant: string, command: IBrowserProxyCommand): Promise<void> {
         return new Promise((resolve, reject) => {
             const item: IBrowserProxyPendingCommand = {
                 resolve,
                 reject,
                 command,
+                applicant
             };
 
             if (this.worker && this.worker.connected) {

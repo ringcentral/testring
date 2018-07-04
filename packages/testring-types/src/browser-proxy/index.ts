@@ -76,99 +76,102 @@ export interface IBrowserProxyPendingCommand {
     resolve: () => void,
     reject: (exception: Error) => void,
     command: IBrowserProxyCommand,
+    applicant: string
 }
 
 export interface IBrowserProxyController {
     spawn(): Promise<number>;
 
-    execute(command: IBrowserProxyCommand): Promise<void>;
+    execute(applicant: string, command: IBrowserProxyCommand): Promise<void>;
 
     kill();
 }
 
 export interface IBrowserProxyPlugin {
-    refresh(): Promise<any>,
+    kill(): void;
 
-    click(selector: string): Promise<any>,
+    refresh(applicant: string): Promise<any>,
 
-    gridProxyDetails(): Promise<any>,
+    click(applicant: string, selector: string): Promise<any>,
 
-    url(val: string): Promise<any>,
+    gridProxyDetails(applicant: string): Promise<any>,
 
-    waitForExist(xpath: string, timeout: number): Promise<any>,
+    url(applicant: string, val: string): Promise<any>,
 
-    waitForVisible(xpath: string, timeout: number): Promise<any>,
+    waitForExist(applicant: string, xpath: string, timeout: number): Promise<any>,
 
-    isVisible(xpath: string): Promise<any>,
+    waitForVisible(applicant: string, xpath: string, timeout: number): Promise<any>,
 
-    moveToObject(xpath: string, x: number, y: number): Promise<any>,
+    isVisible(applicant: string, xpath: string): Promise<any>,
 
-    execute(fn: any, args: Array<any>): Promise<any>,
+    moveToObject(applicant: string, xpath: string, x: number, y: number): Promise<any>,
 
-    executeAsync(fn: any, args: Array<any>): Promise<any>,
+    execute(applicant: string, fn: any, args: Array<any>): Promise<any>,
 
-    getTitle(): Promise<any>,
+    executeAsync(applicant: string, fn: any, args: Array<any>): Promise<any>,
 
-    clearElement(xpath: string): Promise<any>,
+    getTitle(applicant: string): Promise<any>,
 
-    keys(value: any): Promise<any>,
+    clearElement(applicant: string, xpath: string): Promise<any>,
 
-    elementIdText(elementId: string): Promise<any>,
+    keys(applicant: string, value: any): Promise<any>,
 
-    elements(xpath: string): Promise<any>,
+    elementIdText(applicant: string, elementId: string): Promise<any>,
 
-    getValue(xpath: string): Promise<any>,
+    elements(applicant: string, xpath: string): Promise<any>,
 
-    setValue(xpath: string, value: any): Promise<any>,
+    getValue(applicant: string, xpath: string): Promise<any>,
 
-    selectByIndex(xpath: string, value: any): Promise<any>,
+    setValue(applicant: string, xpath: string, value: any): Promise<any>,
 
-    selectByValue(xpath: string, value: any): Promise<any>,
+    selectByIndex(applicant: string, xpath: string, value: any): Promise<any>,
 
-    selectByVisibleText(xpath: string, str: string): Promise<any>,
+    selectByValue(applicant: string, xpath: string, value: any): Promise<any>,
 
-    getAttribute(xpath: string, attr: any): Promise<any>,
+    selectByVisibleText(applicant: string, xpath: string, str: string): Promise<any>,
 
-    windowHandleMaximize(): Promise<any>,
+    getAttribute(applicant: string, xpath: string, attr: any): Promise<any>,
 
-    isEnabled(xpath: string): Promise<any>,
+    windowHandleMaximize(applicant: string): Promise<any>,
 
-    scroll(xpath: string, x: number, y: number): Promise<any>,
+    isEnabled(applicant: string, xpath: string): Promise<any>,
 
-    alertAccept(): Promise<any>,
+    scroll(applicant: string, xpath: string, x: number, y: number): Promise<any>,
 
-    alertDismiss(): Promise<any>,
+    alertAccept(applicant: string): Promise<any>,
 
-    alertText(): Promise<any>,
+    alertDismiss(applicant: string): Promise<any>,
 
-    dragAndDrop(xpathSource: string, xpathDestination: string): Promise<any>,
+    alertText(applicant: string): Promise<any>,
 
-    addCommand(str: string, fn: any): Promise<any>,
+    dragAndDrop(applicant: string, xpathSource: string, xpathDestination: string): Promise<any>,
 
-    getCookie(cookieName: string): Promise<any>,
+    addCommand(applicant: string, str: string, fn: any): Promise<any>,
 
-    deleteCookie(cookieName: string): Promise<any>,
+    getCookie(applicant: string, cookieName: string): Promise<any>,
 
-    getHTML(xpath: string, b: any): Promise<any>,
+    deleteCookie(applicant: string, cookieName: string): Promise<any>,
 
-    getCurrentTableId(): Promise<any>,
+    getHTML(applicant: string, xpath: string, b: any): Promise<any>,
 
-    switchTab(tabId: string): Promise<any>,
+    getCurrentTableId(applicant: string): Promise<any>,
 
-    close(tabId: string): Promise<any>,
+    switchTab(applicant: string, tabId: string): Promise<any>,
 
-    getTabIds(): Promise<any>,
+    close(applicant: string, tabId: string): Promise<any>,
 
-    window(fn: any): Promise<any>,
+    getTabIds(applicant: string): Promise<any>,
 
-    windowHandles(): Promise<any>,
+    window(applicant: string, fn: any): Promise<any>,
 
-    getTagName(xpath: string): Promise<any>,
+    windowHandles(applicant: string): Promise<any>,
 
-    isSelected(xpath: string): Promise<any>,
+    getTagName(applicant: string, xpath: string): Promise<any>,
 
-    getText(xpath: string): Promise<any>,
+    isSelected(applicant: string, xpath: string): Promise<any>,
 
-    elementIdSelected(id: string): Promise<any>,
+    getText(applicant: string, xpath: string): Promise<any>,
+
+    elementIdSelected(applicant: string, id: string): Promise<any>,
 
 }

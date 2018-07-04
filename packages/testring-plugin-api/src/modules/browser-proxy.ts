@@ -1,3 +1,4 @@
+import { BrowserProxyPlugins } from '@testring/types';
 import { AbstractAPI } from './abstract';
 
 export class BrowserProxyAPI extends AbstractAPI {
@@ -13,7 +14,7 @@ export class BrowserProxyAPI extends AbstractAPI {
 
         BrowserProxyAPI.currentPlugin = this.pluginName;
 
-        const hook = this.module.getHook('proxyPlugin');
+        const hook = this.module.getHook(BrowserProxyPlugins.getPlugin);
 
         if (hook) {
             hook.tapPromise(this.pluginName, async () => ({

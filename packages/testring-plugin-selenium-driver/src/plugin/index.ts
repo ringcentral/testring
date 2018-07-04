@@ -1,180 +1,347 @@
 import { IBrowserProxyPlugin } from '@testring/types';
+import { spawn } from '@testring/child-process';
 import { Config, Client, remote } from 'webdriverio';
+import { ChildProcess } from 'child_process';
 
-class SeleniumPlugin implements IBrowserProxyPlugin {
+/*
+    TODO merge with master
+ */
 
-    private browserClient: Client<void>;
 
-    constructor(config: Config) {
-        this.browserClient = remote(config);
+export class SeleniumPlugin implements IBrowserProxyPlugin {
+
+    private browserClients: Map<string, Client<any>> = new Map();
+
+    private localSelenium: ChildProcess;
+
+    constructor(private config: Config) {
+        if (this.config.host === undefined) {
+            this.runLocalSelenium();
+        }
     }
 
-    async refresh() {
-        return this.browserClient.refresh();
+    private getClient(applicant) {
+        if (!this.browserClients.has(applicant)) {
+            this.browserClients.set(applicant, remote(this.config));
+        }
+        return this.browserClients.get(applicant);
     }
 
-    async click(selector: string) {
-        return this.browserClient.click(selector);
-    }
-    async gridProxyDetails() {
-        return this.browserClient.gridProxyDetails();
-    }
+    private getChromeDriverArgs() {
+        const chromeDriver = require('chromedriver');
 
-    async url(val: string) {
-        return this.browserClient.url(val);
+        return [`-Dwebdriver.chrome.driver=${chromeDriver.path}`];
     }
 
-    async waitForExist(xpath: string, timeout: number) {
-        return this.browserClient.waitForExist(xpath, timeout);
+    async runLocalSelenium() {
+        const seleniumServer = require('selenium-server');
+        const seleniumJarPath = seleniumServer.path;
+        let args = [
+            ...this.getChromeDriverArgs(),
+            '-jar', seleniumJarPath
+        ];
+
+        this.localSelenium = spawn('java', args);
+
     }
 
-    async waitForVisible(xpath: string, timeout: number) {
-        return this.browserClient.waitForVisible(xpath, timeout);
+    public kill() {
+        this.localSelenium.kill();
     }
 
-    async isVisible(xpath: string) {
-        return this.browserClient.isVisible(xpath);
+    async refresh(applicant: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].refresh();
+        }
     }
 
-    async moveToObject(xpath: string, x: number, y: number) {
-        return this.browserClient.moveToObject(xpath, x, y);
+    async click(applicant: string, selector: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].click(selector);
+        }
     }
 
-    async execute(fn: any, args: Array<any>) {
-        return this.browserClient.execute(fn, ...args);
+    async gridProxyDetails(applicant: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].gridProxyDetails();
+        }
     }
 
-    async executeAsync(fn: any, args: Array<any>) {
-        return this.browserClient.executeAsync(fn, ...args);
+    async url(applicant: string, val: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].url(val);
+        }
     }
 
-    async getTitle() {
-        return this.browserClient.getTitle();
+    async waitForExist(applicant: string, xpath: string, timeout: number) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].waitForExist(xpath, timeout);
+        }
     }
 
-    async clearElement(xpath: string) {
-        return this.browserClient.clearElement(xpath);
+    async waitForVisible(applicant: string, xpath: string, timeout: number) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].waitForVisible(xpath, timeout);
+        }
     }
 
-    async keys(value: any) {
-        this.browserClient.keys(value);
+    async isVisible(applicant: string, xpath: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].isVisible(xpath);
+        }
     }
 
-    async elementIdText(elementId: string) {
-        return this.browserClient.elementIdText(elementId);
+    async moveToObject(applicant: string, xpath: string, x: number, y: number) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].moveToObject(xpath, x, y);
+        }
     }
 
-    async elements(xpath: string) {
-        return this.browserClient.elements(xpath);
+    async execute(applicant: string, fn: any, args: Array<any>) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].execute(fn, ...args);
+        }
     }
 
-    async getValue(xpath: string) {
-        return this.browserClient.getValue(xpath);
+    async executeAsync(applicant: string, fn: any, args: Array<any>) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].executeAsync(fn, ...args);
+        }
     }
 
-    async setValue(xpath: string, value: any) {
-        return this.browserClient.setValue(xpath, value);
+    async getTitle(applicant: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].getTitle();
+        }
     }
 
-    async selectByIndex(xpath: string, value: any) {
-        return this.browserClient.selectByIndex(xpath, value);
+    async clearElement(applicant: string, xpath: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].clearElement(xpath);
+        }
     }
 
-    async selectByValue(xpath: string, value: any) {
-        return this.browserClient.selectByValue(xpath, value);
+    async keys(applicant: string, value: any) {
+        const client = this.getClient(applicant);
+        if (client) {
+            this.browserClients[applicant].keys(value);
+        }
     }
 
-    async selectByVisibleText(xpath: string, str: string) {
-        return this.browserClient.selectByVisibleText(xpath, str);
+    async elementIdText(applicant: string, elementId: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].elementIdText(elementId);
+        }
     }
 
-    async getAttribute(xpath: string, attr: any) {
-        this.browserClient.getAttribute(xpath, attr);
+    async elements(applicant: string, xpath: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].elements(xpath);
+        }
     }
 
-    async windowHandleMaximize() {
-        return this.browserClient.windowHandleMaximize();
+    async getValue(applicant: string, xpath: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].getValue(xpath);
+        }
     }
 
-    async isEnabled(xpath: string) {
-        return this.browserClient.isEnabled(xpath);
+    async setValue(applicant: string, xpath: string, value: any) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].setValue(xpath, value);
+        }
     }
 
-    async scroll(xpath: string, x: number, y: number) {
-        return this.browserClient.scroll(xpath, x, y);
+    async selectByIndex(applicant: string, xpath: string, value: any) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].selectByIndex(xpath, value);
+        }
     }
 
-    async alertAccept() {
-        return this.browserClient.alertAccept();
+    async selectByValue(applicant: string, xpath: string, value: any) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].selectByValue(xpath, value);
+        }
     }
 
-    async alertDismiss() {
-        return this.browserClient.alertDismiss();
+    async selectByVisibleText(applicant: string, xpath: string, str: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].selectByVisibleText(xpath, str);
+        }
     }
 
-    async alertText() {
-        return this.browserClient.alertText();
+    async getAttribute(applicant: string, xpath: string, attr: any) {
+        const client = this.getClient(applicant);
+        if (client) {
+            this.browserClients[applicant].getAttribute(xpath, attr);
+        }
     }
 
-    async dragAndDrop(xpathSource: string, xpathDestination: string) {
-        return this.browserClient.dragAndDrop(xpathSource, xpathDestination);
+    async windowHandleMaximize(applicant: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].windowHandleMaximize();
+        }
     }
 
-    async addCommand(str: string, fn: any) {
-        return this.browserClient.addCommand(str, fn);
+    async isEnabled(applicant: string, xpath: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].isEnabled(xpath);
+        }
     }
 
-    async getCookie(cookieName: string) {
-        return this.browserClient.getCookie(cookieName);
+    async scroll(applicant: string, xpath: string, x: number, y: number) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].scroll(xpath, x, y);
+        }
     }
 
-    async deleteCookie(cookieName: string) {
-        return this.browserClient.deleteCookie(cookieName);
+    async alertAccept(applicant: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].alertAccept();
+        }
     }
 
-    async getHTML(xpath: string, b: any) {
-        return this.browserClient.getHTML(xpath, b);
+    async alertDismiss(applicant: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].alertDismiss();
+        }
     }
 
-    async getCurrentTableId() {
-        return this.browserClient.getCurrentTabId();
+    async alertText(applicant: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].alertText();
+        }
     }
 
-    async switchTab(tabId: string) {
-        return this.browserClient.switchTab(tabId);
+    async dragAndDrop(applicant: string, xpathSource: string, xpathDestination: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].dragAndDrop(xpathSource, xpathDestination);
+        }
     }
 
-    async close(tabId: string) {
-        return this.browserClient.close(tabId);
+    async addCommand(applicant: string, str: string, fn: any) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].addCommand(str, fn);
+        }
     }
 
-    async getTabIds() {
-        return this.browserClient.getTabIds();
+    async getCookie(applicant: string, cookieName: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].getCookie(cookieName);
+        }
     }
 
-    async window(fn: any) {
-        return this.browserClient.window(fn);
+    async deleteCookie(applicant: string, cookieName: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].deleteCookie(cookieName);
+        }
     }
 
-    async windowHandles() {
-        return this.browserClient.windowHandles();
+    async getHTML(applicant: string, xpath: string, b: any) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].getHTML(xpath, b);
+        }
+    }
+
+    async getCurrentTableId(applicant: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].getCurrentTabId();
+        }
+    }
+
+    async switchTab(applicant: string, tabId: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].switchTab(tabId);
+        }
+    }
+
+    async close(applicant: string, tabId: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].close(tabId);
+        }
+    }
+
+    async getTabIds(applicant: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].getTabIds();
+        }
+    }
+
+    async window(applicant: string, fn: any) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].window(fn);
+        }
+    }
+
+    async windowHandles(applicant: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].windowHandles();
+        }
     }
 
 
-    async getTagName(xpath: string) {
-        return this.browserClient.getTagName(xpath);
+    async getTagName(applicant: string, xpath: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].getTagName(xpath);
+        }
     }
 
-    async isSelected(xpath: string) {
-        return this.browserClient.isSelected(xpath);
+    async isSelected(applicant: string, xpath: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].isSelected(xpath);
+        }
     }
 
-    async getText(xpath: string) {
-        return this.browserClient.getText(xpath);
+    async getText(applicant: string, xpath: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].getText(xpath);
+        }
     }
 
-    async elementIdSelected(id: string) {
-        return this.browserClient.elementIdSelected(id);
+    async elementIdSelected(applicant: string, id: string) {
+        const client = this.getClient(applicant);
+        if (client) {
+            return this.browserClients[applicant].elementIdSelected(id);
+        }
     }
 }
 

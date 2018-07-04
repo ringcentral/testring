@@ -16,8 +16,9 @@
   },
   "dependencies": {
     "@testring/plugin-babel": "0.1.0",
+    "@testring/plugin-selenium-driver": "0.1.0",
     "babel-preset-es2015": "^6.24.1",
-    "testring": "0.1.0",
-    "@testring/plugin-selenium-driver": "0.1.0"
+    "selenium-server": "^3.13.0",
+    "testring": "0.1.0"
   }
 }
