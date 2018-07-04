@@ -1,9 +1,10 @@
 import { ITestFile } from '../test-finder';
 
 export const enum TestRunControllerHooks {
-    prepareQueue = 'prepareQueue',
-    prepareParams = 'prepareParams',
-    afterFinish = 'afterFinish',
+    beforeRun = 'beforeRun',
+    beforeTest = 'beforeTest',
+    afterTest = 'afterTest',
+    afterRun = 'afterRun',
 }
 
 export interface IQueuedTest {

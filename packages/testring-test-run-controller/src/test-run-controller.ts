@@ -23,18 +23,16 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         private testWorker: ITestWorker,
     ) {
         super([
-            TestRunControllerHooks.prepareQueue,
-            TestRunControllerHooks.prepareParams,
-            TestRunControllerHooks.afterFinish,
+            TestRunControllerHooks.beforeRun,
+            TestRunControllerHooks.beforeTest,
+            TestRunControllerHooks.afterTest,
+            TestRunControllerHooks.afterRun,
         ]);
     }
 
     public async runQueue(testSet: Array<ITestFile>): Promise<Error[] | void> {
-        const testParams = {};
         const testQueue = this.prepareTests(testSet);
-
-        const testQueueAfterHook = await this.callHook(TestRunControllerHooks.prepareQueue, testQueue);
-        const testParamsAfterHook = await this.callHook(TestRunControllerHooks.prepareParams, testParams);
+        const testQueueAfterHook = await this.callHook(TestRunControllerHooks.beforeRun, testQueue);
 
         loggerClientLocal.debug('Run controller: tests queue created.');
 
@@ -53,10 +51,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 workers.map(worker => this.executeWorker(worker, testQueueAfterHook))
             );
 
-            await this.callHook(
-                TestRunControllerHooks.afterFinish,
-                testParamsAfterHook,
-            );
+            await this.callHook(TestRunControllerHooks.afterRun, testQueue);
         } catch (e) {
             loggerClientLocal.error(...this.errors);
             throw e;
@@ -79,11 +74,10 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
     private prepareTests(testFiles: Array<ITestFile>): Array<IQueuedTest> {
         const testQueue = new Array(testFiles.length);
-        const retryCount = this.config.retryCount || 0;
 
         for (let index = 0; index < testFiles.length; index++) {
             testQueue[index] = {
-                retryCount: retryCount,
+                retryCount: 0,
                 test: testFiles[index]
             };
         }
@@ -110,8 +104,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             throw exception.error;
         }
 
-        if (test.retryCount > 0) {
-            test.retryCount--;
+        if (test.retryCount < (this.config.retryCount || 0)) {
+            test.retryCount++;
 
             await delay(this.config.retryDelay || 0);
 
@@ -133,7 +127,9 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         }
 
         try {
+            await this.callHook(TestRunControllerHooks.beforeTest, queuedTest);
             await worker.execute(queuedTest.test.content, queuedTest.test.path, queuedTest.test.meta);
+            await this.callHook(TestRunControllerHooks.afterTest, queuedTest);
         } catch (error) {
             await this.onTestFailed(error, worker, queuedTest, queue);
         } finally {

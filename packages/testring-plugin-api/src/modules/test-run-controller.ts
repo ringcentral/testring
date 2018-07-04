@@ -3,15 +3,19 @@ import { AbstractAPI } from './abstract';
 
 export class TestRunControllerAPI extends AbstractAPI {
 
-    prepareQueue(handler: (queue: Array<IQueuedTest>) => Promise<IQueuedTest[]>) {
-        this.registryAsyncPlugin(TestRunControllerHooks.prepareQueue, handler);
+    beforeRun(handler: (queue: Array<IQueuedTest>) => Promise<IQueuedTest[]>) {
+        this.registryAsyncPlugin(TestRunControllerHooks.beforeRun, handler);
     }
 
-    prepareParams(handler: (params: object) => Promise<object>) {
-        this.registryAsyncPlugin(TestRunControllerHooks.prepareParams, handler);
+    beforeTest(handler: (test: IQueuedTest) => Promise<void>) {
+        this.registryAsyncPlugin(TestRunControllerHooks.beforeTest, handler);
     }
 
-    afterFinish(handler: (params: object) => Promise<void>) {
-        this.registryAsyncPlugin(TestRunControllerHooks.afterFinish, handler);
+    afterTest(handler: (params: IQueuedTest) => Promise<void>) {
+        this.registryAsyncPlugin(TestRunControllerHooks.afterTest, handler);
+    }
+
+    afterRun(handler: (queue: Array<IQueuedTest>) => Promise<void>) {
+        this.registryAsyncPlugin(TestRunControllerHooks.afterRun, handler);
     }
 }
