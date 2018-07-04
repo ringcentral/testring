@@ -111,13 +111,18 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
         this.createLog(LogTypes.debug, args, LogLevel.debug);
     }
 
-    public withLogEnvironment(logEnvironmemt: any) {
+    public media(filename: string, content: Buffer): void {
+        this.createLog(LogTypes.media, [ filename, content ], LogLevel.info);
+    }
+
+    public withLogEnvironment(logEnvironment: any) {
         return {
-            log: (...args) => this.createLog(LogTypes.log, args, LogLevel.info, logEnvironmemt),
-            info: (...args) => this.createLog(LogTypes.info, args, LogLevel.info, logEnvironmemt),
-            warn: (...args) => this.createLog(LogTypes.warning, args, LogLevel.warning, logEnvironmemt),
-            error: (...args) => this.createLog(LogTypes.error, args, LogLevel.error, logEnvironmemt),
-            debug: (...args) => this.createLog(LogTypes.debug, args, LogLevel.debug, logEnvironmemt),
+            log: (...args) => this.createLog(LogTypes.log, args, LogLevel.info, logEnvironment),
+            info: (...args) => this.createLog(LogTypes.info, args, LogLevel.info, logEnvironment),
+            warn: (...args) => this.createLog(LogTypes.warning, args, LogLevel.warning, logEnvironment),
+            error: (...args) => this.createLog(LogTypes.error, args, LogLevel.error, logEnvironment),
+            debug: (...args) => this.createLog(LogTypes.debug, args, LogLevel.debug, logEnvironment),
+            media: (...args) => this.createLog(LogTypes.media, args, LogLevel.info, logEnvironment),
         };
     }
 
