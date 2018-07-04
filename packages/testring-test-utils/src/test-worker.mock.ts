@@ -1,7 +1,17 @@
 import { ITestWorker, ITestWorkerInstance } from '@testring/types';
 
 class TestWorkerMockInstance implements ITestWorkerInstance {
+
+    constructor(private shouldFail: boolean) {}
+
     execute() {
+        if (this.shouldFail) {
+            return Promise.reject({
+                test: 'file.js',
+                error: new Error('test')
+            });
+        }
+
         return Promise.resolve();
     }
 
@@ -10,7 +20,18 @@ class TestWorkerMockInstance implements ITestWorkerInstance {
 }
 
 export class TestWorkerMock implements ITestWorker {
+
+    private spawned = 0;
+
+    constructor(private shouldFail: boolean = false) {}
+
     spawn() {
-        return new TestWorkerMockInstance();
+        this.spawned++;
+
+        return new TestWorkerMockInstance(this.shouldFail);
+    }
+
+    $spawnedCount() {
+        return this.spawned;
     }
 }

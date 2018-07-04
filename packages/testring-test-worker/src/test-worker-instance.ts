@@ -78,7 +78,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
                     reject({
                         error: message.error,
-                        test: testData
+                        test: filename
                     });
                 } else {
                     loggerClientLocal.log(`Test success: ${relativePath}`);
@@ -121,10 +121,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
             throw {
                 error,
-                test: {
-                    source,
-                    filename
-                }
+                test: filename
             };
         }
     }

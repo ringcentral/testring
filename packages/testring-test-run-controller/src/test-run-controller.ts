@@ -5,10 +5,13 @@ import {
     ITestFile,
     IQueuedTest,
     ITestRunController,
+    ITestExecutionError,
     TestRunControllerHooks
 } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { loggerClientLocal } from '@testring/logger';
+
+type TestQueue = Array<IQueuedTest>;
 
 const delay = (milliseconds: number) => new Promise((resolve) => {
     setTimeout(resolve, milliseconds);
@@ -20,38 +23,46 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
     constructor(
         private config: Partial<IConfig>,
-        private testWorker: ITestWorker,
+        private testWorker: ITestWorker
     ) {
         super([
-            TestRunControllerHooks.beforeRun,
+            TestRunControllerHooks.beforeRun
         ]);
     }
 
     public async runQueue(testSet: Array<ITestFile>): Promise<Error[] | void> {
-        const testQueue = this.prepareTests(testSet);
-        const testQueueAfterHook = await this.callHook(TestRunControllerHooks.beforeRun, testQueue);
+        const testQueue = await this.prepareTests(testSet);
+
         loggerClientLocal.debug('Run controller: tests queue created.');
-        const configWorkerLimit = this.config.workerLimit || 0;
 
-        const workerLimit = configWorkerLimit < testQueueAfterHook.length ?
-            configWorkerLimit :
-            testQueueAfterHook.length;
-
+        const workerLimit = this.getWorkerLimit(testQueue);
         const workers = this.createWorkers(workerLimit);
+
         loggerClientLocal.debug(`Run controller: ${workerLimit} worker(s) created.`);
 
         try {
             await Promise.all(
-                workers.map(worker => this.executeWorker(worker, testQueueAfterHook))
+                workers.map(worker => this.executeWorker(worker, testQueue))
             );
-        } catch (e) {
+        } catch (error) {
             loggerClientLocal.error(...this.errors);
-            throw e;
+
+            this.errors.push(error);
         }
 
         if (this.errors.length) {
             return this.errors;
         }
+    }
+
+    private getWorkerLimit(testQueue: TestQueue) {
+        const configWorkerLimit = this.config.workerLimit || 0;
+
+        if (configWorkerLimit < testQueue.length) {
+            return configWorkerLimit;
+        }
+
+        return testQueue.length;
     }
 
     private createWorkers(limit: number): Array<ITestWorkerInstance> {
@@ -64,7 +75,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         return workers;
     }
 
-    private prepareTests(testFiles: Array<ITestFile>): Array<IQueuedTest> {
+    private async prepareTests(testFiles: Array<ITestFile>): Promise<TestQueue> {
         const testQueue = new Array(testFiles.length);
         const retryCount = this.config.retryCount || 0;
 
@@ -75,10 +86,10 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             };
         }
 
-        return testQueue;
+        return await this.callHook(TestRunControllerHooks.beforeRun, testQueue);
     }
 
-    private async occupyWorker(worker: ITestWorkerInstance, queue: Array<IQueuedTest>): Promise<void> {
+    private async occupyWorker(worker: ITestWorkerInstance, queue: TestQueue): Promise<void> {
         if (queue.length > 0) {
             return this.executeWorker(worker, queue);
         } else {
@@ -87,13 +98,12 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     }
 
     private async onTestFailed(
-        exception: any,
+        exception: ITestExecutionError,
         worker: ITestWorkerInstance,
         test: IQueuedTest,
-        queue: Array<IQueuedTest>
+        queue: TestQueue
     ): Promise<void> {
         if (this.config.bail) {
-            this.errors.push(exception.error);
             throw exception.error;
         }
 
@@ -112,7 +122,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         }
     }
 
-    private async executeWorker(worker: ITestWorkerInstance, queue: Array<IQueuedTest>): Promise<void> {
+    private async executeWorker(worker: ITestWorkerInstance, queue: TestQueue): Promise<void> {
         const queuedTest = queue.pop();
 
         if (!queuedTest) {

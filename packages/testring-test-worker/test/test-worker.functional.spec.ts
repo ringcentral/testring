@@ -2,7 +2,7 @@
 
 import * as chai from 'chai';
 import { Transport } from '@testring/transport';
-import { TestWorkerPlugin } from '@testring/types';
+import { ITestExecutionError, TestWorkerPlugin } from '@testring/types';
 import { TestWorker } from '../src/test-worker';
 
 describe('TestWorkerInstance', () => {
@@ -34,10 +34,9 @@ describe('TestWorkerInstance', () => {
                 .then(() => {
                     callback('Test was completed somehow');
                 })
-                .catch((message) => {
+                .catch((message: ITestExecutionError) => {
                     chai.expect(message.error).to.be.an.instanceof(Error);
-                    chai.expect(message.test.source).to.be.equal(rawSource);
-                    chai.expect(message.test.filename).to.be.equal(defaultFilename);
+                    chai.expect(message.test).to.be.equal(defaultFilename);
 
                     callback();
                 })
@@ -106,7 +105,6 @@ describe('TestWorkerInstance', () => {
                     callback('Test was compiled somehow');
                 })
                 .catch((message) => {
-                    chai.expect(message.error);
                     callback();
                 })
                 .catch(callback)

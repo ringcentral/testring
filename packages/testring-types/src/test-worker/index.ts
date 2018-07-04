@@ -29,14 +29,14 @@ export interface ITestExecutionMessage {
     parameters: object
 }
 
-interface ITestExecutionError {
-    message: string,
-    stacktrace: string
-}
-
 export interface ITestExecutionCompleteMessage {
     status: TestStatus,
-    error: ITestExecutionError | null
+    error: Error | null
+}
+
+export interface ITestExecutionError {
+    test: string,
+    error: Error
 }
 
 export interface ITestWorkerInstance {
