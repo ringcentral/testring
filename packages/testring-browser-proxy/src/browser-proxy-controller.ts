@@ -20,7 +20,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
         private workerCreator: (onActionPluginPath: string, config: any) => ChildProcess,
     ) {
         super([
-            [BrowserProxyPlugins.getPlugin, 2],
+            BrowserProxyPlugins.getPlugin,
         ]);
 
         this.registerResponseListener();
@@ -71,12 +71,16 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
         this.pendingCommandsPool.clear();
     }
 
-    private onExit = (...error): void => {
-        console.log(...error);
+    private onExit = (code, error): void => {
+        console.log(code, error);
 
         delete this.workerId;
 
-        loggerClientLocal.debug('Browser Proxy controller: miss connection with child process');
+        loggerClientLocal.debug(
+            'Browser Proxy controller: miss connection with child process',
+            'code', code,
+            'error', error
+        );
 
         this.onProxyDisconnect();
         this.spawn();
@@ -100,23 +104,20 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
     }
 
     public async spawn(): Promise<number> {
-        // this.kill();
-
-        console.trace('spawn');
 
         if (typeof this.workerCreator !== 'function') {
             loggerClientLocal.error(`Unsupported worker type "${typeof this.workerCreator}"`);
             throw new Error(`Unsupported worker type "${typeof this.workerCreator}"`);
         }
 
-        // TODO add types to browser proxy plugin config
-        const externalPlugin = await this.callHook(BrowserProxyPlugins.getPlugin, 'default', {});
-
+        const externalPlugin = await this.callHook(BrowserProxyPlugins.getPlugin, {
+            plugin: 'unknown',
+            config: null
+        });
 
         this.worker = this.workerCreator(externalPlugin.plugin, externalPlugin.config);
 
         this.workerId = `proxy-${this.worker.pid}`;
-
 
         this.worker.on('exit', this.onExit);
 

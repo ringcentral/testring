@@ -33,9 +33,13 @@ export class WebClient {
                     }
                 }
             });
-            
+
             transport.broadcast(WebApplicationMessageType.execute, request);
         });
+    }
+
+    public end() {
+        return this.makeRequest(BrowserProxyActions.end, []);
     }
 
     public refresh() {

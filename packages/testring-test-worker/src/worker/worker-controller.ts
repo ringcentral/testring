@@ -8,7 +8,10 @@ import {
 } from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
 import { Sandbox } from '@testring/sandbox';
-import { bus } from '@testring/api';
+import {  testAPIController } from '@testring/api';
+
+const bus = testAPIController.getBus();
+
 
 export class WorkerController {
 
@@ -50,6 +53,7 @@ export class WorkerController {
     private async executeTest(message: ITestExecutionMessage): Promise<TestStatus> {
         let isAsync = false;
 
+        testAPIController.setTestID(message.filename);
         // TODO pass message.parameters somewhere inside webmanager
         const sandbox = new Sandbox(message.source, message.filename);
 

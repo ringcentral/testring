@@ -1,13 +1,13 @@
 import { loggerClient } from '@testring/logger';
 import { transport } from '@testring/transport';
 import { WebApplication } from '@testring/web-application';
+import { testAPIController } from './test-api-controller';
 
 export class TestContext {
 
     private hasLoggedBusinessEvent = false;
 
-    // TODO pass real test uid
-    public application = new WebApplication('test', transport);
+    public application = new WebApplication(testAPIController.getTestID(), transport);
 
     async logBusiness(message: string) {
         if (this.hasLoggedBusinessEvent) {

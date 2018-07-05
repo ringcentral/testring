@@ -8,7 +8,6 @@ const WORKER_PATH = path.join(__dirname, './browser-proxy/index.js');
 
 const browserProxyControllerFactory = (transport: Transport) => {
     return new BrowserProxyController(transport, (pluginName, config) => {
-        console.log(WORKER_PATH, pluginName, config);
 
         return fork(WORKER_PATH, [
             '--name',

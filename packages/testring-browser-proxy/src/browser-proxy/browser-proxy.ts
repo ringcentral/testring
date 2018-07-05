@@ -2,8 +2,9 @@ import {
     ITransport,
     IBrowserProxyCommand,
     IBrowserProxyMessage,
+    IBrowserProxyPlugin,
     BrowserProxyMessageTypes,
-    IBrowserProxyPlugin
+    BrowserProxyActions
 } from '@testring/types';
 import { requirePlugin } from '@testring/utils';
 import { loggerClient } from '@testring/logger';
@@ -26,13 +27,16 @@ export class BrowserProxy {
         pluginPath: string,
         pluginConfig: any
     ) {
-        const pluginFactory = resolvePlugin(pluginPath);
+        try {
+            const pluginFactory = resolvePlugin(pluginPath);
 
-        this.plugin = pluginFactory(pluginConfig);
+            this.plugin = pluginFactory(pluginConfig);
+        } catch (error) {
+            loggerClient.error(`Can't load plugin ${pluginPath}`, error);
+        }
 
         this.registerCommandListener();
     }
-
 
     private registerCommandListener() {
         loggerClient.debug(
@@ -52,9 +56,22 @@ export class BrowserProxy {
     private async onMessage(message: IBrowserProxyMessage) {
         const {uid, applicant, command} = message;
 
-        console.log('message', command);
+        loggerClient.log('message', message);
 
         try {
+            if (!this.plugin) {
+                if (message.command.action !== BrowserProxyActions.end) {
+                    throw new ReferenceError('Cannot find browser proxy plugin!');
+                } else {
+                    this.transportInstance.broadcast(
+                        BrowserProxyMessageTypes.response,
+                        { uid },
+                    );
+
+                    return;
+                }
+            }
+
             const response = await this.plugin[command.action](applicant, ...command.args);
 
             loggerClient.debug(
