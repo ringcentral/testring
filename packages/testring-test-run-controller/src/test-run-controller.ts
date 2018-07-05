@@ -78,6 +78,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         for (let index = 0; index < testFiles.length; index++) {
             testQueue[index] = {
                 retryCount: 0,
+                retryErrors: [],
                 test: testFiles[index]
             };
         }
@@ -133,6 +134,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             await worker.execute(queuedTest.test.content, queuedTest.test.path, queuedTest.test.meta);
             await this.callHook(TestRunControllerHooks.afterTest, queuedTest);
         } catch (error) {
+            queuedTest.retryErrors.push(error);
+
             await this.onTestFailed(error, worker, queuedTest, queue);
         } finally {
             await this.occupyWorker(worker, queue);
