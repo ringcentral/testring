@@ -7,7 +7,6 @@ run(async (context) => {
 
         const title = await context.application.getTitle();
         console.log('title', title);
-
     } catch (e) {
         console.log('error', e);
     }

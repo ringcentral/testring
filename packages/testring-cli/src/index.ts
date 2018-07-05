@@ -50,14 +50,13 @@ export const runTests = async (argv: Array<string>, stdout: NodeJS.WritableStrea
         testRunController: testRunController,
     }, userConfig);
 
-    browserProxyController.spawn();
-
     loggerClientLocal.log('User config:\n', formatJSON(userConfig));
 
     const tests = await testFinder.find(userConfig.tests);
 
     loggerClientLocal.info(`Found ${tests.length} test(s) to run.`);
 
+    browserProxyController.spawn();
     webApplicationController.init();
 
     const testRunResult = await testRunController.runQueue(tests);

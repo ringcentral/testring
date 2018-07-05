@@ -54,7 +54,8 @@ export const enum BrowserProxyActions {
     elementIdSelected = 'elementIdSelected',
     timeoutsAsyncScript = 'timeoutsAsyncScript',
     makeScreenshot = 'makeScreenshot',
-    uploadFile = 'uploadFile'
+    uploadFile = 'uploadFile',
+    end = 'end'
 }
 
 export interface IBrowserProxyCommand {
@@ -91,6 +92,8 @@ export interface IBrowserProxyController {
 
 export interface IBrowserProxyPlugin {
     kill(): void;
+
+    end(applicant: string): Promise<any>;
 
     refresh(applicant: string): Promise<any>,
 
@@ -175,5 +178,4 @@ export interface IBrowserProxyPlugin {
     getText(applicant: string, xpath: string): Promise<any>,
 
     elementIdSelected(applicant: string, id: string): Promise<any>,
-
 }

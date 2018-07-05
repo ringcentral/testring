@@ -6,20 +6,20 @@ import { loggerClient } from '@testring/logger';
 
 
 const DEFAULT_CONFIG: Config = {
-    port: 3031,
+    port: 4444,
     desiredCapabilities: {
         browserName: 'chrome'
     }
 };
 
 function delay(timeout) {
-    return new Promise((resolve) => setTimeout(() => resolve(), timeout));
+    return new Promise<void>((resolve) => setTimeout(() => resolve(), timeout));
 }
 
 export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     private browserClients: Map<string, Client<any>> = new Map();
-
+    private waitForReadyState: Promise<void> = Promise.resolve();
     private localSelenium: ChildProcess;
 
     constructor(private config: Config) {
@@ -32,8 +32,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         if (this.browserClients.has(applicant)) {
             return;
         }
-
-        await delay(1000);
 
         const client = remote({
             ...DEFAULT_CONFIG,
@@ -52,6 +50,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async runLocalSelenium() {
+        this.waitForReadyState = delay(1000);
         const seleniumServer = require('selenium-server');
         const seleniumJarPath = seleniumServer.path;
         let args = [
@@ -71,7 +70,15 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         });
 
     }
+    public async end(applicant: string) {
+        await this.waitForReadyState;
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
 
+        if (client) {
+            return client.end();
+        }
+    }
     public async kill() {
         const requests: Array<any> = [];
 
@@ -85,6 +92,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async refresh(applicant: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
 
@@ -94,6 +102,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async click(applicant: string, selector: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -102,6 +111,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async gridProxyDetails(applicant: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -110,6 +120,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async url(applicant: string, val: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
 
         const client = this.browserClients.get(applicant);
@@ -120,6 +131,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async waitForExist(applicant: string, xpath: string, timeout: number) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -128,6 +140,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async waitForVisible(applicant: string, xpath: string, timeout: number) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -136,6 +149,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async isVisible(applicant: string, xpath: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -144,6 +158,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async moveToObject(applicant: string, xpath: string, x: number, y: number) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -152,6 +167,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async execute(applicant: string, fn: any, args: Array<any>) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -160,6 +176,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async executeAsync(applicant: string, fn: any, args: Array<any>) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -168,6 +185,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async getTitle(applicant: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
 
         const client = this.browserClients.get(applicant);
@@ -178,6 +196,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async clearElement(applicant: string, xpath: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
 
         const client = this.browserClients.get(applicant);
@@ -188,6 +207,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async keys(applicant: string, value: any) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -196,6 +216,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async elementIdText(applicant: string, elementId: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -204,6 +225,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async elements(applicant: string, xpath: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -212,6 +234,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async getValue(applicant: string, xpath: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -220,6 +243,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async setValue(applicant: string, xpath: string, value: any) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -228,6 +252,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async selectByIndex(applicant: string, xpath: string, value: any) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -236,6 +261,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async selectByValue(applicant: string, xpath: string, value: any) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -244,6 +270,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async selectByVisibleText(applicant: string, xpath: string, str: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -252,6 +279,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async getAttribute(applicant: string, xpath: string, attr: any) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -260,6 +288,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async windowHandleMaximize(applicant: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -268,6 +297,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async isEnabled(applicant: string, xpath: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -276,6 +306,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async scroll(applicant: string, xpath: string, x: number, y: number) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -284,6 +315,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async alertAccept(applicant: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -292,6 +324,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async alertDismiss(applicant: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -300,6 +333,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async alertText(applicant: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -308,6 +342,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async dragAndDrop(applicant: string, xpathSource: string, xpathDestination: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -316,6 +351,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async addCommand(applicant: string, str: string, fn: any) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -324,6 +360,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async getCookie(applicant: string, cookieName: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -332,6 +369,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async deleteCookie(applicant: string, cookieName: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -340,6 +378,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async getHTML(applicant: string, xpath: string, b: any) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -348,6 +387,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async getCurrentTableId(applicant: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -356,6 +396,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async switchTab(applicant: string, tabId: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -364,6 +405,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async close(applicant: string, tabId: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -372,6 +414,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async getTabIds(applicant: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -380,6 +423,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async window(applicant: string, fn: any) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -388,6 +432,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async windowHandles(applicant: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -397,6 +442,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
 
     async getTagName(applicant: string, xpath: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -405,6 +451,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async isSelected(applicant: string, xpath: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -413,6 +460,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async getText(applicant: string, xpath: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {
@@ -421,6 +469,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async elementIdSelected(applicant: string, id: string) {
+        await this.waitForReadyState;
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
         if (client) {

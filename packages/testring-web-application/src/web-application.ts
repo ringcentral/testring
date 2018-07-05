@@ -945,4 +945,7 @@ export class WebApplication extends PluggableModule {
         await this.client.uploadFile(fullPath);
     }
 
+    public async end() {
+        await this.client.end();
+    }
 }
