@@ -10,5 +10,5 @@ export interface IQueuedTest {
 }
 
 export interface ITestRunController {
-    runQueue(testSet: Array<ITestFile>): Promise<Error[] | void>;
+    runQueue(testSet: Array<ITestFile>): Promise<Error[] | null>;
 }

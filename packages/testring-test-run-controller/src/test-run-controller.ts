@@ -30,7 +30,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         ]);
     }
 
-    public async runQueue(testSet: Array<ITestFile>): Promise<Error[] | void> {
+    public async runQueue(testSet: Array<ITestFile>): Promise<Error[] | null> {
         const testQueue = await this.prepareTests(testSet);
 
         loggerClientLocal.debug('Run controller: tests queue created.');
@@ -53,6 +53,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         if (this.errors.length) {
             return this.errors;
         }
+
+        return null;
     }
 
     private getWorkerLimit(testQueue: TestQueue) {

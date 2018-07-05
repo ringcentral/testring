@@ -15,25 +15,29 @@ const generatedTestFiles = (count: number) => {
 
 describe('Controller', () => {
     it('should run spawn workers with count from according limit', async () => {
-        const tests = generatedTestFiles(20);
+        const workerLimit = 20;
+
+        const tests = generatedTestFiles(40);
 
         const testWorkerMock = new TestWorkerMock();
-        const testRunController = new TestRunController({ bail: false, workerLimit: 5 }, testWorkerMock);
+        const testRunController = new TestRunController({ bail: false, workerLimit: workerLimit }, testWorkerMock);
 
         await testRunController.runQueue(tests);
 
-        chai.expect(testWorkerMock.$spawnedCount()).to.be.equal(5);
+        chai.expect(testWorkerMock.$getSpawnedCount()).to.be.equal(workerLimit);
     });
 
     it('should run spawn workers by test count, if limit is higher', async () => {
-        const tests = generatedTestFiles(2);
+        const testsCount = 2;
+
+        const tests = generatedTestFiles(testsCount);
 
         const testWorkerMock = new TestWorkerMock();
         const testRunController = new TestRunController({ bail: false, workerLimit: 10 }, testWorkerMock);
 
         await testRunController.runQueue(tests);
 
-        chai.expect(testWorkerMock.$spawnedCount()).to.be.equal(2);
+        chai.expect(testWorkerMock.$getSpawnedCount()).to.be.equal(testsCount);
     });
 
     it('should fail instantly, if bail flag passed', async () => {
@@ -45,5 +49,26 @@ describe('Controller', () => {
         const errors = await testRunController.runQueue(tests);
 
         chai.expect(errors).to.be.lengthOf(1);
+    });
+
+    it('should use retries when test fails', async () => {
+        const testsCount = 3;
+        const retriesCount = 5;
+        const config = { workerLimit: 2, retryDelay: 0, retryCount: retriesCount };
+
+        const tests = generatedTestFiles(testsCount);
+
+        const testWorkerMock = new TestWorkerMock(true);
+        const testRunController = new TestRunController(config, testWorkerMock);
+
+        const errors = await testRunController.runQueue(tests);
+
+        const executionCalls = testWorkerMock.$getExecutionCallsCount();
+
+        // Errors are generated only when last retry has failed
+        chai.expect(errors).to.be.lengthOf(testsCount);
+
+        // Runner must try to run all failed test with given retries number
+        chai.expect(executionCalls).to.be.equal(testsCount + testsCount * retriesCount);
     });
 });
