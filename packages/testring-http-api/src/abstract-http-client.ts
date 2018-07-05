@@ -28,10 +28,6 @@ export abstract class AbstractHttpClient {
         return this.sendRequest({ ...options, method: 'PUT' });
     }
 
-    public async send(options: OptionsWithUrl, method: string): Promise<any> {
-        return this.sendRequest(Object.assign(options, { method }));
-    }
-
     private isValidData(data: any): boolean {
         return (data !== null && data !== undefined);
     }
