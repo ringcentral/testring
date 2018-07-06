@@ -43,7 +43,8 @@
     ],
     "exclude": [
       "packages/testring-web-application/src/web-application.ts",
-      "packages/testring-web-application/src/web-client.ts"
+      "packages/testring-web-application/src/web-client.ts",
+      "packages/testring-plugin-selenium-driver/src/plugin/index.ts"
     ],
     "extension": [
       ".ts"
