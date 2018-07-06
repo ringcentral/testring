@@ -1,20 +1,6 @@
-import * as path from 'path';
 import * as lodash from 'lodash';
 
-const ROOT_DIR = path.normalize(path.join(__dirname, '..', '..'));
-
-const nanoid = require('nanoid');
-
-function getTestDataPath(testPath) {
-    const basename = path.basename(testPath, '.js');
-    return path.join(path.dirname(testPath), basename + '.testdata.js');
-}
-
-function delay(timeout) {
-    return new Promise((resolve, reject) => setTimeout(() => resolve(), timeout));
-}
-
-function normalizeXpath(xpath, allowMultipleNodesInResult = false) {
+function normalizeXpath(xpath, allowMultipleNodesInResult = false) { //++
     let result;
 
     try {
@@ -25,7 +11,7 @@ function normalizeXpath(xpath, allowMultipleNodesInResult = false) {
     return result;
 }
 
-function logXpath(xpath) {
+function logXpath(xpath) { //+
     let result = xpath;
 
     if (xpath === undefined) {
@@ -38,10 +24,6 @@ function logXpath(xpath) {
     }
 
     return result;
-}
-
-function uid() {
-    return nanoid();
 }
 
 const ROOTID = 'root';
@@ -203,17 +185,6 @@ class Element {
     }
 }
 
-function getTestJSONPath(testPath) {
-    return path.join(
-        path.dirname(testPath),
-        path.basename(testPath, '.js') + '.testdata.json'
-    );
-}
-
-function replaceHomePath(path) {
-    return path.replace(/^~\//, ROOT_DIR + '/');
-}
-
 function query(value) {
     let el = new Element([{
         kind: 'exactly',
@@ -223,13 +194,6 @@ function query(value) {
 }
 
 export {
-    replaceHomePath,
-    getTestJSONPath,
-    getTestDataPath,
-    delay,
-    uid,
-    Element,
-    query,
     normalizeXpath,
     logXpath
 };

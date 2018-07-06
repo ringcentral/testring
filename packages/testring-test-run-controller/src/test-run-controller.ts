@@ -23,10 +23,13 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
     constructor(
         private config: Partial<IConfig>,
-        private testWorker: ITestWorker
+        private testWorker: ITestWorker,
     ) {
         super([
-            TestRunControllerHooks.beforeRun
+            TestRunControllerHooks.beforeRun,
+            TestRunControllerHooks.beforeTest,
+            TestRunControllerHooks.afterTest,
+            TestRunControllerHooks.afterRun,
         ]);
     }
 
@@ -44,6 +47,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             await Promise.all(
                 workers.map(worker => this.executeWorker(worker, testQueue))
             );
+
+            await this.callHook(TestRunControllerHooks.afterRun, testQueue);
         } catch (error) {
             loggerClientLocal.error(...this.errors);
 
@@ -79,11 +84,11 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
     private async prepareTests(testFiles: Array<ITestFile>): Promise<TestQueue> {
         const testQueue = new Array(testFiles.length);
-        const retryCount = this.config.retryCount || 0;
 
         for (let index = 0; index < testFiles.length; index++) {
             testQueue[index] = {
-                retryCount: retryCount,
+                retryCount: 0,
+                retryErrors: [],
                 test: testFiles[index]
             };
         }
@@ -109,8 +114,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             throw exception.error;
         }
 
-        if (test.retryCount > 0) {
-            test.retryCount--;
+        if (test.retryCount < (this.config.retryCount || 0)) {
+            test.retryCount++;
 
             await delay(this.config.retryDelay || 0);
 
@@ -119,6 +124,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             await this.executeWorker(worker, queue);
         } else {
             this.errors.push(exception.error);
+
+            await this.callHook(TestRunControllerHooks.afterTest, test);
 
             await this.occupyWorker(worker, queue);
         }
@@ -132,8 +139,14 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         }
 
         try {
+            await this.callHook(TestRunControllerHooks.beforeTest, queuedTest);
+
             await worker.execute(queuedTest.test.content, queuedTest.test.path, queuedTest.test.meta);
+
+            await this.callHook(TestRunControllerHooks.afterTest, queuedTest);
         } catch (error) {
+            queuedTest.retryErrors.push(error);
+
             await this.onTestFailed(error, worker, queuedTest, queue);
         } finally {
             await this.occupyWorker(worker, queue);
