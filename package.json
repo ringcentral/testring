@@ -24,7 +24,7 @@
     "build:watch": "lerna exec --parallel -- tsc --target es2015 --watch",
     "build:clear": "npm run lint:src && npm run lint:test && npm run build",
     "build:precommit": "npm run build:clear && npm run test && npm run test:e2e-simple",
-    "build:ci": "npm run build:clear && npm run test:coverage && npm run test:e2e",
+    "build:ci": "npm run build:clear && npm run test:coverage && npm run test:e2e-simple",
     "publish": "lerna publish --skip-npm",
     "check-deps": "lerna exec -- npm-check --skip-unused --ignore @testring/*"
   },
