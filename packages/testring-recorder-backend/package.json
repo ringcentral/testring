@@ -1,0 +1,26 @@
+{
+  "name": "@testring/recorder-backend",
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "start:watch": "nodemon --watch 'src/**/*' -e ts,tsx --exec 'ts-node' ./src/index.ts"
+  },
+  "dependencies": {
+    "@types/koa": "^2.0.46",
+    "koa": "^2.5.1",
+    "opn": "^5.3.0",
+    "ws": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/ws": "^5.1.2",
+    "nodemon": "^1.17.5",
+    "ts-node": "7.0.0"
+  }
+}
