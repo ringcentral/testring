@@ -51,9 +51,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async runLocalSelenium() {
-        try {
-            this.waitForReadyState = delay(1000);
-
+        this.waitForReadyState = new Promise((resolve) => {
             const seleniumServer = require('selenium-server');
             const seleniumJarPath = seleniumServer.path;
 
@@ -65,18 +63,16 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
             this.localSelenium = spawn('java', args);
 
-            this.localSelenium.stdout.on('data', (data) => {
-                loggerClient.debug(data.toString());
-            });
-
             this.localSelenium.stderr.on('data', (data) => {
-                loggerClient.debug(data.toString());
-            });
-        } catch (error) {
-            loggerClient.error(error);
+                const message = data.toString();
 
-            throw error;
-        }
+                loggerClient.debug(message);
+
+                if (message.includes('SeleniumServer.boot')) {
+                    delay(500).then(resolve);
+                }
+            });
+        });
     }
 
     public async end(applicant: string) {
@@ -96,9 +92,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             requests.push(client.end());
         });
 
-        await Promise.all(requests);
-
         this.localSelenium.kill();
+
+        await Promise.all(requests);
     }
 
     async refresh(applicant: string) {
