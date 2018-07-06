@@ -15,6 +15,7 @@ type PropertyDescriptor = {
     setter?: () => any,
 } | undefined;
 
+const OWN_FIELD = ['__flows', '__path'];
 const PROXY_FIELDS = ['__path', '__parentPath', '__flows', '__searchOptions', '__proxy'];
 
 export function proxyfy(instance: ElementPath, strictMode: boolean = true): any {
@@ -37,7 +38,7 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true): any 
     const proxy = revocable.proxy;
 
     function isPrivateProperty(key: KeyType): boolean {
-        return typeof key === 'string' && key.indexOf('__') === 0 && key !== '__path' && key !== '__flows';
+        return typeof key === 'string' && key.indexOf('__') === 0 && !OWN_FIELD.includes(key);
     }
 
     function getReflectedProperty(key, ctx = instance) {
@@ -48,8 +49,8 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true): any 
                 apply: (target, thisArg, argumentsList) => {
                     if (thisArg === proxy) {
                         return Reflect.get(ctx, key).apply(instance, argumentsList);
-                    //} else if (thisArg instanceof instance.constructor) {
-                    //    return Reflect.get(ctx, key).apply(thisArg.__getInstance(), argumentsList);
+                    } else if (thisArg instanceof instance.constructor && typeof thisArg.__getInstance === 'function') {
+                        return Reflect.get(ctx, key).apply(thisArg.__getInstance(), argumentsList);
                     } else {
                         return Reflect.get(ctx, key).apply(thisArg, argumentsList);
                     }
@@ -65,12 +66,12 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true): any 
             throw new TypeError('Key can not me empty');
         }
 
-        if (hasOwn(instance, key) && typeof key !== 'symbol' && instance.hasFlow(key)) {
-            throw new TypeError(`flow and own property ${key} are conflicts`);
+        if (typeof key === 'string' && OWN_FIELD.includes(key) && instance.hasFlow(key)) {
+            throw new TypeError(`flow and own property ${key} is conflicts`);
         }
 
-        if (hasOwn(instance, key)) {
-            return getReflectedProperty(key);
+        if (hasOwn(instance, key) && typeof key !== 'symbol') {
+            return proxyfy(instance.generateChildElementsPath(key), strictMode);
         }
 
         if (key === '__flows') {
@@ -94,11 +95,23 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true): any 
         }
 
         if (key === '__getInstance') {
-            return () => instance;
+            return function __getInstance() {
+                if (this === proxy) {
+                    return instance;
+                } else {
+                    return this;
+                }
+            };
         }
 
-        if (key === '__reverse') {
-            return instance.getReversedChain;
+        if (key === '__getReversedChain') {
+            return function __getReversedChain() {
+                if (this === proxy) {
+                    return instance.getReversedChain.apply(instance, arguments);
+                } else {
+                    return instance.getReversedChain.apply(this, arguments);
+                }
+            };
         }
 
         if (strictMode && (key === 'xpathByElement' || key === 'xpath')) {
@@ -143,9 +156,7 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true): any 
     }
 
     function ownKeysTrap(target: ElementPath): KeyType[] {
-        let keys = ['__flows', '__path'];
-
-        return keys.concat(Object.keys(instance.getFlows() || {}));
+        return OWN_FIELD.concat(Object.keys(instance.getFlows() || {}));
     }
 
     function defineOwnPropertyTrap(target: ElementPath, key: KeyType, descriptor: PropertyDescriptor): boolean {
@@ -158,15 +169,6 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true): any 
             writable: false,
             configurable: true,
         };
-
-        if (hasOwn(instance, key)) {
-            const descriptor = Reflect.getOwnPropertyDescriptor(instance, key);
-
-            return Object.assign({}, descriptor, {
-                enumerable: !isPrivateProperty(key),
-                writable: false,
-            });
-        }
 
         if (typeof key === 'string' && PROXY_FIELDS.includes(key)) {
             return Object.assign(defaultDescriptor, {

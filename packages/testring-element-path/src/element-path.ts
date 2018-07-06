@@ -48,7 +48,7 @@ export type NodePath = {
 };
 
 export class ElementPath {
-    protected regexp = {
+    private readonly regexp = {
         QUERY_RE: /^(\*?[^{(=]*\*?)?(=?{([^}]*)})?(\(([^)]*)\))?$/,
         SUB_QUERY_RE: /^(\*?[^{=]*\*?)(=?{([^}]*)})?$/,
     };
@@ -277,14 +277,9 @@ export class ElementPath {
 
 
     /*
-        Path helpers
-     */
-
-
-    /*
         Public methods
      */
-    private queryToString(query) {
+    private queryToString(query): string {
         let key = '';
 
         if (query.prefix) {
@@ -314,7 +309,7 @@ export class ElementPath {
         return key;
     }
 
-    public getReversedChain(withRoot: boolean = true) {
+    public getReversedChain(withRoot: boolean = true): string {
         let parts = this.getElementPathChain().reduce((memo: string[], node: any): string[] => {
             if (node.isRoot) {
                 if (withRoot) {
@@ -372,7 +367,7 @@ export class ElementPath {
         return null;
     }
 
-    public generateChildByXpath(xpath: string) {
+    public generateChildByXpath(xpath: string): ElementPath {
         return new ElementPath({
             flows: this.flows,
             searchOptions: {xpath},
@@ -444,7 +439,7 @@ export class ElementPath {
         return this.searchOptions;
     }
 
-    public toString(allowMultipleNodesInResult: boolean = false) {
+    public toString(allowMultipleNodesInResult: boolean = false): string {
         let xpath = this.getElementPathChain()
             .map((item: { xpath: string }) => item.xpath)
             .join('');

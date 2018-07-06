@@ -91,12 +91,12 @@ describe('empty options ElementPath root.foo', () => {
         });
     });
 
-    describe('.__reverse() call', () => {
+    describe('.__getReversedChain() call', () => {
         it('with root', () => {
-            expect(childFoo.__reverse()).to.be.equal('root.foo');
+            expect(childFoo.__getReversedChain()).to.be.equal('root.foo');
         });
         it('without root', () => {
-            expect(childFoo.__reverse(false)).to.be.equal('.foo');
+            expect(childFoo.__getReversedChain(false)).to.be.equal('.foo');
         });
     });
 });

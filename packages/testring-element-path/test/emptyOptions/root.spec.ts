@@ -74,12 +74,12 @@ describe('empty options ElementPath root', () => {
         });
     });
 
-    describe('.__reverse() call', () => {
+    describe('.__getReversedChain() call', () => {
         it('with root', () => {
-            expect(empty.__reverse()).to.be.equal('root');
+            expect(empty.__getReversedChain()).to.be.equal('root');
         });
         it('without root', () => {
-            expect(empty.__reverse(false)).to.be.equal('');
+            expect(empty.__getReversedChain(false)).to.be.equal('');
         });
     });
 });

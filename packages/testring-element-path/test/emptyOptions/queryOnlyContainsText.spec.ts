@@ -92,12 +92,12 @@ describe('empty options ElementPath root[\'{Text element}\']', () => {
         });
     });
 
-    describe('.__reverse() call', () => {
+    describe('.__getReversedChain() call', () => {
         it('with root', () => {
-            expect(childFoo.__reverse()).to.be.equal('root["*{Text element}"]');
+            expect(childFoo.__getReversedChain()).to.be.equal('root["*{Text element}"]');
         });
         it('without root', () => {
-            expect(childFoo.__reverse(false)).to.be.equal('["*{Text element}"]');
+            expect(childFoo.__getReversedChain(false)).to.be.equal('["*{Text element}"]');
         });
     });
 });

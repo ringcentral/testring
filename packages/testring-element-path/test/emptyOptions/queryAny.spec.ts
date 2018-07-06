@@ -90,12 +90,12 @@ describe('empty options ElementPath root[\'*\']', () => {
         });
     });
 
-    describe('.__reverse() call', () => {
+    describe('.__getReversedChain() call', () => {
         it('with root', () => {
-            expect(childFoo.__reverse()).to.be.equal('root["*"]');
+            expect(childFoo.__getReversedChain()).to.be.equal('root["*"]');
         });
         it('without root', () => {
-            expect(childFoo.__reverse(false)).to.be.equal('["*"]');
+            expect(childFoo.__getReversedChain(false)).to.be.equal('["*"]');
         });
     });
 });

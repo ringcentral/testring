@@ -108,12 +108,12 @@ describe('disabled strictMode', () => {
         });
     });
 
-    describe('.__reverse() call', () => {
+    describe('.__getReversedChain call', () => {
         it('with root', () => {
-            expect(xpathSelectorCall.__reverse()).to.be.equal('root.foo.xpath("//*[@class=\'selected\']")');
+            expect(xpathSelectorCall.__getReversedChain()).to.be.equal('root.foo.xpath("//*[@class=\'selected\']")');
         });
         it('without root', () => {
-            expect(xpathSelectorCall.__reverse(false)).to.be.equal('.foo.xpath("//*[@class=\'selected\']")');
+            expect(xpathSelectorCall.__getReversedChain(false)).to.be.equal('.foo.xpath("//*[@class=\'selected\']")');
         });
     });
 });
