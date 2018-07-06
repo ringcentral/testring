@@ -1,11 +1,30 @@
+import * as path from 'path';
 import * as Koa from 'koa';
+import * as serve from 'koa-static';
+import * as views from 'koa-views';
 import * as WebSocket from 'ws';
-import * as opn from 'opn';
+// import * as opn from 'opn';
+
+const host = 'localhost';
+const wsProtocol = 'ws';
+const wsPort = 3001;
+const staticFolder = path.dirname(require.resolve('@testring/recorder-app'));
 
 const app = new Koa();
 
-app.use(async ctx => {
-    ctx.body = 'Hello World';
+app.use(serve(staticFolder));
+
+app.use(views(
+    path.resolve(__dirname, '../static/'),
+    { extension: 'hbs', map: {hbs: 'handlebars' } },
+));
+
+app.use(async (ctx) => {
+    await ctx.render('index', {
+        host,
+        wsProtocol,
+        wsPort,
+    });
 });
 
 app.listen(3000);
@@ -22,5 +41,5 @@ wss.on('connection', function connection(ws) {
     ws.send('HI!');
 });
 
-opn('http://localhost:3000');
+// opn('http://localhost:3000');
 

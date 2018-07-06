@@ -4,5 +4,5 @@ import Layout from './Layout';
 
 render(
     Layout(),
-    document.getElementById('recorderApp'),
+    document.getElementById('rcRecorderApp'),
 );
