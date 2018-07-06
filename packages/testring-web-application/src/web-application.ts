@@ -5,7 +5,7 @@ import { ITransport } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { loggerClient } from '@testring/logger';
 import { WebClient } from './web-client';
-import { WebAssert } from './web-assert';
+import { createAssertion } from './assert';
 import * as utils from './utils';
 
 const WAIT_TIMEOUT = 45000;
@@ -16,15 +16,15 @@ export class WebApplication extends PluggableModule {
     private mainTabID = 1;
 
     protected client: WebClient;
-    public assert: WebAssert;
-    public softAssert: WebAssert;
+
+    public assert = createAssertion(false);
+
+    public softAssert = createAssertion(true);
 
     constructor(testUID: string, transport: ITransport) {
         super();
 
         this.client = new WebClient(testUID, transport);
-        this.assert = new WebAssert(false);
-        this.softAssert = new WebAssert(true);
     }
 
     protected logXpath(xpath) {

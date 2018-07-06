@@ -8,7 +8,8 @@ import {
     ITestExecutionCompleteMessage,
     ITestExecutionMessage,
     TestWorkerAction,
-    TestCompiler
+    TestCompiler,
+    TestStatus
 } from '@testring/types';
 
 const nanoid = require('nanoid');
@@ -73,17 +74,21 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         const removeListener = this.transport.onceFrom(this.workerName, TestWorkerAction.executionComplete,
             (message: ITestExecutionCompleteMessage) => {
-                if (message.error) {
-                    loggerClientLocal.error(`Test failed: ${relativePath}\n`, message.error);
+                switch (message.status) {
+                    case TestStatus.done:
+                        loggerClientLocal.log(`Test success: ${relativePath}`);
 
-                    reject({
-                        error: message.error,
-                        test: filename
-                    });
-                } else {
-                    loggerClientLocal.log(`Test success: ${relativePath}`);
-                    loggerClientLocal.debug(`Test result: ${message.status}`);
-                    resolve();
+                        resolve();
+                        break;
+
+                    case TestStatus.failed:
+                        loggerClientLocal.error(`Test failed: ${relativePath}\n`, message.error);
+
+                        reject({
+                            error: message.error,
+                            test: filename
+                        });
+                        break;
                 }
 
                 this.abortTestExecution = null;
@@ -138,7 +143,6 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         });
 
         worker.stderr.on('data', (data) => {
-            console.log(data.toString());
             loggerClientLocal.error(`[${this.workerName}] [error] ${data.toString().trim()}`);
         });
 

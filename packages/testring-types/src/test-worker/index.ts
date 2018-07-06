@@ -13,7 +13,6 @@ export const enum TestEvents {
 
 export const enum TestStatus {
     idle = 'idle',
-    pending = 'pending',
     done = 'done',
     failed = 'failed'
 }

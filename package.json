@@ -41,6 +41,8 @@
       "packages/*/src/**/*.ts"
     ],
     "exclude": [
+      "packages/*/src/index.ts",
+      "packages/testring-types",
       "packages/testring-web-application/src/web-application.ts",
       "packages/testring-web-application/src/web-client.ts"
     ],

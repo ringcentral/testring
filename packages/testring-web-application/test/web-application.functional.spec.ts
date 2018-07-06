@@ -50,7 +50,7 @@ describe('WebApplication functional', () => {
         });
 
         testProcess.stderr.on('data', (message) => {
-            callback(message);
+            callback(message.toString());
         });
     });
 });
