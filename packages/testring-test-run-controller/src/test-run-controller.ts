@@ -24,13 +24,18 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     ) {
         super([
             TestRunControllerHooks.beforeRun,
+            TestRunControllerHooks.beforeTest,
+            TestRunControllerHooks.afterTest,
+            TestRunControllerHooks.afterRun,
         ]);
     }
 
     public async runQueue(testSet: Array<ITestFile>): Promise<Error[] | void> {
         const testQueue = this.prepareTests(testSet);
         const testQueueAfterHook = await this.callHook(TestRunControllerHooks.beforeRun, testQueue);
+
         loggerClientLocal.debug('Run controller: tests queue created.');
+
         const configWorkerLimit = this.config.workerLimit || 0;
 
         const workerLimit = configWorkerLimit < testQueueAfterHook.length ?
@@ -38,12 +43,15 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             testQueueAfterHook.length;
 
         const workers = this.createWorkers(workerLimit);
+
         loggerClientLocal.debug(`Run controller: ${workerLimit} worker(s) created.`);
 
         try {
             await Promise.all(
                 workers.map(worker => this.executeWorker(worker, testQueueAfterHook))
             );
+
+            await this.callHook(TestRunControllerHooks.afterRun, testQueue);
         } catch (e) {
             loggerClientLocal.error(...this.errors);
             throw e;
@@ -66,11 +74,11 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
     private prepareTests(testFiles: Array<ITestFile>): Array<IQueuedTest> {
         const testQueue = new Array(testFiles.length);
-        const retryCount = this.config.retryCount || 0;
 
         for (let index = 0; index < testFiles.length; index++) {
             testQueue[index] = {
-                retryCount: retryCount,
+                retryCount: 0,
+                retryErrors: [],
                 test: testFiles[index]
             };
         }
@@ -97,8 +105,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             throw exception.error;
         }
 
-        if (test.retryCount > 0) {
-            test.retryCount--;
+        if (test.retryCount < (this.config.retryCount || 0)) {
+            test.retryCount++;
 
             await delay(this.config.retryDelay || 0);
 
@@ -107,6 +115,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             await this.executeWorker(worker, queue);
         } else {
             this.errors.push(exception.error);
+
+            await this.callHook(TestRunControllerHooks.afterTest, test);
 
             await this.occupyWorker(worker, queue);
         }
@@ -120,8 +130,12 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         }
 
         try {
+            await this.callHook(TestRunControllerHooks.beforeTest, queuedTest);
             await worker.execute(queuedTest.test.content, queuedTest.test.path, queuedTest.test.meta);
+            await this.callHook(TestRunControllerHooks.afterTest, queuedTest);
         } catch (error) {
+            queuedTest.retryErrors.push(error);
+
             await this.onTestFailed(error, worker, queuedTest, queue);
         } finally {
             await this.occupyWorker(worker, queue);
