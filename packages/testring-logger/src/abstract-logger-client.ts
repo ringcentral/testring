@@ -15,7 +15,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
     constructor(
         protected transportInstance: ITransport = transport,
         protected logLevel: LogLevel = LogLevel.info,
-        protected logEnvironment?: any,
+        protected logEnvironment?: any
     ) {
     }
 
@@ -37,7 +37,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
         type: LogTypes,
         content: Array<any>,
         logLevel: LogLevel = this.logLevel,
-        logEnvironment: any = this.logEnvironment,
+        logEnvironment: any = this.logEnvironment
     ): ILogEntry {
         const time = new Date();
         const formattedMessage = formatLog(logLevel, time, content);
@@ -60,7 +60,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
             formattedMessage,
             stepUid,
             parentStep,
-            logEnvironment,
+            logEnvironment
         };
     }
 
@@ -68,7 +68,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
         type: LogTypes,
         content: Array<any>,
         logLevel: LogLevel = this.logLevel,
-        logEnvironment: any = this.logEnvironment,
+        logEnvironment: any = this.logEnvironment
     ): void {
         const logEntry = this.buildEntry(type, content, logLevel, logEnvironment);
 
@@ -77,7 +77,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
         } else {
             this.broadcast(
                 LoggerMessageTypes.REPORT,
-                logEntry,
+                logEntry
             );
         }
     }
@@ -85,7 +85,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
     protected sendBatchedLog(): void {
         this.broadcast(
             LoggerMessageTypes.REPORT_BATCH,
-            this.logBatch,
+            this.logBatch
         );
 
         this.logBatch = [];
@@ -112,7 +112,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
     }
 
     public media(filename: string, content: Buffer): void {
-        this.createLog(LogTypes.media, [ filename, content ], LogLevel.info);
+        this.createLog(LogTypes.media, [filename, content], LogLevel.info);
     }
 
     public withLogEnvironment(logEnvironment: any) {
@@ -122,7 +122,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
             warn: (...args) => this.createLog(LogTypes.warning, args, LogLevel.warning, logEnvironment),
             error: (...args) => this.createLog(LogTypes.error, args, LogLevel.error, logEnvironment),
             debug: (...args) => this.createLog(LogTypes.debug, args, LogLevel.debug, logEnvironment),
-            media: (...args) => this.createLog(LogTypes.media, args, LogLevel.info, logEnvironment),
+            media: (...args) => this.createLog(LogTypes.media, args, LogLevel.info, logEnvironment)
         };
     }
 
@@ -133,7 +133,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
 
         this.createLog(
             LogTypes.step,
-            [ message ],
+            [message]
         );
     }
 

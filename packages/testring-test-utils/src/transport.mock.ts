@@ -15,21 +15,21 @@ export class TransportMock extends EventEmitter implements ITransport {
         return [];
     }
 
-    public broadcast(messageType: string, payload: any) {
+    public broadcast<T = any>(messageType: string, payload: T) {
         this.emit(messageType, payload);
     }
 
-    public broadcastLocal(messageType: string, payload: any) {
+    public broadcastLocal<T = any>(messageType: string, payload: T) {
         this.emit(messageType, payload);
     }
 
-    public send(src: string, messageType: string, payload: any): Promise<void> {
+    public send<T = any>(src: string, messageType: string, payload: T): Promise<void> {
         this.emit(messageType, payload);
 
         return Promise.resolve();
     }
 
-    public on(messageType, callback): any {
+    public on<T = any>(messageType: string, callback: (m: T, source?: string) => void): any {
         super.on(messageType, callback);
 
         return () => this.removeListener(messageType, callback);

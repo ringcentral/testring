@@ -1,4 +1,3 @@
-
 export type TestCompiler = (source: string, filename: string) => Promise<string>;
 
 export const enum TestWorkerPlugin {
@@ -40,6 +39,7 @@ export interface ITestExecutionError {
 
 export interface ITestWorkerInstance {
     execute(rawSource: string, filename: string, parameters: object): Promise<any>
+
     kill(): void
 }
 

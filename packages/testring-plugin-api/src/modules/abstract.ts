@@ -1,7 +1,8 @@
 import { IPluggableModule } from '@testring/types';
 
 export class AbstractAPI {
-    constructor(protected pluginName: string, protected module: IPluggableModule) {}
+    constructor(protected pluginName: string, protected module: IPluggableModule) {
+    }
 
     protected registrySyncPlugin(hookName: string, callback: any) {
         const hook = this.module.getHook(hookName);

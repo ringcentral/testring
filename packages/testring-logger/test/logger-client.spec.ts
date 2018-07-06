@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
@@ -43,22 +42,22 @@ describe('Logger client', () => {
 
                 chai.expect(batch[0]).to.deep.include({
                     type: LogTypes.step,
-                    content: [ message ],
-                    parentStep: null,
+                    content: [message],
+                    parentStep: null
                 });
 
                 const { stepUid } = batch[0];
 
                 chai.expect(batch[1]).to.deep.include({
                     type: LogTypes.log,
-                    content: [ 'foo' ],
-                    parentStep: stepUid,
+                    content: ['foo'],
+                    parentStep: stepUid
                 });
 
                 chai.expect(batch[2]).to.deep.include({
                     type: LogTypes.log,
-                    content: [ 'bar' ],
-                    parentStep: stepUid,
+                    content: ['bar'],
+                    parentStep: stepUid
                 });
             }
         );
@@ -106,36 +105,36 @@ describe('Logger client', () => {
 
                 chai.expect(batch[0]).to.deep.include({
                     type: LogTypes.step,
-                    content: [ stepMessage1 ],
-                    parentStep: null,
+                    content: [stepMessage1],
+                    parentStep: null
                 });
 
                 const step1 = batch[0].stepUid;
 
                 chai.expect(batch[1]).to.deep.include({
                     type: LogTypes.log,
-                    content: [ 'foo' ],
-                    parentStep: step1,
+                    content: ['foo'],
+                    parentStep: step1
                 });
 
                 chai.expect(batch[2]).to.deep.include({
                     type: LogTypes.step,
-                    content: [ stepMessage2 ],
-                    parentStep: step1,
+                    content: [stepMessage2],
+                    parentStep: step1
                 });
 
                 const step2 = batch[2].stepUid;
 
                 chai.expect(batch[3]).to.deep.include({
                     type: LogTypes.log,
-                    content: [ 'bar' ],
-                    parentStep: step2,
+                    content: ['bar'],
+                    parentStep: step2
                 });
 
                 chai.expect(batch[4]).to.deep.include({
                     type: LogTypes.log,
-                    content: [ 'baz' ],
-                    parentStep: step1,
+                    content: ['baz'],
+                    parentStep: step1
                 });
             }
         );
@@ -162,16 +161,16 @@ describe('Logger client', () => {
 
                 chai.expect(batch[0]).to.deep.include({
                     type: LogTypes.step,
-                    content: [ 'step1' ],
-                    parentStep: null,
+                    content: ['step1'],
+                    parentStep: null
                 });
 
                 const step1 = batch[0].stepUid;
 
                 chai.expect(batch[1]).to.deep.include({
                     type: LogTypes.log,
-                    content: [ 'foo' ],
-                    parentStep: step1,
+                    content: ['foo'],
+                    parentStep: step1
                 });
             }
         );
@@ -192,36 +191,36 @@ describe('Logger client', () => {
 
                 chai.expect(batch[0]).to.deep.include({
                     type: LogTypes.step,
-                    content: [ 'step1' ],
-                    parentStep: null,
+                    content: ['step1'],
+                    parentStep: null
                 });
 
                 const step1 = batch[0].stepUid;
 
                 chai.expect(batch[1]).to.deep.include({
                     type: LogTypes.log,
-                    content: [ 'foo' ],
-                    parentStep: step1,
+                    content: ['foo'],
+                    parentStep: step1
                 });
 
                 chai.expect(batch[2]).to.deep.include({
                     type: LogTypes.step,
-                    content: [ 'step2' ],
-                    parentStep: step1,
+                    content: ['step2'],
+                    parentStep: step1
                 });
 
                 const step2 = batch[2].stepUid;
 
                 chai.expect(batch[3]).to.deep.include({
                     type: LogTypes.log,
-                    content: [ 'bar' ],
-                    parentStep: step2,
+                    content: ['bar'],
+                    parentStep: step2
                 });
 
                 chai.expect(batch[4]).to.deep.include({
                     type: LogTypes.log,
-                    content: [ 'baz' ],
-                    parentStep: step1,
+                    content: ['baz'],
+                    parentStep: step1
                 });
             }
         );
@@ -255,13 +254,13 @@ describe('Logger client', () => {
 
     it('should allow to set logEnvironment which will be sent with every log', () => {
         const logEnvironment = {
-            foo: 'bar',
+            foo: 'bar'
         };
         const transport = new TransportMock();
         const loggerClient = new LoggerClient(
             transport,
             LogLevel.verbose,
-            logEnvironment,
+            logEnvironment
         );
 
         transport.on(
@@ -277,16 +276,16 @@ describe('Logger client', () => {
 
     it('should allow to modify logEnvironment', () => {
         const logEnvironment = {
-            foo: 'bar',
+            foo: 'bar'
         };
         const logEnvironmentMod = {
-            baz: 'qux',
+            baz: 'qux'
         };
         const transport = new TransportMock();
         const loggerClient = new LoggerClient(
             transport,
             LogLevel.verbose,
-            logEnvironment,
+            logEnvironment
         );
 
         transport.on(
@@ -303,16 +302,16 @@ describe('Logger client', () => {
 
     it('should should allow to log message with log environment without affecting instance logEnvironment', () => {
         const logEnvironment = {
-            foo: 'bar',
+            foo: 'bar'
         };
         const logEnvironmentMod = {
-            baz: 'qux',
+            baz: 'qux'
         };
         const transport = new TransportMock();
         const loggerClient = new LoggerClient(
             transport,
             LogLevel.verbose,
-            logEnvironment,
+            logEnvironment
         );
 
         transport.on(

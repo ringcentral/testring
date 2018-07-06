@@ -10,7 +10,8 @@ const nanoid = require('nanoid');
 export abstract class AbstractHttpClient {
     protected abstract broadcast(options: Request): void;
 
-    constructor(protected transportInstance: ITransport) {}
+    constructor(protected transportInstance: ITransport) {
+    }
 
     public post(options: OptionsWithUrl): Promise<any> {
         return this.sendRequest({ ...options, method: 'POST' });

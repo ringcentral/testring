@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
@@ -13,7 +12,7 @@ describe('serialize', () => {
             undefined,
             NaN,
             {
-                array: [ null, 'another string', 2 ],
+                array: [null, 'another string', 2]
             }
         ];
         const serializedData = serialize(data);
@@ -39,7 +38,8 @@ describe('serialize', () => {
     });
 
     it('should serialize custom error', () => {
-        class CustomError extends Error {}
+        class CustomError extends Error {
+        }
 
         const error = new CustomError('test');
 

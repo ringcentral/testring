@@ -63,7 +63,7 @@ createField('logLevel', {
 
 createField('envConfig', {
     describe: 'path to environment config which overrides main config',
-    type: 'string',
+    type: 'string'
 });
 
 const normalize = (args: yargs.Arguments): IConfig => {

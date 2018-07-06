@@ -23,7 +23,8 @@ class DirectTransport {
 
     private responseHandlers: Map<string, Function> = new Map();
 
-    constructor(private triggerListeners: TransportMessageHandler) {}
+    constructor(private triggerListeners: TransportMessageHandler) {
+    }
 
     public getProcessesList(): Array<string> {
         return Array.from(this.childProcessRegistry.keys());
@@ -85,7 +86,7 @@ class DirectTransport {
         // Removing unfired handlers to avoid memory leak
         const responseHandlers = Array.from(this.responseHandlers);
 
-        for (const [ messageUID, responseHandler ] of responseHandlers) {
+        for (const [messageUID, responseHandler] of responseHandlers) {
             if (DirectTransport.isMessageFromProcess(processID, messageUID)) {
                 this.responseHandlers.delete(messageUID);
 

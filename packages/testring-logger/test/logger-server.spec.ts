@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /// <reference types="mocha" />
 
 import { Writable } from 'stream';
@@ -26,7 +25,7 @@ describe('Logger Server', () => {
 
         const alteredEntry = {
             ...entry,
-            type: LogTypes.error,
+            type: LogTypes.error
         };
 
         if (beforeLog && onLog) {
@@ -88,7 +87,7 @@ describe('Logger Server', () => {
     it('should skip one entry then successfully log one', (callback) => {
         const successEntry = {
             ...entry,
-            type: LogTypes.error,
+            type: LogTypes.error
         };
         const errorSpy = sinon.spy();
         const logHandler = voidLogger(1, true, errorSpy, (entry) => {
@@ -113,7 +112,7 @@ describe('Logger Server', () => {
     it('should abort after log fail', (callback) => {
         const transport = new TransportMock();
         const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport,  stdout);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (onLog) {
@@ -134,7 +133,7 @@ describe('Logger Server', () => {
         const spy = sinon.spy();
         const transport = new TransportMock();
         const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport,  stdout);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (onLog) {
@@ -150,18 +149,18 @@ describe('Logger Server', () => {
         }
 
         transport.broadcast(LoggerMessageTypes.REPORT_BATCH, [
-            entry, entry, entry, entry, entry,
+            entry, entry, entry, entry, entry
         ]);
     });
 
     it('should not call onLog hook if config.silent is true', (callback) => {
         const config = {
             ...DEFAULT_CONFIG,
-            silent: true,
+            silent: true
         };
         const transport = new TransportMock();
         const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(config, transport,  stdout);
+        const loggerServer = new LoggerServer(config, transport, stdout);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (onLog) {
@@ -180,11 +179,11 @@ describe('Logger Server', () => {
     it('should not call onLog hook if config.loggerLevel is greater than entry.logLevel', (callback) => {
         const config = {
             ...DEFAULT_CONFIG,
-            logLevel: LogLevel.debug,
+            logLevel: LogLevel.debug
         };
         const transport = new TransportMock();
         const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(config, transport,  stdout);
+        const loggerServer = new LoggerServer(config, transport, stdout);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (onLog) {
@@ -197,8 +196,8 @@ describe('Logger Server', () => {
             LoggerMessageTypes.REPORT,
             {
                 ...entry,
-                logLevel: LogLevel.verbose,
-            },
+                logLevel: LogLevel.verbose
+            }
         );
 
         setTimeout(() => {

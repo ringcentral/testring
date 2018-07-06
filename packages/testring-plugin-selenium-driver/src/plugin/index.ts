@@ -113,7 +113,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     public async click(applicant: string, selector: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
-        
+
         if (client) {
             return client.click(selector);
         }
@@ -122,7 +122,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     public async gridProxyDetails(applicant: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
-        
+
         if (client) {
             return client.gridProxyDetails();
         }
@@ -140,7 +140,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     public async waitForExist(applicant: string, xpath: string, timeout: number) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
-        
+
         if (client) {
             return client.waitForExist(xpath, timeout);
         }

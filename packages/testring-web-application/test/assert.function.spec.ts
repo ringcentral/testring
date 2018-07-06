@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
@@ -10,8 +9,8 @@ describe('assertion functional', () => {
         const assert = createAssertion(false);
 
         try {
-            await assert.equal(1,1);
-            
+            await assert.equal(1, 1);
+
             chai.expect(assert.errorMessages.length).to.be.equal(0);
         } catch (e) {
             throw new Error('Web assertion error');
@@ -22,7 +21,7 @@ describe('assertion functional', () => {
         const assert = createAssertion(true);
 
         try {
-            await assert.equal(1,1);
+            await assert.equal(1, 1);
             chai.expect(assert.errorMessages.length).to.be.equal(0);
         } catch (e) {
             throw new Error('Web assertion error');
@@ -33,7 +32,7 @@ describe('assertion functional', () => {
         const assert = createAssertion(false);
 
         try {
-            await assert.equal(1,2);
+            await assert.equal(1, 2);
         } catch (e) {
             chai.expect(assert.errorMessages.length).to.be.equal(0);
             chai.expect(e).to.be.an.instanceof(Error);
@@ -44,9 +43,9 @@ describe('assertion functional', () => {
 
         const assert = createAssertion(true);
         try {
-            await assert.equal(1,2);
-            await assert.equal(2,3);
-            await assert.equal(3,4);
+            await assert.equal(1, 2);
+            await assert.equal(2, 3);
+            await assert.equal(3, 4);
         } catch (e) {
             throw new Error('Assertion error');
         }

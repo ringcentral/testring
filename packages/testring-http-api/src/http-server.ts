@@ -38,7 +38,7 @@ export class HttpServer extends PluggableModule {
         });
     }
 
-    private async makeRequest({data, src}: QueueRequest): Promise<any> {
+    private async makeRequest({ data, src }: QueueRequest): Promise<any> {
         let uid;
         try {
             uid = data.uid;
@@ -103,7 +103,7 @@ export class HttpServer extends PluggableModule {
             if (this.isBusy) {
                 this.addToQueue(data, src);
             } else {
-                this.makeRequest({data, src});
+                this.makeRequest({ data, src });
             }
 
 

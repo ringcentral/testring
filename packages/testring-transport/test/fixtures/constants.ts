@@ -1,4 +1,3 @@
-
 export const CHILD_PROCESS_NAME = '_child_';
 
 export const REQUEST_NAME = '_test';

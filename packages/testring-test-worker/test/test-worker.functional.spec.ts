@@ -24,7 +24,7 @@ describe('TestWorkerInstance', () => {
             }
         });
 
-        it('should fail sync test correctly',  (callback) => {
+        it('should fail sync test correctly', (callback) => {
             const rawSource = 'throw new Error("Something happened")';
             const transport = new Transport();
             const testWorker = new TestWorker(transport);
@@ -81,7 +81,8 @@ describe('TestWorkerInstance', () => {
                 });
             }
 
-            instance.execute(defaultSyncTestContent, defaultFilename, {}).catch(() => {});
+            instance.execute(defaultSyncTestContent, defaultFilename, {}).catch(() => {
+            });
             instance.kill();
         });
 

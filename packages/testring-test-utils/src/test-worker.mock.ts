@@ -4,7 +4,8 @@ class TestWorkerMockInstance implements ITestWorkerInstance {
 
     private executeCalls = 0;
 
-    constructor(private shouldFail: boolean) {}
+    constructor(private shouldFail: boolean) {
+    }
 
     execute() {
         this.executeCalls++;
@@ -31,7 +32,8 @@ export class TestWorkerMock implements ITestWorker {
 
     private spawnedInstances: Array<TestWorkerMockInstance> = [];
 
-    constructor(private shouldFail: boolean = false) {}
+    constructor(private shouldFail: boolean = false) {
+    }
 
     spawn() {
         const instance = new TestWorkerMockInstance(this.shouldFail);

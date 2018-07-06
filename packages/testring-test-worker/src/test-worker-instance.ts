@@ -82,13 +82,13 @@ export class TestWorkerInstance implements ITestWorkerInstance {
                         break;
 
                     case TestStatus.failed:
-                    loggerClientLocal.error(`Test failed: ${relativePath}\n`, message.error);
+                        loggerClientLocal.error(`Test failed: ${relativePath}\n`, message.error);
 
-                    reject({
-                        error: message.error,
-                        test: filename
-                    });
-                    break;
+                        reject({
+                            error: message.error,
+                            test: filename
+                        });
+                        break;
                 }
 
                 this.abortTestExecution = null;
@@ -101,9 +101,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             reject();
         };
 
-        loggerClientLocal.debug('Executing test ...');
-
-        this.makeRequest(TestWorkerAction.executeTest, testData);
+        await this.transport.send<ITestExecutionMessage>(this.workerName, TestWorkerAction.executeTest, testData);
     }
 
     private async compileSource(source: string, filename: string): Promise<string> {
@@ -129,10 +127,6 @@ export class TestWorkerInstance implements ITestWorkerInstance {
                 test: filename
             };
         }
-    }
-
-    private makeRequest(requestName: string, data: ITestExecutionMessage) {
-        return this.transport.send(this.workerName, requestName, data);
     }
 
     private createWorker(): ChildProcess {

@@ -23,13 +23,13 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
     constructor(
         private config: Partial<IConfig>,
-        private testWorker: ITestWorker,
+        private testWorker: ITestWorker
     ) {
         super([
             TestRunControllerHooks.beforeRun,
             TestRunControllerHooks.beforeTest,
             TestRunControllerHooks.afterTest,
-            TestRunControllerHooks.afterRun,
+            TestRunControllerHooks.afterRun
         ]);
     }
 

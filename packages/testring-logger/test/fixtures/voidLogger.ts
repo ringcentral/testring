@@ -1,8 +1,10 @@
 export const voidLogger = (
     retry: number = 0,
     shouldResolve: boolean = true,
-    onError: (...any) => void = () => {},
-    onResolve: (...any) => void = () => {},
+    onError: (...any) => void = () => {
+    },
+    onResolve: (...any) => void = () => {
+    }
 ) => {
     let count = retry;
 

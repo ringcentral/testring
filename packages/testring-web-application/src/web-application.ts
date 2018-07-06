@@ -9,7 +9,7 @@ import { createAssertion } from './assert';
 import * as utils from './utils';
 
 const WAIT_TIMEOUT = 45000;
-const TICK_TIMEOUT = 50;
+const TICK_TIMEOUT = 100;
 
 export class WebApplication extends PluggableModule {
 
@@ -277,13 +277,13 @@ export class WebApplication extends PluggableModule {
 
                 try {
                     let element = getElementByXPath(xpath);
-                    let evt = document.createEvent("HTMLEvents");
+                    let evt = document.createEvent('HTMLEvents');
 
                     if (element) {
                         element.focus();
                         element.value = value;
 
-                        evt.initEvent("input", true, true);
+                        evt.initEvent('input', true, true);
                         element.dispatchEvent(evt);
                         element.blur();
                         done(null);
@@ -324,7 +324,7 @@ export class WebApplication extends PluggableModule {
             try {
                 let element = getElementByXPath(xpath);
                 if (element) {
-                    element.className = element.className.replace(/invisible/gi,'');
+                    element.className = element.className.replace(/invisible/gi, '');
                     element.focus();
                     element.click();
                     done(null);
@@ -420,7 +420,6 @@ export class WebApplication extends PluggableModule {
             }
         }, xpath, prop);
 
-        console.log(result);
         return result.value;
     }
 

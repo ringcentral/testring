@@ -20,5 +20,8 @@
     "@testring/utils": "0.1.0",
     "@types/nanoid": "^1.0.0",
     "nanoid": "^1.0.4"
+  },
+  "devDependencies": {
+    "@testring/test-utils": "0.1.0"
   }
 }

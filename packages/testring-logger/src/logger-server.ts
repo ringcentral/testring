@@ -24,12 +24,12 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
         private transportInstance: ITransport,
         private stdout: NodeJS.WritableStream,
         private numberOfRetries: number = 0,
-        private shouldSkip: boolean = false,
+        private shouldSkip: boolean = false
     ) {
         super([
             LoggerPlugins.beforeLog,
             LoggerPlugins.onLog,
-            LoggerPlugins.onError,
+            LoggerPlugins.onError
         ]);
 
         this.registerTransportListeners();

@@ -1,9 +1,9 @@
 import { run } from 'testring';
 
-run(() => {
+run((context) => {
     return new Promise((resolve) => {
         setImmediate(() => {
-            global.console.log(['test', { for: 'formating' }]);
+            context.log(['test', { for: 'formating' }]);
             resolve();
         });
     });

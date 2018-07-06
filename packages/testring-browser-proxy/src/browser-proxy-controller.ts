@@ -17,10 +17,10 @@ const nanoid = require('nanoid');
 export class BrowserProxyController extends PluggableModule implements IBrowserProxyController {
     constructor(
         private transportInstance: ITransport,
-        private workerCreator: (onActionPluginPath: string, config: any) => ChildProcess,
+        private workerCreator: (onActionPluginPath: string, config: any) => ChildProcess
     ) {
         super([
-            BrowserProxyPlugins.getPlugin,
+            BrowserProxyPlugins.getPlugin
         ]);
 
         this.registerResponseListener();
@@ -37,7 +37,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
     private registerResponseListener() {
         this.transportInstance.on(
             BrowserProxyMessageTypes.response,
-            (response) => this.onCommandResponse(response),
+            (response) => this.onCommandResponse(response)
         );
 
         this.transportInstance.on(BrowserProxyMessageTypes.exception, (error) => {
@@ -103,7 +103,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
                 uid,
                 command,
                 applicant
-            },
+            }
         );
     }
 

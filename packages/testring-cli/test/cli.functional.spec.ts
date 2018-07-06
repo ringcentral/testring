@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /// <reference types="mocha" />
 
 import * as path from 'path';
@@ -7,11 +6,12 @@ import { runTests } from '../src';
 
 const fixturesPath = path.resolve(__dirname, './fixtures');
 const stdout = new Writable({
-    write: () => {}
+    write: () => {
+    }
 });
 
 describe('testring CLI', () => {
-    it('should run positive tests',  async () => {
+    it('should run positive tests', async () => {
         await runTests([
             '',
             `--tests=${path.join(fixturesPath, './tests/positive/*.spec.js')}`,
@@ -20,7 +20,7 @@ describe('testring CLI', () => {
         ], stdout);
     });
 
-    it('should fail on negative tests',   (callback) => {
+    it('should fail on negative tests', (callback) => {
         runTests([
             '',
             `--tests=${path.join(fixturesPath, './tests/negative/*.spec.js')}`,
@@ -35,7 +35,7 @@ describe('testring CLI', () => {
             });
     });
 
-    it('should fail with empty config',  (callback) => {
+    it('should fail with empty config', (callback) => {
         runTests([''], stdout)
             .then(() => {
                 callback('Tests finished somehow');

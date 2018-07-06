@@ -1,3 +1,5 @@
+import { Sandbox } from '@testring/sandbox';
+import { TestAPIController } from '@testring/api';
 import {
     ITransport,
     ITestExecutionMessage,
@@ -6,15 +8,13 @@ import {
     TestStatus,
     TestEvents
 } from '@testring/types';
-import { Sandbox } from '@testring/sandbox';
-import {  testAPIController } from '@testring/api';
-
-const bus = testAPIController.getBus();
-
 
 export class WorkerController {
 
-    constructor(private transportInstance: ITransport) {
+    constructor(
+        private transportInstance: ITransport,
+        private testAPI: TestAPIController
+    ) {
     }
 
     public init() {
@@ -38,10 +38,11 @@ export class WorkerController {
     private async executeTest(message: ITestExecutionMessage): Promise<TestStatus> {
         // TODO pass message.parameters somewhere inside web application
         const sandbox = new Sandbox(message.source, message.filename);
+        const bus = this.testAPI.getBus();
 
         let isAsync = false;
 
-        testAPIController.setTestID(message.filename);
+        this.testAPI.setTestID(message.filename);
 
         // Test becomes async, when run method called
         // In all other cases it's plane sync file execution

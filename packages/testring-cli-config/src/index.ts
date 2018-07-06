@@ -19,7 +19,7 @@ const getConfig = async (argv: Array<string> = []): Promise<IConfig> => {
         defaultConfiguration,
         fileConfig || {},
         envConfig || {},
-        args || {},
+        args || {}
     ]);
 };
 

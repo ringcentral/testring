@@ -1,36 +1,38 @@
 import { WebApplication } from '@testring/web-application';
 import { TestEvents } from '@testring/types';
 import { TestContext } from './test-context';
-import { testAPIController } from './test-api-controller';
+import { testAPIController, TestAPIController } from './test-api-controller';
 
+type TestFunction = (context: TestContext) => void | Promise<any>;
 
-const run = async (...tests: Array<Function>) => {
+const run = async (...tests: Array<TestFunction>) => {
+    const bus = testAPIController.getBus();
 
-    testAPIController.getBus().emit(TestEvents.started);
+    bus.emit(TestEvents.started);
 
     try {
         for (let test of tests) {
             const context = new TestContext();
 
-            let caughtedError;
+            let caughtError;
 
             try {
                 await test.call(context, context);
             } catch (error) {
-                caughtedError = error;
+                caughtError = error;
             } finally {
                 await context.application.end();
             }
 
-            if (caughtedError) {
-                throw caughtedError;
+            if (caughtError) {
+                throw caughtError;
             }
         }
 
-        testAPIController.getBus().emit(TestEvents.finished);
+        bus.emit(TestEvents.finished);
     } catch (error) {
-        testAPIController.getBus().emit(TestEvents.failed, error);
+        bus.emit(TestEvents.failed, error);
     }
 };
 
-export { run, testAPIController, WebApplication };
+export { run, testAPIController, TestAPIController, WebApplication };

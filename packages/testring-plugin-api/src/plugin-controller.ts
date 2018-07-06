@@ -4,7 +4,8 @@ import { PluginAPI } from './plugin-api';
 
 export class PluginController {
 
-    constructor(private modulesList: IPluginDestinationMap) {}
+    constructor(private modulesList: IPluginDestinationMap) {
+    }
 
     public initialize(plugins: IConfig['plugins']) {
         if (!plugins || !Array.isArray(plugins)) {

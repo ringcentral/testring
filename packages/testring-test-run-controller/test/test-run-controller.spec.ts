@@ -1,4 +1,3 @@
-
 import * as chai from 'chai';
 import { TestWorkerMock } from '@testring/test-utils';
 import { TestRunController } from '../src/test-run-controller';
@@ -10,7 +9,7 @@ const generageTestFile = (index: number) => ({
 });
 
 const generatedTestFiles = (count: number) => {
-    return Array.from({ length: count}, (v, i) => generageTestFile(i));
+    return Array.from({ length: count }, (v, i) => generageTestFile(i));
 };
 
 describe('Controller', () => {

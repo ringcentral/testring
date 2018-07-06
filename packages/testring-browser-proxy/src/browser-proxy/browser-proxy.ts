@@ -1,6 +1,7 @@
 import {
     ITransport,
     IBrowserProxyMessage,
+    IBrowserProxyCommandResponse,
     IBrowserProxyPlugin,
     BrowserProxyMessageTypes,
     BrowserProxyActions
@@ -58,7 +59,7 @@ export class BrowserProxy {
 
         this.transportInstance.on(
             BrowserProxyMessageTypes.execute,
-            (message) => this.onMessage(message),
+            (message) => this.onMessage(message)
         );
 
         process.on('exit', async () => {
@@ -67,7 +68,7 @@ export class BrowserProxy {
     }
 
     private async onMessage(message: IBrowserProxyMessage) {
-        const {uid, applicant, command} = message;
+        const { uid, applicant, command } = message;
 
         try {
             if (!this.plugin) {
@@ -76,7 +77,7 @@ export class BrowserProxy {
                 } else {
                     this.transportInstance.broadcast(
                         BrowserProxyMessageTypes.response,
-                        { uid },
+                        { uid }
                     );
 
                     return;
@@ -89,20 +90,22 @@ export class BrowserProxy {
                 `Browser Proxy: Send message [type=${BrowserProxyMessageTypes.response}] to parent process`
             );
 
-            this.transportInstance.broadcast(
+            this.transportInstance.broadcast<IBrowserProxyCommandResponse>(
                 BrowserProxyMessageTypes.response,
                 {
                     uid,
-                    response
-                },
+                    response,
+                    exception: null
+                }
             );
         } catch (exception) {
-            this.transportInstance.broadcast(
+            this.transportInstance.broadcast<IBrowserProxyCommandResponse>(
                 BrowserProxyMessageTypes.response,
                 {
                     uid,
-                    exception,
-                },
+                    response: null,
+                    exception
+                }
             );
         }
     }

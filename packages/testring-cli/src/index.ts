@@ -21,7 +21,9 @@ const formatJSON = (obj: any) => {
 
     for (const key in obj) {
         if (key === 'plugins') {
-            item = obj[key].toString().replace('[object Object]', '');
+            item = obj[key].toString()
+                .replace(/\[object Object]/g, '')
+                .replace(/, ,/g, ',');
         } else {
             item = JSON.stringify(obj[key]);
         }
@@ -47,16 +49,17 @@ export const runTests = async (argv: Array<string>, stdout: NodeJS.WritableStrea
         testFinder: testFinder,
         testWorker: testWorker,
         browserProxy: browserProxyController,
-        testRunController: testRunController,
+        testRunController: testRunController
     }, userConfig);
 
-    loggerClientLocal.log('User config:\n', formatJSON(userConfig));
+    loggerClientLocal.info('User config:\n', formatJSON(userConfig));
 
     const tests = await testFinder.find(userConfig.tests);
 
     loggerClientLocal.info(`Found ${tests.length} test(s) to run.`);
 
-    browserProxyController.spawn();
+    await browserProxyController.spawn();
+
     webApplicationController.init();
 
     const testRunResult = await testRunController.runQueue(tests);
@@ -65,6 +68,8 @@ export const runTests = async (argv: Array<string>, stdout: NodeJS.WritableStrea
 
     if (testRunResult) {
         throw new Error(`Failed ${testRunResult.length}/${tests.length} tests.`);
+    } else {
+        loggerClientLocal.info(`Tests done: ${tests.length}/${tests.length}.`);
     }
 };
 

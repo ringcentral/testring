@@ -6,7 +6,8 @@ const nanoid = require('nanoid');
 
 export class WebClient {
 
-    constructor(private applicant: string, private transport: ITransport) {}
+    constructor(private applicant: string, private transport: ITransport) {
+    }
 
     private makeRequest(action: BrowserProxyActions, args: Array<any>): Promise<any> {
         const transport = this.transport;

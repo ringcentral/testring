@@ -73,7 +73,7 @@ export interface IBrowserProxyMessage {
 export interface IBrowserProxyCommandResponse {
     uid: string,
     response: any,
-    exception: Error | void,
+    exception: Error | null,
 }
 
 export interface IBrowserProxyPendingCommand {
