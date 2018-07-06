@@ -1,5 +1,5 @@
 {
-  "name": "@testring/sample-app",
+  "name": "@testring/recorder-app",
   "version": "0.1.0",
   "main": "./dist/index.bundle.js",
   "repository": {
@@ -12,12 +12,12 @@
     "build": "webpack --config webpack.config.ts"
   },
   "devDependencies": {
+    "@types/react": "^16.4.6",
+    "@types/react-dom": "^16.0.6",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
     "ts-loader": "^4.4.2",
     "webpack": "4.15.1",
     "webpack-cli": "3.0.8"
-  },
-  "dependencies": {
-    "react": "^16.4.1",
-    "react-dom": "^16.4.1"
   }
 }
