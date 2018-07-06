@@ -4,7 +4,7 @@
 import * as chai from 'chai';
 import * as sinon from 'sinon';
 import { TransportMock } from '@testring/test-utils';
-import { LoggerMessageTypes, LogTypes } from '@testring/types';
+import { LoggerMessageTypes, LogTypes, LogLevel } from '@testring/types';
 import { LoggerClient } from '../src/logger-client';
 import { report } from './fixtures/constants';
 
@@ -251,5 +251,84 @@ describe('Logger client', () => {
         setTimeout(() => {
             callback();
         }, 0);
+    });
+
+    it('should allow to set logEnvironment which will be sent with every log', () => {
+        const logEnvironment = {
+            foo: 'bar',
+        };
+        const transport = new TransportMock();
+        const loggerClient = new LoggerClient(
+            transport,
+            LogLevel.verbose,
+            logEnvironment,
+        );
+
+        transport.on(
+            LoggerMessageTypes.REPORT,
+            (message) => {
+                chai.expect(message).to.have.deep.property('logEnvironment', logEnvironment);
+            }
+        );
+
+        loggerClient.log('foobar');
+    });
+
+
+    it('should allow to modify logEnvironment', () => {
+        const logEnvironment = {
+            foo: 'bar',
+        };
+        const logEnvironmentMod = {
+            baz: 'qux',
+        };
+        const transport = new TransportMock();
+        const loggerClient = new LoggerClient(
+            transport,
+            LogLevel.verbose,
+            logEnvironment,
+        );
+
+        transport.on(
+            LoggerMessageTypes.REPORT,
+            (message) => {
+                chai.expect(message)
+                    .to.have.deep.property('logEnvironment', { ...logEnvironment, ...logEnvironmentMod });
+            }
+        );
+
+        loggerClient.setLogEnvironment(logEnvironmentMod);
+        loggerClient.log('foobar');
+    });
+
+    it('should should allow to log message with log environment without affecting instance logEnvironment', () => {
+        const logEnvironment = {
+            foo: 'bar',
+        };
+        const logEnvironmentMod = {
+            baz: 'qux',
+        };
+        const transport = new TransportMock();
+        const loggerClient = new LoggerClient(
+            transport,
+            LogLevel.verbose,
+            logEnvironment,
+        );
+
+        transport.on(
+            LoggerMessageTypes.REPORT,
+            (message) => {
+                if (message.type === LogTypes.debug) {
+                    chai.expect(message)
+                        .to.have.deep.property('logEnvironment', logEnvironmentMod);
+                } else {
+                    chai.expect(message)
+                        .to.have.deep.property('logEnvironment', logEnvironment);
+                }
+            }
+        );
+
+        loggerClient.withLogEnvironment(logEnvironmentMod).debug('modified');
+        loggerClient.log('unmodified');
     });
 });
