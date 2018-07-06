@@ -179,4 +179,6 @@ export interface IBrowserProxyPlugin {
     getText(applicant: string, xpath: string): Promise<any>,
 
     elementIdSelected(applicant: string, id: string): Promise<any>,
+
+    makeScreenshot(applicant: string): Promise<Buffer | void>;
 }

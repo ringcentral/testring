@@ -198,9 +198,10 @@ export class WebApplication extends PluggableModule {
 
         await this.waitForExist(xpath, timeout);
 
-        //await this.makeScreenshot();
+        await this.makeScreenshot();
 
         xpath = utils.normalizeXpath(xpath);
+
         return this.client.click(xpath);
     }
 
@@ -302,7 +303,7 @@ export class WebApplication extends PluggableModule {
             }
         }
 
-        //await this.makeScreenshot();
+        await this.makeScreenshot();
     }
 
     public async clickHiddenElement(xpath, timeout = WAIT_TIMEOUT) {
@@ -342,7 +343,7 @@ export class WebApplication extends PluggableModule {
             loggerClient.log(`Element ${utils.logXpath(xpath)} was made visible and clicked`);
         }
 
-        //await this.makeScreenshot();
+        await this.makeScreenshot();
     }
 
     public async getText(xpath, trim = true, timeout = WAIT_TIMEOUT) {
@@ -512,7 +513,7 @@ export class WebApplication extends PluggableModule {
     }
 
     async fixNativeDropdownInteraction(xpath) {
-        //await this.makeScreenshot();
+        await this.makeScreenshot();
 
         await this.client.waitForExist(xpath, WAIT_TIMEOUT);
         return this.client.click(xpath);
@@ -520,6 +521,7 @@ export class WebApplication extends PluggableModule {
 
     async getSelectedText(xpath, timeout = WAIT_TIMEOUT) {
         loggerClient.log(`Get selected text ${utils.logXpath(xpath)}`);
+
         await this.waitForExist(xpath, timeout);
 
         xpath = utils.normalizeXpath(xpath);
@@ -939,7 +941,10 @@ export class WebApplication extends PluggableModule {
     }
 
     public async makeScreenshot() {
-        await this.client.makeScreenshot();
+        const screenshoot = await this.client.makeScreenshot();
+
+        // TODO make normal screenshot save with name
+        loggerClient.media('screenshot.png', screenshoot);
     }
 
     public async uploadFile(fullPath) {

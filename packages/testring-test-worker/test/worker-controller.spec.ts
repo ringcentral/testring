@@ -59,4 +59,6 @@ describe('WorkerController', () => {
             parameters: {}
         });
     });
+
+    // TODO add tests for async test run
 });

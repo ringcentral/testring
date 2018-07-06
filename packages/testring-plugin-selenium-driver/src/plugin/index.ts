@@ -479,6 +479,15 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             return client.elementIdSelected(id);
         }
     }
+
+    public async makeScreenshot(applicant: string): Promise<Buffer | void> {
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
+
+        if (client) {
+            return client.saveScreenshot();
+        }
+    }
 }
 
 export default function seleniumProxy(config: Config) {

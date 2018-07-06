@@ -5,7 +5,15 @@ import { ITransport, ILogEntry, ILoggerClient, LoggerMessageTypes, LogTypes, Log
 
 const nanoid = require('nanoid');
 
-const formatLog = (logLevel: LogLevel, time: Date, content: Array<any>): string => {
+const formatLog = (logType: LogTypes, logLevel: LogLevel, time: Date, content: Array<any>): string => {
+    if (logType === LogTypes.media) {
+        return util.format(
+            `[${logLevel}] [${time.toLocaleTimeString()}] [media]`,
+            content[0],
+            `${content[1].length} bytes`
+        );
+    }
+
     return util.format(
         `[${logLevel}] [${time.toLocaleTimeString()}]`, ...content
     );
@@ -34,27 +42,27 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
     }
 
     protected buildEntry(
-        type: LogTypes,
+        logType: LogTypes,
         content: Array<any>,
         logLevel: LogLevel = this.logLevel,
         logEnvironment: any = this.logEnvironment
     ): ILogEntry {
         const time = new Date();
-        const formattedMessage = formatLog(logLevel, time, content);
+        const formattedMessage = formatLog(logType, logLevel, time, content);
         const currentStep = this.getCurrentStep();
         const previousStep = this.getPreviousStep();
 
-        const stepUid = type === LogTypes.step && currentStep
+        const stepUid = logType === LogTypes.step && currentStep
             ? currentStep
             : undefined;
 
-        const parentStep = type === LogTypes.step
+        const parentStep = logType === LogTypes.step
             ? previousStep
             : currentStep;
 
         return {
             time,
-            type,
+            type: logType,
             logLevel,
             content,
             formattedMessage,
