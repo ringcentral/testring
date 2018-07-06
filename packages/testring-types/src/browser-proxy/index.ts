@@ -1,6 +1,7 @@
 export const enum BrowserProxyMessageTypes {
     execute = 'BrowserProxy/EXEC',
     response = 'BrowserProxy/RESPONSE',
+    exception = 'BrowserProxy/EXCEPTION'
 }
 
 export const enum BrowserProxyPlugins {

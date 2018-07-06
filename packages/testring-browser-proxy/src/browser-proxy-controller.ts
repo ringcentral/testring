@@ -39,6 +39,12 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
             BrowserProxyMessageTypes.response,
             (response) => this.onCommandResponse(response),
         );
+
+        this.transportInstance.on(BrowserProxyMessageTypes.exception, (error) => {
+            this.kill();
+
+            throw error;
+        });
     }
 
     private onCommandResponse(commandResponse: IBrowserProxyCommandResponse): void {
@@ -113,6 +119,8 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
             config: null
         });
 
+        console.log(externalPlugin);
+
         this.worker = this.workerCreator(externalPlugin.plugin, externalPlugin.config);
 
         this.workerId = `proxy-${this.worker.pid}`;
@@ -150,7 +158,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
     }
 
     public kill(): void {
-        if (this.worker && this.worker.connected) {
+        if (this.worker) {
             this.worker.removeListener('exit', this.onExit);
             this.worker.kill();
         }

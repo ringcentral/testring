@@ -1,12 +1,9 @@
 {
   "tests": "test/selenium/test/*.spec.js",
-  "logLevel": "debug",
   "plugins": [
+    "selenium-driver",
     ["babel", {
       "presets": ["es2015"]
-    }],
-    ["selenium-driver", {
-
     }]
   ]
 }

@@ -1,6 +1,5 @@
 import {
     ITransport,
-    IBrowserProxyCommand,
     IBrowserProxyMessage,
     IBrowserProxyPlugin,
     BrowserProxyMessageTypes,
@@ -9,7 +8,7 @@ import {
 import { requirePlugin } from '@testring/utils';
 import { loggerClient } from '@testring/logger';
 
-const resolvePlugin = (pluginPath: string): (command: IBrowserProxyCommand) => IBrowserProxyPlugin => {
+const resolvePlugin = (pluginPath: string): IBrowserProxyPlugin => {
     const resolvedPlugin = requirePlugin(pluginPath);
 
     if (typeof resolvedPlugin !== 'function') {
@@ -20,22 +19,36 @@ const resolvePlugin = (pluginPath: string): (command: IBrowserProxyCommand) => I
 };
 
 export class BrowserProxy {
-    private readonly plugin: IBrowserProxyPlugin;
+    private plugin: IBrowserProxyPlugin;
 
     constructor(
         private transportInstance: ITransport,
         pluginPath: string,
         pluginConfig: any
     ) {
-        try {
-            const pluginFactory = resolvePlugin(pluginPath);
+        this.loadPlugin(pluginPath, pluginConfig);
+        this.registerCommandListener();
+    }
 
-            this.plugin = pluginFactory(pluginConfig);
+    private loadPlugin(pluginPath: string, pluginConfig: any) {
+        let pluginFactory;
+
+        try {
+            pluginFactory = resolvePlugin(pluginPath);
         } catch (error) {
             loggerClient.debug(`Can't load plugin ${pluginPath}`, error);
         }
 
-        this.registerCommandListener();
+        if (pluginFactory) {
+            try {
+                this.plugin = pluginFactory(pluginConfig);
+            } catch (error) {
+                this.transportInstance.broadcast(
+                    BrowserProxyMessageTypes.exception,
+                    error
+                );
+            }
+        }
     }
 
     private registerCommandListener() {
