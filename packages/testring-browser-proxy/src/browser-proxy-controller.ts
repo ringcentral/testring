@@ -41,8 +41,8 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
         );
     }
 
-    private onCommandResponse(response: IBrowserProxyCommandResponse): void {
-        const { uid, exception } = response;
+    private onCommandResponse(commandResponse: IBrowserProxyCommandResponse): void {
+        const { uid, response, exception } = commandResponse;
         const item = this.pendingCommandsPool.get(uid);
 
         if (item) {
@@ -54,7 +54,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
                 return reject(exception);
             }
 
-            return resolve();
+            return resolve(response);
         } else {
             loggerClientLocal.error(`Browser Proxy controller: cannot find command with uid ${uid}`);
             throw new ReferenceError(`Cannot find command with uid ${uid}`);
@@ -71,15 +71,21 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
         this.pendingCommandsPool.clear();
     }
 
-    private onExit = (): void => {
+    private onExit = (code, error): void => {
         delete this.workerId;
-        loggerClientLocal.debug('Browser Proxy controller: miss connection with child process');
+
+        loggerClientLocal.debug(
+            'Browser Proxy controller: miss connection with child process',
+            'code', code,
+            'error', error
+        );
+
         this.onProxyDisconnect();
         this.spawn();
     };
 
     private send(item: IBrowserProxyPendingCommand): void {
-        const { command } = item;
+        const { command, applicant } = item;
         const uid = nanoid();
 
         this.pendingCommandsPool.set(uid, item);
@@ -90,39 +96,49 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
             {
                 uid,
                 command,
+                applicant
             },
         );
     }
 
     public async spawn(): Promise<number> {
-        this.kill();
 
-        if (typeof this.workerCreator === 'function') {
-            // TODO add types to browser proxy plugin config
-            const externalPlugin = await this.callHook(BrowserProxyPlugins.getPlugin, 'default');
-
-            this.worker = this.workerCreator(externalPlugin.plugin, externalPlugin.config);
-        } else {
+        if (typeof this.workerCreator !== 'function') {
             loggerClientLocal.error(`Unsupported worker type "${typeof this.workerCreator}"`);
             throw new Error(`Unsupported worker type "${typeof this.workerCreator}"`);
         }
 
+        const externalPlugin = await this.callHook(BrowserProxyPlugins.getPlugin, {
+            plugin: 'unknown',
+            config: null
+        });
+
+        this.worker = this.workerCreator(externalPlugin.plugin, externalPlugin.config);
+
         this.workerId = `proxy-${this.worker.pid}`;
 
-        loggerClientLocal.debug(`Browser Proxy controller: register child process [id = ${this.workerId}]`);
-        this.transportInstance.registerChildProcess(this.workerId, this.worker);
         this.worker.on('exit', this.onExit);
+
+        this.worker.stdout.on('data', (message) => {
+            loggerClientLocal.log(`[browser-proxy] [logged] ${message.toString()}`);
+        });
+
+        this.transportInstance.registerChildProcess(this.workerId, this.worker);
+
         this.onProxyConnect();
+
+        loggerClientLocal.debug(`Browser Proxy controller: register child process [id = ${this.workerId}]`);
 
         return this.worker.pid;
     }
 
-    public execute(command: IBrowserProxyCommand): Promise<void> {
+    public execute(applicant: string, command: IBrowserProxyCommand): Promise<void> {
         return new Promise((resolve, reject) => {
             const item: IBrowserProxyPendingCommand = {
                 resolve,
                 reject,
                 command,
+                applicant
             };
 
             if (this.worker && this.worker.connected) {

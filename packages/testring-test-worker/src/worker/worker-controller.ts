@@ -7,7 +7,10 @@ import {
     TestEvents
 } from '@testring/types';
 import { Sandbox } from '@testring/sandbox';
-import { bus } from '@testring/api';
+import {  testAPIController } from '@testring/api';
+
+const bus = testAPIController.getBus();
+
 
 export class WorkerController {
 
@@ -37,6 +40,8 @@ export class WorkerController {
         const sandbox = new Sandbox(message.source, message.filename);
 
         let isAsync = false;
+
+        testAPIController.setTestID(message.filename);
 
         // Test becomes async, when run method called
         // In all other cases it's plane sync file execution

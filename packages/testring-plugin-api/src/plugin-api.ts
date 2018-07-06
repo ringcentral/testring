@@ -1,4 +1,5 @@
 import { IPluginDestinationMap } from '@testring/types';
+import { BrowserProxyAPI } from './modules/browser-proxy';
 import { TestFinderAPI } from './modules/test-finder';
 import { LoggerAPI } from './modules/logger';
 import { TestWorkerAPI } from './modules/test-worker';
@@ -22,5 +23,9 @@ export class PluginAPI {
 
     getTestRunController() {
         return new TestRunControllerAPI(this.pluginName, this.modules.testRunController);
+    }
+
+    getBrowserProxy() {
+        return new BrowserProxyAPI(this.pluginName, this.modules.browserProxy);
     }
 }

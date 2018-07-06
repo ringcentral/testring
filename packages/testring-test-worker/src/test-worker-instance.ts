@@ -82,13 +82,13 @@ export class TestWorkerInstance implements ITestWorkerInstance {
                         break;
 
                     case TestStatus.failed:
-                        loggerClientLocal.error(`Test failed: ${relativePath}\n`, message.error);
+                    loggerClientLocal.error(`Test failed: ${relativePath}\n`, message.error);
 
-                        reject({
-                            error: message.error,
-                            test: filename
-                        });
-                        break;
+                    reject({
+                        error: message.error,
+                        test: filename
+                    });
+                    break;
                 }
 
                 this.abortTestExecution = null;

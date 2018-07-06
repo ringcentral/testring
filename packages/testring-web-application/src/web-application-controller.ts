@@ -10,7 +10,7 @@ export class WebApplicationController extends EventEmitter {
         this.emit(WebApplicationControllerEventType.execute, message);
 
         try {
-            const response = await this.browserProxy.execute(message.command);
+            const response = await this.browserProxy.execute(message.applicant, message.command);
 
             this.emit(WebApplicationControllerEventType.response, response);
 

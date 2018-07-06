@@ -1,0 +1,22 @@
+{
+  "name": "@testring/plugin-selenium-driver",
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "typings": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "dependencies": {
+    "@testring/child-process": "0.1.0",
+    "@testring/plugin-api": "0.1.0",
+    "@testring/types": "0.1.0",
+    "@testring/logger": "0.1.0",
+    "@types/webdriverio": "^4.10.2",
+    "selenium-server": "^3.13.0",
+    "chromedriver": "^2.40.0",
+    "webdriverio": "^4.13.0"
+  }
+}
