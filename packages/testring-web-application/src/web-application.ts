@@ -9,7 +9,7 @@ import { createAssertion } from './assert';
 import * as utils from './utils';
 
 const WAIT_TIMEOUT = 45000;
-const TICK_TIMEOUT = 500;
+const TICK_TIMEOUT = 50;
 
 export class WebApplication extends PluggableModule {
 
@@ -907,7 +907,8 @@ export class WebApplication extends PluggableModule {
     }
 
     async pause(timeout) {
-        loggerClient.log(`DELAY for ${timeout}ms`);
+        loggerClient.debug(`DELAY for ${timeout}ms`);
+
         return new Promise(resolve => setTimeout(resolve, timeout));
     }
 

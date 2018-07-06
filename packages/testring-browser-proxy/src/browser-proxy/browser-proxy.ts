@@ -32,7 +32,7 @@ export class BrowserProxy {
 
             this.plugin = pluginFactory(pluginConfig);
         } catch (error) {
-            loggerClient.error(`Can't load plugin ${pluginPath}`, error);
+            loggerClient.debug(`Can't load plugin ${pluginPath}`, error);
         }
 
         this.registerCommandListener();
@@ -55,8 +55,6 @@ export class BrowserProxy {
 
     private async onMessage(message: IBrowserProxyMessage) {
         const {uid, applicant, command} = message;
-
-        loggerClient.log('message', message);
 
         try {
             if (!this.plugin) {

@@ -1,5 +1,6 @@
 {
   "tests": "test/selenium/test/*.spec.js",
+  "logLevel": "debug",
   "plugins": [
     ["babel", {
       "presets": ["es2015"]

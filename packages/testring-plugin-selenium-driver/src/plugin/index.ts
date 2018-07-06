@@ -51,26 +51,34 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     async runLocalSelenium() {
-        this.waitForReadyState = delay(1000);
-        const seleniumServer = require('selenium-server');
-        const seleniumJarPath = seleniumServer.path;
-        let args = [
-            ...this.getChromeDriverArgs(),
-            '-jar', seleniumJarPath,
-            '-port', DEFAULT_CONFIG.port
-        ];
+        try {
+            this.waitForReadyState = delay(1000);
 
-        this.localSelenium = spawn('java', args);
+            const seleniumServer = require('selenium-server');
+            const seleniumJarPath = seleniumServer.path;
 
-        this.localSelenium.stdout.on('data', (data) => {
-            loggerClient.debug(data.toString());
-        });
+            let args = [
+                ...this.getChromeDriverArgs(),
+                '-jar', seleniumJarPath,
+                '-port', DEFAULT_CONFIG.port
+            ];
 
-        this.localSelenium.stderr.on('data', (data) => {
-            loggerClient.debug(data.toString());
-        });
+            this.localSelenium = spawn('java', args);
 
+            this.localSelenium.stdout.on('data', (data) => {
+                loggerClient.debug(data.toString());
+            });
+
+            this.localSelenium.stderr.on('data', (data) => {
+                loggerClient.debug(data.toString());
+            });
+        } catch (error) {
+            loggerClient.error(error);
+
+            throw error;
+        }
     }
+
     public async end(applicant: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
@@ -80,6 +88,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             return client.end();
         }
     }
+
     public async kill() {
         const requests: Array<any> = [];
 
