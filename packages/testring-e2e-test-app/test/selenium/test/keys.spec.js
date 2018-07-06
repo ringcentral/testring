@@ -7,8 +7,6 @@ run(async (context) => {
 
     const val = await context.application.getValue('credential');
 
-    if (val === 'testRing') {
-        console.log('test passed successfully');
-    }
+    await context.application.assert.equal(val, 'testRing');
 });
 

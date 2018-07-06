@@ -72,8 +72,6 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
     }
 
     private onExit = (code, error): void => {
-        console.log(code, error);
-
         delete this.workerId;
 
         loggerClientLocal.debug(

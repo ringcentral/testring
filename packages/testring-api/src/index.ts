@@ -28,8 +28,8 @@ const run = async (...tests: Array<Function>) => {
         }
 
         testAPIController.getBus().emit(TestEvents.finished);
-    } catch (e) {
-        testAPIController.getBus().emit(TestEvents.failed);
+    } catch (error) {
+        testAPIController.getBus().emit(TestEvents.failed, error);
     }
 };
 

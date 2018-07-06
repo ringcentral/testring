@@ -656,6 +656,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async getAttribute(xpath, attr, timeout = WAIT_TIMEOUT) {
+        // TODO This method doesn't work successfully, ReImplement
         loggerClient.log(`Get attribute ${attr} from ${utils.logXpath(xpath)}`);
         await this.waitForExist(xpath, timeout);
 

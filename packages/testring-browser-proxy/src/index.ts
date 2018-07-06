@@ -4,7 +4,7 @@ import { fork } from '@testring/child-process';
 
 import { BrowserProxyController } from './browser-proxy-controller';
 
-const WORKER_PATH = path.join(__dirname, './browser-proxy/index.js');
+const WORKER_PATH = path.join(__dirname, './browser-proxy');
 
 const browserProxyControllerFactory = (transport: Transport) => {
     return new BrowserProxyController(transport, (pluginName, config) => {
