@@ -12,7 +12,7 @@ const createField = (key: keyof IConfig, options: yargs.Options) => {
 yargs.version(pkg.version);
 
 createField('debug', {
-    describe: 'specify test data section',
+    describe: 'debugging flag',
     type: 'boolean'
 });
 

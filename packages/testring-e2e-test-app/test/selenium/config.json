@@ -1,0 +1,11 @@
+{
+  "tests": "test/selenium/test/*.spec.js",
+  "plugins": [
+    ["babel", {
+      "presets": ["es2015"]
+    }],
+    ["selenium-driver", {
+
+    }]
+  ]
+}

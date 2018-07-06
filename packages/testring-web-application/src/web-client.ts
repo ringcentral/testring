@@ -38,6 +38,10 @@ export class WebClient {
         });
     }
 
+    public end() {
+        return this.makeRequest(BrowserProxyActions.end, []);
+    }
+
     public refresh() {
         return this.makeRequest(BrowserProxyActions.refresh, []);
     }

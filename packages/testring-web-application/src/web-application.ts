@@ -126,7 +126,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async _open(val) {
-        let prevUrlObj: any = await this.url('');
+        let prevUrlObj: any = await this.url();
         let result;
 
         let prevUrl = prevUrlObj.value;
@@ -656,6 +656,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async getAttribute(xpath, attr, timeout = WAIT_TIMEOUT) {
+        // TODO This method doesn't work successfully, ReImplement
         loggerClient.log(`Get attribute ${attr} from ${utils.logXpath(xpath)}`);
         await this.waitForExist(xpath, timeout);
 
@@ -910,13 +911,7 @@ export class WebApplication extends PluggableModule {
         return new Promise(resolve => setTimeout(resolve, timeout));
     }
 
-    async url(val) {
-        if (val === undefined) {
-            loggerClient.log('getting current url');
-        } else {
-            let loginHashHidden = val.replace(/\?.*&enc/, '?LOGIN_HASH&enc');
-            loggerClient.log('openning url ' + loginHashHidden);
-        }
+    async url(val?: string) {
         return this.client.url(val);
     }
 
@@ -951,4 +946,7 @@ export class WebApplication extends PluggableModule {
         await this.client.uploadFile(fullPath);
     }
 
+    public async end() {
+        await this.client.end();
+    }
 }
