@@ -22,6 +22,10 @@ class ChildProcessMock extends EventEmitter {
 
         callback(null);
     }
+
+    $triggerListener<T = any>(payload: T) {
+        this.emit('message', payload);
+    }
 }
 
 export { ChildProcessMock };

@@ -2,6 +2,7 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
+import { ITransportMessage } from '@testring/types';
 import { ChildProcessMock } from './child-process.mock';
 import { RootProcessMock } from './root-process.mock';
 import { serialize } from '../src/serialize';
@@ -12,15 +13,15 @@ describe('Transport', () => {
         const MESSAGE_TYPE = 'randomModuleName';
 
         it('should get response', async () => {
-            const transport = new Transport();
             const childProcess = new ChildProcessMock();
+            const transport = new Transport();
 
             transport.registerChildProcess('test', childProcess as any);
 
             await transport.send('test', MESSAGE_TYPE, []);
         });
 
-        it('should correctly fail if there is no such process',  (callback) => {
+        it('should correctly fail if there is no such process', (callback) => {
             const transport = new Transport();
 
             transport.send('unexpectedName', MESSAGE_TYPE, [])
@@ -36,11 +37,11 @@ describe('Transport', () => {
                 });
         });
 
-        it('should correctly fail, when process fails',  (callback) => {
+        it('should correctly fail, when process fails', (callback) => {
+            const childProcessMock = new ChildProcessMock(true);
             const transport = new Transport();
-            const childProcess = new ChildProcessMock(true);
 
-            transport.registerChildProcess('test', childProcess as any);
+            transport.registerChildProcess('test', childProcessMock as any);
             transport.send('unexpectedName', MESSAGE_TYPE, [])
                 .then(() => {
                     callback('Message was sended to failed process somehow');
@@ -56,14 +57,59 @@ describe('Transport', () => {
 
     context('root process broadcasting', () => {
         it('should send message to process', () => {
-            const rootProcess = new RootProcessMock();
-            const transport = new Transport(rootProcess as any);
+            const rootProcessMock = new RootProcessMock();
+            const transport = new Transport(rootProcessMock as any);
             const payload = {};
 
             transport.broadcast('message', payload);
 
-            chai.expect(rootProcess.$callCount()).to.be.equal(1);
-            chai.expect(rootProcess.$lastCall().payload).to.be.deep.equal(serialize(payload));
+            chai.expect(rootProcessMock.$callCount()).to.be.equal(1);
+            chai.expect(rootProcessMock.$lastCall().payload).to.be.deep.equal(serialize(payload));
+        });
+    });
+
+    context('message handling', () => {
+        it('should subscribe message from broadcast', (callback) => {
+            const messageType = 'test';
+            const expectedPayload = {};
+            const rootProcessMock = new RootProcessMock();
+            const transport = new Transport(rootProcessMock as any);
+
+            const removeListener = transport.on(messageType, (payload) => {
+                removeListener();
+
+                chai.expect(payload).to.be.equal(expectedPayload);
+
+                callback();
+            });
+
+            rootProcessMock.$triggerListener<ITransportMessage>({
+                type: messageType,
+                payload: expectedPayload
+            });
+        });
+
+        it('should subscribe message from broadcast', (callback) => {
+            const messageType = 'test';
+            const expectedPayload = {};
+            const childProcessMock = new ChildProcessMock();
+
+            const transport = new Transport();
+
+            transport.registerChildProcess('test', childProcessMock as any);
+
+            const removeListener = transport.on(messageType, (payload) => {
+                removeListener();
+
+                chai.expect(payload).to.be.equal(expectedPayload);
+
+                callback();
+            });
+
+            childProcessMock.$triggerListener<ITransportMessage>({
+                type: messageType,
+                payload: expectedPayload
+            });
         });
     });
 });

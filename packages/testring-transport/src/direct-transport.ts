@@ -100,10 +100,14 @@ class DirectTransport {
             return;
         }
 
-        const normalizedMessage: ITransportDirectMessage = {
-            ...message,
-            payload: deserialize(message.payload)
-        };
+        let normalizedMessage = message;
+
+        if (message.payload && typeof message.payload.$key === 'string') {
+            normalizedMessage = {
+                ...message,
+                payload: deserialize(message.payload)
+            };
+        }
 
         switch (message.type) {
             case TransportInternalMessageType.messageResponse:
