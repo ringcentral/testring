@@ -119,8 +119,6 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
             config: null
         });
 
-        console.log(externalPlugin);
-
         this.worker = this.workerCreator(externalPlugin.plugin, externalPlugin.config);
 
         this.workerId = `proxy-${this.worker.pid}`;
