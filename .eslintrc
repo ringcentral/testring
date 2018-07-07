@@ -10,7 +10,8 @@
   "parser": "typescript-eslint-parser",
   "plugins": ["typescript"],
   "env": {
-    "es6": true
+    "es6": true,
+    "node": true
   },
   "rules": {
     "typescript/no-unused-vars": 2,

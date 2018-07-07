@@ -1,11 +1,19 @@
 import * as util from 'util';
-import { merge } from 'lodash';
 import * as bytes from 'bytes';
-import { transport } from '@testring/transport';
+import { merge } from 'lodash';
 import { Stack } from '@testring/utils';
+import { transport } from '@testring/transport';
 import { ITransport, ILogEntry, ILoggerClient, LoggerMessageTypes, LogTypes, LogLevel } from '@testring/types';
 
 const nanoid = require('nanoid');
+
+const composeStepName = (message: string): string => {
+    return `${message}-${nanoid()}`;
+};
+
+const decomposeStepName = (stepID: string): string => {
+    return stepID.split('-')[0];
+};
 
 const formatLog = (logType: LogTypes, logLevel: LogLevel, time: Date, content: Array<any>): string => {
     const prefix = `[${time.toLocaleTimeString()}] [${logLevel}]`;
@@ -142,7 +150,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
     }
 
     public startStep(message: string): void {
-        const step = nanoid();
+        const step = composeStepName(message);
 
         this.stepStack.push(step);
 
@@ -152,10 +160,22 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
         );
     }
 
-    public endStep(): void {
-        const pop = this.stepStack.pop();
+    public endStep(message?: string): void {
+        let stepID = this.stepStack.pop();
 
-        if (pop && this.stepStack.length <= 0) {
+        if (message) {
+            while (stepID) {
+                const stepMessage = decomposeStepName(stepID);
+
+                if (message === stepMessage) {
+                    break;
+                } else {
+                    stepID = this.stepStack.pop();
+                }
+            }
+        }
+
+        if (stepID && this.stepStack.length === 0) {
             this.sendBatchedLog();
         }
     }
@@ -169,7 +189,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
             await result;
         }
 
-        this.endStep();
+        this.endStep(message);
     }
 
     public setLogEnvironment(logEnvironment: object): void {

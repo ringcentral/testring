@@ -1,6 +1,6 @@
 import * as lodash from 'lodash';
 
-function normalizeXpath(xpath, allowMultipleNodesInResult = false) { //++
+function normalizeXpath(xpath, allowMultipleNodesInResult = false) {
     let result;
 
     try {
@@ -117,6 +117,7 @@ class Element {
                 hr.push('at(' + item.value + ')');
             }
         });
+
         return hr.join('.');
     }
 
@@ -131,6 +132,7 @@ class Element {
         };
 
         let xpathStr = '.';
+
         this.path.forEach(item => {
             if (item.kind === 'exactly') {
                 xpathStr += `/descendant::*[./@${TEST_ATTR} = ${stringLiteral(item.value)}]`;
@@ -190,6 +192,7 @@ function query(value) {
         kind: 'exactly',
         value: ROOTID
     }]);
+
     return value ? el.query(value) : el;
 }
 
