@@ -3,7 +3,7 @@ import { TestEvents } from '@testring/types';
 import { TestContext } from './test-context';
 import { testAPIController } from './test-api-controller';
 
-type TestFunction = (context: TestContext) => void | Promise<any>;
+type TestFunction = (api: TestContext) => void | Promise<any>;
 
 export const run = async (...tests: Array<TestFunction>) => {
     const testID = testAPIController.getTestID();

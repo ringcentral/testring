@@ -7,12 +7,14 @@ import { ITransport, ILogEntry, ILoggerClient, LoggerMessageTypes, LogTypes, Log
 
 const nanoid = require('nanoid');
 
+const STEP_NAME_SEPARATOR = '| / || / || / |_';
+
 const composeStepName = (message: string): string => {
-    return `${message}-${nanoid()}`;
+    return `${message}${STEP_NAME_SEPARATOR}${nanoid()}`;
 };
 
 const decomposeStepName = (stepID: string): string => {
-    return stepID.split('-')[0];
+    return stepID.split(STEP_NAME_SEPARATOR)[0];
 };
 
 const formatLog = (logType: LogTypes, logLevel: LogLevel, time: Date, content: Array<any>): string => {

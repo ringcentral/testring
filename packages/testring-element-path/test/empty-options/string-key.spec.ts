@@ -1,5 +1,5 @@
-import {expect} from 'chai';
-import {createElementPath} from '../../src';
+import { expect } from 'chai';
+import { createElementPath } from '../../src';
 
 const {
     getDescriptor,
@@ -7,7 +7,7 @@ const {
 
     checkAccessMethods,
     checkPreventExtensions,
-    checkProperty,
+    checkProperty
 } = require('../utils');
 
 
@@ -47,23 +47,23 @@ describe('empty options ElementPath root.foo', () => {
                 {
                     'isRoot': true,
                     'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    'xpath': '//*[@data-test-automation-id=\'root\']'
                 },
                 {
                     'isRoot': false,
                     'query': {
-                        'exactKey': 'foo',
+                        'exactKey': 'foo'
                     },
-                    'xpath': '//*[@data-test-automation-id=\'foo\']',
-                },
-            ]),
+                    'xpath': '//*[@data-test-automation-id=\'foo\']'
+                }
+            ])
         });
     });
     describe('.__flows property traps', () => {
         checkProperty({
             object: childFoo,
             key: '__flows',
-            valueDescriptor: getDescriptor({}),
+            valueDescriptor: getDescriptor({})
         });
     });
 
@@ -73,8 +73,8 @@ describe('empty options ElementPath root.foo', () => {
             object: childFoo,
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
-                'exactKey': 'foo',
-            }),
+                'exactKey': 'foo'
+            })
         });
     });
     describe('.__parentPath property traps', () => {
@@ -85,9 +85,9 @@ describe('empty options ElementPath root.foo', () => {
                 {
                     'isRoot': true,
                     'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
-                },
-            ]),
+                    'xpath': '//*[@data-test-automation-id=\'root\']'
+                }
+            ])
         });
     });
 

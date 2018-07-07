@@ -1,5 +1,5 @@
-import {expect} from 'chai';
-import {ElementPath} from '../src';
+import { expect } from 'chai';
+import { ElementPath } from '../src/element-path';
 
 
 export function getDescriptor(value) {
@@ -7,7 +7,7 @@ export function getDescriptor(value) {
         'configurable': true,
         'enumerable': true,
         'value': value,
-        'writable': false,
+        'writable': false
     };
 }
 
@@ -16,11 +16,11 @@ export function getPrivateDescriptor(value) {
         'configurable': true,
         'enumerable': false,
         'value': value,
-        'writable': false,
+        'writable': false
     };
 }
 
-export function checkProperty({object, key, valueDescriptor}) {
+export function checkProperty({ object, key, valueDescriptor }) {
     const value = valueDescriptor.value;
 
 
@@ -60,7 +60,7 @@ export function checkProperty({object, key, valueDescriptor}) {
 
 
 export function checkAccessMethods(object, options: any = {}) {
-    const {keys} = options;
+    const { keys } = options;
 
     it('.ownKey() trap', () => {
         expect(Object.keys(object)).to.deep.equal(keys || ['__flows', '__path']);

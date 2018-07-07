@@ -79,6 +79,14 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         this.browserClients.set(applicant, client);
     }
 
+    private wrapWithPromise<T>(item: Client<T>) {
+        return new Promise<T>((resolve, reject) => {
+            item
+                .then(resolve)
+                .catch(reject);
+        });
+    }
+
     public async end(applicant: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
@@ -133,7 +141,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.browserClients.get(applicant);
 
         if (client) {
-            return client.url(val);
+            return this.wrapWithPromise(client.url(val));
         }
     }
 
@@ -142,7 +150,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.browserClients.get(applicant);
 
         if (client) {
-            return client.waitForExist(xpath, timeout);
+            return this.wrapWithPromise(client.waitForExist(xpath, timeout));
         }
     }
 
@@ -281,12 +289,12 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    public async getAttribute(applicant: string, xpath: string, attr: any) {
+    public async getAttribute(applicant: string, xpath: string, attr: string): Promise<any> {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
 
         if (client) {
-            client.getAttribute(xpath, attr);
+            return this.wrapWithPromise(client.getAttribute(xpath, attr));
         }
     }
 

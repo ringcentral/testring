@@ -1,8 +1,5 @@
-import {
-    hasOwn,
-    isGenKeyType,
-} from './utils';
-import {ElementPath} from './element-path';
+import { hasOwn, isGenKeyType } from './utils';
+import { ElementPath } from './element-path';
 
 type KeyType = string | number | symbol;
 
@@ -15,26 +12,31 @@ type PropertyDescriptor = {
     setter?: () => any,
 } | undefined;
 
+type ElementPathAPI = ElementPath & {
+    [key: string]: ElementPath
+};
+
 const PROXY_OWN_PROPS = ['__flows', '__path'];
 const PROXY_PROPS = ['__path', '__parentPath', '__flows', '__searchOptions', '__proxy'];
 
-export function proxyfy(instance: ElementPath, strictMode: boolean = true): any {
-    const revocable = Proxy.revocable(instance, {
-        get: (target, key) => getTrap(target, key),
-        set: (target, key, value) => setTrap(target, key, value),
-        deleteProperty: (target, key) => deleteTrap(target, key),
-        has: (target, key) => hasTrap(target, key),
+export function proxyfy(instance: ElementPath, strictMode: boolean = true) {
+    const revocable = Proxy.revocable<ElementPathAPI>(instance as any, {
+        get: getTrap,
+        set: setTrap,
+        deleteProperty: deleteTrap,
+        has: hasTrap,
 
-        ownKeys: (target) => ownKeysTrap(target),
-        getOwnPropertyDescriptor: (target, key) => getOwnPropertyDescriptorTrap(target, key),
-        defineProperty: (target, key, descriptor) => defineOwnPropertyTrap(target, key, descriptor),
+        ownKeys: ownKeysTrap,
+        getOwnPropertyDescriptor: getOwnPropertyDescriptorTrap,
+        defineProperty: defineOwnPropertyTrap,
 
-        getPrototypeOf: (target) => getPrototypeOfTrap(target),
-        setPrototypeOf: (target, proto) => setPrototypeOfTrap(target, proto),
+        getPrototypeOf: getPrototypeOfTrap,
+        setPrototypeOf: setPrototypeOfTrap,
 
-        isExtensible: (target) => isExtensibleTrap(target),
-        preventExtensions: (target) => preventExtensionsTrap(target),
+        isExtensible: isExtensibleTrap,
+        preventExtensions: preventExtensionsTrap
     });
+
     const proxy = revocable.proxy;
 
     function isPrivateProperty(key: KeyType): boolean {
@@ -54,7 +56,7 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true): any 
                     } else {
                         return Reflect.get(ctx, key).apply(thisArg, argumentsList);
                     }
-                },
+                }
             });
         } else {
             return Reflect.get(instance, key);
@@ -119,7 +121,7 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true): any 
         }
 
         if (key === 'xpathByElement') {
-            return (element: {xpath: string}) => proxyfy(instance.generateChildByXpath(element.xpath), strictMode);
+            return (element: { xpath: string }) => proxyfy(instance.generateChildByXpath(element.xpath), strictMode);
         }
 
         if (key === 'xpath') {
@@ -167,26 +169,26 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true): any 
         let defaultDescriptor = {
             enumerable: false,
             writable: false,
-            configurable: true,
+            configurable: true
         };
 
         if (typeof key === 'string' && PROXY_PROPS.includes(key)) {
             return Object.assign(defaultDescriptor, {
                 enumerable: !isPrivateProperty(key),
-                value: getTrap(target, key),
+                value: getTrap(target, key)
             });
         }
 
         if (typeof key !== 'symbol' && instance.hasFlow(key)) {
             return Object.assign(defaultDescriptor, {
                 enumerable: true,
-                value: instance.getFlow(key),
+                value: instance.getFlow(key)
             });
         }
 
         if (isGenKeyType(key)) {
             return Object.assign(defaultDescriptor, {
-                value: getTrap(target, key),
+                value: getTrap(target, key)
             });
         }
 
