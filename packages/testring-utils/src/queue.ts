@@ -1,4 +1,3 @@
-
 export class Queue<T> {
     private array: Array<T>;
 

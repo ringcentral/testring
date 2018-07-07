@@ -14,7 +14,7 @@
     "@types/nanoid": "^1.0.0",
     "nanoid": "^1.0.4"
   },
-  "devDependencies":{
+  "devDependencies": {
     "@testring/child-process": "0.1.0"
   }
 }

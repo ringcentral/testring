@@ -1,7 +1,7 @@
-module.exports = function() {
+module.exports = function () {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-            resolve({debug: true});
+            resolve({ debug: true });
         }, 1000);
     });
 };

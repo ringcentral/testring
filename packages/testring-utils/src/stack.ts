@@ -1,4 +1,3 @@
-
 export class Stack<T> {
     private array: Array<T>;
 

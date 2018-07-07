@@ -1,8 +1,10 @@
 const log = console.log.bind(console);
 const root = process.cwd();
 
-const timeout = setTimeout(() => {}, 0);
-const interval = setInterval(() => {}, 1000);
+const timeout = setTimeout(() => {
+}, 0);
+const interval = setInterval(() => {
+}, 1000);
 
 clearTimeout(timeout);
 clearInterval(interval);

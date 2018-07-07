@@ -1,4 +1,3 @@
-
 const data = generateData();
 
 function generateData() {
