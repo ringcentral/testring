@@ -15,8 +15,8 @@ type PropertyDescriptor = {
     setter?: () => any,
 } | undefined;
 
-const OWN_FIELD = ['__flows', '__path'];
-const PROXY_FIELDS = ['__path', '__parentPath', '__flows', '__searchOptions', '__proxy'];
+const PROXY_OWN_PROPS = ['__flows', '__path'];
+const PROXY_PROPS = ['__path', '__parentPath', '__flows', '__searchOptions', '__proxy'];
 
 export function proxyfy(instance: ElementPath, strictMode: boolean = true): any {
     const revocable = Proxy.revocable(instance, {
@@ -38,7 +38,7 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true): any 
     const proxy = revocable.proxy;
 
     function isPrivateProperty(key: KeyType): boolean {
-        return typeof key === 'string' && key.indexOf('__') === 0 && !OWN_FIELD.includes(key);
+        return typeof key === 'string' && key.indexOf('__') === 0 && !PROXY_OWN_PROPS.includes(key);
     }
 
     function getReflectedProperty(key, ctx = instance) {
@@ -66,8 +66,8 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true): any 
             throw new TypeError('Key can not me empty');
         }
 
-        if (typeof key === 'string' && OWN_FIELD.includes(key) && instance.hasFlow(key)) {
-            throw new TypeError(`flow and own property ${key} is conflicts`);
+        if (typeof key === 'string' && PROXY_PROPS.includes(key) && instance.hasFlow(key)) {
+            throw new TypeError(`flow function and property ${key} are conflicts`);
         }
 
         if (hasOwn(instance, key) && typeof key !== 'symbol') {
@@ -156,7 +156,7 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true): any 
     }
 
     function ownKeysTrap(target: ElementPath): KeyType[] {
-        return OWN_FIELD.concat(Object.keys(instance.getFlows() || {}));
+        return PROXY_OWN_PROPS.concat(Object.keys(instance.getFlows() || {}));
     }
 
     function defineOwnPropertyTrap(target: ElementPath, key: KeyType, descriptor: PropertyDescriptor): boolean {
@@ -170,7 +170,7 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true): any 
             configurable: true,
         };
 
-        if (typeof key === 'string' && PROXY_FIELDS.includes(key)) {
+        if (typeof key === 'string' && PROXY_PROPS.includes(key)) {
             return Object.assign(defaultDescriptor, {
                 enumerable: !isPrivateProperty(key),
                 value: getTrap(target, key),
