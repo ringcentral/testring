@@ -1,5 +1,6 @@
 import * as util from 'util';
 import { merge } from 'lodash';
+import * as bytes from 'bytes';
 import { transport } from '@testring/transport';
 import { Stack } from '@testring/utils';
 import { ITransport, ILogEntry, ILoggerClient, LoggerMessageTypes, LogTypes, LogLevel } from '@testring/types';
@@ -7,16 +8,21 @@ import { ITransport, ILogEntry, ILoggerClient, LoggerMessageTypes, LogTypes, Log
 const nanoid = require('nanoid');
 
 const formatLog = (logType: LogTypes, logLevel: LogLevel, time: Date, content: Array<any>): string => {
+    const prefix = `[${time.toLocaleTimeString()}] [${logLevel}]`;
+
     if (logType === LogTypes.media) {
+        const filename = content[0];
+        const media = content[1];
+
         return util.format(
-            `[${logLevel}] [${time.toLocaleTimeString()}] [media]`,
-            content[0],
-            `${content[1].length} bytes`
+            `${prefix} [media]`,
+            `Filename: ${filename};`,
+            `Size: ${bytes.format(media.length)};`
         );
     }
 
     return util.format(
-        `[${logLevel}] [${time.toLocaleTimeString()}]`, ...content
+        prefix, ...content
     );
 };
 
