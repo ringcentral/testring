@@ -1,6 +1,7 @@
 import * as util from 'util';
 import { merge } from 'lodash';
 import { transport } from '@testring/transport';
+import { Stack } from '@testring/utils';
 import { ITransport, ILogEntry, ILoggerClient, LoggerMessageTypes, LogTypes, LogLevel } from '@testring/types';
 
 const nanoid = require('nanoid');
@@ -29,16 +30,16 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
 
     protected abstract broadcast(messageType: string, payload: any): void;
 
-    protected stepStack: Array<string> = [];
+    protected stepStack: Stack<string> = new Stack();
 
     protected logBatch: Array<ILogEntry> = [];
 
     protected getCurrentStep(): string | null {
-        return this.stepStack[this.stepStack.length - 1] || null;
+        return this.stepStack.getLastElement();
     }
 
     protected getPreviousStep(): string | null {
-        return this.stepStack[this.stepStack.length - 2] || null;
+        return this.stepStack.getLastElement(1);
     }
 
     protected buildEntry(

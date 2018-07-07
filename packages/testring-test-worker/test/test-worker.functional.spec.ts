@@ -6,7 +6,7 @@ import { ITestExecutionError, TestWorkerPlugin } from '@testring/types';
 import { TestWorker } from '../src/test-worker';
 
 describe('TestWorkerInstance', () => {
-    const defaultSyncTestContent = 'process.cwd()';
+    const defaultSyncTestContent = 'process.cwd();';
     const defaultFilename = './test.js';
 
     context('test execution', () => {
@@ -18,7 +18,7 @@ describe('TestWorkerInstance', () => {
             try {
                 await instance.execute(defaultSyncTestContent, defaultFilename, {});
             } catch (error) {
-                throw error;
+                throw error.error;
             } finally {
                 instance.kill();
             }
@@ -72,7 +72,7 @@ describe('TestWorkerInstance', () => {
             const hook = testWorker.getHook(TestWorkerPlugin.compile);
 
             if (hook) {
-                hook.tapPromise('testPlugin', (source, file) => {
+                hook.writeHook('testPlugin', (source, file) => {
                     chai.expect(source).to.be.equal(defaultSyncTestContent);
                     chai.expect(file).to.be.equal(defaultFilename);
                     callback();
@@ -94,7 +94,7 @@ describe('TestWorkerInstance', () => {
             const hook = testWorker.getHook(TestWorkerPlugin.compile);
 
             if (hook) {
-                hook.tapPromise('testPlugin', (source, file) => {
+                hook.writeHook('testPlugin', (source, file) => {
                     // throw new Error('compilation failed');
 
                     return Promise.reject(new Error('compilation failed'));

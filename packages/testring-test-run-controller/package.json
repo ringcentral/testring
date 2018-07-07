@@ -12,7 +12,8 @@
   "dependencies": {
     "@testring/pluggable-module": "^0.1.0",
     "@testring/logger": "0.1.0",
-    "@testring/types": "0.1.0"
+    "@testring/types": "0.1.0",
+    "@testring/utils": "0.1.0"
   },
   "devDependencies": {
     "@testring/test-utils": "0.1.0"

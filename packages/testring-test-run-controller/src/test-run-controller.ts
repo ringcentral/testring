@@ -8,10 +8,11 @@ import {
     ITestExecutionError,
     TestRunControllerHooks
 } from '@testring/types';
-import { PluggableModule } from '@testring/pluggable-module';
 import { loggerClientLocal } from '@testring/logger';
+import { PluggableModule } from '@testring/pluggable-module';
+import { Queue } from '@testring/utils';
 
-type TestQueue = Array<IQueuedTest>;
+type TestQueue = Queue<IQueuedTest>;
 
 const delay = (milliseconds: number) => new Promise((resolve) => {
     setTimeout(resolve, milliseconds);
@@ -93,7 +94,9 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             };
         }
 
-        return await this.callHook(TestRunControllerHooks.beforeRun, testQueue);
+        const modifierQueue = await this.callHook(TestRunControllerHooks.beforeRun, testQueue);
+
+        return new Queue(modifierQueue);
     }
 
     private async occupyWorker(worker: ITestWorkerInstance, queue: TestQueue): Promise<void> {
@@ -132,7 +135,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     }
 
     private async executeWorker(worker: ITestWorkerInstance, queue: TestQueue): Promise<void> {
-        const queuedTest = queue.pop();
+        const queuedTest = queue.shift();
 
         if (!queuedTest) {
             return;

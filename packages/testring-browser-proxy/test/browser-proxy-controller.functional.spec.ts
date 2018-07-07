@@ -24,7 +24,7 @@ describe('Browser proxy controller functional test', () => {
         const onAction = controller.getHook(BrowserProxyPlugins.getPlugin);
 
         if (onAction) {
-            onAction.tapPromise('testPlugin', async () => {
+            onAction.writeHook('testPlugin', async () => {
                 return {
                     plugin: syncPlugin,
                     config: null

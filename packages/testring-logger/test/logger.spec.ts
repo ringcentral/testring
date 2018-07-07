@@ -6,7 +6,7 @@ import { TransportMock } from '@testring/test-utils';
 import { LoggerServer } from '../src/logger-server';
 import { LoggerClient } from '../src/logger-client';
 import { LoggerClientLocal } from '../src/logger-client-local';
-import { entry } from './fixtures/constants';
+import { LOG_ENTITY } from './fixtures/constants';
 
 const DEFAULT_CONFIG: any = {};
 const DEFAULT_WRITABLE_CONFIG = {
@@ -23,12 +23,12 @@ describe('Logger', () => {
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (onLog) {
-            onLog.tap('testPlugin', () => {
+            onLog.readHook('testPlugin', () => {
                 callback();
             });
         }
 
-        loggerClient.log(entry);
+        loggerClient.log(LOG_ENTITY);
     });
 
     context('with server and local client on same process', () => {
@@ -40,12 +40,12 @@ describe('Logger', () => {
             const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
             if (onLog) {
-                onLog.tap('testPlugin', () => {
+                onLog.readHook('testPlugin', () => {
                     callback();
                 });
             }
 
-            loggerClient.log(entry);
+            loggerClient.log(LOG_ENTITY);
         });
     });
 });
