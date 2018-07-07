@@ -4,23 +4,19 @@ import { ElementPath } from './element-path';
 type KeyType = string | number | symbol;
 
 type PropertyDescriptor = {
-    enumerable?: boolean,
-    writable?: boolean,
-    configurable?: boolean,
-    value?: any,
-    getter?: () => any,
-    setter?: () => any,
+    enumerable?: boolean;
+    writable?: boolean;
+    configurable?: boolean;
+    value?: any;
+    getter?: () => any;
+    setter?: () => any;
 } | undefined;
-
-type ElementPathAPI = ElementPath & {
-    [key: string]: ElementPath
-};
 
 const PROXY_OWN_PROPS = ['__flows', '__path'];
 const PROXY_PROPS = ['__path', '__parentPath', '__flows', '__searchOptions', '__proxy'];
 
 export function proxyfy(instance: ElementPath, strictMode: boolean = true) {
-    const revocable = Proxy.revocable<ElementPathAPI>(instance as any, {
+    const revocable = Proxy.revocable<any>(instance, {
         get: getTrap,
         set: setTrap,
         deleteProperty: deleteTrap,

@@ -8,8 +8,8 @@ import { Request, Response, ResponseReject } from './interfaces';
 
 
 interface QueueRequest {
-    data: Request,
-    src: string
+    data: Request;
+    src: string;
 }
 
 type MakeRequest = (request: requestPromise.OptionsWithUrl) => any;

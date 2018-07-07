@@ -1,8 +1,8 @@
 import { ITransportSerializedStruct } from '@testring/types';
 
 export interface ISerializedBuffer extends ITransportSerializedStruct {
-    $key: string,
-    data: string
+    $key: string;
+    data: string;
 }
 
 export const BUFFER_KEY = 'Buffer';

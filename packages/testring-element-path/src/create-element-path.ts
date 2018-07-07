@@ -2,8 +2,8 @@ import { proxyfy } from './proxyfy';
 import { ElementPath, FlowsObject } from './element-path';
 
 export type createElementPathOptions = {
-    flows?: FlowsObject,
-    strictMode?: boolean,
+    flows?: FlowsObject;
+    strictMode?: boolean;
 };
 
 export function createElementPath(options: createElementPathOptions = {}) {

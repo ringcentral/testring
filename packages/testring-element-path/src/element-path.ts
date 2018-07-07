@@ -6,45 +6,45 @@ import {
 export type FlowFn = () => any;
 
 export type FlowsFnObject = {
-    [method: string]: FlowFn,
-    [method: number]: FlowFn,
+    [method: string]: FlowFn;
+    [method: number]: FlowFn;
 };
 
 export type FlowsObject = {
-    [key: string]: FlowsFnObject,
-    [key: number]: FlowsFnObject,
+    [key: string]: FlowsFnObject;
+    [key: number]: FlowsFnObject;
 };
 
 export type SearchMaskPrimitive = number | string;
 
 export type SearchMaskObject = {
-    anyKey?: boolean,
-    suffix?: string,
-    prefix?: string,
-    containsKey?: string,
-    exactKey?: string,
-    parts?: string[],
+    anyKey?: boolean;
+    suffix?: string;
+    prefix?: string;
+    containsKey?: string;
+    exactKey?: string;
+    parts?: string[];
 };
 
 export type SearchTextObject = {
-    containsText?: string,
-    equalsText?: string,
+    containsText?: string;
+    equalsText?: string;
 };
 
 export type SearchSubQueryObject = {
-    subQuery?: SearchMaskObject & SearchTextObject,
+    subQuery?: SearchMaskObject & SearchTextObject;
 };
 
 export type SearchObject = SearchMaskObject & SearchTextObject & SearchSubQueryObject & {
-    index?: number,
-    xpath?: string,
+    index?: number;
+    xpath?: string;
 };
 
 export type NodePath = {
-    query?: SearchObject,
-    name?: string,
-    xpath: string,
-    isRoot: boolean,
+    query?: SearchObject;
+    name?: string;
+    xpath: string;
+    isRoot: boolean;
 };
 
 export class ElementPath {
