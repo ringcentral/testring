@@ -2,7 +2,7 @@
 
 import * as chai from 'chai';
 import { Transport } from '@testring/transport';
-import { ITestExecutionError, TestWorkerPlugin } from '@testring/types';
+import { TestWorkerPlugin } from '@testring/types';
 import { TestWorker } from '../src/test-worker';
 
 describe('TestWorkerInstance', () => {
@@ -18,7 +18,7 @@ describe('TestWorkerInstance', () => {
             try {
                 await instance.execute(defaultSyncTestContent, defaultFilename, {});
             } catch (error) {
-                throw error.error;
+                throw error;
             } finally {
                 instance.kill();
             }
@@ -34,9 +34,8 @@ describe('TestWorkerInstance', () => {
                 .then(() => {
                     callback('Test was completed somehow');
                 })
-                .catch((message: ITestExecutionError) => {
-                    chai.expect(message.error).to.be.an.instanceof(Error);
-                    chai.expect(message.test).to.be.equal(defaultFilename);
+                .catch((message: Error) => {
+                    chai.expect(message).to.be.an.instanceof(Error);
 
                     callback();
                 })

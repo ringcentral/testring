@@ -70,24 +70,17 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         const relativePath = path.relative(process.cwd(), filename);
 
-        loggerClientLocal.log(`Running test: ${relativePath}`);
+        loggerClientLocal.debug(`Sending test for execution: ${relativePath}`);
 
         const removeListener = this.transport.onceFrom(this.workerName, TestWorkerAction.executionComplete,
             (message: ITestExecutionCompleteMessage) => {
                 switch (message.status) {
                     case TestStatus.done:
-                        loggerClientLocal.log(`Test success: ${relativePath}`);
-
                         resolve();
                         break;
 
                     case TestStatus.failed:
-                        loggerClientLocal.error(`Test failed: ${relativePath}\n`, message.error);
-
-                        reject({
-                            error: message.error,
-                            test: filename
-                        });
+                        reject(message.error);
                         break;
                 }
 
@@ -122,10 +115,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         } catch (error) {
             loggerClientLocal.error(`Compilation ${filename} failed`);
 
-            throw {
-                error,
-                test: filename
-            };
+            throw error;
         }
     }
 

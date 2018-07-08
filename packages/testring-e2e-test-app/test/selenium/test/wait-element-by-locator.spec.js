@@ -1,12 +1,20 @@
 import { run } from 'testring';
 
-run(async (context) => {
+run(async (api) => {
 
-    await context.application.url('https://service.ringcentral.com/');
-    await context.application.click('credential');
-    await context.application.keys('1111111111');
-    await context.application.click('loginCredentialNext');
-    await context.application.waitElementByLocator('password');
+    await api.application.url('https://service.ringcentral.com/');
+    await api.application.click(
+        api.application.root.credential.toString()
+    );
 
+    await api.application.keys('1111111111');
+
+    await api.application.click(
+        api.application.root.loginCredentialNext.toString()
+    );
+
+    await api.application.waitElementByLocator(
+        api.application.root.password.toString()
+    );
 });
 

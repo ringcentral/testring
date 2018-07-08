@@ -11,7 +11,7 @@ describe('assertion functional', () => {
         try {
             await assert.equal(1, 1);
 
-            chai.expect(assert.errorMessages.length).to.be.equal(0);
+            chai.expect(assert._errorMessages.length).to.be.equal(0);
         } catch (e) {
             throw new Error('Web assertion error');
         }
@@ -22,7 +22,7 @@ describe('assertion functional', () => {
 
         try {
             await assert.equal(1, 1);
-            chai.expect(assert.errorMessages.length).to.be.equal(0);
+            chai.expect(assert._errorMessages.length).to.be.equal(0);
         } catch (e) {
             throw new Error('Web assertion error');
         }
@@ -34,12 +34,12 @@ describe('assertion functional', () => {
         try {
             await assert.equal(1, 2);
         } catch (e) {
-            chai.expect(assert.errorMessages.length).to.be.equal(0);
+            chai.expect(assert._errorMessages.length).to.be.equal(0);
             chai.expect(e).to.be.an.instanceof(Error);
         }
 
     });
-    it('should pass with not equal params and add errors to errorMessages (soft assertion)', async () => {
+    it('should pass with not equal params and add errors to._errorMessages (soft assertion)', async () => {
 
         const assert = createAssertion(true);
         try {
@@ -50,6 +50,6 @@ describe('assertion functional', () => {
             throw new Error('Assertion error');
         }
 
-        chai.expect(assert.errorMessages.length).to.be.equal(3);
+        chai.expect(assert._errorMessages.length).to.be.equal(3);
     });
 });

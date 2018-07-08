@@ -29,7 +29,7 @@ describe('Browser proxy', () => {
 
         transport.on<IBrowserProxyCommandResponse>(BrowserProxyMessageTypes.response, (response) => {
             chai.expect(response.uid).to.be.equal(uid);
-            chai.expect(response.exception).to.be.equal(null);
+            chai.expect(response.error).to.be.equal(null);
 
             callback();
         });
@@ -49,9 +49,9 @@ describe('Browser proxy', () => {
         const transport = new TransportMock();
         new BrowserProxy(transport, asyncPluginPath, pluginConfig);
 
-        transport.on(BrowserProxyMessageTypes.response, (response) => {
+        transport.on<IBrowserProxyCommandResponse>(BrowserProxyMessageTypes.response, (response) => {
             chai.expect(response.uid).to.be.equal(uid);
-            chai.expect(response.exception).to.be.equal(null);
+            chai.expect(response.error).to.be.equal(null);
 
             callback();
         });
@@ -70,11 +70,11 @@ describe('Browser proxy', () => {
         const transport = new TransportMock();
         new BrowserProxy(transport, pluginPath, pluginConfig);
 
-        transport.on(
+        transport.on<IBrowserProxyCommandResponse>(
             BrowserProxyMessageTypes.response,
             (response) => {
                 chai.expect(response).to.have.property('uid', uid);
-                chai.expect(response).to.have.property('exception');
+                chai.expect(response).to.have.property('error');
 
                 callback();
             }

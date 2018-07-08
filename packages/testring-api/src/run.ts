@@ -21,7 +21,9 @@ export const run = async (...tests: Array<TestFunction>) => {
                 loggerClient.startStep(testID);
 
                 await test.call(api, api);
+                loggerClient.info('Test passed');
             } catch (error) {
+                loggerClient.error('Test failed', error);
                 caughtError = error;
             } finally {
                 loggerClient.endStep(testID);

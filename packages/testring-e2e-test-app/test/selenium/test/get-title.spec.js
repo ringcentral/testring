@@ -5,6 +5,6 @@ run(async (api) => {
 
     const title = await api.application.getTitle();
 
-    await api.application.assert.equal(title, 'All-in-One Phone, Team Messaging, Video Conferencing | RingCentral');
+    await api.application.assert.include(title, 'RingCentral');
 });
 

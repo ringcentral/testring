@@ -8,6 +8,6 @@ export interface IExecuteMessage {
 
 export interface IResponseMessage {
     uid: string;
-    response?: any;
-    error?: Error;
+    response: any;
+    error: Error | null;
 }

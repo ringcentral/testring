@@ -5,7 +5,6 @@ import {
     ITestFile,
     IQueuedTest,
     ITestRunController,
-    ITestExecutionError,
     TestRunControllerHooks
 } from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
@@ -51,8 +50,6 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
             await this.callHook(TestRunControllerHooks.afterRun, testQueue);
         } catch (error) {
-            loggerClientLocal.error(...this.errors);
-
             this.errors.push(error);
         }
 
@@ -108,27 +105,27 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     }
 
     private async onTestFailed(
-        exception: ITestExecutionError,
+        error: Error,
         worker: ITestWorkerInstance,
-        test: IQueuedTest,
+        queueItem: IQueuedTest,
         queue: TestQueue
     ): Promise<void> {
         if (this.config.bail) {
-            throw exception.error;
+            throw error;
         }
 
-        if (test.retryCount < (this.config.retryCount || 0)) {
-            test.retryCount++;
+        if (queueItem.retryCount < (this.config.retryCount || 0)) {
+            queueItem.retryCount++;
 
             await delay(this.config.retryDelay || 0);
 
-            queue.push(test);
+            queue.push(queueItem);
 
             await this.executeWorker(worker, queue);
         } else {
-            this.errors.push(exception.error);
+            this.errors.push(error);
 
-            await this.callHook(TestRunControllerHooks.afterTest, test);
+            await this.callHook(TestRunControllerHooks.afterTest, queueItem);
 
             await this.occupyWorker(worker, queue);
         }

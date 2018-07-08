@@ -48,7 +48,8 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
     }
 
     private onCommandResponse(commandResponse: IBrowserProxyCommandResponse): void {
-        const { uid, response, exception } = commandResponse;
+        const { uid, response, error } = commandResponse;
+
         const item = this.pendingCommandsPool.get(uid);
 
         if (item) {
@@ -56,13 +57,14 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
             this.pendingCommandsPool.delete(uid);
 
-            if (exception) {
-                return reject(exception);
+            if (error) {
+                return reject(error);
             }
 
             return resolve(response);
         } else {
             loggerClientLocal.error(`Browser Proxy controller: cannot find command with uid ${uid}`);
+
             throw new ReferenceError(`Cannot find command with uid ${uid}`);
         }
     }
@@ -91,8 +93,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
     };
 
     private send(item: IBrowserProxyPendingCommand): void {
-        const { command, applicant } = item;
-        const uid = nanoid();
+        const { command, applicant, uid } = item;
 
         this.pendingCommandsPool.set(uid, item);
 
@@ -140,14 +141,16 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
     public execute(applicant: string, command: IBrowserProxyCommand): Promise<void> {
         return new Promise((resolve, reject) => {
+            const uid = nanoid();
             const item: IBrowserProxyPendingCommand = {
+                uid,
                 resolve,
                 reject,
                 command,
                 applicant
             };
 
-            if (this.worker && this.worker.connected) {
+            if (this.worker) {
                 this.send(item);
             } else {
                 this.pendingCommandsQueue.add(item);

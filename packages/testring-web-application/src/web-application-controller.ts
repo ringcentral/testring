@@ -1,7 +1,6 @@
 import { EventEmitter } from 'events';
-import { loggerClientLocal } from '@testring/logger';
 import { ITransport, IBrowserProxyController } from '@testring/types';
-import { IExecuteMessage } from './interfaces';
+import { IExecuteMessage, IResponseMessage } from './interfaces';
 import { WebApplicationMessageType, WebApplicationControllerEventType } from './structs';
 
 export class WebApplicationController extends EventEmitter {
@@ -10,30 +9,28 @@ export class WebApplicationController extends EventEmitter {
         this.emit(WebApplicationControllerEventType.execute, message);
 
         try {
-            const response = await this.browserProxy.execute(message.applicant, message.command);
+            const response = await this.browserProxyController.execute(message.applicant, message.command);
 
             this.emit(WebApplicationControllerEventType.response, response);
 
-            await this.transport.send(source, WebApplicationMessageType.response, {
+            await this.transport.send<IResponseMessage>(source, WebApplicationMessageType.response, {
                 uid: message.uid,
-                response: response
+                response: response,
+                error: null
             });
 
             this.emit(WebApplicationControllerEventType.afterResponse, message, response);
         } catch (error) {
-            loggerClientLocal.error(error);
-
-            this.emit(WebApplicationControllerEventType.error, error);
-
-            await this.transport.send(source, WebApplicationMessageType.response, {
+            await this.transport.send<IResponseMessage>(source, WebApplicationMessageType.response, {
                 uid: message.uid,
+                response: null,
                 error: error
             });
         }
     };
 
     constructor(
-        private browserProxy: IBrowserProxyController,
+        private browserProxyController: IBrowserProxyController,
         private transport: ITransport
     ) {
         super();

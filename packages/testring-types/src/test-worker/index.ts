@@ -22,27 +22,22 @@ export const enum TestWorkerAction {
 }
 
 export interface ITestExecutionMessage {
-    source: string,
-    filename: string,
-    parameters: object
+    source: string;
+    filename: string;
+    parameters: object;
 }
 
 export interface ITestExecutionCompleteMessage {
-    status: TestStatus,
-    error: Error | null
-}
-
-export interface ITestExecutionError {
-    test: string,
-    error: Error
+    status: TestStatus;
+    error: Error | null;
 }
 
 export interface ITestWorkerInstance {
     execute(rawSource: string, filename: string, parameters: object): Promise<any>
 
-    kill(): void
+    kill(): void;
 }
 
 export interface ITestWorker {
-    spawn(): ITestWorkerInstance
+    spawn(): ITestWorkerInstance;
 }

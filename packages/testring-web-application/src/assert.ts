@@ -1,17 +1,17 @@
 import * as chai from 'chai';
 import { loggerClient } from '@testring/logger';
 
-type RootType = typeof chai.assert & { errorMessages: Array<any> };
+type AssertionAPI = typeof chai['assert'] & { _errorMessages: Array<any> };
 
 export const createAssertion = (isSoft = false) => {
-    const root: RootType = Object.assign({}, chai.assert, {
-        errorMessages: []
+    const root: AssertionAPI = Object.assign({}, chai.assert, {
+        _errorMessages: []
     });
 
-    return new Proxy(root, {
+    return new Proxy<AssertionAPI>(root, {
         get(target, fieldName: string) {
-            if (fieldName === 'errorMessages') {
-                return target.errorMessages;
+            if (fieldName === '_errorMessages') {
+                return target._errorMessages;
             }
 
             const typeOfAssert = isSoft ? 'softAssert' : 'assert';
@@ -63,7 +63,7 @@ export const createAssertion = (isSoft = false) => {
                     }
 
                     if (isSoft) {
-                        target.errorMessages.push(successMessage || assertMessage || error.message);
+                        target._errorMessages.push(successMessage || assertMessage || error.message);
                     } else {
                         error.message = (successMessage || assertMessage || error.message);
 

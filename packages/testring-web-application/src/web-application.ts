@@ -9,7 +9,7 @@ import { createAssertion } from './assert';
 import { WebClient } from './web-client';
 import * as utils from './utils';
 
-const WAIT_TIMEOUT = 45000;
+const WAIT_TIMEOUT = 30000;
 const TICK_TIMEOUT = 100;
 
 export class WebApplication extends PluggableModule {

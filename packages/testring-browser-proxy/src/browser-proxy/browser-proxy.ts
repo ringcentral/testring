@@ -95,16 +95,16 @@ export class BrowserProxy {
                 {
                     uid,
                     response,
-                    exception: null
+                    error: null
                 }
             );
-        } catch (exception) {
+        } catch (error) {
             this.transportInstance.broadcast<IBrowserProxyCommandResponse>(
                 BrowserProxyMessageTypes.response,
                 {
                     uid,
-                    response: null,
-                    exception
+                    error,
+                    response: null
                 }
             );
         }

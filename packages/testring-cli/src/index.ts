@@ -67,7 +67,13 @@ export const runTests = async (argv: Array<string>, stdout: NodeJS.WritableStrea
     browserProxyController.kill();
 
     if (testRunResult) {
-        throw new Error(`Failed ${testRunResult.length}/${tests.length} tests.`);
+        loggerClientLocal.error('Founded errors:');
+
+        testRunResult.forEach((error) => {
+            loggerClientLocal.error(error);
+        });
+
+        throw `Failed ${testRunResult.length}/${tests.length} tests.`;
     } else {
         loggerClientLocal.info(`Tests done: ${tests.length}/${tests.length}.`);
     }
