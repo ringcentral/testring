@@ -18,7 +18,7 @@ describe('Get config', () => {
 
     it('should override default config fields with file config', async () => {
         const config = await getConfig([
-            `--config=${fileConfigPath}`,
+            `--config=${fileConfigPath}`
         ]);
 
         chai.expect(config).to.have.property('tests', fileConfig.tests);
@@ -27,7 +27,7 @@ describe('Get config', () => {
     it('should override default and file config fields with env config', async () => {
         const config = await getConfig([
             `--config=${fileConfigPath}`,
-            `--env-config=${envConfigPath}`,
+            `--env-config=${envConfigPath}`
         ]);
 
         chai.expect(config).to.have.property('tests', envConfig.tests);

@@ -1,7 +1,7 @@
 import {
     ITransport,
-    IBrowserProxyCommand,
     IBrowserProxyMessage,
+    IBrowserProxyCommandResponse,
     IBrowserProxyPlugin,
     BrowserProxyMessageTypes,
     BrowserProxyActions
@@ -9,7 +9,7 @@ import {
 import { requirePlugin } from '@testring/utils';
 import { loggerClient } from '@testring/logger';
 
-const resolvePlugin = (pluginPath: string): (command: IBrowserProxyCommand) => IBrowserProxyPlugin => {
+const resolvePlugin = (pluginPath: string): IBrowserProxyPlugin => {
     const resolvedPlugin = requirePlugin(pluginPath);
 
     if (typeof resolvedPlugin !== 'function') {
@@ -20,22 +20,36 @@ const resolvePlugin = (pluginPath: string): (command: IBrowserProxyCommand) => I
 };
 
 export class BrowserProxy {
-    private readonly plugin: IBrowserProxyPlugin;
+    private plugin: IBrowserProxyPlugin;
 
     constructor(
         private transportInstance: ITransport,
         pluginPath: string,
         pluginConfig: any
     ) {
-        try {
-            const pluginFactory = resolvePlugin(pluginPath);
+        this.loadPlugin(pluginPath, pluginConfig);
+        this.registerCommandListener();
+    }
 
-            this.plugin = pluginFactory(pluginConfig);
+    private loadPlugin(pluginPath: string, pluginConfig: any) {
+        let pluginFactory;
+
+        try {
+            pluginFactory = resolvePlugin(pluginPath);
         } catch (error) {
-            loggerClient.error(`Can't load plugin ${pluginPath}`, error);
+            loggerClient.debug(`Can't load plugin ${pluginPath}`, error);
         }
 
-        this.registerCommandListener();
+        if (pluginFactory) {
+            try {
+                this.plugin = pluginFactory(pluginConfig);
+            } catch (error) {
+                this.transportInstance.broadcast(
+                    BrowserProxyMessageTypes.exception,
+                    error
+                );
+            }
+        }
     }
 
     private registerCommandListener() {
@@ -45,7 +59,7 @@ export class BrowserProxy {
 
         this.transportInstance.on(
             BrowserProxyMessageTypes.execute,
-            (message) => this.onMessage(message),
+            (message) => this.onMessage(message)
         );
 
         process.on('exit', async () => {
@@ -54,9 +68,7 @@ export class BrowserProxy {
     }
 
     private async onMessage(message: IBrowserProxyMessage) {
-        const {uid, applicant, command} = message;
-
-        loggerClient.log('message', message);
+        const { uid, applicant, command } = message;
 
         try {
             if (!this.plugin) {
@@ -65,7 +77,7 @@ export class BrowserProxy {
                 } else {
                     this.transportInstance.broadcast(
                         BrowserProxyMessageTypes.response,
-                        { uid },
+                        { uid }
                     );
 
                     return;
@@ -78,20 +90,22 @@ export class BrowserProxy {
                 `Browser Proxy: Send message [type=${BrowserProxyMessageTypes.response}] to parent process`
             );
 
-            this.transportInstance.broadcast(
+            this.transportInstance.broadcast<IBrowserProxyCommandResponse>(
                 BrowserProxyMessageTypes.response,
                 {
                     uid,
-                    response
-                },
+                    response,
+                    error: null
+                }
             );
-        } catch (exception) {
-            this.transportInstance.broadcast(
+        } catch (error) {
+            this.transportInstance.broadcast<IBrowserProxyCommandResponse>(
                 BrowserProxyMessageTypes.response,
                 {
                     uid,
-                    exception,
-                },
+                    error,
+                    response: null
+                }
             );
         }
     }

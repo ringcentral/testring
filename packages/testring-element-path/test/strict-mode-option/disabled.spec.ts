@@ -1,5 +1,5 @@
-import {expect} from 'chai';
-import {createElementPath} from '../../src';
+import { expect } from 'chai';
+import { createElementPath } from '../../src';
 
 import {
     getDescriptor,
@@ -7,15 +7,15 @@ import {
 
     checkAccessMethods,
     checkPreventExtensions,
-    checkProperty,
+    checkProperty
 } from '../utils';
 
 
 describe('disabled strictMode', () => {
     let root = createElementPath({
-        strictMode: false,
+        strictMode: false
     });
-    let xpathSelectorCall = root.foo.xpathByElement({xpath: '//*[@class=\'selected\']'});
+    let xpathSelectorCall = root.foo.xpathByElement({ xpath: '//*[@class=\'selected\']' });
 
     describe('basic Object methods', () => {
         it('.toString()', () => {
@@ -50,30 +50,30 @@ describe('disabled strictMode', () => {
                 {
                     'isRoot': true,
                     'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    'xpath': '//*[@data-test-automation-id=\'root\']'
                 },
                 {
                     'isRoot': false,
                     'query': {
-                        'exactKey': 'foo',
+                        'exactKey': 'foo'
                     },
-                    'xpath': '//*[@data-test-automation-id=\'foo\']',
+                    'xpath': '//*[@data-test-automation-id=\'foo\']'
                 },
                 {
                     'isRoot': false,
                     'query': {
-                        'xpath': '//*[@class=\'selected\']',
+                        'xpath': '//*[@class=\'selected\']'
                     },
-                    'xpath': '//*[@class=\'selected\']',
-                },
-            ]),
+                    'xpath': '//*[@class=\'selected\']'
+                }
+            ])
         });
     });
     describe('.__flows property traps', () => {
         checkProperty({
             object: xpathSelectorCall,
             key: '__flows',
-            valueDescriptor: getDescriptor({}),
+            valueDescriptor: getDescriptor({})
         });
     });
 
@@ -83,8 +83,8 @@ describe('disabled strictMode', () => {
             object: xpathSelectorCall,
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
-                'xpath': '//*[@class=\'selected\']',
-            }),
+                'xpath': '//*[@class=\'selected\']'
+            })
         });
     });
     describe('.__parentPath property traps', () => {
@@ -95,16 +95,16 @@ describe('disabled strictMode', () => {
                 {
                     'isRoot': true,
                     'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    'xpath': '//*[@data-test-automation-id=\'root\']'
                 },
                 {
                     'isRoot': false,
                     'query': {
-                        'exactKey': 'foo',
+                        'exactKey': 'foo'
                     },
-                    'xpath': '//*[@data-test-automation-id=\'foo\']',
-                },
-            ]),
+                    'xpath': '//*[@data-test-automation-id=\'foo\']'
+                }
+            ])
         });
     });
 

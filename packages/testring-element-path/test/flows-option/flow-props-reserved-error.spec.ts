@@ -1,9 +1,10 @@
-import {expect} from 'chai';
-import {createElementPath} from '../../src';
+import { expect } from 'chai';
+import { createElementPath } from '../../src';
 
 
 describe('invalid keys', () => {
-    const dummy = () => {};
+    const dummy = () => {
+    };
 
     let root = createElementPath({
         flows: {
@@ -12,9 +13,9 @@ describe('invalid keys', () => {
                 __flows: dummy,
                 __parentPath: dummy,
                 __searchOptions: dummy,
-                __proxy: dummy,
-            },
-        },
+                __proxy: dummy
+            }
+        }
     });
     let childFoo = root.foo;
 

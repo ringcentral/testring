@@ -1,4 +1,3 @@
-
 export function hasOwn(obj: object, key: string | number | symbol): boolean {
     return Object.hasOwnProperty.call(obj, key);
 }

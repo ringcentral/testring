@@ -8,11 +8,26 @@ import { loggerClient } from '@testring/logger';
 const nanoid = require('nanoid');
 
 export abstract class AbstractHttpClient {
-    constructor(
-        protected transportInstance: ITransport,
-    ) {
-    }
     protected abstract broadcast(options: Request): void;
+
+    constructor(protected transportInstance: ITransport) {
+    }
+
+    public post(options: OptionsWithUrl): Promise<any> {
+        return this.sendRequest({ ...options, method: 'POST' });
+    }
+
+    public get(options: OptionsWithUrl): Promise<any> {
+        return this.sendRequest({ ...options, method: 'GET' });
+    }
+
+    public delete(options: OptionsWithUrl): Promise<any> {
+        return this.sendRequest({ ...options, method: 'DELETE' });
+    }
+
+    public put(options: OptionsWithUrl): Promise<any> {
+        return this.sendRequest({ ...options, method: 'PUT' });
+    }
 
     private isValidData(data: any): boolean {
         return (data !== null && data !== undefined);
@@ -22,52 +37,13 @@ export abstract class AbstractHttpClient {
         return (this.isValidData(request) && request.hasOwnProperty('url'));
     }
 
-    public async post(options: OptionsWithUrl): Promise<any> {
-        if (!this.isValidRequest(options)) {
-            loggerClient.error(`Http Client: ${options} request is not valid`);
-            throw new Error('request is not valid');
-        }
-
-        return this.sendRequest(Object.assign(options, {method: 'POST'}));
-    }
-
-    public async get(options: OptionsWithUrl): Promise<any> {
-        if (!this.isValidRequest(options)) {
-            loggerClient.error(`Http Client: ${options} request is not valid`);
-            throw new Error('request is not valid');
-        }
-
-        return this.sendRequest(Object.assign(options, {method: 'GET'}));
-    }
-
-    public async delete(options: OptionsWithUrl): Promise<any> {
-        if (!this.isValidRequest(options)) {
-            loggerClient.error(`Http Client: ${options} request is not valid`);
-            throw new Error('request is not valid');
-        }
-
-        return this.sendRequest(Object.assign(options, {method: 'DELETE'}));
-    }
-
-    public async put(options: OptionsWithUrl): Promise<any> {
-        if (!this.isValidRequest(options)) {
-            loggerClient.error(`Http Client: ${options} request is not valid`);
-            throw new Error('request is not valid');
-        }
-
-        return this.sendRequest(Object.assign(options, {method: 'PUT'}));
-    }
-
-    public async send(options: OptionsWithUrl, method: string): Promise<any> {
-        if (!this.isValidRequest(options)) {
-            loggerClient.error(`Http Client: ${options} request is not valid`);
-            throw new Error('request is not valid');
-        }
-
-        return this.sendRequest(Object.assign(options, {method}));
-    }
-
     private async sendRequest(options: OptionsWithUrl): Promise<any> {
+        if (!this.isValidRequest(options)) {
+            loggerClient.error(`Http Client: ${options} request is not valid`);
+
+            throw new Error('request is not valid');
+        }
+
         const requestUID = nanoid();
 
         return new Promise((resolve, reject) => {

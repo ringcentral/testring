@@ -8,8 +8,8 @@ import { Request, Response, ResponseReject } from './interfaces';
 
 
 interface QueueRequest {
-    data: Request,
-    src: string
+    data: Request;
+    src: string;
 }
 
 type MakeRequest = (request: requestPromise.OptionsWithUrl) => any;
@@ -38,7 +38,7 @@ export class HttpServer extends PluggableModule {
         });
     }
 
-    private async makeRequest({data, src}: QueueRequest): Promise<any> {
+    private async makeRequest({ data, src }: QueueRequest): Promise<any> {
         let uid;
         try {
             uid = data.uid;
@@ -97,16 +97,15 @@ export class HttpServer extends PluggableModule {
 
     private registerTransportListener(): void {
         loggerClientLocal.debug(`Http server: Register listener for messages [type = ${HttpMessageType.send}]`);
+
         this.transportInstance.on(HttpMessageType.send, (data: Request, src: string) => {
 
             // todo validate data
             if (this.isBusy) {
                 this.addToQueue(data, src);
             } else {
-                this.makeRequest({data, src});
+                this.makeRequest({ data, src });
             }
-
-
         });
     }
 }

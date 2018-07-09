@@ -1,8 +1,8 @@
 import { ITransportSerializedStruct, TransportSerializer, TransportDeserializer } from '@testring/types';
 
 export interface ISerializedObject extends ITransportSerializedStruct {
-    $key: string,
-    dictionary: object
+    $key: string;
+    dictionary: object;
 }
 
 export const OBJECT_KEY = 'Object';

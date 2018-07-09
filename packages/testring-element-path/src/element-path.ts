@@ -1,56 +1,56 @@
 import {
     hasOwn, isInteger,
-    keysCount,
+    keysCount
 } from './utils';
 
 export type FlowFn = () => any;
 
 export type FlowsFnObject = {
-    [method: string]: FlowFn,
-    [method: number]: FlowFn,
+    [method: string]: FlowFn;
+    [method: number]: FlowFn;
 };
 
 export type FlowsObject = {
-    [key: string]: FlowsFnObject,
-    [key: number]: FlowsFnObject,
+    [key: string]: FlowsFnObject;
+    [key: number]: FlowsFnObject;
 };
 
 export type SearchMaskPrimitive = number | string;
 
 export type SearchMaskObject = {
-    anyKey?: boolean,
-    suffix?: string,
-    prefix?: string,
-    containsKey?: string,
-    exactKey?: string,
-    parts?: string[],
+    anyKey?: boolean;
+    suffix?: string;
+    prefix?: string;
+    containsKey?: string;
+    exactKey?: string;
+    parts?: string[];
 };
 
 export type SearchTextObject = {
-    containsText?: string,
-    equalsText?: string,
+    containsText?: string;
+    equalsText?: string;
 };
 
 export type SearchSubQueryObject = {
-    subQuery?: SearchMaskObject & SearchTextObject,
+    subQuery?: SearchMaskObject & SearchTextObject;
 };
 
 export type SearchObject = SearchMaskObject & SearchTextObject & SearchSubQueryObject & {
-    index?: number,
-    xpath?: string,
+    index?: number;
+    xpath?: string;
 };
 
 export type NodePath = {
-    query?: SearchObject,
-    name?: string,
-    xpath: string,
-    isRoot: boolean,
+    query?: SearchObject;
+    name?: string;
+    xpath: string;
+    isRoot: boolean;
 };
 
 export class ElementPath {
     private readonly regexp = {
         QUERY_RE: /^(\*?[^{(=]*\*?)?(=?{([^}]*)})?(\(([^)]*)\))?$/,
-        SUB_QUERY_RE: /^(\*?[^{=]*\*?)(=?{([^}]*)})?$/,
+        SUB_QUERY_RE: /^(\*?[^{=]*\*?)(=?{([^}]*)})?$/
     };
 
     private readonly flows: FlowsObject;
@@ -67,14 +67,16 @@ export class ElementPath {
         parent?: ElementPath,
     } = {}) {
         this.flows = options.flows || {};
+
         this.attributeName = options.attributeName || 'data-test-automation-id';
+
         this.parent = options.parent || null;
 
         if (options.searchOptions && this.searchMask !== undefined) {
             throw Error('Only one search parameter allowed');
         } else if (
-            (options.searchMask === undefined || options.searchMask === null)
-            && options.searchOptions !== undefined
+           (options.searchMask === undefined || options.searchMask === null) &&
+            options.searchOptions !== undefined
         ) {
             this.searchOptions = options.searchOptions;
             this.searchMask = null;
@@ -97,7 +99,7 @@ export class ElementPath {
 
         if (mask === '*' || mask === '' || mask === undefined) { // * || empty
             return {
-                anyKey: true,
+                anyKey: true
             };
         }
 
@@ -137,11 +139,11 @@ export class ElementPath {
 
         if (textMask[0] === '{') {
             return {
-                containsText: textMask.slice(1, -1),
+                containsText: textMask.slice(1, -1)
             };
         } else if (textMask.indexOf('={') === 0) {
             return {
-                equalsText: textMask.slice(2, -1),
+                equalsText: textMask.slice(2, -1)
             };
         }
 
@@ -162,8 +164,8 @@ export class ElementPath {
             subQuery: Object.assign(
                 {},
                 this.parseMask(mask),
-                textSearch === undefined ? undefined : this.parseText(textSearch) ,
-            ),
+                textSearch === undefined ? undefined : this.parseText(textSearch)
+            )
         };
     }
 
@@ -181,7 +183,7 @@ export class ElementPath {
             {},
             this.parseMask(mask),
             textSearch === undefined ? undefined : this.parseText(textSearch),
-            subQueryPart === undefined ? undefined : this.parseSubQuery(subQueryPart),
+            subQueryPart === undefined ? undefined : this.parseSubQuery(subQueryPart)
         );
     }
 
@@ -251,10 +253,10 @@ export class ElementPath {
         conditions.push(...this.getMaskXpathParts(searchOptions));
 
         if (searchOptions.subQuery) {
-            const {subQuery} = searchOptions;
+            const { subQuery } = searchOptions;
             const subChildConditions: string[] = [
                 ...this.getMaskXpathParts(subQuery),
-                ...this.getTextXpathParts(subQuery),
+                ...this.getTextXpathParts(subQuery)
             ];
 
             conditions.push(`descendant::*[${subChildConditions.join(' and ')}]`);
@@ -342,19 +344,19 @@ export class ElementPath {
             return [{
                 isRoot,
                 name: 'root',
-                xpath: this.getSearchQueryXpath(),
+                xpath: this.getSearchQueryXpath()
             }];
         } else if (this.searchOptions.xpath !== undefined) {
             return (this.getParentElementPathChain() || []).concat([{
                 isRoot,
                 query: this.searchOptions,
-                xpath: this.searchOptions.xpath,
+                xpath: this.searchOptions.xpath
             }]);
         } else {
             return (this.getParentElementPathChain() || []).concat([{
                 isRoot,
                 query: this.searchOptions,
-                xpath: this.getSearchQueryXpath(),
+                xpath: this.getSearchQueryXpath()
             }]);
         }
     }
@@ -370,8 +372,8 @@ export class ElementPath {
     public generateChildByXpath(xpath: string): ElementPath {
         return new ElementPath({
             flows: this.flows,
-            searchOptions: {xpath},
-            parent: this,
+            searchOptions: { xpath },
+            parent: this
         });
     }
 
@@ -388,15 +390,15 @@ export class ElementPath {
             return new ElementPath({
                 flows: this.flows,
                 searchOptions: Object.assign({}, this.searchOptions, {
-                    index: +key,
+                    index: +key
                 }),
-                parent: this.parent || undefined,
+                parent: this.parent || undefined
             });
         } else {
             return new ElementPath({
                 flows: this.flows,
                 searchMask: key,
-                parent: this,
+                parent: this
             });
         }
     }

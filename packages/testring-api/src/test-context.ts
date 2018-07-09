@@ -3,6 +3,8 @@ import { transport } from '@testring/transport';
 import { WebApplication } from '@testring/web-application';
 import { testAPIController } from './test-api-controller';
 
+const LOG_PREFIX = '[logged inside test]';
+
 export class TestContext {
 
     private hasLoggedBusinessEvent = false;
@@ -19,11 +21,15 @@ export class TestContext {
         loggerClient.startStep(message);
     }
 
-    async logError(message) {
-        loggerClient.error(message);
+    async log(...message: Array<any>) {
+        loggerClient.info(LOG_PREFIX, ...message);
+    }
+
+    async logError(...message: Array<any>) {
+        loggerClient.error(LOG_PREFIX, ...message);
     }
 
     async logWarning(...message: Array<any>) {
-        loggerClient.warn(message);
+        loggerClient.warn(LOG_PREFIX, ...message);
     }
 }

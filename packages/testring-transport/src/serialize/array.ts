@@ -1,8 +1,8 @@
 import { ITransportSerializedStruct, TransportSerializer, TransportDeserializer } from '@testring/types';
 
 export interface ISerializedArray extends ITransportSerializedStruct {
-    $key: string,
-    values: Array<ITransportSerializedStruct>
+    $key: string;
+    values: Array<ITransportSerializedStruct>;
 }
 
 export const ARRAY_KEY = 'Array';

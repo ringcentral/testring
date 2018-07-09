@@ -17,7 +17,7 @@ export class BrowserProxyAPI extends AbstractAPI {
         const hook = this.module.getHook(BrowserProxyPlugins.getPlugin);
 
         if (hook) {
-            hook.tapPromise(this.pluginName, async () => ({
+            hook.writeHook(this.pluginName, async () => ({
                 plugin: pluginPath,
                 config: config
             }));

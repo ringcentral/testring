@@ -1,8 +1,9 @@
 import { EventEmitter } from 'events';
 
-class TestAPIController {
+export class TestAPIController {
     private bus = new EventEmitter();
     private testID: string = '';
+
     public getBus() {
         return this.bus;
     }
@@ -10,6 +11,7 @@ class TestAPIController {
     public setTestID(val: string) {
         this.testID = val;
     }
+
     public getTestID(): string {
         return this.testID;
     }

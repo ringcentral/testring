@@ -9,12 +9,12 @@
   },
   "scripts": {
     "postinstall": "lerna bootstrap && npm run link",
-    "link": "lerna exec --no-sort -- node \"../../bin/link\"",
-    "unlink": "lerna exec --no-sort -- node \"../../bin/unlink\"",
-    "lint:src": "lerna exec --parallel --no-sort -- eslint \"./src/**/*.ts\"",
-    "lint:test": "lerna exec --parallel --no-sort -- eslint \"./test/**/*.ts\"",
+    "link": "lerna exec --no-sort -- node ../../bin/link",
+    "unlink": "lerna exec --no-sort -- node ../../bin/unlink",
+    "lint:src": "lerna exec --ignore=@testring/e2e-test-app --parallel --no-sort -- eslint --ext .ts ./src/**/*",
+    "lint:test": "lerna exec --parallel --no-sort -- eslint ./test/**/*.ts",
     "test": "lerna exec -- mocha --opts mocha.opts",
-    "test:watch": "lerna exec --no-sort -- mocha --opts mocha.opts --watch",
+    "test:watch": "lerna exec --parallel -- mocha --opts mocha.opts --watch",
     "test:e2e": "lerna run --stream --scope @testring/e2e-test-app e2e",
     "test:e2e-simple": "lerna run --stream --scope @testring/e2e-test-app e2e-simple",
     "test:coverage": "nyc npm test",
@@ -25,7 +25,7 @@
     "build:watch": "lerna exec --parallel -- tsc --target es2015 --watch",
     "build:clear": "npm run lint:src && npm run lint:test && npm run build",
     "build:precommit": "npm run build:clear && npm run test && npm run test:e2e-simple",
-    "build:ci": "npm run build:clear && npm run test:coverage && npm run test:e2e-simple",
+    "build:ci": "npm run build:clear && npm run test:coverage && npm run test:e2e",
     "start:recorder-server": "lerna run --stream --scope @testring/recorder-backend start",
     "publish": "lerna publish --skip-npm",
     "check-deps": "lerna exec -- npm-check --skip-unused --ignore @testring/*"
@@ -44,6 +44,8 @@
       "packages/*/src/**/*.ts"
     ],
     "exclude": [
+      "packages/*/src/index.ts",
+      "packages/testring-types",
       "packages/testring-web-application/src/web-application.ts",
       "packages/testring-web-application/src/web-client.ts",
       "packages/testring-plugin-selenium-driver/src/plugin/index.ts"
@@ -59,7 +61,7 @@
   "devDependencies": {
     "@types/chai": "4.1.4",
     "@types/mocha": "5.2.4",
-    "@types/node": "10.5.1",
+    "@types/node": "10.5.2",
     "@types/webpack": "4.4.5",
     "babel-eslint": "8.2.5",
     "chai": "4.1.2",
@@ -75,7 +77,7 @@
     "nyc": "12.0.2",
     "pre-commit": "1.2.2",
     "rimraf": "2.6.2",
-    "sinon": "6.0.1",
+    "sinon": "6.1.2",
     "ts-loader": "4.4.2",
     "ts-node": "7.0.0",
     "typescript": "2.9.2",

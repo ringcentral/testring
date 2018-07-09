@@ -1,6 +1,6 @@
 /* eslint no-unused-expressions: 0 */
 
-/// <reference types="node" />
+
 /// <reference types="mocha" />
 
 import * as path from 'path';
@@ -96,7 +96,7 @@ describe('config-file-reader', () => {
 
         const resolvedEnvConfig = await getEnvConfig({
             ...defaultConfiguration,
-            envConfig: envConfigPath,
+            envConfig: envConfigPath
         });
 
         chai.expect(resolvedEnvConfig).to.be.deep.equal(envConfig);

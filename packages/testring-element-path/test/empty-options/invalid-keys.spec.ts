@@ -1,5 +1,5 @@
-import {expect} from 'chai';
-import {createElementPath} from '../../src';
+import { expect } from 'chai';
+import { createElementPath } from '../../src';
 
 
 describe('invalid keys', () => {

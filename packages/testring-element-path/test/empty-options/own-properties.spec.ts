@@ -1,14 +1,14 @@
-import {expect} from 'chai';
-import {createElementPath} from '../../src';
+import { expect } from 'chai';
+import { createElementPath } from '../../src';
 
 
 describe('own properties', () => {
     let empty = createElementPath();
 
     it('.flows is hidden', () => {
-       expect(empty.flows.toString()).to.be.equal(
-           '(//*[@data-test-automation-id=\'root\']//*[@data-test-automation-id=\'flows\'])[1]'
-       );
+        expect(empty.flows.toString()).to.be.equal(
+            '(//*[@data-test-automation-id=\'root\']//*[@data-test-automation-id=\'flows\'])[1]'
+        );
     });
 
     it('.regexp is hidden', () => {

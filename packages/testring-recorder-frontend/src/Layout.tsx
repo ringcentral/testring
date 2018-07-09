@@ -1,4 +1,8 @@
 import React from 'react';
+import AceEditor from 'react-ace';
+
+import 'brace/mode/javascript';
+import 'brace/theme/monokai';
 
 export default () => (
     <div style={{
@@ -7,14 +11,14 @@ export default () => (
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#fff',
-    }} >
-        <h1 style={{
-            fontSize: 43,
-            fontWeight: 500,
-            fontStyle: 'italic'
-        }} >
-            TestRing
-        </h1>
+    }}>
+
+        <AceEditor
+            mode="javascript"
+            theme="monokai"
+            name="UNIQUE_ID_OF_DIV"
+            editorProps={{$blockScrolling: true}}
+        />
     </div>
 );
 

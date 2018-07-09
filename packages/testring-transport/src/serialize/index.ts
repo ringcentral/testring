@@ -2,6 +2,7 @@ import { ITransportSerializedStruct, TransportSerializer, TransportDeserializer 
 import { ISerializedArray, serializeArray, deserializeArray, ARRAY_KEY } from './array';
 import { ISerializedError, serializeError, deserializeError, ERROR_KEY } from './error';
 import { ISerializedObject, serializeObject, deserializeObject, OBJECT_KEY } from './object';
+import { ISerializedBuffer, serializeBuffer, deserializeBuffer, BUFFER_KEY } from './buffer';
 import { ISerializedFunction, serializeFunction, deserializeFunction, FUNCTION_KEY } from './function';
 
 const isAcceptable = (struct: any) => (
@@ -19,6 +20,10 @@ export const serialize: TransportSerializer = (struct: any) => {
 
     if (struct instanceof Error) {
         return serializeError(struct);
+    }
+
+    if (struct instanceof Buffer) {
+        return serializeBuffer(struct);
     }
 
     if (Array.isArray(struct)) {
@@ -51,5 +56,8 @@ export const deserialize: TransportDeserializer = (struct: ITransportSerializedS
 
         case FUNCTION_KEY:
             return deserializeFunction(struct as ISerializedFunction);
+
+        case BUFFER_KEY:
+            return deserializeBuffer(struct as ISerializedBuffer);
     }
 };

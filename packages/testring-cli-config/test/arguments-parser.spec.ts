@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
@@ -33,7 +32,7 @@ describe('argument parser', () => {
             `--plugins=${pluginsSet[2]}`,
             // value without assign
             '--tests',
-            customTestsPath,
+            customTestsPath
         ];
 
         const args = getArguments(argv);

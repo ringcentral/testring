@@ -1,12 +1,12 @@
-import {expect} from 'chai';
-import {createElementPath} from '../../src';
+import { expect } from 'chai';
+import { createElementPath } from '../../src';
 import {
     getDescriptor,
     getPrivateDescriptor,
 
     checkAccessMethods,
     checkPreventExtensions,
-    checkProperty,
+    checkProperty
 } from '../utils';
 
 
@@ -52,7 +52,7 @@ describe('empty options ElementPath root[\'foo*{Some text}(barName{105})\']', ()
                 {
                     'isRoot': true,
                     'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    'xpath': '//*[@data-test-automation-id=\'root\']'
                 },
                 {
                     'isRoot': false,
@@ -61,21 +61,21 @@ describe('empty options ElementPath root[\'foo*{Some text}(barName{105})\']', ()
                         'containsText': 'Some text',
                         'subQuery': {
                             'containsText': '105',
-                            'exactKey': 'barName',
-                        },
+                            'exactKey': 'barName'
+                        }
                     },
                     'xpath': '/descendant::*[starts-with(@data-test-automation-id, \'foo\') ' +
                     'and descendant::*[@data-test-automation-id=\'barName\' ' +
-                    'and contains(., "105")] and contains(., "Some text")]',
-                },
-            ]),
+                    'and contains(., "105")] and contains(., "Some text")]'
+                }
+            ])
         });
     });
     describe('.__flows property traps', () => {
         checkProperty({
             object: childFoo,
             key: '__flows',
-            valueDescriptor: getDescriptor({}),
+            valueDescriptor: getDescriptor({})
         });
     });
 
@@ -89,9 +89,9 @@ describe('empty options ElementPath root[\'foo*{Some text}(barName{105})\']', ()
                 'prefix': 'foo',
                 'subQuery': {
                     'containsText': '105',
-                    'exactKey': 'barName',
-                },
-            }),
+                    'exactKey': 'barName'
+                }
+            })
         });
     });
     describe('.__parentPath property traps', () => {
@@ -102,9 +102,9 @@ describe('empty options ElementPath root[\'foo*{Some text}(barName{105})\']', ()
                 {
                     'isRoot': true,
                     'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
-                },
-            ]),
+                    'xpath': '//*[@data-test-automation-id=\'root\']'
+                }
+            ])
         });
     });
 

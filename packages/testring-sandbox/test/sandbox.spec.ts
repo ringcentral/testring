@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
@@ -31,7 +30,7 @@ describe('Sandbox', () => {
                 sandbox.execute();
 
                 return Promise.reject('Code was compiled');
-            } catch  {
+            } catch {
                 return Promise.resolve();
             }
         });

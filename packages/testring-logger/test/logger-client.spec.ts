@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
@@ -36,32 +35,29 @@ describe('Logger client', () => {
         const loggerClient = new LoggerClient(transport);
         const message = 'test step';
 
-        transport.on(
-            LoggerMessageTypes.REPORT_BATCH,
-            (batch) => {
-                chai.expect(batch).to.be.an('array').with.length(3);
+        transport.on(LoggerMessageTypes.REPORT_BATCH, (batch) => {
+            chai.expect(batch).to.be.an('array').with.length(3);
 
-                chai.expect(batch[0]).to.deep.include({
-                    type: LogTypes.step,
-                    content: [ message ],
-                    parentStep: null,
-                });
+            chai.expect(batch[0]).to.deep.include({
+                type: LogTypes.step,
+                content: [message],
+                parentStep: null
+            });
 
-                const { stepUid } = batch[0];
+            const { stepUid } = batch[0];
 
-                chai.expect(batch[1]).to.deep.include({
-                    type: LogTypes.log,
-                    content: [ 'foo' ],
-                    parentStep: stepUid,
-                });
+            chai.expect(batch[1]).to.deep.include({
+                type: LogTypes.log,
+                content: ['foo'],
+                parentStep: stepUid
+            });
 
-                chai.expect(batch[2]).to.deep.include({
-                    type: LogTypes.log,
-                    content: [ 'bar' ],
-                    parentStep: stepUid,
-                });
-            }
-        );
+            chai.expect(batch[2]).to.deep.include({
+                type: LogTypes.log,
+                content: ['bar'],
+                parentStep: stepUid
+            });
+        });
 
         loggerClient.step(message, () => {
             loggerClient.log('foo');
@@ -106,36 +102,36 @@ describe('Logger client', () => {
 
                 chai.expect(batch[0]).to.deep.include({
                     type: LogTypes.step,
-                    content: [ stepMessage1 ],
-                    parentStep: null,
+                    content: [stepMessage1],
+                    parentStep: null
                 });
 
                 const step1 = batch[0].stepUid;
 
                 chai.expect(batch[1]).to.deep.include({
                     type: LogTypes.log,
-                    content: [ 'foo' ],
-                    parentStep: step1,
+                    content: ['foo'],
+                    parentStep: step1
                 });
 
                 chai.expect(batch[2]).to.deep.include({
                     type: LogTypes.step,
-                    content: [ stepMessage2 ],
-                    parentStep: step1,
+                    content: [stepMessage2],
+                    parentStep: step1
                 });
 
                 const step2 = batch[2].stepUid;
 
                 chai.expect(batch[3]).to.deep.include({
                     type: LogTypes.log,
-                    content: [ 'bar' ],
-                    parentStep: step2,
+                    content: ['bar'],
+                    parentStep: step2
                 });
 
                 chai.expect(batch[4]).to.deep.include({
                     type: LogTypes.log,
-                    content: [ 'baz' ],
-                    parentStep: step1,
+                    content: ['baz'],
+                    parentStep: step1
                 });
             }
         );
@@ -155,76 +151,85 @@ describe('Logger client', () => {
         const transport = new TransportMock();
         const loggerClient = new LoggerClient(transport);
 
-        transport.on(
-            LoggerMessageTypes.REPORT_BATCH,
-            (batch) => {
-                chai.expect(batch).to.be.an('array').with.length(2);
+        transport.on(LoggerMessageTypes.REPORT_BATCH, (batch) => {
+            const step1 = batch[0].stepUid;
+            const step2 = batch[2].stepUid;
 
-                chai.expect(batch[0]).to.deep.include({
-                    type: LogTypes.step,
-                    content: [ 'step1' ],
-                    parentStep: null,
-                });
+            chai.expect(batch).to.be.an('array').with.length(4);
 
-                const step1 = batch[0].stepUid;
+            chai.expect(batch[0]).to.deep.include({
+                type: LogTypes.step,
+                content: ['step1'],
+                parentStep: null
+            });
 
-                chai.expect(batch[1]).to.deep.include({
-                    type: LogTypes.log,
-                    content: [ 'foo' ],
-                    parentStep: step1,
-                });
-            }
-        );
+            chai.expect(batch[1]).to.deep.include({
+                type: LogTypes.log,
+                content: ['foo'],
+                parentStep: step1
+            });
+
+            chai.expect(batch[2]).to.deep.include({
+                type: LogTypes.step,
+                content: ['step2'],
+                parentStep: step1
+            });
+
+            chai.expect(batch[3]).to.deep.include({
+                type: LogTypes.log,
+                content: ['baz'],
+                parentStep: step2
+            });
+        });
 
         loggerClient.startStep('step1');
         loggerClient.log('foo');
-        loggerClient.endStep();
+        loggerClient.startStep('step2');
+        loggerClient.log('baz');
+        loggerClient.endStep('step1');
     });
 
     it('should nest manually started steps', () => {
         const transport = new TransportMock();
         const loggerClient = new LoggerClient(transport);
 
-        transport.on(
-            LoggerMessageTypes.REPORT_BATCH,
-            (batch) => {
-                chai.expect(batch).to.be.an('array').with.length(5);
+        transport.on(LoggerMessageTypes.REPORT_BATCH, (batch) => {
+            chai.expect(batch).to.be.an('array').with.length(5);
 
-                chai.expect(batch[0]).to.deep.include({
-                    type: LogTypes.step,
-                    content: [ 'step1' ],
-                    parentStep: null,
-                });
+            chai.expect(batch[0]).to.deep.include({
+                type: LogTypes.step,
+                content: ['step1'],
+                parentStep: null
+            });
 
-                const step1 = batch[0].stepUid;
+            const step1 = batch[0].stepUid;
 
-                chai.expect(batch[1]).to.deep.include({
-                    type: LogTypes.log,
-                    content: [ 'foo' ],
-                    parentStep: step1,
-                });
+            chai.expect(batch[1]).to.deep.include({
+                type: LogTypes.log,
+                content: ['foo'],
+                parentStep: step1
+            });
 
-                chai.expect(batch[2]).to.deep.include({
-                    type: LogTypes.step,
-                    content: [ 'step2' ],
-                    parentStep: step1,
-                });
+            chai.expect(batch[2]).to.deep.include({
+                type: LogTypes.step,
+                content: ['step2'],
+                parentStep: step1
+            });
 
-                const step2 = batch[2].stepUid;
+            const step2 = batch[2].stepUid;
 
-                chai.expect(batch[3]).to.deep.include({
-                    type: LogTypes.log,
-                    content: [ 'bar' ],
-                    parentStep: step2,
-                });
+            chai.expect(batch[3]).to.deep.include({
+                type: LogTypes.log,
+                content: ['bar'],
+                parentStep: step2
+            });
 
-                chai.expect(batch[4]).to.deep.include({
-                    type: LogTypes.log,
-                    content: [ 'baz' ],
-                    parentStep: step1,
-                });
-            }
-        );
+            chai.expect(batch[4]).to.deep.include({
+                type: LogTypes.log,
+                content: ['baz'],
+                parentStep: step1
+            });
+        });
 
         loggerClient.startStep('step1');
         loggerClient.log('foo');
@@ -239,37 +244,31 @@ describe('Logger client', () => {
         const transport = new TransportMock();
         const loggerClient = new LoggerClient(transport);
 
-        transport.on(
-            LoggerMessageTypes.REPORT_BATCH,
-            () => {
-                callback('batch was sent');
-            }
-        );
+        transport.on(LoggerMessageTypes.REPORT_BATCH, () => {
+            callback('batch was sent');
+        });
 
         loggerClient.endStep();
 
-        setTimeout(() => {
+        setImmediate(() => {
             callback();
-        }, 0);
+        });
     });
 
     it('should allow to set logEnvironment which will be sent with every log', () => {
         const logEnvironment = {
-            foo: 'bar',
+            foo: 'bar'
         };
         const transport = new TransportMock();
         const loggerClient = new LoggerClient(
             transport,
             LogLevel.verbose,
-            logEnvironment,
+            logEnvironment
         );
 
-        transport.on(
-            LoggerMessageTypes.REPORT,
-            (message) => {
-                chai.expect(message).to.have.deep.property('logEnvironment', logEnvironment);
-            }
-        );
+        transport.on(LoggerMessageTypes.REPORT, (message) => {
+            chai.expect(message).to.have.deep.property('logEnvironment', logEnvironment);
+        });
 
         loggerClient.log('foobar');
     });
@@ -277,25 +276,22 @@ describe('Logger client', () => {
 
     it('should allow to modify logEnvironment', () => {
         const logEnvironment = {
-            foo: 'bar',
+            foo: 'bar'
         };
         const logEnvironmentMod = {
-            baz: 'qux',
+            baz: 'qux'
         };
         const transport = new TransportMock();
         const loggerClient = new LoggerClient(
             transport,
             LogLevel.verbose,
-            logEnvironment,
+            logEnvironment
         );
 
-        transport.on(
-            LoggerMessageTypes.REPORT,
-            (message) => {
-                chai.expect(message)
-                    .to.have.deep.property('logEnvironment', { ...logEnvironment, ...logEnvironmentMod });
-            }
-        );
+        transport.on(LoggerMessageTypes.REPORT, (message) => {
+            chai.expect(message)
+                .to.have.deep.property('logEnvironment', { ...logEnvironment, ...logEnvironmentMod });
+        });
 
         loggerClient.setLogEnvironment(logEnvironmentMod);
         loggerClient.log('foobar');
@@ -303,30 +299,27 @@ describe('Logger client', () => {
 
     it('should should allow to log message with log environment without affecting instance logEnvironment', () => {
         const logEnvironment = {
-            foo: 'bar',
+            foo: 'bar'
         };
         const logEnvironmentMod = {
-            baz: 'qux',
+            baz: 'qux'
         };
         const transport = new TransportMock();
         const loggerClient = new LoggerClient(
             transport,
             LogLevel.verbose,
-            logEnvironment,
+            logEnvironment
         );
 
-        transport.on(
-            LoggerMessageTypes.REPORT,
-            (message) => {
-                if (message.type === LogTypes.debug) {
-                    chai.expect(message)
-                        .to.have.deep.property('logEnvironment', logEnvironmentMod);
-                } else {
-                    chai.expect(message)
-                        .to.have.deep.property('logEnvironment', logEnvironment);
-                }
+        transport.on(LoggerMessageTypes.REPORT, (message) => {
+            if (message.type === LogTypes.debug) {
+                chai.expect(message)
+                    .to.have.deep.property('logEnvironment', logEnvironmentMod);
+            } else {
+                chai.expect(message)
+                    .to.have.deep.property('logEnvironment', logEnvironment);
             }
-        );
+        });
 
         loggerClient.withLogEnvironment(logEnvironmentMod).debug('modified');
         loggerClient.log('unmodified');

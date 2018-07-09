@@ -1,12 +1,18 @@
 import { run } from 'testring';
 
-run(async (context) => {
-    await context.application.url('https://service.ringcentral.com/');
-    await context.application.click('credential');
-    await context.application.keys('testRing');
+run(async (api) => {
+    await api.application.url('https://service.ringcentral.com/');
 
-    const val = await context.application.getValue('credential');
+    await api.application.click(
+        api.application.root.credential.toString()
+    );
 
-    await context.application.assert.equal(val, 'testRing');
+    await api.application.keys('testRing');
+
+    const credentialValue = await api.application.getValue(
+        api.application.root.credential.toString()
+    );
+
+    await api.application.assert.equal(credentialValue, 'testRing');
 });
 

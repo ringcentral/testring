@@ -8,7 +8,8 @@ import {
     ITestExecutionCompleteMessage,
     ITestExecutionMessage,
     TestWorkerAction,
-    TestCompiler
+    TestCompiler,
+    TestStatus
 } from '@testring/types';
 
 const nanoid = require('nanoid');
@@ -69,20 +70,20 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         const relativePath = path.relative(process.cwd(), filename);
 
-        loggerClientLocal.log(`Running test: ${relativePath}`);
+        loggerClientLocal.debug(`Sending test for execution: ${relativePath}`);
 
-        const removeListener = this.transport.onceFrom(this.workerName, TestWorkerAction.executionComplete,
-            (message: ITestExecutionCompleteMessage) => {
-                if (message.error) {
-                    loggerClientLocal.error(`Test failed: ${relativePath}\n`, message.error);
-                    reject({
-                        error: message.error,
-                        test: testData
-                    });
-                } else {
-                    loggerClientLocal.log(`Test success: ${relativePath}`);
-                    loggerClientLocal.debug(`Test result: ${message.status}`);
-                    resolve();
+        const removeListener = this.transport.onceFrom<ITestExecutionCompleteMessage>(
+            this.workerName,
+            TestWorkerAction.executionComplete,
+            (message) => {
+                switch (message.status) {
+                    case TestStatus.done:
+                        resolve();
+                        break;
+
+                    case TestStatus.failed:
+                        reject(message.error);
+                        break;
                 }
 
                 this.abortTestExecution = null;
@@ -95,9 +96,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             reject();
         };
 
-        loggerClientLocal.debug('Executing test ...');
-
-        this.makeRequest(TestWorkerAction.executeTest, testData);
+        await this.transport.send<ITestExecutionMessage>(this.workerName, TestWorkerAction.executeTest, testData);
     }
 
     private async compileSource(source: string, filename: string): Promise<string> {
@@ -118,18 +117,8 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         } catch (error) {
             loggerClientLocal.error(`Compilation ${filename} failed`);
 
-            throw {
-                error,
-                test: {
-                    source,
-                    filename
-                }
-            };
+            throw error;
         }
-    }
-
-    private makeRequest(requestName: string, data: ITestExecutionMessage) {
-        return this.transport.send(this.workerName, requestName, data);
     }
 
     private createWorker(): ChildProcess {

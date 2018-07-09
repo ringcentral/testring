@@ -1,9 +1,9 @@
 import { ITransportSerializedStruct } from '@testring/types';
 
 export interface ISerializedFunction extends ITransportSerializedStruct {
-    $key: string,
-    body: string,
-    arguments: Array<string>
+    $key: string;
+    body: string;
+    arguments: Array<string>;
 }
 
 export const FUNCTION_KEY = 'Function';

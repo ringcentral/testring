@@ -1,13 +1,38 @@
 import * as util from 'util';
+import * as bytes from 'bytes';
 import { merge } from 'lodash';
+import { Stack } from '@testring/utils';
 import { transport } from '@testring/transport';
 import { ITransport, ILogEntry, ILoggerClient, LoggerMessageTypes, LogTypes, LogLevel } from '@testring/types';
 
 const nanoid = require('nanoid');
 
-const formatLog = (logLevel: LogLevel, time: Date, content: Array<any>): string => {
+const STEP_NAME_SEPARATOR = '| / || / || / |_';
+
+const composeStepName = (message: string): string => {
+    return `${message}${STEP_NAME_SEPARATOR}${nanoid()}`;
+};
+
+const decomposeStepName = (stepID: string): string => {
+    return stepID.split(STEP_NAME_SEPARATOR)[0];
+};
+
+const formatLog = (logType: LogTypes, logLevel: LogLevel, time: Date, content: Array<any>): string => {
+    const prefix = `[${time.toLocaleTimeString()}] [${logLevel}]`;
+
+    if (logType === LogTypes.media) {
+        const filename = content[0];
+        const media = content[1];
+
+        return util.format(
+            `${prefix} [media]`,
+            `Filename: ${filename};`,
+            `Size: ${bytes.format(media.length)};`
+        );
+    }
+
     return util.format(
-        `[${logLevel}], [${time.toLocaleTimeString()}]`, ...content
+        prefix, ...content
     );
 };
 
@@ -15,52 +40,52 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
     constructor(
         protected transportInstance: ITransport = transport,
         protected logLevel: LogLevel = LogLevel.info,
-        protected logEnvironment?: any,
+        protected logEnvironment?: any
     ) {
     }
 
     protected abstract broadcast(messageType: string, payload: any): void;
 
-    protected stepStack: Array<string> = [];
+    protected stepStack: Stack<string> = new Stack();
 
     protected logBatch: Array<ILogEntry> = [];
 
     protected getCurrentStep(): string | null {
-        return this.stepStack[this.stepStack.length - 1] || null;
+        return this.stepStack.getLastElement();
     }
 
     protected getPreviousStep(): string | null {
-        return this.stepStack[this.stepStack.length - 2] || null;
+        return this.stepStack.getLastElement(1);
     }
 
     protected buildEntry(
-        type: LogTypes,
+        logType: LogTypes,
         content: Array<any>,
         logLevel: LogLevel = this.logLevel,
-        logEnvironment: any = this.logEnvironment,
+        logEnvironment: any = this.logEnvironment
     ): ILogEntry {
         const time = new Date();
-        const formattedMessage = formatLog(logLevel, time, content);
+        const formattedMessage = formatLog(logType, logLevel, time, content);
         const currentStep = this.getCurrentStep();
         const previousStep = this.getPreviousStep();
 
-        const stepUid = type === LogTypes.step && currentStep
+        const stepUid = logType === LogTypes.step && currentStep
             ? currentStep
             : undefined;
 
-        const parentStep = type === LogTypes.step
+        const parentStep = logType === LogTypes.step
             ? previousStep
             : currentStep;
 
         return {
             time,
-            type,
+            type: logType,
             logLevel,
             content,
             formattedMessage,
             stepUid,
             parentStep,
-            logEnvironment,
+            logEnvironment
         };
     }
 
@@ -68,7 +93,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
         type: LogTypes,
         content: Array<any>,
         logLevel: LogLevel = this.logLevel,
-        logEnvironment: any = this.logEnvironment,
+        logEnvironment: any = this.logEnvironment
     ): void {
         const logEntry = this.buildEntry(type, content, logLevel, logEnvironment);
 
@@ -77,7 +102,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
         } else {
             this.broadcast(
                 LoggerMessageTypes.REPORT,
-                logEntry,
+                logEntry
             );
         }
     }
@@ -85,7 +110,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
     protected sendBatchedLog(): void {
         this.broadcast(
             LoggerMessageTypes.REPORT_BATCH,
-            this.logBatch,
+            this.logBatch
         );
 
         this.logBatch = [];
@@ -112,7 +137,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
     }
 
     public media(filename: string, content: Buffer): void {
-        this.createLog(LogTypes.media, [ filename, content ], LogLevel.info);
+        this.createLog(LogTypes.media, [filename, content], LogLevel.info);
     }
 
     public withLogEnvironment(logEnvironment: any) {
@@ -122,25 +147,37 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
             warn: (...args) => this.createLog(LogTypes.warning, args, LogLevel.warning, logEnvironment),
             error: (...args) => this.createLog(LogTypes.error, args, LogLevel.error, logEnvironment),
             debug: (...args) => this.createLog(LogTypes.debug, args, LogLevel.debug, logEnvironment),
-            media: (...args) => this.createLog(LogTypes.media, args, LogLevel.info, logEnvironment),
+            media: (...args) => this.createLog(LogTypes.media, args, LogLevel.info, logEnvironment)
         };
     }
 
     public startStep(message: string): void {
-        const step = nanoid();
+        const step = composeStepName(message);
 
         this.stepStack.push(step);
 
         this.createLog(
             LogTypes.step,
-            [ message ],
+            [message]
         );
     }
 
-    public endStep(): void {
-        const pop = this.stepStack.pop();
+    public endStep(message?: string): void {
+        let stepID = this.stepStack.pop();
 
-        if (pop && this.stepStack.length <= 0) {
+        if (message) {
+            while (stepID) {
+                const stepMessage = decomposeStepName(stepID);
+
+                if (message === stepMessage) {
+                    break;
+                } else {
+                    stepID = this.stepStack.pop();
+                }
+            }
+        }
+
+        if (stepID && this.stepStack.length === 0) {
             this.sendBatchedLog();
         }
     }
@@ -154,7 +191,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
             await result;
         }
 
-        this.endStep();
+        this.endStep(message);
     }
 
     public setLogEnvironment(logEnvironment: object): void {

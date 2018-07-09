@@ -1,3 +1,1 @@
-
-
-console.log('test');
+global.console.log('test');

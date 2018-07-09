@@ -11,7 +11,7 @@ export class TestWorker extends PluggableModule implements ITestWorker {
 
     constructor(private transport: ITransport) {
         super([
-            [TestWorkerPlugin.compile, 2]
+            TestWorkerPlugin.compile
         ]);
     }
 

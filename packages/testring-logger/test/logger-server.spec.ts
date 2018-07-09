@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /// <reference types="mocha" />
 
 import { Writable } from 'stream';
@@ -6,9 +5,9 @@ import * as sinon from 'sinon';
 import * as chai from 'chai';
 import { TransportMock } from '@testring/test-utils';
 import { LoggerMessageTypes, LogLevel, LogTypes, LoggerPlugins } from '@testring/types';
-import { LoggerServer } from '../src/logger-server';
-import { entry } from './fixtures/constants';
+import { LOG_ENTITY } from './fixtures/constants';
 import { voidLogger } from './fixtures/voidLogger';
+import { LoggerServer } from '../src/logger-server';
 
 const DEFAULT_CONFIG: any = {};
 const DEFAULT_WRITABLE_CONFIG = {
@@ -25,25 +24,25 @@ describe('Logger Server', () => {
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         const alteredEntry = {
-            ...entry,
-            type: LogTypes.error,
+            ...LOG_ENTITY,
+            type: LogTypes.error
         };
 
         if (beforeLog && onLog) {
-            beforeLog.tapPromise('testPlugin', async (entryBeforeTransform) => {
-                chai.expect(entryBeforeTransform).to.be.deep.equal(entry);
+            beforeLog.writeHook('testPlugin', async (entryBeforeTransform) => {
+                chai.expect(entryBeforeTransform).to.be.deep.equal(LOG_ENTITY);
 
                 return alteredEntry;
             });
 
-            onLog.tapPromise('testPlugin', async (entry) => {
+            onLog.readHook('testPlugin', (entry) => {
                 chai.expect(entry).to.be.deep.equal(alteredEntry);
 
                 callback();
             });
         }
 
-        transport.broadcast(LoggerMessageTypes.REPORT, entry);
+        transport.broadcast(LoggerMessageTypes.REPORT, LOG_ENTITY);
     });
 
     it('should call onError hook when fail to log report', (callback) => {
@@ -54,42 +53,49 @@ describe('Logger Server', () => {
         const onError = loggerServer.getHook(LoggerPlugins.onError);
 
         if (onLog && onError) {
-            onLog.tap('testPlugin', () => {
+            onLog.readHook('testPlugin', () => {
                 throw new Error('WHOOPS!');
             });
 
-            onError.tap('testPlugin', () => {
+            onError.readHook('testPlugin', () => {
                 callback();
             });
         }
 
-        transport.broadcast(LoggerMessageTypes.REPORT, entry);
+        transport.broadcast(LoggerMessageTypes.REPORT, LOG_ENTITY);
     });
 
     it('should retry 1 time then log successfully', (callback) => {
+        const transport = new TransportMock();
+        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout, 1);
+        const onLog = loggerServer.getHook(LoggerPlugins.onLog);
+
         const errorSpy = sinon.spy();
         const logHandler = voidLogger(1, true, errorSpy, () => {
             chai.expect(errorSpy.callCount).to.be.equal(1);
 
             callback();
         });
-        const transport = new TransportMock();
-        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout, 1);
-        const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (onLog) {
-            onLog.tap('testPlugin', logHandler);
+            onLog.readHook('testPlugin', logHandler);
         }
 
-        transport.broadcast(LoggerMessageTypes.REPORT, entry);
+        transport.broadcast(LoggerMessageTypes.REPORT, LOG_ENTITY);
     });
 
     it('should skip one entry then successfully log one', (callback) => {
+        const transport = new TransportMock();
+        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout, 0, true);
+        const onLog = loggerServer.getHook(LoggerPlugins.onLog);
+
         const successEntry = {
-            ...entry,
-            type: LogTypes.error,
+            ...LOG_ENTITY,
+            type: LogTypes.error
         };
+
         const errorSpy = sinon.spy();
         const logHandler = voidLogger(1, true, errorSpy, (entry) => {
             chai.expect(errorSpy.callCount).to.be.equal(1);
@@ -97,23 +103,19 @@ describe('Logger Server', () => {
 
             callback();
         });
-        const transport = new TransportMock();
-        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout, 0, true);
-        const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (onLog) {
-            onLog.tap('testPlugin', logHandler);
+            onLog.readHook('testPlugin', logHandler);
         }
 
-        transport.broadcast(LoggerMessageTypes.REPORT, entry); // this one should fail
+        transport.broadcast(LoggerMessageTypes.REPORT, LOG_ENTITY); // this one should fail
         transport.broadcast(LoggerMessageTypes.REPORT, successEntry); // this one should succeed
     });
 
     it('should abort after log fail', (callback) => {
         const transport = new TransportMock();
         const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport,  stdout);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (onLog) {
@@ -121,24 +123,24 @@ describe('Logger Server', () => {
                 callback();
             });
 
-            onLog.tap('testPlugin', () => {
+            onLog.readHook('testPlugin', () => {
                 throw new Error('NOPE');
             });
         }
 
-        transport.broadcast(LoggerMessageTypes.REPORT, entry);
-        transport.broadcast(LoggerMessageTypes.REPORT, entry);
+        transport.broadcast(LoggerMessageTypes.REPORT, LOG_ENTITY);
+        transport.broadcast(LoggerMessageTypes.REPORT, LOG_ENTITY);
     });
 
     it('should accept batch reports from logger clients, and pass individual entries to queue', (callback) => {
         const spy = sinon.spy();
         const transport = new TransportMock();
         const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport,  stdout);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (onLog) {
-            onLog.tap('testPlugin', () => {
+            onLog.readHook('testPlugin', () => {
                 spy();
 
                 if (spy.callCount === 5) {
@@ -150,27 +152,27 @@ describe('Logger Server', () => {
         }
 
         transport.broadcast(LoggerMessageTypes.REPORT_BATCH, [
-            entry, entry, entry, entry, entry,
+            LOG_ENTITY, LOG_ENTITY, LOG_ENTITY, LOG_ENTITY, LOG_ENTITY
         ]);
     });
 
     it('should not call onLog hook if config.silent is true', (callback) => {
         const config = {
             ...DEFAULT_CONFIG,
-            silent: true,
+            silent: true
         };
         const transport = new TransportMock();
         const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(config, transport,  stdout);
+        const loggerServer = new LoggerServer(config, transport, stdout);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (onLog) {
-            onLog.tap('testPlugin', () => {
+            onLog.readHook('testPlugin', () => {
                 callback('hook called');
             });
         }
 
-        transport.broadcast(LoggerMessageTypes.REPORT, entry);
+        transport.broadcast(LoggerMessageTypes.REPORT, LOG_ENTITY);
 
         setTimeout(() => {
             callback();
@@ -180,15 +182,15 @@ describe('Logger Server', () => {
     it('should not call onLog hook if config.loggerLevel is greater than entry.logLevel', (callback) => {
         const config = {
             ...DEFAULT_CONFIG,
-            logLevel: LogLevel.debug,
+            logLevel: LogLevel.debug
         };
         const transport = new TransportMock();
         const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(config, transport,  stdout);
+        const loggerServer = new LoggerServer(config, transport, stdout);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (onLog) {
-            onLog.tap('testPlugin', () => {
+            onLog.readHook('testPlugin', () => {
                 callback('hook called');
             });
         }
@@ -196,9 +198,9 @@ describe('Logger Server', () => {
         transport.broadcast(
             LoggerMessageTypes.REPORT,
             {
-                ...entry,
-                logLevel: LogLevel.verbose,
-            },
+                ...LOG_ENTITY,
+                logLevel: LogLevel.verbose
+            }
         );
 
         setTimeout(() => {

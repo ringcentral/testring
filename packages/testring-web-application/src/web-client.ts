@@ -6,7 +6,8 @@ const nanoid = require('nanoid');
 
 export class WebClient {
 
-    constructor(private applicant: string, private transport: ITransport) {}
+    constructor(private applicant: string, private transport: ITransport) {
+    }
 
     private makeRequest(action: BrowserProxyActions, args: Array<any>): Promise<any> {
         const transport = this.transport;
@@ -22,17 +23,20 @@ export class WebClient {
                 }
             };
 
-            const removeListener = transport.on(WebApplicationMessageType.response, (message: IResponseMessage) => {
-                if (message.uid === uid) {
-                    removeListener();
+            const removeListener = transport.on<IResponseMessage>(
+                WebApplicationMessageType.response,
+                (message) => {
+                    if (message.uid === uid) {
+                        removeListener();
 
-                    if (message.error) {
-                        reject(message.error);
-                    } else {
-                        resolve(message.response);
+                        if (message.error) {
+                            reject(message.error);
+                        } else {
+                            resolve(message.response);
+                        }
                     }
                 }
-            });
+            );
 
             transport.broadcast(WebApplicationMessageType.execute, request);
         });

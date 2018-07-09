@@ -2,7 +2,7 @@ import { ITestFinder, ITestFile, TestsFinderPlugins } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { locateTestFiles } from './test-files-locator';
 import { resolveTests } from './resolve-tests';
-import {loggerClientLocal} from '@testring/logger';
+import { loggerClientLocal } from '@testring/logger';
 
 export class TestsFinder extends PluggableModule implements ITestFinder {
 

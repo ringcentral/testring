@@ -17,10 +17,10 @@ const nanoid = require('nanoid');
 export class BrowserProxyController extends PluggableModule implements IBrowserProxyController {
     constructor(
         private transportInstance: ITransport,
-        private workerCreator: (onActionPluginPath: string, config: any) => ChildProcess,
+        private workerCreator: (onActionPluginPath: string, config: any) => ChildProcess
     ) {
         super([
-            BrowserProxyPlugins.getPlugin,
+            BrowserProxyPlugins.getPlugin
         ]);
 
         this.registerResponseListener();
@@ -37,12 +37,19 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
     private registerResponseListener() {
         this.transportInstance.on(
             BrowserProxyMessageTypes.response,
-            (response) => this.onCommandResponse(response),
+            (response) => this.onCommandResponse(response)
         );
+
+        this.transportInstance.on(BrowserProxyMessageTypes.exception, (error) => {
+            this.kill();
+
+            throw error;
+        });
     }
 
     private onCommandResponse(commandResponse: IBrowserProxyCommandResponse): void {
-        const { uid, response, exception } = commandResponse;
+        const { uid, response, error } = commandResponse;
+
         const item = this.pendingCommandsPool.get(uid);
 
         if (item) {
@@ -50,13 +57,14 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
             this.pendingCommandsPool.delete(uid);
 
-            if (exception) {
-                return reject(exception);
+            if (error) {
+                return reject(error);
             }
 
             return resolve(response);
         } else {
             loggerClientLocal.error(`Browser Proxy controller: cannot find command with uid ${uid}`);
+
             throw new ReferenceError(`Cannot find command with uid ${uid}`);
         }
     }
@@ -85,8 +93,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
     };
 
     private send(item: IBrowserProxyPendingCommand): void {
-        const { command, applicant } = item;
-        const uid = nanoid();
+        const { command, applicant, uid } = item;
 
         this.pendingCommandsPool.set(uid, item);
 
@@ -97,7 +104,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
                 uid,
                 command,
                 applicant
-            },
+            }
         );
     }
 
@@ -134,14 +141,16 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
     public execute(applicant: string, command: IBrowserProxyCommand): Promise<void> {
         return new Promise((resolve, reject) => {
+            const uid = nanoid();
             const item: IBrowserProxyPendingCommand = {
+                uid,
                 resolve,
                 reject,
                 command,
                 applicant
             };
 
-            if (this.worker && this.worker.connected) {
+            if (this.worker) {
                 this.send(item);
             } else {
                 this.pendingCommandsQueue.add(item);
@@ -150,7 +159,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
     }
 
     public kill(): void {
-        if (this.worker && this.worker.connected) {
+        if (this.worker) {
             this.worker.removeListener('exit', this.onExit);
             this.worker.kill();
         }

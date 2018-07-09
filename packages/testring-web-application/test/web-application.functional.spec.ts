@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /// <reference types="mocha" />
 
 import * as path from 'path';
@@ -50,7 +49,7 @@ describe('WebApplication functional', () => {
         });
 
         testProcess.stderr.on('data', (message) => {
-            callback(message);
+            callback(message.toString());
         });
     });
 });
