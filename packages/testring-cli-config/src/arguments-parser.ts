@@ -1,15 +1,11 @@
 import * as yargs from 'yargs';
 import { IConfig } from '@testring/types';
 
-const pkg = require('../package.json');
-
 const RESTRICTED_FIELDS = ['_', '$0', 'version', 'help'];
 
 const createField = (key: keyof IConfig, options: yargs.Options) => {
     yargs.option(key, options);
 };
-
-yargs.version(pkg.version);
 
 createField('debug', {
     describe: 'debugging flag',

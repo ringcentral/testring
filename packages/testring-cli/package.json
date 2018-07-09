@@ -18,6 +18,8 @@
     "@testring/test-run-controller": "0.1.0",
     "@testring/test-worker": "0.1.0",
     "@testring/transport": "0.1.0",
-    "@testring/web-application": "0.1.0"
+    "@testring/web-application": "0.1.0",
+    "@types/yargs": "^11.0.0",
+    "yargs": "^12.0.1"
   }
 }

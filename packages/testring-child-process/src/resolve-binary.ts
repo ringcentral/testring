@@ -16,6 +16,24 @@ const findNodeModulesDir = (modulePath: string) => {
     return findNodeModulesDir(path.dirname(modulePath));
 };
 
+function windowsQuotes(str) {
+    if (!/ /.test(str)) {
+        return str;
+    }
+
+    return '"' + str + '"';
+}
+
+function escapify(str) {
+    if (IS_WIN) {
+        return path.normalize(str).split(/\\/).map(windowsQuotes).join('\\\\');
+    } else if (/[^-_.~/\w]/.test(str)) {
+        return '\'' + str.replace(/'/g, '\'"\'"\'') + '\'';
+    } else {
+        return str;
+    }
+}
+
 export const resolveBinary = (name: string) => {
     const modulePath = require.resolve(name);
     const nodeModules = findNodeModulesDir(modulePath);
@@ -25,5 +43,5 @@ export const resolveBinary = (name: string) => {
         throw new ReferenceError(`Package ${name} is existing, but it doesn't have bin`);
     }
 
-    return binaryPath;
+    return escapify(binaryPath);
 };

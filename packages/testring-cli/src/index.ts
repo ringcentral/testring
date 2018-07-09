@@ -1,75 +1,37 @@
 import * as process from 'process';
-import { LoggerServer, loggerClientLocal } from '@testring/logger';
-import { TestRunController } from '@testring/test-run-controller';
-import { applyPlugins } from '@testring/plugin-api';
-import { TestsFinder } from '@testring/test-finder';
-import { TestWorker } from '@testring/test-worker';
-import { getConfig } from '@testring/cli-config';
-import { WebApplicationController } from '@testring/web-application';
-import { browserProxyControllerFactory } from '@testring/browser-proxy';
-import { transport } from '@testring/transport';
+import * as yargs from 'yargs';
+import { loggerClientLocal } from '@testring/logger';
+import { runTests } from './commands/run';
 
-// CLI entry point, it makes all initialization job and
-// handles all errors, that was not cached inside framework
+const pkg = require('../package.json');
 
-const formatJSON = (obj: any) => {
-    const separator = '⋅';
-    const padding = 20;
-
-    let str = separator.repeat(padding) + '\n';
-    let item;
-
-    for (const key in obj) {
-        if (key === 'plugins') {
-            item = obj[key].toString().replace('[object Object]', '');
-        } else {
-            item = JSON.stringify(obj[key]);
-        }
-
-        str += `${(key + ' ').padEnd(padding, separator)} ${item}\n`;
-    }
-
-    return str + separator.repeat(padding);
-};
-
-export const runTests = async (argv: Array<string>, stdout: NodeJS.WritableStream) => {
-    const userConfig = await getConfig(argv);
-
-    const loggerServer = new LoggerServer(userConfig, transport, stdout);
-    const testFinder = new TestsFinder();
-    const testWorker = new TestWorker(transport);
-    const testRunController = new TestRunController(userConfig, testWorker);
-    const browserProxyController = browserProxyControllerFactory(transport);
-    const webApplicationController = new WebApplicationController(browserProxyController, transport);
-
-    applyPlugins({
-        logger: loggerServer,
-        testFinder: testFinder,
-        testWorker: testWorker,
-        browserProxy: browserProxyController,
-        testRunController: testRunController,
-    }, userConfig);
-
-    loggerClientLocal.log('User config:\n', formatJSON(userConfig));
-
-    const tests = await testFinder.find(userConfig.tests);
-
-    loggerClientLocal.info(`Found ${tests.length} test(s) to run.`);
-
-    browserProxyController.spawn();
-    webApplicationController.init();
-
-    const testRunResult = await testRunController.runQueue(tests);
-
-    browserProxyController.kill();
-
-    if (testRunResult) {
-        throw new Error(`Failed ${testRunResult.length}/${tests.length} tests.`);
-    }
-};
+yargs.usage('$0 command')
+    .command('run', 'To run tests')
+    .command('record', 'To make a record')
+    .demandCommand(1, 'Please provide a valid command\n')
+    .version(pkg.version)
+    .help();
 
 export const runCLI = (argv: Array<string>) => {
-    runTests(argv, process.stdout).catch((exception) => {
+    const args = yargs.parse(argv);
+    const command = args._[2];
+
+    let commandExecution;
+
+    switch (command) {
+        case 'run':
+            commandExecution = runTests(argv, process.stdout);
+            break;
+
+        case 'record':
+            throw new Error('Record not implemented yet.');
+
+        default:
+            yargs.showHelp();
+            return;
+    }
+
+    commandExecution.catch((exception) => {
         loggerClientLocal.error(exception);
         process.exit(1);
     });
