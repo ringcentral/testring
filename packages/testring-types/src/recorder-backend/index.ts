@@ -1,3 +1,9 @@
+export const enum RecorderServerEvents {
+    CONNECTION = 'CONNECTION',
+    MESSAGE = 'MESSAGE',
+    CLOSE = 'CLOSE',
+}
+
 export interface IServer {
     run: () => void;
 
@@ -12,4 +18,10 @@ export interface IRecorderServer {
     stop: () => void;
 
     openBrowser: () => void;
+}
+
+export interface IWsMessage {
+    type: RecorderServerEvents,
+    conId: string,
+    payload?: any,
 }
