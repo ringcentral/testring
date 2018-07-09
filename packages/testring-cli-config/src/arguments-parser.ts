@@ -5,66 +5,54 @@ const pkg = require('../package.json');
 
 const RESTRICTED_FIELDS = ['_', '$0', 'version', 'help'];
 
-const createField = (key: keyof IConfig, options: yargs.Options) => {
-    yargs.option(key, options);
-};
-
 yargs.version(pkg.version);
 
-createField('debug', {
-    describe: 'debugging flag',
-    type: 'boolean'
-});
-
-createField('bail', {
-    describe: 'shut down app after test fail',
-    type: 'boolean'
-});
-
-createField('workerLimit', {
-    describe: 'maximum amount of parallels child_process',
-    type: 'number'
-});
-
-createField('retryCount', {
-    describe: 'number of retry attempts',
-    type: 'number'
-});
-
-createField('retryDelay', {
-    describe: 'time of delay before retry',
-    type: 'number'
-});
-
-createField('config', {
-    describe: 'custom path to config file',
-    type: 'string'
-});
-
-createField('tests', {
-    describe: 'search path for test files (supports glob)',
-    type: 'string'
-});
-
-createField('plugins', {
-    describe: 'set of plugins (list). API: --plugins=plugin1 --plugins=plugin2 ...',
-    type: 'array'
-});
-
-createField('httpThrottle', {
-    describe: 'time of delay before next http request',
-    type: 'number'
-});
-
-createField('logLevel', {
-    describe: 'flag for filtering log records',
-    type: 'string'
-});
-
-createField('envConfig', {
-    describe: 'path to environment config which overrides main config',
-    type: 'string',
-});
+const yargsOptions = {
+    'debug': {
+        describe: 'specify test data section',
+        type: 'boolean'
+    },
+    'bail': {
+        describe: 'shut down app after test fail',
+        type: 'boolean'
+    },
+    'workerLimit': {
+        describe: 'maximum amount of parallels child_process',
+        type: 'number'
+    },
+    'retryCount': {
+        describe: 'number of retry attempts',
+        type: 'number'
+    },
+    'retryDelay': {
+        describe: 'time of delay before retry',
+        type: 'number'
+    },
+    'config': {
+        describe: 'custom path to config file',
+        type: 'string'
+    },
+    'tests': {
+        describe: 'search path for test files (supports glob)',
+        type: 'string'
+    },
+    'plugins': {
+        describe: 'set of plugins (list). API: --plugins=plugin1 --plugins=plugin2 ...',
+        type: 'array'
+    },
+    'httpThrottle': {
+        describe: 'time of delay before next http request',
+        type: 'number'
+    },
+    'logLevel': {
+        describe: 'flag for filtering log records',
+        type: 'string'
+    },
+    'envConfig': {
+        describe: 'path to environment config which overrides main config',
+        type: 'string',
+    }
+};
 
 const normalize = (args: yargs.Arguments): IConfig => {
     const normalizedArgs = {};
@@ -93,7 +81,40 @@ export const getArguments = (argv: Array<string>): IConfig | null => {
         return null;
     }
 
-    const args = yargs.parse(argv);
+    const cmdRun = {
+        command: 'run',
+        desc: 'To run tests',
+        builder: (yargs) => {
+            for (let key in yargsOptions) {
+                yargs.option(key, yargsOptions[key]);
+            }
+            return yargs;
+        },
+        handler: (argv) => {
+            argv.command = 'run';
+
+        }
+    };
+
+    const cmdRecord = {
+        command: 'record',
+        desc: 'To make a record',
+        builder: (yargs) => {
+            for (let key in yargsOptions) {
+                yargs.option(key, yargsOptions[key]);
+            }
+            return yargs;
+        },
+        handler: (argv) => {
+            argv.command = 'record';
+        }
+    };
+
+    const args = yargs.usage('$0 command')
+        .command(cmdRun)
+        .command(cmdRecord)
+        .demandCommand(1, 'Please provide a valid command\n')
+        .help().argv;
 
     return normalize(args);
 };
