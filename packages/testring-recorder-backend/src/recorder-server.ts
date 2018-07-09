@@ -1,16 +1,21 @@
 import * as path from 'path';
 import * as opn from 'opn';
-import {RecorderServerEvents, IRecorderServer, ITransport, IWsMessage} from '@testring/types';
 import * as WebSocket from 'ws';
+import { loggerClientLocal } from '@testring/logger';
 import { transport } from '@testring/transport';
+import {
+    RecorderServerEvents,
+    RecorderServerMessageTypes,
+    IRecorderServer,
+    ITransport,
+    IWsMessage,
+} from '@testring/types';
 
 import { DEFAULT_HOST, DEFAULT_HTTP_PORT, DEFAULT_WS_PORT } from './constants';
 import { RecorderHttpServer } from './http-server';
 import { RecorderWebSocketServer, RecorderWsEvents } from './ws-server';
 
 const nanoid = require('nanoid');
-
-export const RECORDER_SERVER_MESSAGE = 'RECORDER_SERVER_MESSAGE';
 
 export class RecorderServer implements IRecorderServer {
     constructor(
@@ -21,12 +26,21 @@ export class RecorderServer implements IRecorderServer {
     ) {
         this.wsServer.on(
             RecorderWsEvents.CONNECTION,
-            (ws) => this.registerConnection(ws)
+            (ws) => {
+                this.registerConnection(ws);
+            }
         );
 
         this.transportInstance.on(
-            RECORDER_SERVER_MESSAGE,
-            (message: IWsMessage) => {
+            RecorderServerMessageTypes.CLOSE,
+            (message) => {
+                this.handleClose(message);
+            }
+        );
+
+        this.transportInstance.on(
+            RecorderServerMessageTypes.MESSAGE,
+            (message) => {
                 this.handleMessage(message);
             }
         );
@@ -78,6 +92,16 @@ export class RecorderServer implements IRecorderServer {
         );
     }
 
+    private closeConnection(conId: string): void {
+        try {
+            const connection = this.getConnection(conId);
+
+            connection.close();
+        } catch (e) {
+            loggerClientLocal.warn(e);
+        }
+    }
+
     private getConnection(conId: string): WebSocket {
         const connection = this.connections.get(conId);
 
@@ -94,17 +118,16 @@ export class RecorderServer implements IRecorderServer {
         connection.send(message);
     }
 
-    private handleMessage(message: IWsMessage): void {
-        const { conId, type, payload } = message;
+    private handleClose(message: IWsMessage): void {
+        const { conId } = message;
 
-        switch (type) {
-            case RecorderServerEvents.CLOSE:
-                this.unregisterConnection(conId);
-                break;
-            case RecorderServerEvents.MESSAGE:
-                this.send(conId, payload);
-                break;
-        }
+        this.closeConnection(conId);
+    }
+
+    private handleMessage(message: IWsMessage): void {
+        const { conId, payload } = message;
+
+        this.send(conId, payload);
     }
 
     public run(): void {

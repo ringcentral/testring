@@ -1,7 +1,12 @@
 export const enum RecorderServerEvents {
-    CONNECTION = 'CONNECTION',
-    MESSAGE = 'MESSAGE',
-    CLOSE = 'CLOSE',
+    CONNECTION = 'RecorderServerEvents/CONNECTION',
+    MESSAGE = 'RecorderServerEvents/MESSAGE',
+    CLOSE = 'RecorderServerEvents/CLOSE',
+}
+
+export const enum RecorderServerMessageTypes {
+    CLOSE = 'RecorderServerMessageTypes/CLOSE',
+    MESSAGE = 'RecorderServerMessageTypes/MESSAGE',
 }
 
 export interface IServer {
@@ -21,7 +26,6 @@ export interface IRecorderServer {
 }
 
 export interface IWsMessage {
-    type: RecorderServerEvents;
     conId: string;
     payload?: any;
 }
