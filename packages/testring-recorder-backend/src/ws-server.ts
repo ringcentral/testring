@@ -33,4 +33,8 @@ export class RecorderWebsocketServer implements IServer {
             this.server.close();
         }
     }
+
+    public getUrl(): string {
+        return `ws://${this.host}:${this.port}`;
+    }
 }

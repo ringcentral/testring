@@ -48,4 +48,8 @@ export class RecorderHttpServer implements IServer {
             delete this.server;
         }
     }
+
+    public getUrl(): string {
+        return `http://${this.host}:${this.port}`;
+    }
 }

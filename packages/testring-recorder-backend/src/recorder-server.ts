@@ -15,7 +15,7 @@ export class RecorderServer implements IRecorderServer {
     }
 
     private httpServer: RecorderHttpServer = new RecorderHttpServer(
-        path.dirname(require.resolve('@testring/recorder-app')),
+        path.dirname(require.resolve('@testring/recorder-frontend')),
         path.resolve(__dirname, '../templates/'),
         this.host,
         this.httpPort,
@@ -38,6 +38,6 @@ export class RecorderServer implements IRecorderServer {
     }
 
     public openBrowser(): void {
-        opn(`http://${this.host}:${this.httpPort}`);
+        opn(this.httpServer.getUrl());
     }
 }
