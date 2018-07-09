@@ -1,86 +1,100 @@
 import * as process from 'process';
-import { LoggerServer, loggerClientLocal } from '@testring/logger';
-import { TestRunController } from '@testring/test-run-controller';
-import { applyPlugins } from '@testring/plugin-api';
-import { TestsFinder } from '@testring/test-finder';
-import { TestWorker } from '@testring/test-worker';
-import { getConfig } from '@testring/cli-config';
-import { WebApplicationController } from '@testring/web-application';
-import { browserProxyControllerFactory } from '@testring/browser-proxy';
-import { transport } from '@testring/transport';
+import * as yargs from 'yargs';
+import { loggerClientLocal } from '@testring/logger';
+import { IConfig } from '@testring/types';
+import { runTests } from './commands/run';
+
+const pkg = require('../package.json');
+
+const createField = (key: keyof IConfig, options: yargs.Options) => {
+    yargs.option(key.toString(), options);
+};
+
+createField('debug', {
+    describe: 'Debugging flag',
+    type: 'boolean'
+});
+
+createField('bail', {
+    describe: 'Shut down app after test fail',
+    type: 'boolean'
+});
+
+createField('workerLimit', {
+    describe: 'Maximum amount of parallel child_process',
+    type: 'number'
+});
+
+createField('retryCount', {
+    describe: 'Number of retry attempts',
+    type: 'number'
+});
+
+createField('retryDelay', {
+    describe: 'Time of delay before retry',
+    type: 'number'
+});
+
+createField('config', {
+    describe: 'Custom path to config file',
+    type: 'string'
+});
+
+createField('tests', {
+    describe: 'Search path for test files (glob pattern)',
+    type: 'string'
+});
+
+createField('plugins', {
+    describe: 'Set of plugins (list). API: --plugins=plugin1 --plugins=plugin2 ...',
+    type: 'array'
+});
+
+createField('httpThrottle', {
+    describe: 'Time of delay before next http request',
+    type: 'number'
+});
+
+createField('logLevel', {
+    describe: 'Flag for filtering log records',
+    type: 'string'
+});
+
+createField('envConfig', {
+    describe: 'Path to environment config which overrides main config',
+    type: 'string'
+});
+
+yargs.usage('$0 command')
+    .version(`testring version: ${pkg.version}`)
+    .command('run', 'To run tests')
+    .command('record', 'To make a record')
+    .demandCommand(1, 'Please provide a valid command\n')
+    .help();
 
 // CLI entry point, it makes all initialization job and
-// handles all errors, that was not cached inside framework
-
-const formatJSON = (obj: any) => {
-    const separator = '⋅';
-    const padding = 20;
-
-    let str = separator.repeat(padding) + '\n';
-    let item;
-
-    for (const key in obj) {
-        if (key === 'plugins') {
-            item = obj[key].toString()
-                .replace(/\[object Object]/g, '')
-                .replace(/, ,/g, ',');
-        } else {
-            item = JSON.stringify(obj[key]);
-        }
-
-        str += `${(key + ' ').padEnd(padding, separator)} ${item}\n`;
-    }
-
-    return str + separator.repeat(padding);
-};
-
-export const runTests = async (argv: Array<string>, stdout: NodeJS.WritableStream) => {
-    const userConfig = await getConfig(argv);
-
-    const loggerServer = new LoggerServer(userConfig, transport, stdout);
-    const testFinder = new TestsFinder();
-    const testWorker = new TestWorker(transport);
-    const testRunController = new TestRunController(userConfig, testWorker);
-    const browserProxyController = browserProxyControllerFactory(transport);
-    const webApplicationController = new WebApplicationController(browserProxyController, transport);
-
-    applyPlugins({
-        logger: loggerServer,
-        testFinder: testFinder,
-        testWorker: testWorker,
-        browserProxy: browserProxyController,
-        testRunController: testRunController
-    }, userConfig);
-
-    loggerClientLocal.info('User config:\n', formatJSON(userConfig));
-
-    const tests = await testFinder.find(userConfig.tests);
-
-    loggerClientLocal.info(`Found ${tests.length} test(s) to run.`);
-
-    await browserProxyController.spawn();
-
-    webApplicationController.init();
-
-    const testRunResult = await testRunController.runQueue(tests);
-
-    browserProxyController.kill();
-
-    if (testRunResult) {
-        loggerClientLocal.error('Founded errors:');
-
-        testRunResult.forEach((error) => {
-            loggerClientLocal.error(error);
-        });
-
-        throw `Failed ${testRunResult.length}/${tests.length} tests.`;
-    } else {
-        loggerClientLocal.info(`Tests done: ${tests.length}/${tests.length}.`);
-    }
-};
+// handles all errors, that was not cached inside command
 
 export const runCLI = (argv: Array<string>) => {
-    runTests(argv, process.stdout).catch((exception) => {
+    const args = yargs.parse(argv);
+    const command = args._[2];
+
+    let commandExecution;
+
+    switch (command) {
+        case 'run':
+            commandExecution = runTests(argv, process.stdout);
+            break;
+
+        case 'record':
+            throw new Error('Record not implemented yet.');
+
+        default:
+            yargs.showHelp();
+            return;
+    }
+
+    commandExecution.catch((exception) => {
         loggerClientLocal.error(exception);
         process.exit(1);
     });
