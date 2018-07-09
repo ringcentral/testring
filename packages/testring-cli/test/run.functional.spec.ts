@@ -3,7 +3,7 @@
 
 import * as path from 'path';
 import { Writable } from 'stream';
-import { runTests } from '../src';
+import { runTests } from '../src/commands/run';
 
 const fixturesPath = path.resolve(__dirname, './fixtures');
 const stdout = new Writable({
