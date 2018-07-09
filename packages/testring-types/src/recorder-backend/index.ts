@@ -21,7 +21,7 @@ export interface IRecorderServer {
 }
 
 export interface IWsMessage {
-    type: RecorderServerEvents,
-    conId: string,
-    payload?: any,
+    type: RecorderServerEvents;
+    conId: string;
+    payload?: any;
 }
