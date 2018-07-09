@@ -18,6 +18,6 @@
     "@types/nanoid": "^1.0.0",
     "@types/request-promise": "^4.1.41",
     "request-promise": "^4.2.2",
-    "nanoid": "^1.0.4"
+    "nanoid": "^1.0.7"
   }
 }

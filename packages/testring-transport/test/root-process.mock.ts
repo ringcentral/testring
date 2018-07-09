@@ -9,6 +9,10 @@ class RootProcessMock extends EventEmitter {
         this.messageStack.push(message);
     }
 
+    $triggerListener<T = any>(payload: T) {
+        this.emit('message', payload);
+    }
+
     $callCount() {
         return this.messageStack.length;
     }

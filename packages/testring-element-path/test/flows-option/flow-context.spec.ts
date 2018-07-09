@@ -1,5 +1,5 @@
-import {expect} from 'chai';
-import {createElementPath} from '../../src';
+import { expect } from 'chai';
+import { createElementPath } from '../../src';
 
 describe('flows option function context behavior', () => {
     function getContext() {
@@ -9,9 +9,9 @@ describe('flows option function context behavior', () => {
     let root = createElementPath({
         flows: {
             foo: {
-                getContext,
-            },
-        },
+                getContext
+            }
+        }
     });
     let childFoo = root.foo;
 
@@ -26,7 +26,7 @@ describe('flows option function context behavior', () => {
     });
 
     it('Call getContext()', () => {
-        const {getContext} = childFoo;
+        const { getContext } = childFoo;
         expect(getContext()).to.be.equal(undefined);
     });
 });

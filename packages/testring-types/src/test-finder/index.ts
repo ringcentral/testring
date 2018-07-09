@@ -4,9 +4,9 @@ export const enum TestsFinderPlugins {
 }
 
 export interface ITestFile {
-    path: string,
-    content: string,
-    meta: object
+    path: string;
+    content: string;
+    meta: object;
 }
 
 export interface ITestFinder {

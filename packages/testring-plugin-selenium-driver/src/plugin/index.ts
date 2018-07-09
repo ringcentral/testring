@@ -19,16 +19,51 @@ function delay(timeout) {
 export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     private browserClients: Map<string, Client<any>> = new Map();
+
     private waitForReadyState: Promise<void> = Promise.resolve();
+
     private localSelenium: ChildProcess;
 
-    constructor(private config: Config) {
+    private config: Config;
+
+    constructor(config: Config) {
+        this.config = config || {};
+
         if (this.config.host === undefined) {
             this.runLocalSelenium();
         }
     }
 
-    private async createClient(applicant: string): Promise<any> {
+    private getChromeDriverArgs() {
+        const chromeDriver = require('chromedriver');
+
+        return [`-Dwebdriver.chrome.driver=${chromeDriver.path}`];
+    }
+
+    private async runLocalSelenium() {
+        const seleniumServer = require('selenium-server');
+        const seleniumJarPath = seleniumServer.path;
+
+        this.localSelenium = spawn('java', [
+            ...this.getChromeDriverArgs(),
+            '-jar', seleniumJarPath,
+            '-port', DEFAULT_CONFIG.port
+        ]);
+
+        this.waitForReadyState = new Promise((resolve) => {
+            this.localSelenium.stderr.on('data', (data) => {
+                const message = data.toString();
+
+                loggerClient.debug(message);
+
+                if (message.includes('SeleniumServer.boot')) {
+                    delay(500).then(resolve);
+                }
+            });
+        });
+    }
+
+    private async createClient(applicant: string): Promise<void> {
         await this.waitForReadyState;
         if (this.browserClients.has(applicant)) {
             return;
@@ -44,42 +79,28 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         this.browserClients.set(applicant, client);
     }
 
-    private getChromeDriverArgs() {
-        const chromeDriver = require('chromedriver');
-
-        return [`-Dwebdriver.chrome.driver=${chromeDriver.path}`];
+    private wrapWithPromise<T>(item: Client<T>): Promise<T> {
+        return new Promise<T>((resolve, reject) => {
+            try {
+                item
+                    .then(resolve)
+                    .catch(reject);
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
 
-    async runLocalSelenium() {
-        this.waitForReadyState = delay(1000);
-        const seleniumServer = require('selenium-server');
-        const seleniumJarPath = seleniumServer.path;
-        let args = [
-            ...this.getChromeDriverArgs(),
-            '-jar', seleniumJarPath,
-            '-port', DEFAULT_CONFIG.port
-        ];
-
-        this.localSelenium = spawn('java', args);
-
-        this.localSelenium.stdout.on('data', (data) => {
-            loggerClient.debug(data.toString());
-        });
-
-        this.localSelenium.stderr.on('data', (data) => {
-            loggerClient.debug(data.toString());
-        });
-
-    }
     public async end(applicant: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
 
         if (client) {
             this.browserClients.delete(applicant);
-            return client.end();
+            return this.wrapWithPromise(client.end());
         }
     }
+
     public async kill() {
         const requests: Array<any> = [];
 
@@ -87,352 +108,396 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             requests.push(client.end());
         });
 
-        await Promise.all(requests);
-
         this.localSelenium.kill();
+
+        await Promise.all(requests);
     }
 
-    async refresh(applicant: string) {
+    public async refresh(applicant: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
 
         if (client) {
-            return client.refresh();
+            return this.wrapWithPromise(client.refresh());
         }
     }
 
-    async click(applicant: string, selector: string) {
+    public async click(applicant: string, selector: string) {
         await this.createClient(applicant);
-        const client = this.browserClients.get(applicant);
-        if (client) {
-            return client.click(selector);
-        }
-    }
-
-    async gridProxyDetails(applicant: string) {
-        await this.createClient(applicant);
-        const client = this.browserClients.get(applicant);
-        if (client) {
-            return client.gridProxyDetails();
-        }
-    }
-
-    async url(applicant: string, val: string) {
-        await this.createClient(applicant);
-
         const client = this.browserClients.get(applicant);
 
         if (client) {
-            return client.url(val);
+            return this.wrapWithPromise(client.click(selector));
         }
     }
 
-    async waitForExist(applicant: string, xpath: string, timeout: number) {
+    public async gridProxyDetails(applicant: string) {
         await this.createClient(applicant);
-        const client = this.browserClients.get(applicant);
-        if (client) {
-            return client.waitForExist(xpath, timeout);
-        }
-    }
-
-    async waitForVisible(applicant: string, xpath: string, timeout: number) {
-        await this.createClient(applicant);
-        const client = this.browserClients.get(applicant);
-        if (client) {
-            return client.waitForVisible(xpath, timeout);
-        }
-    }
-
-    async isVisible(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const client = this.browserClients.get(applicant);
-        if (client) {
-            return client.isVisible(xpath);
-        }
-    }
-
-    async moveToObject(applicant: string, xpath: string, x: number, y: number) {
-        await this.createClient(applicant);
-        const client = this.browserClients.get(applicant);
-        if (client) {
-            return client.moveToObject(xpath, x, y);
-        }
-    }
-
-    async execute(applicant: string, fn: any, args: Array<any>) {
-        await this.createClient(applicant);
-        const client = this.browserClients.get(applicant);
-        if (client) {
-            return client.execute(fn, ...args);
-        }
-    }
-
-    async executeAsync(applicant: string, fn: any, args: Array<any>) {
-        await this.createClient(applicant);
-        const client = this.browserClients.get(applicant);
-        if (client) {
-            return client.executeAsync(fn, ...args);
-        }
-    }
-
-    async getTitle(applicant: string) {
-        await this.createClient(applicant);
-
         const client = this.browserClients.get(applicant);
 
         if (client) {
-            return client.getTitle();
+            return this.wrapWithPromise(client.gridProxyDetails());
         }
     }
 
-    async clearElement(applicant: string, xpath: string) {
+    public async url(applicant: string, val: string) {
         await this.createClient(applicant);
-
         const client = this.browserClients.get(applicant);
 
         if (client) {
-            return client.clearElement(xpath);
+            return this.wrapWithPromise(client.url(val));
         }
     }
 
-    async keys(applicant: string, value: any) {
+    public async waitForExist(applicant: string, xpath: string, timeout: number) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.waitForExist(xpath, timeout));
+        }
+    }
+
+    public async waitForVisible(applicant: string, xpath: string, timeout: number) {
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.waitForVisible(xpath, timeout));
+        }
+    }
+
+    public async isVisible(applicant: string, xpath: string) {
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.isVisible(xpath));
+        }
+    }
+
+    public async moveToObject(applicant: string, xpath: string, x: number, y: number) {
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.moveToObject(xpath, x, y));
+        }
+    }
+
+    public async execute(applicant: string, fn: any, args: Array<any>) {
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.execute(fn, ...args));
+        }
+    }
+
+    public async executeAsync(applicant: string, fn: any, args: Array<any>) {
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.executeAsync(fn, ...args));
+        }
+    }
+
+    public async getTitle(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.getTitle());
+        }
+    }
+
+    public async clearElement(applicant: string, xpath: string) {
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.clearElement(xpath));
+        }
+    }
+
+    public async keys(applicant: string, value: any) {
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
+
         if (client) {
             client.keys(value);
         }
     }
 
-    async elementIdText(applicant: string, elementId: string) {
+    public async elementIdText(applicant: string, elementId: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.elementIdText(elementId);
+            return this.wrapWithPromise(client.elementIdText(elementId));
         }
     }
 
-    async elements(applicant: string, xpath: string) {
+    public async elements(applicant: string, xpath: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.elements(xpath);
+            return this.wrapWithPromise(client.elements(xpath));
         }
     }
 
-    async getValue(applicant: string, xpath: string) {
+    public async getValue(applicant: string, xpath: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.getValue(xpath);
+            return this.wrapWithPromise(client.getValue(xpath));
         }
     }
 
-    async setValue(applicant: string, xpath: string, value: any) {
+    public async setValue(applicant: string, xpath: string, value: any) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.setValue(xpath, value);
+            return this.wrapWithPromise(client.setValue(xpath, value));
         }
     }
 
-    async selectByIndex(applicant: string, xpath: string, value: any) {
+    public async selectByIndex(applicant: string, xpath: string, value: any) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.selectByIndex(xpath, value);
+            return this.wrapWithPromise(client.selectByIndex(xpath, value));
         }
     }
 
-    async selectByValue(applicant: string, xpath: string, value: any) {
+    public async selectByValue(applicant: string, xpath: string, value: any) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.selectByValue(xpath, value);
+            return this.wrapWithPromise(client.selectByValue(xpath, value));
         }
     }
 
-    async selectByVisibleText(applicant: string, xpath: string, str: string) {
+    public async selectByVisibleText(applicant: string, xpath: string, str: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.selectByVisibleText(xpath, str);
+            return this.wrapWithPromise(client.selectByVisibleText(xpath, str));
         }
     }
 
-    async getAttribute(applicant: string, xpath: string, attr: any) {
+    public async getAttribute(applicant: string, xpath: string, attr: string): Promise<any> {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            client.getAttribute(xpath, attr);
+            return this.wrapWithPromise(client.getAttribute(xpath, attr));
         }
     }
 
-    async windowHandleMaximize(applicant: string) {
+    public async windowHandleMaximize(applicant: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.windowHandleMaximize();
+            return this.wrapWithPromise(client.windowHandleMaximize());
         }
     }
 
-    async isEnabled(applicant: string, xpath: string) {
+    public async isEnabled(applicant: string, xpath: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.isEnabled(xpath);
+            return this.wrapWithPromise(client.isEnabled(xpath));
         }
     }
 
-    async scroll(applicant: string, xpath: string, x: number, y: number) {
+    public async scroll(applicant: string, xpath: string, x: number, y: number) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.scroll(xpath, x, y);
+            return this.wrapWithPromise(client.scroll(xpath, x, y));
         }
     }
 
-    async alertAccept(applicant: string) {
+    public async alertAccept(applicant: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.alertAccept();
+            return this.wrapWithPromise(client.alertAccept());
         }
     }
 
-    async alertDismiss(applicant: string) {
+    public async alertDismiss(applicant: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.alertDismiss();
+            return this.wrapWithPromise(client.alertDismiss());
         }
     }
 
-    async alertText(applicant: string) {
+    public async alertText(applicant: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.alertText();
+            return this.wrapWithPromise(client.alertText() as Client<string>);
         }
     }
 
-    async dragAndDrop(applicant: string, xpathSource: string, xpathDestination: string) {
+    public async dragAndDrop(applicant: string, xpathSource: string, xpathDestination: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.dragAndDrop(xpathSource, xpathDestination);
+            return this.wrapWithPromise(client.dragAndDrop(xpathSource, xpathDestination));
         }
     }
 
-    async addCommand(applicant: string, str: string, fn: any) {
+    public async addCommand(applicant: string, str: string, fn: any) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.addCommand(str, fn);
+            return this.wrapWithPromise(client.addCommand(str, fn));
         }
     }
 
-    async getCookie(applicant: string, cookieName: string) {
+    public async getCookie(applicant: string, cookieName: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.getCookie(cookieName);
+            return this.wrapWithPromise(client.getCookie(cookieName));
         }
     }
 
-    async deleteCookie(applicant: string, cookieName: string) {
+    public async deleteCookie(applicant: string, cookieName: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.deleteCookie(cookieName);
+            return this.wrapWithPromise(client.deleteCookie(cookieName));
         }
     }
 
-    async getHTML(applicant: string, xpath: string, b: any) {
+    public async getHTML(applicant: string, xpath: string, b: any) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.getHTML(xpath, b);
+            return this.wrapWithPromise(client.getHTML(xpath, b));
         }
     }
 
-    async getCurrentTableId(applicant: string) {
+    public async getCurrentTableId(applicant: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.getCurrentTabId();
+            return this.wrapWithPromise(client.getCurrentTabId());
         }
     }
 
-    async switchTab(applicant: string, tabId: string) {
+    public async switchTab(applicant: string, tabId: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.switchTab(tabId);
+            return this.wrapWithPromise(client.switchTab(tabId));
         }
     }
 
-    async close(applicant: string, tabId: string) {
+    public async close(applicant: string, tabId: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.close(tabId);
+            return this.wrapWithPromise(client.close(tabId));
         }
     }
 
-    async getTabIds(applicant: string) {
+    public async getTabIds(applicant: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.getTabIds();
+            return this.wrapWithPromise(client.getTabIds());
         }
     }
 
-    async window(applicant: string, fn: any) {
+    public async window(applicant: string, fn: any) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.window(fn);
+            return this.wrapWithPromise(client.window(fn));
         }
     }
 
-    async windowHandles(applicant: string) {
+    public async windowHandles(applicant: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.windowHandles();
+            return this.wrapWithPromise(client.windowHandles());
         }
     }
 
 
-    async getTagName(applicant: string, xpath: string) {
+    public async getTagName(applicant: string, xpath: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.getTagName(xpath);
+            return this.wrapWithPromise(client.getTagName(xpath));
         }
     }
 
-    async isSelected(applicant: string, xpath: string) {
+    public async isSelected(applicant: string, xpath: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.isSelected(xpath);
+            return this.wrapWithPromise(client.isSelected(xpath));
         }
     }
 
-    async getText(applicant: string, xpath: string) {
+    public async getText(applicant: string, xpath: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.getText(xpath);
+            return this.wrapWithPromise(client.getText(xpath));
         }
     }
 
-    async elementIdSelected(applicant: string, id: string) {
+    public async elementIdSelected(applicant: string, id: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
+
         if (client) {
-            return client.elementIdSelected(id);
+            return this.wrapWithPromise(client.elementIdSelected(id));
+        }
+    }
+
+    public async makeScreenshot(applicant: string): Promise<Buffer | void> {
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.saveScreenshot());
         }
     }
 }

@@ -1,14 +1,13 @@
-/// <reference types="node" />
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
 import { mergeConfigs } from '../src/merge-configs';
 
 describe('getConfig', () => {
-    it('should get correct config after merge',  () => {
+    it('should get correct config after merge', () => {
         const config = mergeConfigs([{
-                plugins: ['plugin1', 'plugin2']
-            },
+            plugins: ['plugin1', 'plugin2']
+        },
             {
                 plugins: ['plugin1', 'plugin3']
             }]);

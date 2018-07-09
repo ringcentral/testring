@@ -1,9 +1,12 @@
+const EMPTY_FN = () => {
+};
+
 export const voidLogger = (
-    retry: number = 0,
-    shouldResolve: boolean = true,
-    onError: (...any) => void = () => {},
-    onResolve: (...any) => void = () => {},
-) => {
+    retry: number,
+    shouldResolve: boolean,
+    onError: (...any) => void = EMPTY_FN,
+    onResolve: (...any) => void = EMPTY_FN) => {
+
     let count = retry;
 
     return async (...args): Promise<void> => {
@@ -12,7 +15,9 @@ export const voidLogger = (
 
             onError(...args);
 
-            throw new Error('ERROR');
+            throw new Error(
+                `Logger called less times as expected, expected count: ${retry}, called: ${count}`
+            );
         } else {
             onResolve(...args);
         }

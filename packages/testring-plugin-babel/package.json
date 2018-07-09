@@ -13,5 +13,8 @@
     "@testring/plugin-api": "0.1.0",
     "@types/babel-core": "6.25.5",
     "babel-core": "^6.26.3"
+  },
+  "devDependencies": {
+    "babel-preset-es2015": "^6.24.1"
   }
 }

@@ -1,6 +1,6 @@
 import { run } from 'testring';
 
-run(() => {
-    global.console.log(2);
+run((context) => {
+    context.log(2);
 });
 

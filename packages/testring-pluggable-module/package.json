@@ -10,8 +10,6 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/types": "0.1.0",
-    "@types/tapable": "^1.0.3",
-    "tapable": "^1.0.0"
+    "@testring/types": "0.1.0"
   }
 }

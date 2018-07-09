@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
@@ -26,7 +25,7 @@ describe('PluggableModule', () => {
         const hook = testModule.getHook(TestModule.hookName);
 
         if (hook) {
-            hook.tap('testPlugin', (data) => {
+            hook.readHook('testPlugin', (data) => {
                 chai.expect(data).to.be.equal(testData);
                 callback();
             });
@@ -41,7 +40,7 @@ describe('PluggableModule', () => {
         const hook = testModule.getHook(TestModule.hookName);
 
         if (hook) {
-            hook.tapPromise('testPlugin', async (data) => {
+            hook.writeHook('testPlugin', async (data) => {
                 return {
                     ...data,
                     additional: 1

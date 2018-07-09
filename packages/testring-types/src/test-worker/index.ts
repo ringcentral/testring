@@ -1,4 +1,3 @@
-
 export type TestCompiler = (source: string, filename: string) => Promise<string>;
 
 export const enum TestWorkerPlugin {
@@ -13,7 +12,6 @@ export const enum TestEvents {
 
 export const enum TestStatus {
     idle = 'idle',
-    pending = 'pending',
     done = 'done',
     failed = 'failed'
 }
@@ -24,26 +22,22 @@ export const enum TestWorkerAction {
 }
 
 export interface ITestExecutionMessage {
-    source: string,
-    filename: string,
-    parameters: object
-}
-
-interface ITestExecutionError {
-    message: string,
-    stacktrace: string
+    source: string;
+    filename: string;
+    parameters: object;
 }
 
 export interface ITestExecutionCompleteMessage {
-    status: TestStatus,
-    error: ITestExecutionError | null
+    status: TestStatus;
+    error: Error | null;
 }
 
 export interface ITestWorkerInstance {
-    execute(rawSource: string, filename: string, parameters: object): Promise<any>
-    kill(): void
+    execute(rawSource: string, filename: string, parameters: object): Promise<any>;
+
+    kill(): void;
 }
 
 export interface ITestWorker {
-    spawn(): ITestWorkerInstance
+    spawn(): ITestWorkerInstance;
 }

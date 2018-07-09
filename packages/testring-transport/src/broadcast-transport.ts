@@ -51,6 +51,7 @@ class BroadcastTransport {
         }
 
         this.triggerListeners(normalizedMessage);
+
         this.sendMessage({
             type: TransportInternalMessageType.messageResponse,
             payload: normalizedMessage.uid

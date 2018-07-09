@@ -1,12 +1,12 @@
-import {expect} from 'chai';
-import {createElementPath} from '../../src';
+import { expect } from 'chai';
+import { createElementPath } from '../../src';
 import {
     getDescriptor,
     getPrivateDescriptor,
 
     checkAccessMethods,
     checkPreventExtensions,
-    checkProperty,
+    checkProperty
 } from '../utils';
 
 
@@ -46,24 +46,24 @@ describe('empty options ElementPath root[\'foo*\'][0]', () => {
                 {
                     'isRoot': true,
                     'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    'xpath': '//*[@data-test-automation-id=\'root\']'
                 },
                 {
                     'isRoot': false,
                     'query': {
                         'index': 0,
-                        'prefix': 'foo',
+                        'prefix': 'foo'
                     },
-                    'xpath': '/descendant::*[starts-with(@data-test-automation-id, \'foo\')][position() = 1]',
-                },
-            ]),
+                    'xpath': '/descendant::*[starts-with(@data-test-automation-id, \'foo\')][position() = 1]'
+                }
+            ])
         });
     });
     describe('.__flows property traps', () => {
         checkProperty({
             object: childFoo,
             key: '__flows',
-            valueDescriptor: getDescriptor({}),
+            valueDescriptor: getDescriptor({})
         });
     });
 
@@ -74,8 +74,8 @@ describe('empty options ElementPath root[\'foo*\'][0]', () => {
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
                 'index': 0,
-                'prefix': 'foo',
-            }),
+                'prefix': 'foo'
+            })
         });
     });
     describe('.__parentPath property traps', () => {
@@ -86,9 +86,9 @@ describe('empty options ElementPath root[\'foo*\'][0]', () => {
                 {
                     'isRoot': true,
                     'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
-                },
-            ]),
+                    'xpath': '//*[@data-test-automation-id=\'root\']'
+                }
+            ])
         });
     });
 

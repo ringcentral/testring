@@ -6,7 +6,7 @@ import { TestWorkerPlugin } from '@testring/types';
 import { TestWorker } from '../src/test-worker';
 
 describe('TestWorkerInstance', () => {
-    const defaultSyncTestContent = 'process.cwd()';
+    const defaultSyncTestContent = 'process.cwd();';
     const defaultFilename = './test.js';
 
     context('test execution', () => {
@@ -24,7 +24,7 @@ describe('TestWorkerInstance', () => {
             }
         });
 
-        it('should fail sync test correctly',  (callback) => {
+        it('should fail sync test correctly', (callback) => {
             const rawSource = 'throw new Error("Something happened")';
             const transport = new Transport();
             const testWorker = new TestWorker(transport);
@@ -34,10 +34,8 @@ describe('TestWorkerInstance', () => {
                 .then(() => {
                     callback('Test was completed somehow');
                 })
-                .catch((message) => {
-                    chai.expect(message.error).to.be.an.instanceof(Error);
-                    chai.expect(message.test.source).to.be.equal(rawSource);
-                    chai.expect(message.test.filename).to.be.equal(defaultFilename);
+                .catch((message: Error) => {
+                    chai.expect(message).to.be.an.instanceof(Error);
 
                     callback();
                 })
@@ -73,7 +71,7 @@ describe('TestWorkerInstance', () => {
             const hook = testWorker.getHook(TestWorkerPlugin.compile);
 
             if (hook) {
-                hook.tapPromise('testPlugin', (source, file) => {
+                hook.writeHook('testPlugin', (source, file) => {
                     chai.expect(source).to.be.equal(defaultSyncTestContent);
                     chai.expect(file).to.be.equal(defaultFilename);
                     callback();
@@ -82,7 +80,8 @@ describe('TestWorkerInstance', () => {
                 });
             }
 
-            instance.execute(defaultSyncTestContent, defaultFilename, {}).catch(() => {});
+            instance.execute(defaultSyncTestContent, defaultFilename, {}).catch(() => {
+            });
             instance.kill();
         });
 
@@ -94,7 +93,7 @@ describe('TestWorkerInstance', () => {
             const hook = testWorker.getHook(TestWorkerPlugin.compile);
 
             if (hook) {
-                hook.tapPromise('testPlugin', (source, file) => {
+                hook.writeHook('testPlugin', (source, file) => {
                     // throw new Error('compilation failed');
 
                     return Promise.reject(new Error('compilation failed'));
@@ -106,7 +105,6 @@ describe('TestWorkerInstance', () => {
                     callback('Test was compiled somehow');
                 })
                 .catch((message) => {
-                    chai.expect(message.error);
                     callback();
                 })
                 .catch(callback)

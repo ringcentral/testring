@@ -13,7 +13,8 @@ export class BrowserProxyControllerMock implements IBrowserProxyController {
         return Promise.resolve();
     }
 
-    kill() {}
+    kill() {
+    }
 
     $getCommands() {
         return this.callStack;

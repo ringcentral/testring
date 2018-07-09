@@ -12,9 +12,9 @@
   "dependencies": {
     "@testring/types": "0.1.0",
     "@types/nanoid": "^1.0.0",
-    "nanoid": "^1.0.4"
+    "nanoid": "^1.0.7"
   },
-  "devDependencies":{
+  "devDependencies": {
     "@testring/child-process": "0.1.0"
   }
 }

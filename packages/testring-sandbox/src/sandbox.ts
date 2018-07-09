@@ -11,7 +11,7 @@ class Sandbox {
     public exports = {};
 
     constructor(private source: string, private filename: string) {
-        this.context = this.createContext(filename);
+        this.context = this.createContext(this.filename);
     }
 
     public getContext() {

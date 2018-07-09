@@ -1,17 +1,18 @@
-import {proxyfy} from './proxyfy';
-import {ElementPath, FlowsObject} from './element-path';
+import { proxyfy } from './proxyfy';
+import { ElementPath, FlowsObject } from './element-path';
 
 export type createElementPathOptions = {
-    flows?: FlowsObject,
-    strictMode?: boolean,
+    flows?: FlowsObject;
+    strictMode?: boolean;
 };
 
-export function createElementPath(options: createElementPathOptions = {}): any {
+export function createElementPath(options: createElementPathOptions = {}) {
     const {
         strictMode,
-        flows,
+        flows
     } = options;
 
-    let obj = new ElementPath({flows});
+    let obj = new ElementPath({ flows });
+
     return proxyfy(obj, strictMode);
 }

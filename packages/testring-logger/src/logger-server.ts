@@ -1,6 +1,8 @@
-import { IConfig, ITransport } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
+import { Queue } from '@testring/utils';
 import {
+    IConfig,
+    ITransport,
     ILogEntry,
     ILoggerServer,
     LoggerMessageTypes,
@@ -19,25 +21,25 @@ export enum LogLevelNumeric {
 
 export class LoggerServer extends PluggableModule implements ILoggerServer {
 
+    private queue: Queue<ILogEntry> = new Queue();
+
+    private status: LogQueueStatus = LogQueueStatus.EMPTY;
+
     constructor(
         private config: IConfig,
         private transportInstance: ITransport,
         private stdout: NodeJS.WritableStream,
         private numberOfRetries: number = 0,
-        private shouldSkip: boolean = false,
+        private shouldSkip: boolean = false
     ) {
         super([
             LoggerPlugins.beforeLog,
             LoggerPlugins.onLog,
-            LoggerPlugins.onError,
+            LoggerPlugins.onError
         ]);
 
         this.registerTransportListeners();
     }
-
-    private queue: ILogEntry[] = [];
-
-    private status: LogQueueStatus = LogQueueStatus.EMPTY;
 
     private registerTransportListeners(): void {
         this.transportInstance.on(LoggerMessageTypes.REPORT, (entry: ILogEntry) => {
@@ -50,32 +52,32 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
     }
 
     private async runQueue(retry: number = this.numberOfRetries): Promise<void> {
-        const entry = this.queue[0];
+        const logEntity = this.queue.shift();
 
-        if (entry) {
-            this.status = LogQueueStatus.RUNNING;
-
-            const entryAfterPlugin = await this.callHook(LoggerPlugins.beforeLog, entry);
-
-            try {
-                await this.callHook(LoggerPlugins.onLog, entryAfterPlugin);
-
-                this.queue.shift();
-                this.runQueue();
-            } catch (e) {
-                await this.callHook(LoggerPlugins.onError, e);
-
-                if (retry > 0) {
-                    this.runQueue(retry - 1);
-                } else if (this.shouldSkip) {
-                    this.queue.shift();
-                    this.runQueue();
-                } else {
-                    throw e;
-                }
-            }
-        } else {
+        if (logEntity === undefined) {
             this.status = LogQueueStatus.EMPTY;
+            return;
+        }
+
+        this.status = LogQueueStatus.RUNNING;
+
+        const entryAfterPlugin = await this.callHook(LoggerPlugins.beforeLog, logEntity);
+
+        try {
+            await this.callHook(LoggerPlugins.onLog, entryAfterPlugin);
+
+            this.runQueue();
+        } catch (error) {
+            await this.callHook(LoggerPlugins.onError, error);
+
+            if (retry > 0) {
+                this.queue.push(logEntity);
+                this.runQueue(retry - 1);
+            } else if (this.shouldSkip) {
+                this.runQueue();
+            } else {
+                throw error;
+            }
         }
     }
 

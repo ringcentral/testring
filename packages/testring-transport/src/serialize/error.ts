@@ -1,10 +1,10 @@
 import { ITransportSerializedStruct } from '@testring/types';
 
 export interface ISerializedError extends ITransportSerializedStruct {
-    $key: string,
-    type: string,
-    message: string,
-    stack: string | void
+    $key: string;
+    type: string;
+    message: string;
+    stack: string | void;
 }
 
 export const ERROR_KEY = 'Error';

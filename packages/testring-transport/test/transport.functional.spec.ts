@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /// <reference types="mocha" />
 
 import { fork } from '@testring/child-process';
@@ -16,7 +15,7 @@ describe('Transport functional test', () => {
 
         transport.registerChildProcess(CHILD_PROCESS_NAME, childProcess);
 
-        transport.on(RESPONSE_NAME, (payload) => {
+        const removeCallback = transport.on(RESPONSE_NAME, (payload) => {
             childProcess.kill();
             childProcess.on('close', () => {
                 try {
@@ -25,6 +24,8 @@ describe('Transport functional test', () => {
                     callback();
                 } catch (error) {
                     callback(error);
+                } finally {
+                    removeCallback();
                 }
             });
         });
