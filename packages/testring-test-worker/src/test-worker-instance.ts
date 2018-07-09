@@ -72,8 +72,10 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         loggerClientLocal.debug(`Sending test for execution: ${relativePath}`);
 
-        const removeListener = this.transport.onceFrom(this.workerName, TestWorkerAction.executionComplete,
-            (message: ITestExecutionCompleteMessage) => {
+        const removeListener = this.transport.onceFrom<ITestExecutionCompleteMessage>(
+            this.workerName,
+            TestWorkerAction.executionComplete,
+            (message) => {
                 switch (message.status) {
                     case TestStatus.done:
                         resolve();

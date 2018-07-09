@@ -33,7 +33,7 @@ export interface ITestExecutionCompleteMessage {
 }
 
 export interface ITestWorkerInstance {
-    execute(rawSource: string, filename: string, parameters: object): Promise<any>
+    execute(rawSource: string, filename: string, parameters: object): Promise<any>;
 
     kill(): void;
 }

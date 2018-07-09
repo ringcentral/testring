@@ -1,4 +1,4 @@
-const log = console.log.bind(console);
+const log = global.console.log.bind(console);
 const root = process.cwd();
 
 const timeout = setTimeout(() => {

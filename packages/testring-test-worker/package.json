@@ -19,7 +19,7 @@
     "@testring/types": "0.1.0",
     "@testring/utils": "0.1.0",
     "@types/nanoid": "^1.0.0",
-    "nanoid": "^1.0.5"
+    "nanoid": "^1.0.7"
   },
   "devDependencies": {
     "@testring/test-utils": "0.1.0"
