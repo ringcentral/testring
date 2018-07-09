@@ -1,21 +1,22 @@
 import * as WebSocket from 'ws';
+import * as chai from 'chai';
 
-import { RecorderWebsocketServer } from '../src/ws-server';
+import { RecorderWebSocketServer, RecorderWsEvents } from '../src/ws-server';
 
 describe('Recorder WebsSocket server', () => {
-    it('should serve over websockets', (callback) => {
-        const server = new RecorderWebsocketServer('localhost', 8080);
+    it('should start ws server and emit event of connections', (callback) => {
+        const server = new RecorderWebSocketServer('localhost', 8080);
 
         server.run();
 
-        const ws = new WebSocket('ws://localhost:8080');
+        server.on(RecorderWsEvents.CONNECTION, (ws) => {
+            chai.expect(ws).to.be.instanceOf(WebSocket);
 
-        ws.on('open', () => {
+            server.stop();
+
             callback();
         });
 
-        setTimeout(() => {
-            server.stop();
-        }, 100);
+        new WebSocket('ws://localhost:8080');
     });
 });
