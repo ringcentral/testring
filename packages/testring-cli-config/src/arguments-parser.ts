@@ -12,57 +12,57 @@ const createField = (key: keyof IConfig, options: yargs.Options) => {
 yargs.version(pkg.version);
 
 createField('debug', {
-    describe: 'debugging flag',
+    describe: 'Debugging flag',
     type: 'boolean'
 });
 
 createField('bail', {
-    describe: 'shut down app after test fail',
+    describe: 'Shut down app after test fail',
     type: 'boolean'
 });
 
 createField('workerLimit', {
-    describe: 'maximum amount of parallels child_process',
+    describe: 'Maximum amount of parallel child_process',
     type: 'number'
 });
 
 createField('retryCount', {
-    describe: 'number of retry attempts',
+    describe: 'Number of retry attempts',
     type: 'number'
 });
 
 createField('retryDelay', {
-    describe: 'time of delay before retry',
+    describe: 'Time of delay before retry',
     type: 'number'
 });
 
 createField('config', {
-    describe: 'custom path to config file',
+    describe: 'Custom path to config file',
     type: 'string'
 });
 
 createField('tests', {
-    describe: 'search path for test files (supports glob)',
+    describe: 'Search path for test files (glob pattern)',
     type: 'string'
 });
 
 createField('plugins', {
-    describe: 'set of plugins (list). API: --plugins=plugin1 --plugins=plugin2 ...',
+    describe: 'Set of plugins (list). API: --plugins=plugin1 --plugins=plugin2 ...',
     type: 'array'
 });
 
 createField('httpThrottle', {
-    describe: 'time of delay before next http request',
+    describe: 'Time of delay before next http request',
     type: 'number'
 });
 
 createField('logLevel', {
-    describe: 'flag for filtering log records',
+    describe: 'Flag for filtering log records',
     type: 'string'
 });
 
 createField('envConfig', {
-    describe: 'path to environment config which overrides main config',
+    describe: 'Path to environment config which overrides main config',
     type: 'string'
 });
 
