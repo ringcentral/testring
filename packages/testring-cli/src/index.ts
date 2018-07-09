@@ -1,10 +1,10 @@
 import * as process from 'process';
-import { applyPlugins } from '@testring/plugin-api';
-import { getConfig } from '@testring/cli-config';
 import { LoggerServer, loggerClientLocal } from '@testring/logger';
+import { TestRunController } from '@testring/test-run-controller';
+import { applyPlugins } from '@testring/plugin-api';
 import { TestsFinder } from '@testring/test-finder';
 import { TestWorker } from '@testring/test-worker';
-import { TestRunController } from '@testring/test-run-controller';
+import { getConfig } from '@testring/cli-config';
 import { WebApplicationController } from '@testring/web-application';
 import { browserProxyControllerFactory } from '@testring/browser-proxy';
 import { transport } from '@testring/transport';
@@ -46,6 +46,7 @@ export const runTests = async (argv: Array<string>, stdout: NodeJS.WritableStrea
         logger: loggerServer,
         testFinder: testFinder,
         testWorker: testWorker,
+        browserProxy: browserProxyController,
         testRunController: testRunController,
     }, userConfig);
 
@@ -55,9 +56,12 @@ export const runTests = async (argv: Array<string>, stdout: NodeJS.WritableStrea
 
     loggerClientLocal.info(`Found ${tests.length} test(s) to run.`);
 
+    browserProxyController.spawn();
     webApplicationController.init();
 
     const testRunResult = await testRunController.runQueue(tests);
+
+    browserProxyController.kill();
 
     if (testRunResult) {
         throw new Error(`Failed ${testRunResult.length}/${tests.length} tests.`);

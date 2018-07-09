@@ -5,6 +5,7 @@ export const enum LogTypes {
     error = 'error',
     debug = 'debug',
     step = 'step',
+    media = 'media',
 }
 
 export const enum LogLevel {
@@ -40,6 +41,7 @@ export interface ILogEntry {
     formattedMessage: string,
     stepUid?: string,
     parentStep: string | null,
+    logEnvironment?: any,
 }
 
 export interface ILoggerServer {

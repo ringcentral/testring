@@ -75,7 +75,6 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             (message: ITestExecutionCompleteMessage) => {
                 if (message.error) {
                     loggerClientLocal.error(`Test failed: ${relativePath}\n`, message.error);
-
                     reject({
                         error: message.error,
                         test: testData
@@ -141,7 +140,6 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         });
 
         worker.stderr.on('data', (data) => {
-            console.log(data.toString());
             loggerClientLocal.error(`[${this.workerName}] [error] ${data.toString().trim()}`);
         });
 

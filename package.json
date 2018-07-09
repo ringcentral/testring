@@ -16,6 +16,7 @@
     "test": "lerna exec -- mocha --opts mocha.opts",
     "test:watch": "lerna exec --no-sort -- mocha --opts mocha.opts --watch",
     "test:e2e": "lerna run --stream --scope @testring/e2e-test-app e2e",
+    "test:e2e-simple": "lerna run --stream --scope @testring/e2e-test-app e2e-simple",
     "test:coverage": "nyc npm test",
     "test:publish": "coveralls < ./coverage/lcov.info && rimraf ./coverage -G",
     "cleanup": "lerna clean --yes && lerna exec --parallel -- rimraf ./dist -G && npm run unlink && rimraf ./node_modules",
@@ -23,8 +24,8 @@
     "build:recorder": "lerna run --stream --scope @testring/recorder-frontend build",
     "build:watch": "lerna exec --parallel -- tsc --target es2015 --watch",
     "build:clear": "npm run lint:src && npm run lint:test && npm run build",
-    "build:precommit": "npm run build:clear && npm run test && npm run test:e2e",
-    "build:ci": "npm run build:clear && npm run test:coverage && npm run test:e2e",
+    "build:precommit": "npm run build:clear && npm run test && npm run test:e2e-simple",
+    "build:ci": "npm run build:clear && npm run test:coverage && npm run test:e2e-simple",
     "start:recorder-server": "lerna run --stream --scope @testring/recorder-backend start",
     "publish": "lerna publish --skip-npm",
     "check-deps": "lerna exec -- npm-check --skip-unused --ignore @testring/*"
@@ -36,7 +37,7 @@
     "lines": 50,
     "statements": 50,
     "functions": 50,
-    "branches": 50,
+    "branches": 45,
     "sourceMap": true,
     "include": [
       "packages/*/src/*.ts",
@@ -44,7 +45,8 @@
     ],
     "exclude": [
       "packages/testring-web-application/src/web-application.ts",
-      "packages/testring-web-application/src/web-client.ts"
+      "packages/testring-web-application/src/web-client.ts",
+      "packages/testring-plugin-selenium-driver/src/plugin/index.ts"
     ],
     "extension": [
       ".ts"
