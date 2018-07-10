@@ -169,5 +169,23 @@ describe('Recorder server', () => {
                 },
             );
         });
+
+        it('should close all connections when server stops', (callback) => {
+            new WebSocket(wsUrl);
+
+            transport.on(
+                RecorderServerEvents.CLOSE,
+                async () => {
+                    callback();
+                }
+            );
+
+            transport.on(
+                RecorderServerEvents.CONNECTION,
+                async () => {
+                    srv.stop();
+                }
+            );
+        });
     });
 });
