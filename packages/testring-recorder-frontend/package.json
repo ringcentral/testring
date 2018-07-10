@@ -1,0 +1,24 @@
+{
+  "name": "@testring/recorder-frontend",
+  "version": "0.1.0",
+  "main": "./dist/index.bundle.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack --config webpack.config.ts"
+  },
+  "devDependencies": {
+    "@types/react": "^16.4.6",
+    "@types/react-dom": "^16.0.6",
+    "@types/webpack": "4.4.5",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "ts-loader": "^4.4.2",
+    "webpack": "4.15.1",
+    "webpack-cli": "3.0.8"
+  }
+}

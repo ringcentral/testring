@@ -7,3 +7,4 @@ export * from './test-finder';
 export * from './test-worker';
 export * from './transport';
 export * from './logger';
+export * from './recorder-backend';
