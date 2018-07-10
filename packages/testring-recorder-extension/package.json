@@ -1,0 +1,19 @@
+{
+  "name": "@testring/recorder-extension",
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "scripts": {
+    "build": "ts-node ./bin/build.ts"
+  },
+  "devDependencies": {
+    "mkdirp": "^0.5.1",
+    "ncp": "^2.0.0",
+    "ts-node": "^7.0.0"
+  }
+}
