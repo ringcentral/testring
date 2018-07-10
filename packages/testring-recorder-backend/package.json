@@ -15,9 +15,12 @@
   "dependencies": {
     "@testring/recorder-frontend": "^0.1.0",
     "@testring/logger": "^0.1.0",
-    "@testring/test-utils": "^0.1.0",
     "@testring/transport": "^0.1.0",
+    "@testring/types": "^0.1.0",
+    "@types/koa": "^2.0.46",
     "@types/koa-static": "^4.0.0",
+    "@types/koa-views": "^2.0.3",
+    "@types/ws": "^5.1.2",
     "koa": "^2.5.1",
     "koa-static": "^5.0.0",
     "koa-views": "^6.1.4",
@@ -26,10 +29,7 @@
     "ws": "^5.2.1"
   },
   "devDependencies": {
-    "@testring/types": "^0.1.0",
-    "@types/koa": "^2.0.46",
-    "@types/koa-views": "^2.0.3",
-    "@types/ws": "^5.1.2",
+    "@testring/test-utils": "^0.1.0",
     "nodemon": "^1.17.5",
     "request": "2.87.0",
     "request-promise": "4.2.2",
