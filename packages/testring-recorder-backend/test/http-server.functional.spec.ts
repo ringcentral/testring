@@ -1,8 +1,9 @@
+/// <reference types="mocha" />
+
 import * as path from 'path';
 import * as fs from 'fs';
 import * as chai from 'chai';
 import * as request from 'request-promise';
-
 import { RecorderHttpServer } from '../src/http-server';
 
 const index = fs.readFileSync(path.resolve(__dirname, './fixtures/templates/index.hbs')).toString();
