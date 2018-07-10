@@ -4,7 +4,7 @@ import * as url from 'url';
 import { ITransport } from '@testring/types';
 import { loggerClient } from '@testring/logger';
 import { PluggableModule } from '@testring/pluggable-module';
-import { createElementPath } from '@testring/element-path';
+import { createElementPath, ElementPath } from '@testring/element-path';
 import { createAssertion } from './assert';
 import { WebClient } from './web-client';
 import * as utils from './utils';
@@ -34,6 +34,14 @@ export class WebApplication extends PluggableModule {
         return utils.logXpath(xpath);
     }
 
+    protected normalizeSelector(selector: string | ElementPath): string {
+        if (typeof selector === 'string') {
+            return selector;
+        }
+
+        return selector.toString();
+    }
+
     public async waitForExist(xpath, timeout: number = WAIT_TIMEOUT, skipMoveToObject = false) {
         loggerClient.log(`Waiting ${xpath} for ${timeout}`);
 
@@ -52,6 +60,7 @@ export class WebApplication extends PluggableModule {
     public async waitForNotExists(xpath, timeout = WAIT_TIMEOUT) {
         let exists = false;
         try {
+            xpath = this.normalizeSelector(xpath);
             loggerClient.log(`Waiting not exists ${xpath} for ${timeout}`);
             await this.client.waitForExist(xpath, Number(timeout) || WAIT_TIMEOUT);
             exists = true;
@@ -67,6 +76,7 @@ export class WebApplication extends PluggableModule {
         const path = utils.logXpath(xpath);
         const expires = Date.now() + timeout;
 
+        xpath = this.normalizeSelector(xpath);
 
         loggerClient.log(`Waiting for not visible ${path} for ${timeout}`);
 
@@ -103,6 +113,7 @@ export class WebApplication extends PluggableModule {
             throw new Error(`Wait for visible failed, element not exists after ${timeout}ms`);
         }
 
+        xpath = this.normalizeSelector(xpath);
 
         loggerClient.log(`Waiting for visible ${utils.logXpath(xpath)} for ${waitTime}`);
 
@@ -141,6 +152,7 @@ export class WebApplication extends PluggableModule {
 
     public async isBecomeVisible(xpath, timeout = WAIT_TIMEOUT) {
         loggerClient.log(`Waiting for become visible ${utils.logXpath(xpath)} for ${timeout}`);
+        xpath = this.normalizeSelector(xpath);
         try {
             await this.client.waitForVisible(xpath, timeout);
             return true;
@@ -153,6 +165,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.log(`Waiting for become hidden ${utils.logXpath(xpath)} for ${timeout}`);
 
         const expires = Date.now() + timeout;
+        xpath = this.normalizeSelector(xpath);
 
         while (true) {
             let visible = await this.client.isVisible(xpath);
@@ -172,6 +185,7 @@ export class WebApplication extends PluggableModule {
     public async waitElementByLocator(xpath, timeout = WAIT_TIMEOUT) {
         const waitUntil = Date.now() + timeout;
 
+        xpath = this.normalizeSelector(xpath);
 
         let isElementVisible = false;
 
@@ -189,7 +203,8 @@ export class WebApplication extends PluggableModule {
 
         await this.waitForExist(xpath, timeout);
         await this.makeScreenshot();
-
+        
+        xpath = this.normalizeSelector(xpath);
         return this.client.click(xpath);
     }
 
@@ -229,6 +244,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.log(`Get value from ${utils.logXpath(xpath)}`);
         await this.waitForExist(xpath, timeout);
 
+        xpath = this.normalizeSelector(xpath);
         return this.client.getValue(xpath);
     }
 
@@ -239,6 +255,7 @@ export class WebApplication extends PluggableModule {
     public async setValue(xpath, value, emulateViaJS = false, timeout = WAIT_TIMEOUT) {
         loggerClient.log(`Set value ${value} to ${utils.logXpath(xpath)}`);
         await this.waitForExist(xpath, timeout);
+        xpath = this.normalizeSelector(xpath);
 
         if (!emulateViaJS) {
             if (value === '' || value === null || typeof value === 'undefined') {
@@ -295,6 +312,7 @@ export class WebApplication extends PluggableModule {
     public async clickHiddenElement(xpath, timeout = WAIT_TIMEOUT) {
         loggerClient.log(`Make ${utils.logXpath(xpath)} visible and click`);
         await this.waitForExist(xpath, timeout);
+        xpath = this.normalizeSelector(xpath);
 
         let result = await this.client.executeAsync(function(xpath, done) {
 
@@ -371,6 +389,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.log(`Get options ${prop} ${utils.logXpath(xpath)}`);
         await this.waitForExist(xpath, timeout);
 
+        xpath = this.normalizeSelector(xpath);
 
         let result = await this.client.executeAsync(function(xpath, prop, done) {
             function getElementByXPath(xpath) {
@@ -427,7 +446,7 @@ export class WebApplication extends PluggableModule {
 
     public async selectNotCurrent(xpath) {
         let options: any[] = await this.getSelectValues(xpath);
-        let value: any = await this.client.getValue(xpath);
+        let value: any = await this.client.getValue(this.normalizeSelector(xpath));
         let index = options.indexOf(value);
         if (index > -1) {
             options.splice(index, 1);
@@ -441,6 +460,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.log(`Select by index ${logXpath} ${value}`);
         await this.waitForExist(xpath);
 
+        xpath = this.normalizeSelector(xpath);
         try {
             return await this.client.selectByIndex(xpath, value);
             // return this.fixNativeDropdownInteraction(xpath);
@@ -456,6 +476,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.log(`Select by name ${logXpath} ${value}`);
         await this.waitForExist(xpath);
 
+        xpath = this.normalizeSelector(xpath);
         try {
             await this.client.selectByName(xpath, value);
             //return await this.fixNativeDropdownInteraction(xpath);
@@ -471,6 +492,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.log(`Select by value ${logXpath} ${value}`);
         await this.waitForExist(xpath);
 
+        xpath = this.normalizeSelector(xpath);
         try {
             return await this.client.selectByValue(xpath, value);
             // return this.fixNativeDropdownInteraction(xpath);
@@ -486,6 +508,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.log(`Select by visible text ${logXpath} ${value}`);
         await this.waitForExist(xpath, timeout);
 
+        xpath = this.normalizeSelector(xpath);
         try {
             return await this.client.selectByVisibleText(xpath, String(value));
             // return this.fixNativeDropdownInteraction(xpath);
@@ -507,6 +530,7 @@ export class WebApplication extends PluggableModule {
 
         await this.waitForExist(xpath, timeout);
 
+        xpath = this.normalizeSelector(xpath);
         let value = await this.client.getValue(xpath);
         if (typeof value === 'string' || typeof value === 'number') {
             xpath += `//option[@value='${value}']`;
@@ -543,6 +567,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.log(`Is checked/selected ${utils.logXpath(xpath)}`);
         await this.waitForExist(xpath);
 
+        xpath = this.normalizeSelector(xpath);
         return !!(await this.client.isSelected(xpath));
     }
 
@@ -555,6 +580,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.log(`Set checked ${logXpath} ${!!checked}`);
         await this.waitForExist(xpath);
 
+        xpath = this.normalizeSelector(xpath);
         let isChecked = await this.client.isSelected(xpath);
         if (!!isChecked !== !!checked) {
             return this.client.click(xpath);
@@ -565,6 +591,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.log(`Is disabled ${utils.logXpath(xpath)}`);
         await this.waitForExist(xpath);
 
+        xpath = this.normalizeSelector(xpath);
         let disabled = await this.client.getAttribute(xpath, 'disabled');
         return (
             disabled === true ||
@@ -583,6 +610,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.log(`Is read only ${logXpath}`);
         await this.waitForExist(xpath);
 
+        xpath = this.normalizeSelector(xpath);
         let readonly: string = (await this.client.getAttribute(xpath, 'readonly')).toString();
         let str: string = await this.client.getTagName(xpath);
         if (
@@ -616,27 +644,30 @@ export class WebApplication extends PluggableModule {
         loggerClient.log(`Is visible ${logXpath}`);
         await this.waitForExist('', 0);
 
+        xpath = this.normalizeSelector(xpath);
         return this.client.isVisible(xpath);
     }
 
     public async rootlessIsVisible(xpath) {
         let logXpath = utils.logXpath(xpath);
         loggerClient.log(`Is visible ${logXpath}`);
+        xpath = this.normalizeSelector(xpath);
         return this.client.isVisible(xpath);
     }
 
     public async rootlessWaitForVisible(xpath) {
         let logXpath = utils.logXpath(xpath);
         loggerClient.log(`Is visible ${logXpath}`);
+        xpath = this.normalizeSelector(xpath);
         return this.client.waitForVisible(xpath, 0);
     }
 
     public async getAttribute(xpath, attr, timeout = WAIT_TIMEOUT) {
-        // TODO This method doesn't work successfully, ReImplement
         loggerClient.log(`Get attribute ${attr} from ${utils.logXpath(xpath)}`);
 
         await this.waitForExist(xpath, timeout);
 
+        xpath = this.normalizeSelector(xpath);
         return this.client.getAttribute(xpath, attr);
     }
 
@@ -644,6 +675,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.log(`Get attributes 'enabled' from ${utils.logXpath(xpath)}`);
         await this.waitForExist(xpath);
 
+        xpath = this.normalizeSelector(xpath);
         return this.client.isEnabled(xpath);
     }
 
@@ -651,6 +683,7 @@ export class WebApplication extends PluggableModule {
         let isEnabled = false;
         loggerClient.log(`Get attributes 'enabled' from ${utils.logXpath(xpath)}`);
         if (await this.isElementsExist(xpath)) {
+            xpath = this.normalizeSelector(xpath);
             let attribute: any = await this.client.getAttribute(xpath, 'class');
             isEnabled = attribute.indexOf('disabled') === -1;
         }
@@ -667,6 +700,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.log(`Move cursor to ${utils.logXpath(xpath)}`);
         await this.waitForExist(xpath);
 
+        xpath = this.normalizeSelector(xpath);
         return this.client.moveToObject(xpath, x || 1, y || 1);
     }
 
@@ -674,6 +708,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.log(`Scroll ${utils.logXpath(xpath)}`);
         await this.waitForExist(xpath);
 
+        xpath = this.normalizeSelector(xpath);
         return this.client.scroll(xpath, x || 1, y || 1);
     }
 
@@ -683,12 +718,16 @@ export class WebApplication extends PluggableModule {
         await this.waitForExist(xpathDestination);
 
         loggerClient.log(`dragAndDrop ${utils.logXpath(xpathSource)} to ${utils.logXpath(xpathDestination)}`);
-
+        
+        xpathSource = this.normalizeSelector(xpathSource);
+        xpathDestination = this.normalizeSelector(xpathDestination);
+        
         return this.client.dragAndDrop(xpathSource, xpathDestination);
     }
 
     public async elements(xpath) {
         loggerClient.log(`elements ${utils.logXpath(xpath)}`);
+        xpath = this.normalizeSelector(xpath);
         return this.client.elements(xpath);
     }
 
@@ -766,6 +805,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.log(`Get HTML from ${utils.logXpath(xpath)}`);
         await this.waitForExist(xpath, 0);
 
+        xpath = this.normalizeSelector(xpath);
         return this.client.getHTML(xpath, true);
     }
 
@@ -846,6 +886,7 @@ export class WebApplication extends PluggableModule {
     }
 
     async _getTextsInternal(xpath, trim) {
+        xpath = this.normalizeSelector(xpath);
 
         let result: string[] = [];
 
@@ -881,6 +922,7 @@ export class WebApplication extends PluggableModule {
 
         await this.waitForExist(xpath);
 
+        xpath = this.normalizeSelector(xpath);
         return this.client.clearElement(xpath);
     }
 
