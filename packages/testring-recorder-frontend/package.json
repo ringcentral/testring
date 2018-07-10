@@ -23,6 +23,10 @@
     "webpack-cli": "3.0.8"
   },
   "dependencies": {
-    "react-ace": "6.1.4"
+    "css-loader": "1.0.0",
+    "mini-css-extract-plugin": "0.4.1",
+    "monaco-editor-webpack-plugin": "^1.4.0",
+    "react-ace": "6.1.4",
+    "react-monaco-editor": "0.17.2"
   }
 }
