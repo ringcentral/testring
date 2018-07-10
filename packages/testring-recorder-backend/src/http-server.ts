@@ -1,3 +1,4 @@
+import { Server } from 'http';
 import * as Koa from 'koa';
 import * as serve from 'koa-static';
 import * as views from 'koa-views';
@@ -15,7 +16,7 @@ export class RecorderHttpServer implements IServer {
     ) {
     }
 
-    private server: any;
+    private server: Server;
 
     public run(): void {
         this.stop();
