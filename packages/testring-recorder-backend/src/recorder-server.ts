@@ -48,7 +48,7 @@ export class RecorderServer implements IRecorderServer {
 
     private connections: Map<string, WebSocket> = new Map();
 
-    private httpServer: RecorderHttpServer = new RecorderHttpServer(
+    private httpServer = new RecorderHttpServer(
         path.dirname(require.resolve('@testring/recorder-frontend')),
         path.resolve(__dirname, '../templates/'),
         this.host,
@@ -56,7 +56,7 @@ export class RecorderServer implements IRecorderServer {
         this.wsPort,
     );
 
-    private wsServer: RecorderWebSocketServer = new RecorderWebSocketServer(
+    private wsServer = new RecorderWebSocketServer(
         this.host,
         this.wsPort,
     );
