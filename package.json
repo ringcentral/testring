@@ -26,7 +26,6 @@
     "build:clear": "npm run lint:src && npm run lint:test && npm run build",
     "build:precommit": "npm run build:clear && npm run test && npm run test:e2e-simple",
     "build:ci": "npm run build:clear && npm run test:coverage && npm run test:e2e",
-    "start:recorder-server": "lerna run --stream --scope @testring/recorder-backend start",
     "publish": "lerna publish --skip-npm",
     "check-deps": "lerna exec -- npm-check --skip-unused --ignore @testring/*"
   },
