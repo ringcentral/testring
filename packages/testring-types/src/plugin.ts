@@ -11,7 +11,7 @@ export type Plugin = (pluginAPI: any, config: PluginConfig) => void;
 
 export interface IPluginDestinationMap {
     logger: ILoggerServer & IPluggableModule,
-    testFinder: ITestFinder & IPluggableModule,
+    testFinder?: ITestFinder & IPluggableModule,
     testWorker: ITestWorker & IPluggableModule,
     testRunController: ITestRunController & IPluggableModule,
     browserProxy: IBrowserProxyController & IPluggableModule,

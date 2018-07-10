@@ -60,6 +60,11 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         return null;
     }
 
+    public async pushTestIntoQueue(testString: string): Promise<Error[] | null> {
+        //TODO
+        return null;
+    }
+
     private getWorkerLimit(testQueue: TestQueue) {
         const configWorkerLimit = this.config.workerLimit || 0;
 
@@ -141,7 +146,11 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         try {
             await this.callHook(TestRunControllerHooks.beforeTest, queuedTest);
 
-            await worker.execute(queuedTest.test.content, queuedTest.test.path, queuedTest.test.meta);
+            if (queuedTest.test) {
+                await worker.execute(queuedTest.test.content, queuedTest.test.path, queuedTest.test.meta);
+            } else if (queuedTest.testString) {
+                await worker.execute(queuedTest.testString, '', {});
+            }
 
             await this.callHook(TestRunControllerHooks.afterTest, queuedTest);
         } catch (error) {

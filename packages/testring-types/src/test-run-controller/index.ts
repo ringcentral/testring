@@ -10,7 +10,8 @@ export const enum TestRunControllerHooks {
 export interface IQueuedTest {
     retryCount: number;
     retryErrors: Array<any>;
-    test: ITestFile;
+    test?: ITestFile;
+    testString?: string;
 }
 
 export interface ITestRunController {

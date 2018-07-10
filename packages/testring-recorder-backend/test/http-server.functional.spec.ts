@@ -1,3 +1,5 @@
+/// <reference types="mocha" />
+
 import * as path from 'path';
 import * as fs from 'fs';
 import * as chai from 'chai';

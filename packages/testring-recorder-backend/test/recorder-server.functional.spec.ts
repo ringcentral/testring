@@ -1,3 +1,5 @@
+/// <reference types="mocha" />
+
 import * as request from 'request-promise';
 import * as WebSocket from 'ws';
 import * as chai from 'chai';
