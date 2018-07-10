@@ -112,7 +112,7 @@ export class RecorderServer implements IRecorderServer {
         return connection;
     }
 
-    private send(conId: string, message: any):void {
+    private send(conId: string, message: any): void {
         const connection = this.getConnection(conId);
 
         connection.send(message);
