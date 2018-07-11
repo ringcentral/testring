@@ -22,6 +22,7 @@ script: xvfb-run npm run build:ci
 after_success: npm run test:publish
 
 stages:
+  - name: test
   - name: npm release
     if: tag IS present
 
