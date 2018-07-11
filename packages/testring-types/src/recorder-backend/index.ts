@@ -10,9 +10,9 @@ export const enum RecorderServerMessageTypes {
 }
 
 export interface IServer {
-    run: () => void;
+    run: () => Promise<void>;
 
-    stop: () => void;
+    stop: () => Promise<void>;
 
     getUrl: () => string;
 }
@@ -20,7 +20,7 @@ export interface IServer {
 export interface IRecorderServer {
     run: () => void;
 
-    stop: () => void;
+    stop: () => Promise<void>;
 
     openBrowser: () => void;
 }

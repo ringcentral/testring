@@ -18,26 +18,40 @@ export class RecorderWebSocketServer extends EventEmitter implements IServer {
 
     private server: WSS;
 
-    public run(): void {
-        const wss = new WSS({
-            host: this.host,
-            port: this.port,
-        });
+    public run(): Promise<void> {
+        return new Promise<void>((resolve) => {
+            const wss = new WSS({
+                host: this.host,
+                port: this.port,
+            }, resolve);
 
-        wss.on('connection', (socket) => {
-            this.emit(
-                RecorderWsEvents.CONNECTION,
-                socket,
-            );
-        });
+            wss.on('connection', (socket) => {
+                this.emit(
+                    RecorderWsEvents.CONNECTION,
+                    socket,
+                );
+            });
 
-        this.server = wss;
+            this.server = wss;
+        });
     }
 
-    public stop(): void {
-        if (this.server) {
-            this.server.close();
+    public async stop(): Promise<void> {
+        if (!this.server) {
+            return;
         }
+
+        return new Promise<void>((resolve, reject) => {
+            this.server.close((error) => {
+                delete this.server;
+
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve();
+                }
+            });
+        });
     }
 
     public getUrl(): string {

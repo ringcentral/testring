@@ -135,14 +135,14 @@ export class RecorderServer implements IRecorderServer {
         this.send(conId, payload);
     }
 
-    public run(): void {
-        this.wsServer.run();
-        this.httpServer.run();
+    public async run(): Promise<void> {
+        await this.wsServer.run();
+        await this.httpServer.run();
     }
 
-    public stop(): void {
-        this.wsServer.stop();
-        this.httpServer.stop();
+    public async stop(): Promise<void> {
+        await this.wsServer.stop();
+        await this.httpServer.stop();
     }
 
     public openBrowser(): void {
