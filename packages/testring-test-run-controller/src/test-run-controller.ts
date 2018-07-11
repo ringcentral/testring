@@ -85,7 +85,11 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         this.testQueue.push({
             retryCount: 0,
             retryErrors: [],
-            testString: testString
+            test: {
+                path: '',
+                content: testString,
+                meta: {}
+            }
         });
 
         return this.executeQueue(this.testQueue);
@@ -176,11 +180,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         try {
             await this.callHook(TestRunControllerPlugins.beforeTest, queuedTest);
 
-            if (queuedTest.test) {
-                await worker.execute(queuedTest.test.content, queuedTest.test.path, queuedTest.test.meta);
-            } else if (queuedTest.testString) {
-                await worker.execute(queuedTest.testString, '', {});
-            }
+            await worker.execute(queuedTest.test.content, queuedTest.test.path, queuedTest.test.meta);
 
             await this.callHook(TestRunControllerPlugins.afterTest, queuedTest);
         } catch (error) {

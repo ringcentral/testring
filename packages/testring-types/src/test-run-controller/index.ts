@@ -11,8 +11,7 @@ export const enum TestRunControllerPlugins {
 export interface IQueuedTest {
     retryCount: number;
     retryErrors: Array<any>;
-    test?: ITestFile;
-    testString?: string;
+    test: ITestFile;
 }
 
 export interface ITestRunController {
