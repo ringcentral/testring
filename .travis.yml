@@ -17,13 +17,25 @@ cache:
   - $HOME/.npm
   - node_modules
 
-script:
-  - xvfb-run npm run build:ci
+stages:
+  - name: lint
+  - name: compile
+  - name: test
+  - name: publish
+    if: (branch = master AND tag IS present)
 
-after_script:
-  - npm run test:publish
 
-   publishing to npm
-   uncomment when package will be ready to publish
-   if: (branch = master AND tag IS present)
-     - npm run publish:ci
+jobs:
+  include:
+    - stage: lint
+      script: npm run lint
+
+    - stage: compile
+      script: npm run build
+
+    - stage: test
+      script: xvfb-run npm run test:ci
+      after_script: npm run test:publish
+
+    - stage: publish
+      script: npm run publish:ci
