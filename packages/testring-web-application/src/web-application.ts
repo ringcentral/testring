@@ -9,6 +9,8 @@ import { createAssertion } from './assert';
 import { WebClient } from './web-client';
 import * as utils from './utils';
 
+const nanoid = require('nanoid');
+
 const WAIT_TIMEOUT = 30000;
 const TICK_TIMEOUT = 100;
 
@@ -27,7 +29,9 @@ export class WebApplication extends PluggableModule {
     constructor(testUID: string, transport: ITransport) {
         super();
 
-        this.client = new WebClient(testUID, transport);
+        const applicationID = `${testUID}-${nanoid}`;
+
+        this.client = new WebClient(applicationID, transport);
     }
 
     protected logXpath(xpath) {
