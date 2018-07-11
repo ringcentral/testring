@@ -17,10 +17,19 @@ cache:
   - $HOME/.npm
   - node_modules
 
-script:
-  - xvfb-run npm run build:ci
+stages:
+  - name: build
+    if: (tag NOT present)
+  - name: build and publish
+    if: (tag IS present)
 
-after_success:
-  - npm run test:publish
-  - if: (branch = master AND tag IS present)
-    npm run publish:ci
+jobs:
+  include:
+    - stage: build
+      script:
+        - xvfb-run npm run build:ci
+    - stage: build and publish
+      script:
+        - xvfb-run npm run build:ci
+      after_success:
+        - npm run publish:ci
