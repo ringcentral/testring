@@ -25,11 +25,7 @@ stages:
 
 jobs:
   include:
-    - stage: build
-      script:
-        - xvfb-run npm run build:ci
-    - stage: build and publish
-      script:
-        - xvfb-run npm run build:ci
-      after_success:
-        - npm run publish:ci
+    - script: xvfb-run npm run build:ci
+    # publish if script exists
+    - if: (tag IS present)
+      script: npm run publish:ci
