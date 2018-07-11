@@ -19,10 +19,13 @@ cache:
 
 script: xvfb-run npm run build:ci
 
+after_success: npm run test:publish
+
 jobs:
   include:
     - stage: publish
       if: tag IS present
+      node_js: "10"
       script: echo "Publishing to npm ..."
       deploy:
         provider: script
