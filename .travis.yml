@@ -19,8 +19,6 @@ cache:
 
 script: xvfb-run npm run build:ci
 
-after_success: npm run test:publish
-
 stages:
   - test
   - name: npm release

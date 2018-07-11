@@ -22,7 +22,7 @@
     "test:e2e-simple": "lerna run --stream --scope @testring/e2e-test-app e2e-simple",
     "test:coverage": "nyc npm test",
     "test:publish": "coveralls < ./coverage/lcov.info && rimraf ./coverage -G",
-    "test:ci": "npm run test:coverage && npm run test:e2e",
+    "test:ci": "npm run test:coverage && npm run test:e2e && npm run test:publish",
     "cleanup": "lerna clean --yes && lerna exec --parallel -- rimraf ./dist -G && npm run unlink && rimraf ./node_modules",
     "build": "lerna exec -- tsc --target es2015 && npm run build:recorder",
     "build:recorder": "lerna run --stream --scope @testring/recorder-frontend build",
