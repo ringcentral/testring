@@ -1,3 +1,5 @@
+import * as path from 'path';
+import * as process from 'process';
 import { Sandbox } from '@testring/sandbox';
 import { TestAPIController } from '@testring/api';
 import {
@@ -37,12 +39,13 @@ export class WorkerController {
 
     private async executeTest(message: ITestExecutionMessage): Promise<TestStatus> {
         // TODO pass message.parameters somewhere inside web application
+        const testID = path.relative(process.cwd(), message.filename);
         const sandbox = new Sandbox(message.source, message.filename);
         const bus = this.testAPI.getBus();
 
         let isAsync = false;
 
-        this.testAPI.setTestID(message.filename);
+        this.testAPI.setTestID(testID);
 
         // Test becomes async, when run method called
         // In all other cases it's plane sync file execution

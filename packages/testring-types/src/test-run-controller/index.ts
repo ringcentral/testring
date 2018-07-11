@@ -1,10 +1,11 @@
 import { ITestFile } from '../test-finder';
 
-export const enum TestRunControllerHooks {
+export const enum TestRunControllerPlugins {
     beforeRun = 'beforeRun',
     beforeTest = 'beforeTest',
     afterTest = 'afterTest',
     afterRun = 'afterRun',
+    shouldRetry = 'shouldRetry',
 }
 
 export interface IQueuedTest {

@@ -20,20 +20,30 @@ const decomposeStepName = (stepID: string): string => {
 const formatLog = (logType: LogTypes, logLevel: LogLevel, time: Date, content: Array<any>): string => {
     const prefix = `[${time.toLocaleTimeString()}] [${logLevel}]`;
 
-    if (logType === LogTypes.media) {
-        const filename = content[0];
-        const media = content[1];
+    switch (logType) {
+        case LogTypes.media: {
+            const filename = content[0];
+            const media = content[1];
 
-        return util.format(
-            `${prefix} [media]`,
-            `Filename: ${filename};`,
-            `Size: ${bytes.format(media.length)};`
-        );
+            return util.format(
+                `${prefix} [media]`,
+                `Filename: ${filename};`,
+                `Size: ${bytes.format(media.length)};`
+            );
+        }
+
+        case LogTypes.step: {
+            return util.format(
+                `${prefix} [step]`,
+                ...content
+            );
+        }
+
+        default:
+            return util.format(
+                prefix, ...content
+            );
     }
-
-    return util.format(
-        prefix, ...content
-    );
 };
 
 export abstract class AbstractLoggerClient implements ILoggerClient {
@@ -151,25 +161,29 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
         };
     }
 
-    public startStep(message: string): void {
-        const step = composeStepName(message);
+    public startStep(key: string): void {
+        const step = composeStepName(key);
 
         this.stepStack.push(step);
 
         this.createLog(
             LogTypes.step,
-            [message]
+            [key]
         );
     }
 
-    public endStep(message?: string): void {
+    public endStep(key?: string, ...messageToLog: Array<any>): void {
+        if (messageToLog.length) {
+            this.info('[step end]', ...messageToLog);
+        }
+
         let stepID = this.stepStack.pop();
 
-        if (message) {
+        if (key) {
             while (stepID) {
                 const stepMessage = decomposeStepName(stepID);
 
-                if (message === stepMessage) {
+                if (key === stepMessage) {
                     break;
                 } else {
                     stepID = this.stepStack.pop();

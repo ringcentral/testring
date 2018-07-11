@@ -5,7 +5,7 @@ import {
     ITestFile,
     IQueuedTest,
     ITestRunController,
-    TestRunControllerHooks
+    TestRunControllerPlugins
 } from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
 import { PluggableModule } from '@testring/pluggable-module';
@@ -27,10 +27,11 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         private testWorker: ITestWorker
     ) {
         super([
-            TestRunControllerHooks.beforeRun,
-            TestRunControllerHooks.beforeTest,
-            TestRunControllerHooks.afterTest,
-            TestRunControllerHooks.afterRun
+            TestRunControllerPlugins.beforeRun,
+            TestRunControllerPlugins.beforeTest,
+            TestRunControllerPlugins.afterTest,
+            TestRunControllerPlugins.afterRun,
+            TestRunControllerPlugins.shouldRetry
         ]);
     }
 
@@ -60,7 +61,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 workers.map(worker => this.executeWorker(worker, testQueue))
             );
 
-            await this.callHook(TestRunControllerHooks.afterRun, testQueue);
+            await this.callHook(TestRunControllerPlugins.afterRun, testQueue);
         } catch (error) {
             this.errors.push(error);
         }
@@ -121,7 +122,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             };
         }
 
-        const modifierQueue = await this.callHook(TestRunControllerHooks.beforeRun, testQueue);
+        const modifierQueue = await this.callHook(TestRunControllerPlugins.beforeRun, testQueue);
 
         return new Queue(modifierQueue);
     }
@@ -144,7 +145,12 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             throw error;
         }
 
-        if (queueItem.retryCount < (this.config.retryCount || 0)) {
+        const shouldRetry = await this.callHook(TestRunControllerPlugins.shouldRetry, queueItem.test.path);
+
+        if (
+            !!shouldRetry &&
+            queueItem.retryCount < (this.config.retryCount || 0)
+        ) {
             queueItem.retryCount++;
 
             await delay(this.config.retryDelay || 0);
@@ -155,8 +161,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         } else {
             this.errors.push(error);
 
-            await this.callHook(TestRunControllerHooks.afterTest, queueItem);
-
+            await this.callHook(TestRunControllerPlugins.afterTest, queueItem);
             await this.occupyWorker(worker, queue);
         }
     }
@@ -169,7 +174,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         }
 
         try {
-            await this.callHook(TestRunControllerHooks.beforeTest, queuedTest);
+            await this.callHook(TestRunControllerPlugins.beforeTest, queuedTest);
 
             if (queuedTest.test) {
                 await worker.execute(queuedTest.test.content, queuedTest.test.path, queuedTest.test.meta);
@@ -177,7 +182,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 await worker.execute(queuedTest.testString, '', {});
             }
 
-            await this.callHook(TestRunControllerHooks.afterTest, queuedTest);
+            await this.callHook(TestRunControllerPlugins.afterTest, queuedTest);
         } catch (error) {
             queuedTest.retryErrors.push(error);
 

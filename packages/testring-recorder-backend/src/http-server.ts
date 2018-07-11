@@ -18,8 +18,8 @@ export class RecorderHttpServer implements IServer {
 
     private server: Server;
 
-    public run(): void {
-        this.stop();
+    public async run(): Promise<void> {
+        await this.stop();
 
         const koa = new Koa();
 
@@ -43,11 +43,22 @@ export class RecorderHttpServer implements IServer {
         );
     }
 
-    public stop(): void {
-        if (this.server) {
-            this.server.close();
-            delete this.server;
+    public async stop(): Promise<void> {
+        if (!this.server) {
+            return;
         }
+
+        return new Promise<void>((resolve, reject) => {
+            this.server.close((error) => {
+                delete this.server;
+
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve();
+                }
+            });
+        });
     }
 
     public getUrl(): string {
