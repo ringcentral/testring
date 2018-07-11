@@ -14,6 +14,10 @@ describe('Transport functional test', () => {
         const childProcess = fork(childEntryPath);
         const transport = new Transport(process);
 
+        childProcess.stderr.on('data', (error) => {
+            callback(error.toString());
+        });
+
         transport.registerChildProcess(CHILD_PROCESS_NAME, childProcess);
 
         const removeCallback = transport.on(RESPONSE_NAME, (payload) => {
