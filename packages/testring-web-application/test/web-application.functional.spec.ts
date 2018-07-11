@@ -36,7 +36,7 @@ describe('WebApplication functional', () => {
 
                 chai.expect(request.args[0]).includes(ELEMENT_NAME);
                 chai.expect(message.command).to.be.equal(request);
-                chai.expect(message.applicant).to.be.equal(TEST_NAME);
+                chai.expect(message.applicant).includes(TEST_NAME);
 
                 callback();
             } catch (e) {

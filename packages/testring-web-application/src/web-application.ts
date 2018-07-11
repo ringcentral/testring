@@ -29,7 +29,7 @@ export class WebApplication extends PluggableModule {
     constructor(testUID: string, transport: ITransport) {
         super();
 
-        const applicationID = `${testUID}-${nanoid}`;
+        const applicationID = `${testUID}-${nanoid()}`;
 
         this.client = new WebClient(applicationID, transport);
     }
