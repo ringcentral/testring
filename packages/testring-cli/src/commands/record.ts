@@ -37,19 +37,12 @@ export const runRecordingProcess = async (argv: Array<string>, stdout: NodeJS.Wr
 
     transport.on(RecorderServerMessageTypes.MESSAGE, async (message) => {
         const testStr = message.payload;
-        const conId = message.conId;
 
         try {
             const testResult = testRunController.pushTestIntoQueue(testStr);
-            await transport.send(conId, RecorderServerMessageTypes.MESSAGE, {
-                testResult: testResult,
-                error: null
-            });
+            loggerClientLocal.info(`Test executed with result: ${testResult}`);
         } catch (e) {
-            transport.send(conId, RecorderServerMessageTypes.MESSAGE, {
-                testResult: '',
-                error: e
-            });
+            loggerClientLocal.info(`Test executed failed with error: ${e}`);
         }
     });
 

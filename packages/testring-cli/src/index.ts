@@ -80,19 +80,15 @@ export const runCLI = (argv: Array<string>) => {
     const args = yargs.parse(argv);
     const command = args._[2];
 
+    let commandExecution;
+
     switch (command) {
         case 'run':
-            runTests(argv, process.stdout).catch((exception) => {
-                loggerClientLocal.error(exception);
-                process.exit(1);
-            });
+            commandExecution = runTests(argv, process.stdout);
             break;
 
         case 'record':
-            runRecordingProcess(argv, process.stdout).catch((exception) => {
-                loggerClientLocal.error(exception);
-                process.exit(1);
-            });
+            commandExecution = runRecordingProcess(argv, process.stdout);
             break;
 
         default:
@@ -100,5 +96,9 @@ export const runCLI = (argv: Array<string>) => {
             return;
     }
 
+    commandExecution.catch((exception) => {
+        loggerClientLocal.error(exception);
+        process.exit(1);
+    });
 
 };
