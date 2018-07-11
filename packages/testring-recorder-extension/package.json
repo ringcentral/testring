@@ -10,6 +10,7 @@
   "license": "MIT",
   "scripts": {
     "build:static": "ts-node ./bin/build.ts",
+    "build:static:watch": "nodemon --watch static/**/* --watch manifest.tpl.json --ext json,html,png --exec \"npm run build:static\"",
     "build:script": "webpack --config webpack.config.ts",
     "build:script:watch": "webpack --config webpack.config.ts --watch",
     "build": "npm run build:static && npm run build:script"
@@ -18,6 +19,7 @@
     "@types/chrome": "0.0.69",
     "mkdirp": "^0.5.1",
     "ncp": "^2.0.0",
+    "nodemon": "^1.18.1",
     "ts-node": "^7.0.0",
     "webpack": "4.15.1",
     "webpack-cli": "3.0.8"
