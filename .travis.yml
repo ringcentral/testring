@@ -20,8 +20,7 @@ cache:
 script:
   - xvfb-run npm run build:ci
 
-after_script:
+after_success:
   - npm run test:publish
-
   - if: (branch = master AND tag IS present)
-    - npm run publish:ci
+    npm run publish:ci
