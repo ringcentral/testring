@@ -6,7 +6,10 @@ import * as chai from 'chai';
 import * as request from 'request-promise';
 import { RecorderHttpServer } from '../src/http-server';
 
-const index = fs.readFileSync(path.resolve(__dirname, './fixtures/templates/index.hbs')).toString();
+const index = fs.readFileSync(
+    path.resolve(__dirname, './fixtures/templates/index.hbs'),
+    { encoding: 'utf8' }
+);
 
 describe('Recorder HTTP server', () => {
     it('should serve over HTTP until it stopped', (callback) => {
@@ -14,20 +17,22 @@ describe('Recorder HTTP server', () => {
             path.resolve(__dirname, './fixtures/static'),
             path.resolve(__dirname, './fixtures/templates'),
             'localhost',
-            8080,
+            8080
         );
 
-        server.run();
+        server.run().then(() => {
+            request('http://localhost:8080').then(async (res) => {
+                chai.expect(res).to.be.equal(index);
 
-        request('http://localhost:8080').then((res) => {
-            chai.expect(res).to.be.equal(index);
+                await server.stop();
 
-            server.stop();
+                try {
+                    await request('http://localhost:8080');
 
-            request('http://localhost:8080').then(() => {
-                callback(new Error('Still serving'));
-            }).catch(() => {
-                callback();
+                    callback(new Error('Still serving'));
+                } catch {
+                    callback();
+                }
             });
         });
     });
