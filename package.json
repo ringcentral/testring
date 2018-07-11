@@ -31,7 +31,7 @@
     "build:precommit": "npm run build:clear && npm run test && npm run test:e2e-simple",
     "build:ci": "npm run build:clear && npm run test:ci",
     "publish": "lerna publish --skip-npm",
-    "publish:ci": "lerna exec npm publish",
+    "publish:ci": "node ./bin/publish.js",
     "check-deps": "lerna exec -- npm-check --skip-unused --ignore @testring/*"
   },
   "precommit": "build:precommit",
