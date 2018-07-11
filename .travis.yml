@@ -8,10 +8,6 @@ addons:
 
 language: node_js
 
-node_js:
-  - "10"
-  - "8"
-
 cache:
   directories:
   - $HOME/.npm
@@ -19,16 +15,19 @@ cache:
 
 stages:
   - build
-  - publish
+  - name: publish
+    if: tag IS present
 
 jobs:
   include:
     - stage: build
+      node_js:
+        - "10"
+        - "8"
       script: xvfb-run npm run build:ci
       after_success: npm run test:publish
 
     - stage: publish
-      if: tag IS present
       node_js: "10"
       script: npm run build
       deploy:
