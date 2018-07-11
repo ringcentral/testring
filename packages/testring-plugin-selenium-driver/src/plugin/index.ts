@@ -1,14 +1,19 @@
+import * as path from 'path';
 import { IBrowserProxyPlugin } from '@testring/types';
 import { spawn } from '@testring/child-process';
 import { Config, Client, remote } from 'webdriverio';
 import { ChildProcess } from 'child_process';
 import { loggerClient } from '@testring/logger';
 
+const extensionPath = path.dirname(require.resolve('@testring/recorder-extension'));
 
 const DEFAULT_CONFIG: Config = {
     port: 4444,
     desiredCapabilities: {
-        browserName: 'chrome'
+        browserName: 'chrome',
+        chromeOptions: { args: [
+            `load-extension=${extensionPath}`,
+        ] },
     }
 };
 

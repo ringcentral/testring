@@ -1,5 +1,6 @@
 import * as path from 'path';
-import * as opn from 'opn';
+// import * as opn from 'opn';
+import { exec } from 'child_process';
 import * as WebSocket from 'ws';
 import { loggerClientLocal } from '@testring/logger';
 import { transport } from '@testring/transport';
@@ -16,6 +17,10 @@ import { RecorderHttpServer } from './http-server';
 import { RecorderWebSocketServer, RecorderWsEvents } from './ws-server';
 
 const nanoid = require('nanoid');
+
+const extensionPath = path.dirname(require.resolve('@testring/recorder-extension'));
+const frontendPath = path.dirname(require.resolve('@testring/recorder-frontend'));
+const templatesPath = path.resolve(__dirname, '../templates/');
 
 export class RecorderServer implements IRecorderServer {
     constructor(
@@ -49,8 +54,8 @@ export class RecorderServer implements IRecorderServer {
     private connections: Map<string, WebSocket> = new Map();
 
     private httpServer = new RecorderHttpServer(
-        path.dirname(require.resolve('@testring/recorder-frontend')),
-        path.resolve(__dirname, '../templates/'),
+        frontendPath,
+        templatesPath,
         this.host,
         this.httpPort,
         this.wsPort,
@@ -141,6 +146,17 @@ export class RecorderServer implements IRecorderServer {
     }
 
     public openBrowser(): void {
-        opn(this.httpServer.getUrl());
+        const browserDir = path.resolve(__dirname, `../temp/chromeUser/rcExt${nanoid()}`);
+
+        const command = [
+            'google-chrome',
+            '--new-window',
+            '--no-default-browser-check',
+            `--load-extension="${extensionPath}"`,
+            `--user-data-dir="${browserDir}"`,
+            this.httpServer.getUrl()
+        ];
+
+        exec(command.join(' '));
     }
 }

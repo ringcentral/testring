@@ -16,12 +16,13 @@ mkdirp.sync(distPath);
 
 const manifest = {
     ...JSON.parse(manifestTpl),
-    version: JSON.parse(packageJson).version,
+    version: JSON.parse(packageJson).version.split('.').slice(0, 2).join('.'),
 };
 
 fs.writeFileSync(
     path.join(distPath, 'manifest.json'),
     JSON.stringify(manifest),
+    { mode: 0o766 }
 );
 
 ncp(staticPath, distPath);
