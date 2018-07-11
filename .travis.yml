@@ -17,6 +17,8 @@ cache:
   - $HOME/.npm
   - node_modules
 
+script: echo "Testing..."
+
 stages:
   - name: test
   - name: npm release
@@ -25,14 +27,11 @@ stages:
 jobs:
   include:
     - stage: test
-      script:
-        - xvfb-run npm run build:ci
-      after_success:
-        - npm run test:publish
+      script: xvfb-run npm run build:ci
+      after_success: npm run test:publish
     - stage: npm release
       node_js: "10"
-      script:
-        - npm run build
+      script: npm run build
       deploy:
         provider: script
         script: npm run publish:ci
