@@ -1,5 +1,6 @@
 {
   "name": "@testring/e2e-test-app",
+  "private": true,
   "version": "0.1.0",
   "main": "./dist/index.js",
   "repository": {

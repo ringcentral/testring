@@ -23,7 +23,7 @@ script:
 after_script:
   - npm run test:publish
 
-  # publishing to npm
-  # uncomment when package will be ready to publish
-  # if: tag IS present
-  #   - npm run publish:ci
+   publishing to npm
+   uncomment when package will be ready to publish
+   if: (branch = master AND tag IS present)
+     - npm run publish:ci

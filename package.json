@@ -1,5 +1,6 @@
 {
   "name": "testring-build",
+  "private": true,
   "version": "0.1.0",
   "author": "RingCentral",
   "license": "MIT",
@@ -27,6 +28,7 @@
     "build:precommit": "npm run build:clear && npm run test && npm run test:e2e-simple",
     "build:ci": "npm run build:clear && npm run test:coverage && npm run test:e2e",
     "publish": "lerna publish --skip-npm",
+    "publish:ci": "lerna exec npm publish",
     "check-deps": "lerna exec -- npm-check --skip-unused --ignore @testring/*"
   },
   "precommit": "build:precommit",
