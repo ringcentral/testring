@@ -32,7 +32,6 @@ jobs:
         - xvfb-run npm run build:ci
       after_success:
         - npm run test:publish
-
     - stage: publish
       node_js:
         - "10"
