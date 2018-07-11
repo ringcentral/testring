@@ -10,6 +10,7 @@
   },
   "scripts": {
     "postinstall": "lerna bootstrap && npm run link",
+    "preversion": "npm run build:precommit",
     "link": "lerna exec --no-sort -- node ../../bin/link",
     "unlink": "lerna exec --no-sort -- node ../../bin/unlink",
     "lint:src": "lerna exec --ignore @testring/e2e-test-app --parallel -- eslint ./src/**.ts",
