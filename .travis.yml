@@ -23,5 +23,5 @@ script:
 after_script:
   - npm run test:publish
 
-  if: (branch = master AND tag IS present)
+  - if: (branch = master AND tag IS present)
     - npm run publish:ci
