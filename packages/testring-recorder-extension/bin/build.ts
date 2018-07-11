@@ -16,7 +16,7 @@ mkdirp.sync(distPath);
 
 const manifest = {
     ...JSON.parse(manifestTpl),
-    version: JSON.parse(packageJson).version.split('.').slice(0, 2).join('.'),
+    version: JSON.parse(packageJson).version,
 };
 
 fs.writeFileSync(

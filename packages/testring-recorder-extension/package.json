@@ -15,5 +15,8 @@
     "mkdirp": "^0.5.1",
     "ncp": "^2.0.0",
     "ts-node": "^7.0.0"
+  },
+  "dependencies": {
+    "@types/chrome": "0.0.69"
   }
 }
