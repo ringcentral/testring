@@ -17,9 +17,13 @@ cache:
   - $HOME/.npm
   - node_modules
 
+script: xvfb-run npm run build:ci
+
 jobs:
   include:
-    - script: xvfb-run npm run build:ci
-    # publish if script exists
-    - if: (tag IS present)
-      script: npm run publish:ci
+    - stage: publish
+      if: tag IS present
+      script: echo "Publishing to npm ..."
+      deploy:
+        provider: script
+        script: npm run publish:ci
