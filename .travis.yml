@@ -32,3 +32,6 @@ jobs:
       deploy:
         provider: script
         script: npm run publish:ci
+        on:
+          tags: true
+          all_branches: true
