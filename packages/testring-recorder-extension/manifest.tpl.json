@@ -10,7 +10,7 @@
   },
   "background": {
     "scripts": [
-      "background.js"
+      "background.bundle.js"
     ]
   },
   "content_scripts": [
@@ -19,7 +19,7 @@
         "http://localhost/*"
       ],
       "js": [
-        "content.js"
+        "content.bundle.js"
       ]
     }
   ],

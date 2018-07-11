@@ -1,7 +1,7 @@
 {
   "name": "@testring/recorder-extension",
   "version": "0.1.0",
-  "main": "./dist/index.js",
+  "main": "./dist/background.bundle.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/ringcentral/testring.git"
@@ -9,14 +9,17 @@
   "author": "RingCentral",
   "license": "MIT",
   "scripts": {
-    "build": "ts-node ./bin/build.ts"
+    "build:static": "ts-node ./bin/build.ts",
+    "build:script": "webpack --config webpack.config.ts",
+    "build:script:watch": "webpack --config webpack.config.ts --watch",
+    "build": "npm run build:static && npm run build:script"
   },
   "devDependencies": {
+    "@types/chrome": "0.0.69",
     "mkdirp": "^0.5.1",
     "ncp": "^2.0.0",
-    "ts-node": "^7.0.0"
-  },
-  "dependencies": {
-    "@types/chrome": "0.0.69"
+    "ts-node": "^7.0.0",
+    "webpack": "4.15.1",
+    "webpack-cli": "3.0.8"
   }
 }
