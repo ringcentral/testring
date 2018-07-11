@@ -7,16 +7,16 @@ const LOG_PREFIX = '[logged inside test]';
 
 export class TestContext {
 
-    private hasLoggedBusinessEvent = false;
+    private lastLoggedBusinessEvent = '';
 
     public application = new WebApplication(testAPIController.getTestID(), transport);
 
     async logBusiness(message: string) {
-        if (this.hasLoggedBusinessEvent) {
-            loggerClient.endStep();
-        } else {
-            this.hasLoggedBusinessEvent = true;
+        if (this.lastLoggedBusinessEvent) {
+            loggerClient.endStep(this.lastLoggedBusinessEvent);
         }
+
+        this.lastLoggedBusinessEvent = message;
 
         loggerClient.startStep(message);
     }

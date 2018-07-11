@@ -26,7 +26,7 @@ export const createAssertion = (isSoft = false) => {
                 const successMessage = originalMethod.length === args.length ? args.pop() : '';
                 const assertArguments: Array<any> = [];
 
-                let assertMessage = `${typeOfAssert}.${fieldName}`;
+                let assertMessage = `[${typeOfAssert}] ${fieldName}`;
 
                 for (let index = 0; index < methodArgs.length; index++) {
                     if (index === args.length) {
