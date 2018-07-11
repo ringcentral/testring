@@ -20,6 +20,7 @@ const delay = (milliseconds: number) => new Promise((resolve) => {
 export class TestRunController extends PluggableModule implements ITestRunController {
 
     private errors: Array<Error> = [];
+    private testQueue: TestQueue | null = null;
 
     constructor(
         private config: Partial<IConfig>,
@@ -36,8 +37,19 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     public async runQueue(testSet: Array<ITestFile>): Promise<Error[] | null> {
         const testQueue = await this.prepareTests(testSet);
 
+        if (Array.isArray(this.testQueue)) {
+            this.testQueue.push(...testQueue);
+        } else {
+            this.testQueue = testQueue;
+        }
+
         loggerClientLocal.debug('Run controller: tests queue created.');
 
+        return this.executeQueue(this.testQueue);
+
+    }
+
+    private async executeQueue(testQueue: TestQueue): Promise<Error[] | null> {
         const workerLimit = this.getWorkerLimit(testQueue);
         const workers = this.createWorkers(workerLimit);
 
@@ -53,6 +65,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             this.errors.push(error);
         }
 
+        this.testQueue = null;
+
         if (this.errors.length) {
             return this.errors;
         }
@@ -60,9 +74,20 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         return null;
     }
 
-    public async pushTestIntoQueue(testString: string): Promise<Error[] | null> {
-        //TODO
-        return null;
+    public async pushTestIntoQueue(testString: string) {
+
+        if (!Array.isArray(this.testQueue)) {
+            const testQueue = await this.prepareTests([]);
+            this.testQueue = testQueue;
+        }
+
+        this.testQueue.push({
+            retryCount: 0,
+            retryErrors: [],
+            testString: testString
+        });
+
+        return this.executeQueue(this.testQueue);
     }
 
     private getWorkerLimit(testQueue: TestQueue) {

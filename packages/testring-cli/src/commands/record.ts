@@ -1,4 +1,3 @@
-import * as process from 'process';
 import { LoggerServer, loggerClientLocal } from '@testring/logger';
 import { TestRunController } from '@testring/test-run-controller';
 import { applyPlugins } from '@testring/plugin-api';
@@ -41,7 +40,7 @@ export const runRecordingProcess = async (argv: Array<string>, stdout: NodeJS.Wr
         const conId = message.conId;
 
         try {
-            const testResult = await testRunController.pushTestIntoQueue(testStr);
+            const testResult = testRunController.pushTestIntoQueue(testStr);
             await transport.send(conId, RecorderServerMessageTypes.MESSAGE, {
                 testResult: testResult,
                 error: null
@@ -55,8 +54,7 @@ export const runRecordingProcess = async (argv: Array<string>, stdout: NodeJS.Wr
     });
 
     transport.on(RecorderServerMessageTypes.CLOSE, () => {
-        loggerClientLocal.info('Recorder Server disconnected');
-        process.exit(1);
+        throw new Error('Recorder Server disconnected');
     });
 
 };

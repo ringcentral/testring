@@ -89,7 +89,10 @@ export const runCLI = (argv: Array<string>) => {
             break;
 
         case 'record':
-            runRecordingProcess(argv, process.stdout);
+            runRecordingProcess(argv, process.stdout).catch((exception) => {
+                loggerClientLocal.error(exception);
+                process.exit(1);
+            });
             break;
 
         default:
