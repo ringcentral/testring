@@ -46,6 +46,10 @@ export class WebApplication extends PluggableModule {
         return selector.toString();
     }
 
+    public get logger() {
+        return loggerClient;
+    }
+
     public async waitForExist(xpath, timeout: number = WAIT_TIMEOUT, skipMoveToObject = false) {
         loggerClient.debug(`Waiting ${xpath} for ${timeout}`);
 
