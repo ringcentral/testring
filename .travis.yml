@@ -18,18 +18,18 @@ cache:
   - node_modules
 
 stages:
-  - name: build
-  - name: publish
+  - name: test
+  - name: deploy
     if: tag IS present
 
 jobs:
   include:
-    - stage: build
+    - stage: test
       script:
         - xvfb-run npm run build:ci
       after_success:
         - npm run test:publish
-    - stage: publish
+    - stage: deploy
       node_js: "10"
       script:
         - npm run build
