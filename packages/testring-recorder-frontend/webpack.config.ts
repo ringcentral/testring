@@ -1,20 +1,15 @@
 import * as path from 'path';
 import * as webpack from 'webpack';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin';
 
 const config: webpack.Configuration = {
-    mode: 'production',
+    mode: 'development',
     entry: './src/index.tsx',
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'index.bundle.js'
     },
     plugins: [
-        new MiniCssExtractPlugin({
-            filename: 'stylesheets/[name].css'
-        }),
-
         new MonacoWebpackPlugin({
             languages: ['javascript']
         })
@@ -28,11 +23,30 @@ const config: webpack.Configuration = {
             },
             {
                 test: /\.css$/,
+                exclude: /node_modules/,
                 use: [
                     {
-                        loader: MiniCssExtractPlugin.loader
+                        loader: 'style-loader'
                     },
-                    'css-loader'
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            importLoaders: 1,
+                            modules: true
+                        }
+                    }
+                ]
+            },
+            {
+                test: /\.css$/,
+                include: /node_modules/,
+                use: [
+                    {
+                        loader: 'style-loader'
+                    },
+                    {
+                        loader: 'css-loader'
+                    }
                 ]
             }
         ]
