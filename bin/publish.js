@@ -8,10 +8,13 @@ const results = [].concat(
 );
 
 results.forEach((pkg) => {
-    childProcess.execSync('npm publish', {
-        cwd: path.resolve(pkg),
-        stdio: process.stdio
-    });
+    childProcess.execSync(
+        path.resolve('./node_modules/.bin/ci-publish'),
+        {
+            cwd: path.resolve(pkg),
+            stdio: process.stdio
+        }
+    );
 });
 
 process.stdout.write(`\nPackages published: ${results.length}\n`);
