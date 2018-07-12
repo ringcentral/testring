@@ -39,7 +39,7 @@ export const runRecordingProcess = async (argv: Array<string>, stdout: NodeJS.Wr
         const testStr = message.payload;
 
         try {
-            const testResult = testRunController.pushTestIntoQueue(testStr);
+            const testResult = await testRunController.pushTestIntoQueue(testStr);
             loggerClientLocal.info(`Test executed with result: ${testResult}`);
         } catch (e) {
             loggerClientLocal.info(`Test executed failed with error: ${e}`);
