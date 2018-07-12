@@ -47,6 +47,5 @@ export class ExtensionController {
     }
 
     private handleMessage(message: any): void {
-        console.log(message);
     }
 }
