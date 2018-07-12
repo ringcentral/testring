@@ -19,9 +19,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
         private transportInstance: ITransport,
         private workerCreator: (onActionPluginPath: string, config: any) => ChildProcess
     ) {
-        super([
-            BrowserProxyPlugins.getPlugin
-        ]);
+        super([ BrowserProxyPlugins.getPlugin ]);
 
         this.registerResponseListener();
     }

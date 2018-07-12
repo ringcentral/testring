@@ -12,10 +12,10 @@ const httpUrl = `http://${DEFAULT_HOST}:${DEFAULT_HTTP_PORT}`;
 const wsUrl = `ws://${DEFAULT_HOST}:${DEFAULT_WS_PORT}`;
 
 describe('Recorder server', () => {
-    let srv;
-    let transport;
+    let srv: RecorderServer;
+    let transport: TransportMock;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         transport = new TransportMock();
 
         srv = new RecorderServer(
@@ -25,11 +25,11 @@ describe('Recorder server', () => {
             transport,
         );
 
-        srv.run();
+        await srv.run();
     });
 
-    afterEach(() => {
-        srv.stop();
+    afterEach(async () => {
+        await srv.stop();
     });
 
     it('should serve http when run', (callback) => {
@@ -183,7 +183,7 @@ describe('Recorder server', () => {
             transport.on(
                 RecorderServerEvents.CONNECTION,
                 async () => {
-                    srv.stop();
+                    await srv.stop();
                 }
             );
         });

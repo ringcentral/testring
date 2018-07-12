@@ -6,19 +6,19 @@ run(async (api) => {
     await api.logBusiness('redirecting');
 
     await api.application.click(
-        api.application.root.credential.toString()
+        api.application.root.credential
     );
 
     await api.application.keys('1111111111');
 
     await api.application.click(
-        api.application.root.loginCredentialNext.toString()
+        api.application.root.loginCredentialNext
     );
 
     await api.logBusiness('checking class');
 
     const isClassExists = await api.application.isCSSClassExists(
-        api.application.root.signInBtn.toString(),
+        api.application.root.signInBtn,
         'btn'
     );
 
