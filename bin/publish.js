@@ -4,6 +4,7 @@ const glob = require('glob');
 const PackageUtilities = require('lerna/lib/PackageUtilities');
 const lernaConfig = require('../lerna.json');
 
+
 // FIXME temporary workaround, waiting for lerna 3 with separated version and publish commands
 // https://github.com/lerna/lerna/issues/961
 
@@ -37,7 +38,7 @@ PackageUtilities.runParallelBatches(batchedPackages, (pkg) => (callback) => {
     process.stdout.write(`Publishing package: ${pkg.name}...\n`);
 
     childProcess.exec(
-        path.resolve('./node_modules/.bin/ci-publish') + ' --access public',
+        `node ${path.resolve(__dirname, './npm-publish.js')}`,
         {
             cwd: path.resolve(packagePaths[pkg.name]),
             stdio: process.stdio
@@ -55,6 +56,6 @@ PackageUtilities.runParallelBatches(batchedPackages, (pkg) => (callback) => {
         process.stderr.write(error.toString());
         process.exit(1);
     } else {
-        process.stdout.write(`\nPackages published: ${Object.keys(packagesDescriptors).length}\n`);
+        process.stdout.write(`Packages published: ${Object.keys(packagesDescriptors).length}\n`);
     }
 });
