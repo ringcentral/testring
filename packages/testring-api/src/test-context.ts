@@ -35,6 +35,10 @@ export class TestContext {
         loggerClient.warn(LOG_PREFIX, ...message);
     }
 
+    public getParameters(): any {
+        return testAPIController.getTestParameters();
+    }
+
     public initCustomApplication<T extends WebApplication = WebApplication>(Ctr: { new(...args: Array<any>): T; }) {
         const customApplication = new Ctr(testAPIController.getTestID(), transport);
 
