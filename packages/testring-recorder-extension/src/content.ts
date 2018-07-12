@@ -1,32 +1,32 @@
 /// <reference types="chrome" />
 /* eslint-disable no-console */
 
-import { ExtensionTransportClient } from './extension-transport';
-import { ExtensionTransportEvents } from './structs';
+import { MessagingTransportClient } from './messaging-transport';
+import { MessagingTransportEvents } from './structs';
 
-const transportClient = new ExtensionTransportClient();
+const transportClient = new MessagingTransportClient();
 
 transportClient.on(
-    ExtensionTransportEvents.CONNECT,
+    MessagingTransportEvents.CONNECT,
     () => {
         console.log('CONNECTED');
 
         transportClient.send({
-            event: ExtensionTransportEvents.MESSAGE,
+            event: MessagingTransportEvents.MESSAGE,
             payload: 'HELLO',
         });
     }
 );
 
 transportClient.on(
-    ExtensionTransportEvents.DISCONNECT,
+    MessagingTransportEvents.DISCONNECT,
     () => {
         console.log('DISCONNECTED');
     }
 );
 
 transportClient.on(
-    ExtensionTransportEvents.MESSAGE,
+    MessagingTransportEvents.MESSAGE,
     (message) => {
         console.log('MESSAGE', message);
     }
@@ -34,7 +34,7 @@ transportClient.on(
 
 document.addEventListener('click', () => {
     transportClient.send({
-        event: ExtensionTransportEvents.MESSAGE,
+        event: MessagingTransportEvents.MESSAGE,
         payload: 'Click!',
     });
 });

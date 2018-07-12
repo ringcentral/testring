@@ -1,11 +1,11 @@
 import * as EventEmitter from 'eventemitter3';
 
-import { IExtensionTransportMessage } from '../interface';
-import { ExtensionTransportEvents } from '../structs';
+import { IMessagingTransportMessage } from '../interface';
+import { MessagingTransportEvents } from '../structs';
 
 import Port = chrome.runtime.Port;
 
-export class ExtensionTransportClient extends EventEmitter {
+export class MessagingTransportClient extends EventEmitter {
     constructor() {
         super();
 
@@ -29,13 +29,13 @@ export class ExtensionTransportClient extends EventEmitter {
 
         this.port = port;
 
-        this.emit(ExtensionTransportEvents.CONNECT);
+        this.emit(MessagingTransportEvents.CONNECT);
     }
 
     private handleDisconnect() {
         delete this.port;
 
-        this.emit(ExtensionTransportEvents.DISCONNECT);
+        this.emit(MessagingTransportEvents.DISCONNECT);
     }
 
     private disconnect(): void {
@@ -45,7 +45,7 @@ export class ExtensionTransportClient extends EventEmitter {
         }
     }
 
-    private handleMessage(message: IExtensionTransportMessage): void {
+    private handleMessage(message: IMessagingTransportMessage): void {
         const { event, payload } = message;
 
         this.emit(
@@ -54,7 +54,7 @@ export class ExtensionTransportClient extends EventEmitter {
         );
     }
 
-    public send(message: IExtensionTransportMessage): void {
+    public send(message: IMessagingTransportMessage): void {
         // if (this.port) {
         //     this.connect();
         // }

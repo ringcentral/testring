@@ -2,14 +2,14 @@
 
 import * as EventEmitter from 'eventemitter3';
 
-import { IExtensionTransportMessage } from '../interface';
-import { ExtensionTransportEvents } from '../structs';
+import { IMessagingTransportMessage } from '../interface';
+import { MessagingTransportEvents } from '../structs';
 
 import Port = chrome.runtime.Port;
 
 const nanoid = require('nanoid');
 
-export class ExtensionTransportServer extends EventEmitter {
+export class MessagingTransportServer extends EventEmitter {
     constructor() {
         super();
 
@@ -38,7 +38,7 @@ export class ExtensionTransportServer extends EventEmitter {
         this.connections.set(conId, port);
 
         this.emit(
-            ExtensionTransportEvents.CONNECT,
+            MessagingTransportEvents.CONNECT,
             conId,
         );
     }
@@ -47,12 +47,12 @@ export class ExtensionTransportServer extends EventEmitter {
         this.connections.delete(conId);
 
         this.emit(
-            ExtensionTransportEvents.DISCONNECT,
+            MessagingTransportEvents.DISCONNECT,
             conId,
         );
     }
 
-    private handleMessage(message: IExtensionTransportMessage): void {
+    private handleMessage(message: IMessagingTransportMessage): void {
         const { event, payload } = message;
 
         this.emit(
@@ -71,7 +71,7 @@ export class ExtensionTransportServer extends EventEmitter {
         }
     }
 
-    public send(conId: string, message: IExtensionTransportMessage): void {
+    public send(conId: string, message: IMessagingTransportMessage): void {
         const port = this.connections.get(conId);
 
         if (port) {

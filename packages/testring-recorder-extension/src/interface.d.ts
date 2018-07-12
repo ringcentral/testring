@@ -1,6 +1,6 @@
-import { ExtensionTransportEvents } from './structs';
+import { MessagingTransportEvents } from './structs';
 
-export interface IExtensionTransportMessage {
-    event: ExtensionTransportEvents;
+export interface IMessagingTransportMessage {
+    event: MessagingTransportEvents;
     payload: any;
 }
