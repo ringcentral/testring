@@ -37,7 +37,7 @@ PackageUtilities.runParallelBatches(batchedPackages, (pkg) => (callback) => {
     process.stdout.write(`Publishing package: ${pkg.name}...\n`);
 
     childProcess.exec(
-        path.resolve('./node_modules/.bin/ci-publish'),
+        path.resolve('./node_modules/.bin/ci-publish') + ' --access public',
         {
             cwd: path.resolve(packagePaths[pkg.name]),
             stdio: process.stdio
