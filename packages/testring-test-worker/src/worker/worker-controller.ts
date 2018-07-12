@@ -45,6 +45,7 @@ export class WorkerController {
 
         let isAsync = false;
 
+        this.testAPI.setTestParameters(message.parameters);
         this.testAPI.setTestID(testID);
 
         // Test becomes async, when run method called

@@ -9,21 +9,30 @@ addons:
 language: node_js
 
 node_js:
-  - "8"
   - "10"
+  - "8"
 
 cache:
   directories:
   - $HOME/.npm
   - node_modules
 
-script:
-  - xvfb-run npm run build:ci
+script: xvfb-run npm run build:ci
 
-after_script:
-  - npm run test:publish
+stages:
+  - test
+  - name: npm release
+    if: tag IS present
 
-  # publishing to npm
-  # uncomment when package will be ready to publish
-  # if: tag IS present
-  #   - npm run publish:ci
+jobs:
+  include:
+    - stage: npm release
+      node_js: "10"
+      script: npm run build
+      deploy:
+        provider: script
+        script: npm run publish:ci
+        skip_cleanup: true
+        on:
+          tags: true
+          all_branches: true

@@ -30,7 +30,7 @@ export const run = async (...tests: Array<TestFunction>) => {
                     loggerClient.endStep(testID, 'Test passed');
                 }
 
-                await api.application.end();
+                await api.end();
             }
 
             if (caughtError) {
