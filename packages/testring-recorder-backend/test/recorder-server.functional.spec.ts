@@ -3,6 +3,7 @@
 import * as request from 'request-promise';
 import * as WebSocket from 'ws';
 import * as chai from 'chai';
+import { getAvailablePort } from '@testring/test-utils';
 
 import { TransportMock } from '@testring/test-utils';
 import { RecorderServerEvents, RecorderServerMessageTypes } from '@testring/types';
@@ -10,20 +11,26 @@ import { RecorderServerEvents, RecorderServerMessageTypes } from '@testring/type
 import { RecorderServer } from '../src/recorder-server';
 import { DEFAULT_HOST, DEFAULT_HTTP_PORT, DEFAULT_WS_PORT } from '../src/constants';
 
-const httpUrl = `http://${DEFAULT_HOST}:${DEFAULT_HTTP_PORT}`;
-const wsUrl = `ws://${DEFAULT_HOST}:${DEFAULT_WS_PORT}`;
-
 describe('Recorder server', () => {
     let srv: RecorderServer;
     let transport: TransportMock;
+    let httpPort = DEFAULT_HTTP_PORT;
+    let httpUrl = `http://${DEFAULT_HOST}:${DEFAULT_HTTP_PORT}`;
+    let wsPort = DEFAULT_WS_PORT;
+    let wsUrl = `ws://${DEFAULT_HOST}:${DEFAULT_WS_PORT}`;
 
     beforeEach(async () => {
         transport = new TransportMock();
 
+        httpPort = await getAvailablePort(DEFAULT_HTTP_PORT);
+        httpUrl = `http://${DEFAULT_HOST}:${httpPort}`;
+        wsPort = await getAvailablePort(DEFAULT_WS_PORT, [httpPort]);
+        wsUrl = `ws://${DEFAULT_HOST}:${wsPort}`;
+
         srv = new RecorderServer(
             DEFAULT_HOST,
-            DEFAULT_HTTP_PORT,
-            DEFAULT_WS_PORT,
+            httpPort,
+            wsPort,
             transport,
         );
 

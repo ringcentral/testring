@@ -4,6 +4,9 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as chai from 'chai';
 import * as request from 'request-promise';
+
+import { getAvailablePort } from '@testring/test-utils';
+
 import { RecorderHttpServer } from '../src/http-server';
 
 const index = fs.readFileSync(
@@ -11,13 +14,19 @@ const index = fs.readFileSync(
     { encoding: 'utf8' }
 );
 
+let httpPort = 8080;
+
 describe('Recorder HTTP server', () => {
+    beforeEach(async () => {
+        httpPort = await getAvailablePort(httpPort);
+    });
+
     it('should serve over HTTP until it stopped', (callback) => {
         const server = new RecorderHttpServer(
             path.resolve(__dirname, './fixtures/static'),
             path.resolve(__dirname, './fixtures/templates'),
             'localhost',
-            8080
+            httpPort
         );
 
         server.run().then(() => {
