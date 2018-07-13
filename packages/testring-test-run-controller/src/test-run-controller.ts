@@ -20,6 +20,8 @@ const delay = (milliseconds: number) => new Promise((resolve) => {
 export class TestRunController extends PluggableModule implements ITestRunController {
 
     private errors: Array<Error> = [];
+    private testQueue: TestQueue | null = null;
+    private currentRun: Promise<any> | null = null;
 
     constructor(
         private config: Partial<IConfig>,
@@ -39,6 +41,16 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
         loggerClientLocal.debug('Run controller: tests queue created.');
 
+        if (Array.isArray(this.testQueue)) {
+            this.testQueue.push(...testQueue);
+        } else {
+            this.testQueue = testQueue;
+            this.currentRun = this.executeQueue(this.testQueue);
+        }
+        return this.currentRun;
+    }
+
+    private async executeQueue(testQueue: TestQueue): Promise<Error[] | null> {
         const workerLimit = this.getWorkerLimit(testQueue);
         const workers = this.createWorkers(workerLimit);
 
@@ -54,11 +66,29 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             this.errors.push(error);
         }
 
+        this.testQueue = null;
+
         if (this.errors.length) {
             return this.errors;
         }
 
         return null;
+    }
+
+    public async pushTestIntoQueue(testString: string) {
+        const testQueueItem = this.prepareTest({
+            path: '',
+            content: testString,
+            meta: {}
+        });
+        if (Array.isArray(this.testQueue)) {
+            this.testQueue.push(testQueueItem);
+        } else {
+            this.testQueue = new Queue([testQueueItem]);
+            this.currentRun = this.executeQueue(this.testQueue);
+        }
+
+        return this.currentRun;
     }
 
     private getWorkerLimit(testQueue: TestQueue) {
@@ -81,15 +111,19 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         return workers;
     }
 
+    private prepareTest(testFile: ITestFile) {
+        return {
+            retryCount: 0,
+            retryErrors: [],
+            test: testFile
+        };
+    }
+
     private async prepareTests(testFiles: Array<ITestFile>): Promise<TestQueue> {
         const testQueue = new Array(testFiles.length);
 
         for (let index = 0; index < testFiles.length; index++) {
-            testQueue[index] = {
-                retryCount: 0,
-                retryErrors: [],
-                test: testFiles[index]
-            };
+            testQueue[index] = this.prepareTest(testFiles[index]);
         }
 
         const modifierQueue = await this.callHook(TestRunControllerPlugins.beforeRun, testQueue);
