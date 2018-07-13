@@ -14,29 +14,33 @@ const index = fs.readFileSync(
     { encoding: 'utf8' }
 );
 
-let httpPort = 8080;
+const host = 'localhost';
 
 describe('Recorder HTTP server', () => {
+    let httpPort = 8080;
+
     beforeEach(async () => {
-        httpPort = await getAvailablePort(httpPort);
+        httpPort = await getAvailablePort(httpPort, host);
     });
 
     it('should serve over HTTP until it stopped', (callback) => {
         const server = new RecorderHttpServer(
             path.resolve(__dirname, './fixtures/static'),
             path.resolve(__dirname, './fixtures/templates'),
-            'localhost',
+            host,
             httpPort
         );
 
         server.run().then(() => {
-            request('http://localhost:8080').then(async (res) => {
+            const url = `http://${host}:${httpPort}`;
+
+            request(url).then(async (res) => {
                 chai.expect(res).to.be.equal(index);
 
                 await server.stop();
 
                 try {
-                    await request('http://localhost:8080');
+                    await request(url);
 
                     callback(new Error('Still serving'));
                 } catch {
