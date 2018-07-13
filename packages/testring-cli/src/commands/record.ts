@@ -8,6 +8,7 @@ import { browserProxyControllerFactory } from '@testring/browser-proxy';
 import { transport } from '@testring/transport';
 import { RecorderServer } from '@testring/recorder-backend';
 import { RecorderServerMessageTypes } from '@testring/types';
+import { HttpClientLocal } from '../../../testring-http-api/src';
 
 
 export const runRecordingProcess = async (argv: Array<string>, stdout: NodeJS.WritableStream) => {
@@ -18,13 +19,15 @@ export const runRecordingProcess = async (argv: Array<string>, stdout: NodeJS.Wr
     const testRunController = new TestRunController(userConfig, testWorker);
     const browserProxyController = browserProxyControllerFactory(transport);
     const webApplicationController = new WebApplicationController(browserProxyController, transport);
+    const httpClient = new HttpClientLocal(transport);
     const recorderServer = new RecorderServer();
 
     applyPlugins({
         logger: loggerServer,
         testWorker: testWorker,
         browserProxy: browserProxyController,
-        testRunController: testRunController
+        testRunController: testRunController,
+        httpClientInstance: httpClient
     }, userConfig);
 
     await browserProxyController.spawn();

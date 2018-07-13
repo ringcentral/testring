@@ -12,6 +12,7 @@
   "dependencies": {
     "@testring/browser-proxy": "^0.2.2",
     "@testring/cli-config": "^0.2.2",
+    "@testring/http-api": "^0.2.2",
     "@testring/logger": "^0.2.2",
     "@testring/plugin-api": "^0.2.2",
     "@testring/test-finder": "^0.2.2",

@@ -1,3 +1,4 @@
+import { HttpClientLocal } from '@testring/http-api';
 import { LoggerServer, loggerClientLocal } from '@testring/logger';
 import { TestRunController } from '@testring/test-run-controller';
 import { applyPlugins } from '@testring/plugin-api';
@@ -39,13 +40,15 @@ export const runTests = async (argv: Array<string>, stdout: NodeJS.WritableStrea
     const testRunController = new TestRunController(userConfig, testWorker);
     const browserProxyController = browserProxyControllerFactory(transport);
     const webApplicationController = new WebApplicationController(browserProxyController, transport);
+    const httpClient = new HttpClientLocal(transport);
 
     applyPlugins({
         logger: loggerServer,
         testFinder: testFinder,
         testWorker: testWorker,
         browserProxy: browserProxyController,
-        testRunController: testRunController
+        testRunController: testRunController,
+        httpClientInstance: httpClient
     }, userConfig);
 
     loggerClientLocal.info('User config:\n', formatJSON(userConfig));
