@@ -9,7 +9,8 @@
   "author": "RingCentral",
   "license": "MIT",
   "scripts": {
-    "build": "webpack --config webpack.config.ts"
+    "build": "webpack --config webpack.config.ts",
+    "build:watch": "webpack --watch --config webpack.config.ts"
   },
   "devDependencies": {
     "@types/react": "^16.4.6",
@@ -19,6 +20,10 @@
     "react-dom": "^16.4.1",
     "ts-loader": "^4.4.2",
     "webpack": "4.15.1",
-    "webpack-cli": "3.0.8"
+    "webpack-cli": "3.0.8",
+    "css-loader": "1.0.0",
+    "style-loader": "^0.21.0",
+    "monaco-editor-webpack-plugin": "^1.4.0",
+    "react-monaco-editor": "0.17.2"
   }
 }
