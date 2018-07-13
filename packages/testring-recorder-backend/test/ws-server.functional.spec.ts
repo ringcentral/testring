@@ -1,3 +1,5 @@
+/// <reference types="mocha" />
+
 import * as WebSocket from 'ws';
 import * as chai from 'chai';
 import { getAvailablePort } from '@testring/test-utils';
