@@ -3,6 +3,7 @@
 
 import { MessagingTransportClient } from './messaging-transport';
 import { MessagingTransportEvents } from './structs';
+import { resolveElementPath } from './extension/resolve-element-path';
 
 const transportClient = new MessagingTransportClient();
 
@@ -32,7 +33,9 @@ transportClient.on(
     }
 );
 
-document.addEventListener('click', () => {
+document.addEventListener('click', (e) => {
+    console.log(resolveElementPath(e)); // eslint-disable-line
+
     transportClient.send({
         event: MessagingTransportEvents.MESSAGE,
         payload: 'Click!',
