@@ -1,5 +1,4 @@
-import { IRecordingEvent } from '../interface';
-import { MessagingTransportEvents } from '../structs';
+import { IRecordingEvent, MessagingTransportEvents } from '@testring/types';
 
 import { MessagingTransportServer } from './messaging-transport';
 

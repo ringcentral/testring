@@ -1,7 +1,8 @@
 /// <reference types="chrome" />
 
+import { MessagingTransportEvents, RecordingEventTypes } from '@testring/types';
+
 import { MessagingTransportClient } from './extension/messaging-transport';
-import { MessagingTransportEvents, RecordingEventTypes } from './structs';
 import { resolveElementPath } from './extension/resolve-element-path';
 
 const transportClient = new MessagingTransportClient();

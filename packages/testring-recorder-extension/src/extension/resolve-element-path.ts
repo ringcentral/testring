@@ -1,4 +1,4 @@
-const DEFAULT_IDENTIFIER = 'data-test-automation-id';
+import { ElementPath, TEST_ELEMENT_IDENTIFIER } from '@testring/types';
 
 const composePath = (element: Element, path: Array<Element> = []): Array<Element> => {
     const nextPath = [ ...path, element ];
@@ -22,23 +22,23 @@ const getEventComposedPath = (event: any): Array<Element> => {
 
 const filterPathAutomated = (path: Array<Element>): Array<Element> => {
     return path.filter((element) => {
-        return element instanceof Element && element.hasAttribute(DEFAULT_IDENTIFIER);
+        return element instanceof Element && element.hasAttribute(TEST_ELEMENT_IDENTIFIER);
     });
 };
 
-const makeXpath = (path: Array<Element>): string => {
+const makePath = (path: Array<Element>): ElementPath => {
     return path.reduce((path, node) => {
-        if (node.hasAttribute(DEFAULT_IDENTIFIER)) {
-            const id = node.getAttribute(DEFAULT_IDENTIFIER);
+        const id = node.getAttribute(TEST_ELEMENT_IDENTIFIER);
 
-            path = `//*[@${DEFAULT_IDENTIFIER}='${id}']` + path;
+        if (id) {
+            path.push({ id });
         }
 
         return path;
-    }, '');
+    }, [] as ElementPath);
 };
 
-export const resolveElementPath = (event: Event): string => {
+export const resolveElementPath = (event: Event): ElementPath => {
     if (!event.isTrusted) {
         throw new Error('Event is not evoked by user');
     }
@@ -46,5 +46,5 @@ export const resolveElementPath = (event: Event): string => {
     const path = getEventComposedPath(event);
     const automationPath = filterPathAutomated(path);
 
-    return makeXpath(automationPath);
+    return makePath(automationPath);
 };
