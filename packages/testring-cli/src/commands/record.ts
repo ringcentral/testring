@@ -8,7 +8,7 @@ import { browserProxyControllerFactory } from '@testring/browser-proxy';
 import { transport } from '@testring/transport';
 import { RecorderServer } from '@testring/recorder-backend';
 import { RecorderServerMessageTypes } from '@testring/types';
-import { HttpClientLocal } from '../../../testring-http-api/src';
+import { HttpClientLocal } from '@testring/http-api';
 
 
 export const runRecordingProcess = async (argv: Array<string>, stdout: NodeJS.WritableStream) => {
