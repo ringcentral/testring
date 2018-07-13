@@ -1,7 +1,7 @@
 import * as EventEmitter from 'eventemitter3';
 
-import { IMessagingTransportMessage } from '../interface';
-import { MessagingTransportEvents } from '../structs';
+import { IMessagingTransportMessage } from '../../interface';
+import { MessagingTransportEvents } from '../../structs';
 
 import Port = chrome.runtime.Port;
 
@@ -55,10 +55,6 @@ export class MessagingTransportClient extends EventEmitter {
     }
 
     public send(message: IMessagingTransportMessage): void {
-        // if (this.port) {
-        //     this.connect();
-        // }
-
         this.port.postMessage(message);
     }
 }

@@ -1,43 +1,21 @@
 /// <reference types="chrome" />
-/* eslint-disable no-console */
 
-import { MessagingTransportClient } from './messaging-transport';
-import { MessagingTransportEvents } from './structs';
+import { MessagingTransportClient } from './extension/messaging-transport';
+import { MessagingTransportEvents, RecordingEventTypes } from './structs';
 import { resolveElementPath } from './extension/resolve-element-path';
 
 const transportClient = new MessagingTransportClient();
 
-transportClient.on(
-    MessagingTransportEvents.CONNECT,
-    () => {
-        console.log('CONNECTED');
+document.addEventListener('click', (event) => {
+    const xpath = resolveElementPath(event);
 
+    if (xpath) {
         transportClient.send({
-            event: MessagingTransportEvents.MESSAGE,
-            payload: 'HELLO',
+            event: MessagingTransportEvents.RECORDING_EVENT,
+            payload: {
+                type: RecordingEventTypes.CLICK,
+                elementPath: xpath,
+            },
         });
     }
-);
-
-transportClient.on(
-    MessagingTransportEvents.DISCONNECT,
-    () => {
-        console.log('DISCONNECTED');
-    }
-);
-
-transportClient.on(
-    MessagingTransportEvents.MESSAGE,
-    (message) => {
-        console.log('MESSAGE', message);
-    }
-);
-
-document.addEventListener('click', (e) => {
-    console.log(resolveElementPath(e)); // eslint-disable-line
-
-    transportClient.send({
-        event: MessagingTransportEvents.MESSAGE,
-        payload: 'Click!',
-    });
 });

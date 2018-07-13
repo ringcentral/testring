@@ -1,5 +1,7 @@
-import { MessagingTransportServer } from '../messaging-transport';
+import { IRecordingEvent } from '../interface';
 import { MessagingTransportEvents } from '../structs';
+
+import { MessagingTransportServer } from './messaging-transport';
 
 export class ExtensionController {
     constructor() {
@@ -25,6 +27,11 @@ export class ExtensionController {
             MessagingTransportEvents.MESSAGE,
             (message) => this.handleMessage(message),
         );
+
+        this.server.on(
+            MessagingTransportEvents.RECORDING_EVENT,
+            (event) => this.handleRecordingEvent(event)
+        );
     }
 
     /*
@@ -49,4 +56,9 @@ export class ExtensionController {
     private handleMessage(message: any): void {
         console.log(message); // eslint-disable-line
     }
+
+    private handleRecordingEvent(event: IRecordingEvent): void {
+        console.log('event:', event); // eslint-disable-line
+    }
+
 }

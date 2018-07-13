@@ -2,8 +2,8 @@
 
 import * as EventEmitter from 'eventemitter3';
 
-import { IMessagingTransportMessage } from '../interface';
-import { MessagingTransportEvents } from '../structs';
+import { IMessagingTransportMessage } from '../../interface';
+import { MessagingTransportEvents } from '../../structs';
 
 import Port = chrome.runtime.Port;
 
