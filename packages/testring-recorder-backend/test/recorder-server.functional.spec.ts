@@ -1,3 +1,5 @@
+/// <reference types="mocha" />
+
 import * as request from 'request-promise';
 import * as WebSocket from 'ws';
 import * as chai from 'chai';
@@ -20,9 +22,9 @@ describe('Recorder server', () => {
     beforeEach(async () => {
         transport = new TransportMock();
 
-        httpPort = await getAvailablePort(DEFAULT_HTTP_PORT);
+        httpPort = await getAvailablePort(DEFAULT_HTTP_PORT, DEFAULT_HOST);
         httpUrl = `http://${DEFAULT_HOST}:${httpPort}`;
-        wsPort = await getAvailablePort(DEFAULT_WS_PORT, [httpPort]);
+        wsPort = await getAvailablePort(DEFAULT_WS_PORT, DEFAULT_HOST, [httpPort]);
         wsUrl = `ws://${DEFAULT_HOST}:${wsPort}`;
 
         srv = new RecorderServer(

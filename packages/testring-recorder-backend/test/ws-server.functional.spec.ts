@@ -1,14 +1,18 @@
+/// <reference types="mocha" />
+
 import * as WebSocket from 'ws';
 import * as chai from 'chai';
 import { getAvailablePort } from '@testring/test-utils';
 
 import { RecorderWebSocketServer, RecorderWsEvents } from '../src/ws-server';
 
+const host = 'localhost';
+
 describe('Recorder WebsSocket server', () => {
     let port = 8080;
 
     beforeEach(async () => {
-        port = await getAvailablePort(port);
+        port = await getAvailablePort(port, host);
     });
 
     it('should start ws server and emit event of connections', (callback) => {
@@ -23,7 +27,7 @@ describe('Recorder WebsSocket server', () => {
                 callback();
             });
 
-            new WebSocket(`ws://localhost:${port}`);
+            new WebSocket(`ws://${host}:${port}`);
         });
     });
 });
