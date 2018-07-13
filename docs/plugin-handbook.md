@@ -1,4 +1,4 @@
-# Plugin handbook
+# Plugins
 
 ## Plugin usage
 
@@ -46,11 +46,3 @@ export default (pluginAPI, userConfig) => {
     });
 };
 ```
-
-### PluginAPI
-
-// TODO write API reference when it will be done
-
-#### getLogger(): LoggerAPI
-
-#### getTestFinder(): TestFinderAPI

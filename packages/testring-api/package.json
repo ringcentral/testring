@@ -13,6 +13,8 @@
     "@testring/logger": "^0.2.3",
     "@testring/transport": "^0.2.3",
     "@testring/types": "^0.2.3",
-    "@testring/web-application": "^0.2.3"
+    "@testring/web-application": "^0.2.3",
+    "@types/bytes": "^3.0.0",
+    "bytes": "^3.0.0"
   }
 }
