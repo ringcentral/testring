@@ -10,6 +10,7 @@
   "scripts": {
     "postinstall": "lerna bootstrap && npm run link",
     "preversion": "npm run build:precommit",
+    "reinstall": "node ./bin/cleanup.js && npm install",
     "link": "lerna exec --no-sort -- node ../../bin/link",
     "unlink": "lerna exec --no-sort -- node ../../bin/unlink",
     "lint": "npm run lint:src && npm run lint:test",

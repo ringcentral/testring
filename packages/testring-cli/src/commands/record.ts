@@ -28,10 +28,9 @@ export const runRecordingProcess = async (argv: Array<string>, stdout: NodeJS.Wr
     }, userConfig);
 
     await browserProxyController.spawn();
+    await recorderServer.run();
 
     webApplicationController.init();
-
-    await recorderServer.run();
 
     loggerClientLocal.info('Recorder Server started');
 
@@ -40,6 +39,7 @@ export const runRecordingProcess = async (argv: Array<string>, stdout: NodeJS.Wr
 
         try {
             const testResult = await testRunController.pushTestIntoQueue(testStr);
+
             loggerClientLocal.info(`Test executed with result: ${testResult}`);
         } catch (e) {
             loggerClientLocal.info(`Test executed failed with error: ${e}`);
