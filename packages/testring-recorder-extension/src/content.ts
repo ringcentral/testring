@@ -6,7 +6,21 @@ import { resolveElementPath } from './extension/resolve-element-path';
 
 const transportClient = new MessagingTransportClient();
 
-document.addEventListener('click', (event) => {
+transportClient.on(
+    MessagingTransportEvents.CONNECT,
+    () => {
+        document.addEventListener('click', clickHandler);
+    }
+);
+
+transportClient.on(
+    MessagingTransportEvents.DISCONNECT,
+    () => {
+        document.removeEventListener('click', clickHandler);
+    }
+);
+
+const clickHandler = (event: Event) => {
     const xpath = resolveElementPath(event);
 
     if (xpath) {
@@ -18,4 +32,4 @@ document.addEventListener('click', (event) => {
             },
         });
     }
-});
+};

@@ -9,7 +9,9 @@ export class MessagingTransportClient extends EventEmitter {
     constructor() {
         super();
 
-        this.connect();
+        setTimeout(() => {
+            this.connect();
+        }, 0);
     }
 
     private port: Port;

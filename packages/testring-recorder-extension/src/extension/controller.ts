@@ -48,9 +48,7 @@ export class ExtensionController {
     }
 
     private handleDisconnection(conId: string): void {
-        if (conId === this.mainConnectionId) {
-            delete this.mainConnectionId;
-        }
+        // for now do nothing, so no one can connect beyond first tab
     }
 
     private handleMessage(message: any): void {
@@ -60,5 +58,4 @@ export class ExtensionController {
     private handleRecordingEvent(event: IRecordingEvent): void {
         console.log('event:', event); // eslint-disable-line
     }
-
 }
