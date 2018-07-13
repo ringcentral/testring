@@ -15,9 +15,9 @@ CLI arguments overrides everything.
 ## Fields
 
 
-#### `config` <small>string</small>
+### `config`
 
-###### **default:** `./testring.json`
+###### `./testring.json` <sup>default</sup>
 
 Path to config file, relative to project root, works only as CLI argument.
 Config can be json or javascript file.
@@ -28,13 +28,13 @@ Javascript file should return:
 * Function with `Promise`, that returns config object (for async initialization).
 
 ```
-$ testring --config ./my-custom-config.json
+$ testring run --config ./my-custom-config.json
 ```
 
 
-#### `envConfig` <small>string</small>
+### `envConfig`
 
-###### **default:** `void`
+###### `void` <sup>default</sup>
 
 Path to environment config, relative to project root, works only as CLI argument.
 All resolving logic is similar to `--config`. 
@@ -42,15 +42,15 @@ All resolving logic is similar to `--config`.
 `envConfig` extends and overrides original config, useful for decomposing config into smaller parts.
 
 
-### `tests` <small>string</small>
+### `tests`
 
-###### **default:** `./tests/**/*.js`
+###### `./tests/**/*.js` <sup>default</sup>
 
 Glob pattern, relative to project root. 
 All founded file will be added to run queue.
 
 ```
-$ testring --tests ./src/**/test/*.spec.js
+$ testring run --tests ./src/**/test/*.spec.js
 ```
 
 ```json
@@ -60,9 +60,9 @@ $ testring --tests ./src/**/test/*.spec.js
 ```
 
 
-### `logLevel` <small>string</small>
+### `logLevel`
 
-###### **default:** `info`
+###### `info` <sup>default</sup>
 
 Filtering logs for logger.
 
@@ -75,7 +75,7 @@ Available levels:
 * `silent`;
 
 ```
-$ testring --log-level silent
+$ testring run --log-level silent
 ```
 
 ```json
@@ -85,14 +85,14 @@ $ testring --log-level silent
 ```
 
 
-### `silent` <small>boolean</small>
+### `silent`
 
-###### **default:** `false`
+###### `false` <sup>default</sup>
 
 Alias for `--logLevel silent`.
 
 ```
-$ testring --silent
+$ testring run --silent
 ```
 
 ```json
@@ -102,14 +102,14 @@ $ testring --silent
 ```
 
 
-### `bail` <small>boolean</small>
+### `bail`
 
-###### **default:** `false`
+###### `false` <sup>default</sup>
 
 Fail out on the first error instead of tolerating it.
 
 ```
-$ testring --bail
+$ testring run --bail
 ```
 
 ```json
@@ -119,16 +119,16 @@ $ testring --bail
 ```
 
 
-### `workerLimit` <small>number</small>
+### `workerLimit`
 
-###### **default:** `10`
+###### `10` <sup>default</sup>
 
 Limit of parallel running tests. Increase this number carefully, 
 because a lot of workers won't be so efficient, 
 also your driver plugin may not be able to handle so much connections.
 
 ```
-$ testring --worker-limit 20
+$ testring run --worker-limit 20
 ```
 
 ```json
@@ -138,14 +138,14 @@ $ testring --worker-limit 20
 ```
 
 
-### `retryCount` <small>number</small>
+### `retryCount`
 
-###### **default:** `3`
+###### `3` <sup>default</sup>
 
 Reruns count, if test failed. Useful, if your test is not stable.
 
 ```
-$ testring --retry-count 5
+$ testring run --retry-count 5
 ```
 
 ```json
@@ -155,14 +155,14 @@ $ testring --retry-count 5
 ```
 
 
-### `retryDelay` <small>number</small>
+### `retryDelay`
 
-###### **default:** `2000`
+###### `2000` <sup>default</sup>
 
 Value in milliseconds, adds time gap between reruns of test.
 
 ```
-$ testring --retry-delay 10000
+$ testring run --retry-delay 10000
 ```
 
 ```json
@@ -172,14 +172,14 @@ $ testring --retry-delay 10000
 ```
 
 
-### `httpThrottle` <small>number</small>
+### `httpThrottle`
 
-###### **default:** `0`
+###### `0` <sup>default</sup>
 
 Delay between http requests in milliseconds. Useful if you don't want spam your test environment.
 
 ```
-$ testring --http-throttle 500
+$ testring run --http-throttle 500
 ```
 
 ```json
@@ -189,15 +189,15 @@ $ testring --http-throttle 500
 ```
 
 
-### `plugins` <small>array</small>
+### `plugins`
 
-###### **default:** `void`
+###### `void` <sup>default</sup>
 
 Plugins are powerful instrument for extending framework functional. 
 More about plugins you can read [here](plugin-handbook.md).
 
 ```
-$ testring --plugins my-plugin-1 --plugins my-plugin-2
+$ testring run --plugins my-plugin-1 --plugins my-plugin-2
 ```
 
 ```json

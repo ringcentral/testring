@@ -12,9 +12,6 @@ Let's start by installing testring inside your project:
 $ npm install testring -g
 ```
 
-Then you want to have basic initialization:
-```
-$ testring init
-```
-
-This will create a `testring.json` configuration file in root of your project.
+* [API reference](docs/api.md)
+* [Config API reference](docs/config.md)
+* [Plugin API reference](docs/plugin-handbook.md)
