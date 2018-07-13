@@ -14,7 +14,11 @@ export class PluginAPI {
     }
 
     getTestFinder() {
-        return new TestFinderAPI(this.pluginName, this.modules.testFinder);
+        if (this.modules.testFinder) {
+            return new TestFinderAPI(this.pluginName, this.modules.testFinder);
+        }
+
+        return null;
     }
 
     getTestWorker() {

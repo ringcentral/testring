@@ -3,6 +3,7 @@ import * as yargs from 'yargs';
 import { loggerClientLocal } from '@testring/logger';
 import { IConfig } from '@testring/types';
 import { runTests } from './commands/run';
+import { runRecordingProcess } from './commands/record';
 
 const pkg = require('../package.json');
 
@@ -87,7 +88,8 @@ export const runCLI = (argv: Array<string>) => {
             break;
 
         case 'record':
-            throw new Error('Record not implemented yet.');
+            commandExecution = runRecordingProcess(argv, process.stdout);
+            break;
 
         default:
             yargs.showHelp();
@@ -98,4 +100,5 @@ export const runCLI = (argv: Array<string>) => {
         loggerClientLocal.error(exception);
         process.exit(1);
     });
+
 };

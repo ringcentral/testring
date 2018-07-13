@@ -1,3 +1,4 @@
+import * as process from 'process';
 import { Transport } from '../../src/transport';
 import { PAYLOAD, REQUEST_NAME, RESPONSE_NAME } from './constants';
 
