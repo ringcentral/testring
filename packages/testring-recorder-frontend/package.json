@@ -1,6 +1,6 @@
 {
   "name": "@testring/recorder-frontend",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "main": "./dist/index.bundle.js",
   "repository": {
     "type": "git",
@@ -16,14 +16,14 @@
     "@types/react": "^16.4.6",
     "@types/react-dom": "^16.0.6",
     "@types/webpack": "4.4.5",
+    "css-loader": "1.0.0",
+    "monaco-editor-webpack-plugin": "^1.4.0",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
+    "react-monaco-editor": "0.17.2",
+    "style-loader": "^0.21.0",
     "ts-loader": "^4.4.2",
     "webpack": "4.15.1",
-    "webpack-cli": "3.0.8",
-    "css-loader": "1.0.0",
-    "style-loader": "^0.21.0",
-    "monaco-editor-webpack-plugin": "^1.4.0",
-    "react-monaco-editor": "0.17.2"
+    "webpack-cli": "3.0.8"
   }
 }
