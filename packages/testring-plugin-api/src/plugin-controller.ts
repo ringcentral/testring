@@ -1,10 +1,10 @@
-import { ConfigPluginDescriptor, IConfig, IPluginDestinationMap } from '@testring/types';
+import { ConfigPluginDescriptor, IConfig, IPluginModules } from '@testring/types';
 import { requirePlugin } from '@testring/utils';
 import { PluginAPI } from './plugin-api';
 
 export class PluginController {
 
-    constructor(private modulesList: IPluginDestinationMap) {
+    constructor(private modulesList: IPluginModules) {
     }
 
     public initialize(plugins: IConfig['plugins']) {

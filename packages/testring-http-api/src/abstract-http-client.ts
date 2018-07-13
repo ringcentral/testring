@@ -1,14 +1,19 @@
 import { OptionsWithUrl } from 'request-promise';
-import { ITransport } from '@testring/types';
-import { HttpMessageType } from './structs';
-import { Response, Request, ResponseReject } from './interfaces';
+import {
+    ITransport,
+    IHttpClient,
+    HttpMessageType,
+    IHttpResponse,
+    IHttpRequest,
+    IHttpResponseReject
+} from '@testring/types';
 import { loggerClient } from '@testring/logger';
 
 
 const nanoid = require('nanoid');
 
-export abstract class AbstractHttpClient {
-    protected abstract broadcast(options: Request): void;
+export abstract class AbstractHttpClient implements IHttpClient {
+    protected abstract broadcast(options: IHttpRequest): void;
 
     constructor(protected transportInstance: ITransport) {
     }
@@ -49,7 +54,7 @@ export abstract class AbstractHttpClient {
         return new Promise((resolve, reject) => {
             const removeResponseHandler = this.transportInstance.on(
                 HttpMessageType.response,
-                (response: Response) => {
+                (response: IHttpResponse) => {
                     if (!response.uid) {
                         loggerClient.error('Http Client: no response uid');
                         throw new Error('no uid');
@@ -64,15 +69,17 @@ export abstract class AbstractHttpClient {
 
             const removeRejectHandler = this.transportInstance.on(
                 HttpMessageType.reject,
-                (response: ResponseReject) => {
+                (response: IHttpResponseReject) => {
                     if (!response.uid) {
                         loggerClient.error('Http Client: no response uid');
                         throw new Error('no uid');
                     }
+
                     if (response.uid === requestUID) {
                         removeRejectHandler();
                         removeResponseHandler();
                         loggerClient.error(`Http Client: failed with error ${response.error}`);
+
                         reject(response.error);
                     }
                 }

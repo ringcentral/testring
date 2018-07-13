@@ -8,6 +8,7 @@ import { browserProxyControllerFactory } from '@testring/browser-proxy';
 import { transport } from '@testring/transport';
 import { RecorderServer } from '@testring/recorder-backend';
 import { RecorderServerMessageTypes } from '@testring/types';
+import { HttpClientLocal } from '@testring/http-api';
 
 
 export const runRecordingProcess = async (argv: Array<string>, stdout: NodeJS.WritableStream) => {
@@ -18,20 +19,21 @@ export const runRecordingProcess = async (argv: Array<string>, stdout: NodeJS.Wr
     const testRunController = new TestRunController(userConfig, testWorker);
     const browserProxyController = browserProxyControllerFactory(transport);
     const webApplicationController = new WebApplicationController(browserProxyController, transport);
+    const httpClient = new HttpClientLocal(transport);
     const recorderServer = new RecorderServer();
 
     applyPlugins({
         logger: loggerServer,
         testWorker: testWorker,
         browserProxy: browserProxyController,
-        testRunController: testRunController
+        testRunController: testRunController,
+        httpClientInstance: httpClient
     }, userConfig);
 
     await browserProxyController.spawn();
+    await recorderServer.run();
 
     webApplicationController.init();
-
-    await recorderServer.run();
 
     loggerClientLocal.info('Recorder Server started');
 
@@ -40,6 +42,7 @@ export const runRecordingProcess = async (argv: Array<string>, stdout: NodeJS.Wr
 
         try {
             const testResult = await testRunController.pushTestIntoQueue(testStr);
+
             loggerClientLocal.info(`Test executed with result: ${testResult}`);
         } catch (e) {
             loggerClientLocal.info(`Test executed failed with error: ${e}`);

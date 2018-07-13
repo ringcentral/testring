@@ -1,9 +1,9 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
+import { HttpMessageType } from '@testring/types';
 import { TransportMock } from '@testring/test-utils';
 import { HttpServer } from '../src/http-server';
-import { HttpMessageType } from '../src/structs';
 
 const DEFAULT_CONFIG: any = { httpThrottle: 0 };
 

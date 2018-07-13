@@ -1,11 +1,11 @@
-import { AbstractHttpClient } from './abstract-http-client';
-import { HttpMessageType } from './structs';
-import { Request } from './interfaces';
 import { loggerClient } from '@testring/logger';
+import { IHttpRequest, HttpMessageType } from '@testring/types';
+import { AbstractHttpClient } from './abstract-http-client';
 
 export class HttpClient extends AbstractHttpClient {
-    protected broadcast(request: Request) {
-        loggerClient.debug(`Http client: send message [type=${HttpMessageType.send}] to parent process`);
+    protected broadcast(request: IHttpRequest) {
+        loggerClient.debug('Http client: send message to parent process', request);
+
         this.transportInstance.broadcast(HttpMessageType.send, request);
     }
 }
