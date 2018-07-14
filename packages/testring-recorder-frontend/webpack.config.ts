@@ -9,6 +9,9 @@ const config: webpack.Configuration = {
         path: path.resolve(__dirname, 'dist'),
         filename: 'index.bundle.js'
     },
+    resolve: {
+        extensions: [ '.tsx', '.ts', '.js', '.css' ]
+    },
     plugins: [
         new MonacoWebpackPlugin({
             languages: ['javascript']
@@ -51,9 +54,8 @@ const config: webpack.Configuration = {
             }
         ]
     },
-    resolve: {
-        extensions: [ '.tsx', '.ts', '.js', '.css' ]
-    }
+
+    stats: 'errors-only'
 };
 
 export default config;

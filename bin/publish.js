@@ -34,7 +34,7 @@ const batchedPackages = PackageUtilities.topologicallyBatchPackages(Object.value
     depsOnly: true
 });
 
-PackageUtilities.runParallelBatches(batchedPackages, (pkg) => (callback) => {
+const task = (pkg) => (callback) => {
     process.stdout.write(`Publishing package: ${pkg.name}...\n`);
 
     childProcess.exec(
@@ -51,7 +51,10 @@ PackageUtilities.runParallelBatches(batchedPackages, (pkg) => (callback) => {
             }
         }
     );
-}, 2, (error) => {
+};
+
+
+PackageUtilities.runParallelBatches(batchedPackages, task, 2, (error) => {
     if (error) {
         process.stderr.write(error.toString());
         process.exit(1);
