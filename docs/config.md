@@ -1,5 +1,5 @@
 
-# Getting started
+# Config
 
 At first, testring have similar API for config file and arguments in command line, 
 so this guide will have examples for both CLI and config file.
@@ -68,12 +68,12 @@ $ testring run --tests ./src/**/test/*.spec.js
 Filtering logs for logger.
 
 Available levels:
-* `verbose`;
-* `debug`;
-* `info`;
-* `warning`;
-* `error`;
-* `silent`;
+* `verbose`
+* `debug`
+* `info`
+* `warning`
+* `error`
+* `silent`
 
 ```
 $ testring run --log-level silent

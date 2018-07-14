@@ -13,6 +13,7 @@
     "reinstall": "node ./bin/cleanup.js && npm install",
     "link": "lerna exec --no-sort -- node ../../bin/link",
     "unlink": "lerna exec --no-sort -- node ../../bin/unlink",
+    "generate-readme": "lerna exec --no-sort -- node ../../bin/generate-readme",
     "lint": "npm run lint:src && npm run lint:test",
     "lint:src": "lerna exec --parallel -- eslint ./src/**.ts",
     "lint:test": "lerna exec --parallel --no-sort -- eslint ./test/**.ts",
@@ -30,7 +31,7 @@
     "build:clear": "npm run lint && npm run build",
     "build:precommit": "npm run build:clear && npm run test && npm run test:e2e-simple",
     "build:ci": "npm run build:clear && npm run test:ci",
-    "publish": "lerna publish --force-publish=* --skip-npm",
+    "publish": "npm run generate-readme && lerna publish",
     "publish:ci": "node ./bin/publish.js",
     "check-deps": "lerna exec -- npm-check --skip-unused --ignore @testring/*"
   },
