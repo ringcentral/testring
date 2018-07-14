@@ -1,10 +1,9 @@
 
-# Config API
+# Getting started
 
 At first, testring have similar API for config file and arguments in command line, 
 so this guide will have examples for both CLI and config file.
 
-## Getting started
 Framework have 3 levels of configuration, sorted by priority: 
 ```
 CLI arguments -> environment file -> config file
@@ -12,10 +11,9 @@ CLI arguments -> environment file -> config file
 Config file have lowest priority, it's fields will be overrided by environment config, if it's exists, 
 CLI arguments overrides everything.
 
-## Fields
 
 
-### `config`
+## `config`
 
 ###### `./testring.json` <sup>default</sup>
 
@@ -31,8 +29,9 @@ Javascript file should return:
 $ testring run --config ./my-custom-config.json
 ```
 
+<br/>
 
-### `envConfig`
+## `envConfig`
 
 ###### `void` <sup>default</sup>
 
@@ -41,8 +40,9 @@ All resolving logic is similar to `--config`.
 
 `envConfig` extends and overrides original config, useful for decomposing config into smaller parts.
 
+<br/>
 
-### `tests`
+## `tests`
 
 ###### `./tests/**/*.js` <sup>default</sup>
 
@@ -59,8 +59,9 @@ $ testring run --tests ./src/**/test/*.spec.js
 }
 ```
 
+<br/>
 
-### `logLevel`
+## `logLevel`
 
 ###### `info` <sup>default</sup>
 
@@ -84,8 +85,9 @@ $ testring run --log-level silent
 }
 ```
 
+<br/>
 
-### `silent`
+## `silent`
 
 ###### `false` <sup>default</sup>
 
@@ -101,8 +103,9 @@ $ testring run --silent
 }
 ```
 
+<br/>
 
-### `bail`
+## `bail`
 
 ###### `false` <sup>default</sup>
 
@@ -118,8 +121,9 @@ $ testring run --bail
 }
 ```
 
+<br/>
 
-### `workerLimit`
+## `workerLimit`
 
 ###### `10` <sup>default</sup>
 
@@ -137,8 +141,9 @@ $ testring run --worker-limit 20
 }
 ```
 
+<br/>
 
-### `retryCount`
+## `retryCount`
 
 ###### `3` <sup>default</sup>
 
@@ -154,8 +159,9 @@ $ testring run --retry-count 5
 }
 ```
 
+<br/>
 
-### `retryDelay`
+## `retryDelay`
 
 ###### `2000` <sup>default</sup>
 
@@ -171,8 +177,9 @@ $ testring run --retry-delay 10000
 }
 ```
 
+<br/>
 
-### `httpThrottle`
+## `httpThrottle`
 
 ###### `0` <sup>default</sup>
 
@@ -188,8 +195,9 @@ $ testring run --http-throttle 500
 }
 ```
 
+<br/>
 
-### `plugins`
+## `plugins`
 
 ###### `void` <sup>default</sup>
 
