@@ -12,14 +12,14 @@ Config file have lowest priority, it's fields will be overrided by environment c
 CLI arguments overrides everything.
 
 * [config](#config)
-* [envConfig](#envConfig)
+* [envConfig](#env-config)
 * [tests](#tests)
-* [logLevel](#logLevel)
+* [logLevel](#log-level)
 * [bail](#bail)
-* [workerLimit](#workerLimit)
-* [retryCount](#retryCount)
-* [retryDelay](#retryDelay)
-* [httpThrottle](#httpThrottle)
+* [workerLimit](#worker-limit)
+* [retryCount](#retry-count)
+* [retryDelay](#retry-delay)
+* [httpThrottle](#http-throttle)
 * [plugins](#plugins)
 
 
