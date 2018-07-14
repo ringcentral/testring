@@ -1,5 +1,5 @@
 
-# Config
+# Config API
 
 At first, testring have similar API for config file and arguments in command line, 
 so this guide will have examples for both CLI and config file.
@@ -11,6 +11,16 @@ CLI arguments -> environment file -> config file
 Config file have lowest priority, it's fields will be overrided by environment config, if it's exists, 
 CLI arguments overrides everything.
 
+* [config](#config)
+* [envConfig](#envConfig)
+* [tests](#tests)
+* [logLevel](#logLevel)
+* [bail](#bail)
+* [workerLimit](#workerLimit)
+* [retryCount](#retryCount)
+* [retryDelay](#retryDelay)
+* [httpThrottle](#httpThrottle)
+* [plugins](#plugins)
 
 
 ## `config`
@@ -46,7 +56,7 @@ All resolving logic is similar to `--config`.
 
 ###### `./tests/**/*.js` <sup>default</sup>
 
-Glob pattern, relative to project root. 
+[Glob](https://github.com/isaacs/node-glob#glob-primer) pattern, relative to project root. 
 All founded file will be added to run queue.
 
 ```
@@ -65,7 +75,7 @@ $ testring run --tests ./src/**/test/*.spec.js
 
 ###### `info` <sup>default</sup>
 
-Filtering logs for logger.
+Filtering logs rule.
 
 Available levels:
 * `verbose`
