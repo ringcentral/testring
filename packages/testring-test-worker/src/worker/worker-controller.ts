@@ -1,5 +1,5 @@
-import * as path from 'path';
 import * as process from 'process';
+import * as path from 'path';
 import { Sandbox } from '@testring/sandbox';
 import { TestAPIController } from '@testring/api';
 import {

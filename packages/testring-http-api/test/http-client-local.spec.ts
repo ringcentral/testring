@@ -1,10 +1,9 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { Request } from '../src/interfaces';
 import { TransportMock } from '@testring/test-utils';
+import { IHttpRequest, HttpMessageType } from '@testring/types';
 import { HttpClientLocal } from '../src/http-client-local';
-import { HttpMessageType } from '../src/structs';
 
 
 describe('HttpClientLocal', () => {
@@ -28,7 +27,7 @@ describe('HttpClientLocal', () => {
         const httpClient = new HttpClientLocal(transport);
         const response = {};
         //imitate a server
-        transport.on(HttpMessageType.send, (data: Request, src: string) => {
+        transport.on(HttpMessageType.send, (data: IHttpRequest, src: string) => {
             transport.send(src, HttpMessageType.response, {
                 uid: data.uid,
                 response
@@ -44,7 +43,7 @@ describe('HttpClientLocal', () => {
         const httpClient = new HttpClientLocal(transport);
 
         //imitate a server
-        transport.on(HttpMessageType.send, (data: Request, src: string) => {
+        transport.on(HttpMessageType.send, (data: IHttpRequest, src: string) => {
             transport.send(src, HttpMessageType.response, {});
         });
         httpClient.post({

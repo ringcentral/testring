@@ -6,7 +6,7 @@ export const defaultConfiguration: IConfig = {
     debug: false,
     silent: false,
     bail: false,
-    workerLimit: 30,
+    workerLimit: 10,
     retryCount: 3,
     retryDelay: 2000,
     httpThrottle: 0,

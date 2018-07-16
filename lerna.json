@@ -13,7 +13,12 @@
       "npmClientArgs": [
         "--no-package-lock"
       ]
+    },
+    "publish": {
+      "forcePublish": "*",
+      "allowBranch": "master",
+      "skipNpm": true
     }
   },
-  "version": "0.2.2"
+  "version": "0.2.4"
 }

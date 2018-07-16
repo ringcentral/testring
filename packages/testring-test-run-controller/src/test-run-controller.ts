@@ -20,7 +20,7 @@ const delay = (milliseconds: number) => new Promise((resolve) => {
 export class TestRunController extends PluggableModule implements ITestRunController {
 
     private errors: Array<Error> = [];
-    private testQueue: TestQueue | null = null;
+    private currentQueue: TestQueue | null = null;
     private currentRun: Promise<any> | null = null;
 
     constructor(
@@ -36,17 +36,34 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         ]);
     }
 
+    public async pushTestIntoQueue(testString: string) {
+        const testQueueItem = this.prepareTest({
+            path: '',
+            content: testString,
+            meta: {}
+        });
+        if (Array.isArray(this.currentQueue)) {
+            this.currentQueue.push(testQueueItem);
+        } else {
+            this.currentQueue = new Queue([testQueueItem]);
+            this.currentRun = this.executeQueue(this.currentQueue);
+        }
+
+        return this.currentRun;
+    }
+
     public async runQueue(testSet: Array<ITestFile>): Promise<Error[] | null> {
         const testQueue = await this.prepareTests(testSet);
 
         loggerClientLocal.debug('Run controller: tests queue created.');
 
-        if (Array.isArray(this.testQueue)) {
-            this.testQueue.push(...testQueue);
+        if (Array.isArray(this.currentQueue)) {
+            this.currentQueue.push(...testQueue);
         } else {
-            this.testQueue = testQueue;
-            this.currentRun = this.executeQueue(this.testQueue);
+            this.currentQueue = testQueue;
+            this.currentRun = this.executeQueue(this.currentQueue);
         }
+
         return this.currentRun;
     }
 
@@ -66,29 +83,13 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             this.errors.push(error);
         }
 
-        this.testQueue = null;
+        this.currentQueue = null;
 
         if (this.errors.length) {
             return this.errors;
         }
 
         return null;
-    }
-
-    public async pushTestIntoQueue(testString: string) {
-        const testQueueItem = this.prepareTest({
-            path: '',
-            content: testString,
-            meta: {}
-        });
-        if (Array.isArray(this.testQueue)) {
-            this.testQueue.push(testQueueItem);
-        } else {
-            this.testQueue = new Queue([testQueueItem]);
-            this.currentRun = this.executeQueue(this.testQueue);
-        }
-
-        return this.currentRun;
     }
 
     private getWorkerLimit(testQueue: TestQueue) {

@@ -86,10 +86,6 @@ export class BrowserProxy {
 
             const response = await this.plugin[command.action](applicant, ...command.args);
 
-            loggerClient.debug(
-                `Browser Proxy: Send message [type=${BrowserProxyMessageTypes.response}] to parent process`
-            );
-
             this.transportInstance.broadcast<IBrowserProxyCommandResponse>(
                 BrowserProxyMessageTypes.response,
                 {

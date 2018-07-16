@@ -1,6 +1,5 @@
 import * as util from 'util';
 import * as bytes from 'bytes';
-import { merge } from 'lodash';
 import { Stack } from '@testring/utils';
 import { transport } from '@testring/transport';
 import { ITransport, ILogEntry, ILoggerClient, LoggerMessageTypes, LogTypes, LogLevel } from '@testring/types';
@@ -17,8 +16,14 @@ const decomposeStepName = (stepID: string): string => {
     return stepID.split(STEP_NAME_SEPARATOR)[0];
 };
 
-const formatLog = (logType: LogTypes, logLevel: LogLevel, time: Date, content: Array<any>): string => {
-    const prefix = `[${time.toLocaleTimeString()}] [${logLevel}]`;
+const formatLog = (
+    logType: LogTypes,
+    logLevel: LogLevel,
+    time: Date,
+    prefix: string,
+    content: Array<any>
+): string => {
+    const formattedPrefix = `${prefix ? `[${prefix}] ` : ''}[${time.toLocaleTimeString()}] [${logLevel}]`;
 
     switch (logType) {
         case LogTypes.media: {
@@ -26,31 +31,25 @@ const formatLog = (logType: LogTypes, logLevel: LogLevel, time: Date, content: A
             const media = content[1];
 
             return util.format(
-                `${prefix} [media]`,
+                `${formattedPrefix} [media]`,
                 `Filename: ${filename};`,
                 `Size: ${bytes.format(media.length)};`
             );
         }
 
         case LogTypes.step: {
-            return util.format(
-                `${prefix} [step]`,
-                ...content
-            );
+            return util.format(`${formattedPrefix} [step]`, ...content);
         }
 
         default:
-            return util.format(
-                prefix, ...content
-            );
+            return util.format(formattedPrefix, ...content);
     }
 };
 
 export abstract class AbstractLoggerClient implements ILoggerClient {
     constructor(
         protected transportInstance: ITransport = transport,
-        protected logLevel: LogLevel = LogLevel.info,
-        protected logEnvironment?: any
+        protected prefix: string = ''
     ) {
     }
 
@@ -71,11 +70,11 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
     protected buildEntry(
         logType: LogTypes,
         content: Array<any>,
-        logLevel: LogLevel = this.logLevel,
-        logEnvironment: any = this.logEnvironment
+        logLevel: LogLevel,
+        logEnvironment: any
     ): ILogEntry {
         const time = new Date();
-        const formattedMessage = formatLog(logType, logLevel, time, content);
+        const formattedMessage = formatLog(logType, logLevel, time, this.prefix, content);
         const currentStep = this.getCurrentStep();
         const previousStep = this.getPreviousStep();
 
@@ -101,9 +100,9 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
 
     protected createLog(
         type: LogTypes,
+        logLevel: LogLevel,
         content: Array<any>,
-        logLevel: LogLevel = this.logLevel,
-        logEnvironment: any = this.logEnvironment
+        logEnvironment: any = null
     ): void {
         const logEntry = this.buildEntry(type, content, logLevel, logEnvironment);
 
@@ -127,37 +126,37 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
     }
 
     public log(...args): void {
-        this.createLog(LogTypes.log, args, LogLevel.info);
+        this.createLog(LogTypes.log, LogLevel.info, args);
     }
 
     public info(...args): void {
-        this.createLog(LogTypes.info, args, LogLevel.info);
+        this.createLog(LogTypes.info, LogLevel.info, args);
     }
 
     public warn(...args): void {
-        this.createLog(LogTypes.warning, args, LogLevel.warning);
+        this.createLog(LogTypes.warning, LogLevel.warning, args);
     }
 
     public error(...args): void {
-        this.createLog(LogTypes.error, args, LogLevel.error);
+        this.createLog(LogTypes.error, LogLevel.error, args);
     }
 
     public debug(...args): void {
-        this.createLog(LogTypes.debug, args, LogLevel.debug);
+        this.createLog(LogTypes.debug, LogLevel.debug, args);
     }
 
     public media(filename: string, content: Buffer): void {
-        this.createLog(LogTypes.media, [filename, content], LogLevel.info);
+        this.createLog(LogTypes.media, LogLevel.info, [filename, content]);
     }
 
     public withLogEnvironment(logEnvironment: any) {
         return {
-            log: (...args) => this.createLog(LogTypes.log, args, LogLevel.info, logEnvironment),
-            info: (...args) => this.createLog(LogTypes.info, args, LogLevel.info, logEnvironment),
-            warn: (...args) => this.createLog(LogTypes.warning, args, LogLevel.warning, logEnvironment),
-            error: (...args) => this.createLog(LogTypes.error, args, LogLevel.error, logEnvironment),
-            debug: (...args) => this.createLog(LogTypes.debug, args, LogLevel.debug, logEnvironment),
-            media: (...args) => this.createLog(LogTypes.media, args, LogLevel.info, logEnvironment)
+            log: (...args) => this.createLog(LogTypes.log, LogLevel.info, args, logEnvironment),
+            info: (...args) => this.createLog(LogTypes.info, LogLevel.info, args, logEnvironment),
+            warn: (...args) => this.createLog(LogTypes.warning, LogLevel.warning, args, logEnvironment),
+            error: (...args) => this.createLog(LogTypes.error, LogLevel.error, args, logEnvironment),
+            debug: (...args) => this.createLog(LogTypes.debug, LogLevel.debug, args, logEnvironment),
+            media: (...args) => this.createLog(LogTypes.media, LogLevel.info, args, logEnvironment)
         };
     }
 
@@ -168,6 +167,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
 
         this.createLog(
             LogTypes.step,
+            LogLevel.info,
             [key]
         );
     }
@@ -206,9 +206,5 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
         }
 
         this.endStep(message);
-    }
-
-    public setLogEnvironment(logEnvironment: object): void {
-        this.logEnvironment = merge(this.logEnvironment, logEnvironment);
     }
 }

@@ -1,0 +1,30 @@
+const process = require('process');
+const path = require('path');
+const fs = require('fs');
+
+const root = process.cwd();
+
+const pkg = require(
+    path.join(root, './package.json')
+);
+
+const content = `
+# \`${pkg.name}\`
+
+${pkg.description ? `> ${pkg.description}` : ''}
+
+## Install
+Using npm:
+
+\`\`\`
+npm install --save-dev ${pkg.name}
+\`\`\`
+
+or using yarn:
+
+\`\`\`
+yarn add ${pkg.name} --dev
+\`\`\`
+`;
+
+fs.writeFileSync(path.join(root,'./README.md'), content.trim());

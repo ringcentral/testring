@@ -1,14 +1,19 @@
 import * as request from 'request';
 import * as requestPromise from 'request-promise';
 import { PluggableModule } from '@testring/pluggable-module';
-import { IConfig, ITransport } from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
-import { HttpMessageType, HttpServerPlugins } from './structs';
-import { Request, Response, ResponseReject } from './interfaces';
-
+import {
+    IConfig,
+    ITransport,
+    IHttpRequest,
+    IHttpResponse,
+    IHttpResponseReject,
+    HttpMessageType,
+    HttpServerPlugins
+} from '@testring/types';
 
 interface QueueRequest {
-    data: Request;
+    data: IHttpRequest;
     src: string;
 }
 
@@ -58,13 +63,13 @@ export class HttpServer extends PluggableModule {
 
             const responseAfterHook = await this.callHook(HttpServerPlugins.beforeResponse, response);
 
-            this.send<Response>(src, HttpMessageType.response, {
+            this.send<IHttpResponse>(src, HttpMessageType.response, {
                 uid,
                 response: responseAfterHook
             });
             this.setTimer();
         } catch (error) {
-            this.send<ResponseReject>(src, HttpMessageType.reject, {
+            this.send<IHttpResponseReject>(src, HttpMessageType.reject, {
                 uid,
                 error
             });
@@ -98,7 +103,7 @@ export class HttpServer extends PluggableModule {
     private registerTransportListener(): void {
         loggerClientLocal.debug(`Http server: Register listener for messages [type = ${HttpMessageType.send}]`);
 
-        this.transportInstance.on(HttpMessageType.send, (data: Request, src: string) => {
+        this.transportInstance.on(HttpMessageType.send, (data: IHttpRequest, src: string) => {
 
             // todo validate data
             if (this.isBusy) {
