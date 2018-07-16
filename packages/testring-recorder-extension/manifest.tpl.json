@@ -17,7 +17,7 @@
   "content_scripts": [
     {
       "matches": [
-        "http://localhost/*"
+        "*://*/*"
       ],
       "js": [
         "content.bundle.js"

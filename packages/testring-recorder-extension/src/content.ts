@@ -21,7 +21,7 @@ transportClient.on(
     }
 );
 
-const clickHandler = (event: Event) => {
+const clickHandler = (event: Event): void => {
     const xpath = resolveElementPath(event);
 
     if (xpath) {

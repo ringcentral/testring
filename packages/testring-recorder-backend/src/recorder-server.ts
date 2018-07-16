@@ -1,5 +1,4 @@
 import * as path from 'path';
-// import * as opn from 'opn';
 import { exec } from 'child_process';
 import * as WebSocket from 'ws';
 import { loggerClientLocal } from '@testring/logger';

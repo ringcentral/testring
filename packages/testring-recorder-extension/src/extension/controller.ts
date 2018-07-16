@@ -1,33 +1,38 @@
-import { IRecordingEvent, MessagingTransportEvents } from '@testring/types';
+import { IRecordingEvent, MessagingTransportEvents, RecorderEvents } from '@testring/types';
+import { ClientWsTransport } from '@testring/client-ws-transport';
 
 import { MessagingTransportServer } from './messaging-transport';
 
 export class ExtensionController {
+
     constructor() {
-        this.registerListeners();
+        this.registerMessagingListeners();
+        this.wsTransport.connect();
     }
 
-    private server = new MessagingTransportServer();
+    private messagingServer = new MessagingTransportServer();
+
+    private wsTransport = new ClientWsTransport();
 
     private mainConnectionId: string;
 
-    private registerListeners() {
-        this.server.on(
+    private registerMessagingListeners() {
+        this.messagingServer.on(
             MessagingTransportEvents.CONNECT,
             (conId) => this.handleConnection(conId),
         );
 
-        this.server.on(
+        this.messagingServer.on(
             MessagingTransportEvents.DISCONNECT,
             (conId) => this.handleDisconnection(conId),
         );
 
-        this.server.on(
+        this.messagingServer.on(
             MessagingTransportEvents.MESSAGE,
             (message) => this.handleMessage(message),
         );
 
-        this.server.on(
+        this.messagingServer.on(
             MessagingTransportEvents.RECORDING_EVENT,
             (event) => this.handleRecordingEvent(event)
         );
@@ -42,7 +47,7 @@ export class ExtensionController {
         if (!this.mainConnectionId) {
             this.mainConnectionId = conId;
         } else {
-            this.server.disconnect(conId);
+            this.messagingServer.disconnect(conId);
         }
     }
 
@@ -55,6 +60,9 @@ export class ExtensionController {
     }
 
     private handleRecordingEvent(event: IRecordingEvent): void {
-        console.log('event:', event); // eslint-disable-line
+        this.wsTransport.send(
+            RecorderEvents.RECORDING,
+            event,
+        );
     }
 }

@@ -38,7 +38,7 @@ const makePath = (path: Array<Element>): ElementPath => {
     }, [] as ElementPath);
 };
 
-export const resolveElementPath = (event: Event): ElementPath => {
+export const resolveElementPath = (event: Event): ElementPath | void => {
     if (!event.isTrusted) {
         throw new Error('Event is not evoked by user');
     }
@@ -46,5 +46,7 @@ export const resolveElementPath = (event: Event): ElementPath => {
     const path = getEventComposedPath(event);
     const automationPath = filterPathAutomated(path);
 
-    return makePath(automationPath);
+    if (automationPath.length > 0) {
+        return makePath(automationPath);
+    }
 };

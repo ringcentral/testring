@@ -9,3 +9,4 @@ export * from './transport';
 export * from './logger';
 export * from './recorder-backend';
 export * from './recorder-extension';
+export * from './recorder';

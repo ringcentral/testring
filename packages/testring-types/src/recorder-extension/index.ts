@@ -11,6 +11,12 @@ export const enum RecordingEventTypes {
     CLICK = 'RecordingEventTypes/CLICK',
 }
 
+export const enum ClientWsTransportEvents {
+    OPEN = 'ClientWsTransportEvents/OPEN',
+    CLOSE = 'ClientWsTransportEvents/CLOSE',
+    MESSAGE = 'ClientWsTransportEvents/MESSAGE',
+}
+
 export type ElementPath = Array<IElementPathNode>;
 
 export interface IElementPathNode {

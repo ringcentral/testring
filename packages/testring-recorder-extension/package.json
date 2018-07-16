@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@testring/types": "^0.2.2",
+    "@testring/client-ws-transport": "^0.2.2",
     "@types/chrome": "0.0.69",
     "mkdirp": "^0.5.1",
     "ncp": "^2.0.0",

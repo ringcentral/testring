@@ -7,9 +7,11 @@
     "*.ts",
     "src/**/*.ts",
     "src/**/*.json",
-    "node_modules/@testring/types/src/index.ts"
+    "node_modules/@testring/types/src/index.ts",
+    "node_modules/@testring/client-ws-transport/src/index.ts"
   ],
   "files": [
-    "../testring-types/src/index.ts"
+    "../testring-types/src/index.ts",
+    "../testring-client-ws-transport/src/index.ts"
   ]
 }
