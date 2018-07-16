@@ -71,17 +71,21 @@ describe('Recorder server', () => {
             );
         });
 
-        it('should broadcast MESSAGE over transport on incoming ws message', (callback) => {
+        it('should broadcast event over transport on incoming ws message', (callback) => {
+            const event = 'GREETING';
             const payload = 'HELLO';
 
             const con = new WebSocket(wsUrl);
 
             con.on('open', () => {
-                con.send(payload);
+                con.send(JSON.stringify({
+                    event,
+                    payload,
+                }));
             });
 
             transport.on(
-                RecorderServerEvents.MESSAGE,
+                event,
                 async (message) => {
                     chai.expect(message).to.have.property('conId');
                     chai.expect(message).to.have.property('payload', payload);

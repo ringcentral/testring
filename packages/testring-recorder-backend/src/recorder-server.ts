@@ -70,9 +70,11 @@ export class RecorderServer implements IRecorderServer {
 
         this.connections.set(conId, ws);
 
-        ws.on('message', (payload) => {
+        ws.on('message', (message: string) => {
+            const { event, payload } = JSON.parse(message);
+
             this.transportInstance.broadcast(
-                RecorderServerEvents.MESSAGE,
+                event,
                 { conId, payload },
             );
         });
