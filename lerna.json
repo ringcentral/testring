@@ -6,7 +6,7 @@
   ],
   "command": {
     "exec": {
-      "ignore": "@testring/@(types|test-utils|e2e-test-app|recorder-frontend|recorder-extension)",
+      "ignore": "@testring/@(types|test-utils|e2e-test-app|client-ws-transport|recorder-frontend|recorder-extension)",
       "stream": true
     },
     "bootstrap": {

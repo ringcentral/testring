@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true
+  },
+  "include": [
+    "*.ts",
+    "src/**/*.ts",
+    "src/**/*.json",
+    "node_modules/@testring/types/src/index.ts"
+  ],
+  "files": [
+    "../testring-types/src/index.ts"
+  ]
+}
