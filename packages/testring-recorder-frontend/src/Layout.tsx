@@ -1,4 +1,5 @@
 import React from 'react';
+import { Editor } from './components/editor';
 
 export default () => (
     <div style={{
@@ -33,6 +34,7 @@ export default () => (
         <button>
             Totally out of scope, not good
         </button>
+        <Editor />
     </div>
 );
 

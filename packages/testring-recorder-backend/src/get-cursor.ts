@@ -50,7 +50,7 @@ export function getCursor(code: string, currentPosition: CursorPosition): Cursor
 
 }
 
-function isCursorHere(nodeLocation: NodeLocation, cursorLocation: CursorPosition) {
+export function isCursorHere(nodeLocation: NodeLocation, cursorLocation: CursorPosition) {
 
     const isThatLine = (
         nodeLocation.start.line <= cursorLocation.line &&

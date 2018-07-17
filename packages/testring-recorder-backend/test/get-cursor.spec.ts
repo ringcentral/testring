@@ -1,29 +1,9 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import * as fs from 'fs';
-import * as path from 'path';
+import { fileReaderFactory } from '@testring/test-utils';
 import { getCursor } from '../src/get-cursor';
 
-const fileResolverFactory = (...root: Array<string>) => {
-    return (...file: Array<string>) => path.resolve(...root, ...file);
-};
-
-const fileReaderFactory = (...root: Array<string>) => {
-    const resolver = fileResolverFactory(...root);
-
-    return (source: string): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            fs.readFile(resolver(source), 'utf8', (err: Error, file: string) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(file);
-                }
-            });
-        });
-    };
-};
 
 describe('get-cursor', () => {
     it('should get available position for cursor according to the current position', async () => {

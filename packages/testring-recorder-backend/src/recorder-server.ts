@@ -71,6 +71,7 @@ export class RecorderServer implements IRecorderServer {
         this.connections.set(conId, ws);
 
         ws.on('message', (message: string) => {
+            console.log(message);
             try {
                 const { event, payload } = JSON.parse(message);
 
