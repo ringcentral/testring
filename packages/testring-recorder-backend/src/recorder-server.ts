@@ -71,12 +71,20 @@ export class RecorderServer implements IRecorderServer {
         this.connections.set(conId, ws);
 
         ws.on('message', (message: string) => {
-            const { event, payload } = JSON.parse(message);
+            try {
+                const { event, payload } = JSON.parse(message);
 
-            this.transportInstance.broadcast(
-                event,
-                { conId, payload },
-            );
+                if (event) {
+                    this.transportInstance.broadcast(
+                        event,
+                        { conId, payload },
+                    );
+                } else {
+                    throw new Error('event type not specified');
+                }
+            } catch (e) {
+                loggerClientLocal.warn(`[WS Server] ${e}`);
+            }
         });
 
         ws.on('close', () => {
