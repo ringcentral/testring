@@ -1,5 +1,4 @@
 import * as deepmerge from 'deepmerge';
-import { IConfig } from '@testring/types';
 
 const emptyTarget = value => Array.isArray(value) ? [] : {};
 const clone = (value, options) => deepmerge(emptyTarget(value), value, options);
@@ -23,6 +22,6 @@ function compressPlugins(target, source, options) {
     return destination;
 }
 
-export function mergeConfigs(configs): IConfig {
+export function mergeConfigs<T>(...configs: Array<Partial<T>>): T {
     return deepmerge.all(configs, { arrayMerge: compressPlugins });
 }

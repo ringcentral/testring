@@ -11,6 +11,6 @@
   "license": "MIT",
   "dependencies": {
     "@types/request": "^2.47.1",
-    "@types/request-promise": "^4.1.41"
+    "@types/request-promise": "^4.1.42"
   }
 }

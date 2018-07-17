@@ -1,6 +1,8 @@
 import * as process from 'process';
 import * as yargs from 'yargs';
-import { loggerClientLocal } from '@testring/logger';
+import { loggerClientLocal, LoggerServer } from '@testring/logger';
+import { getConfig } from '@testring/cli-config';
+import { transport } from '@testring/transport';
 import { IConfig } from '@testring/types';
 import { runTests } from './commands/run';
 import { runRecordingProcess } from './commands/record';
@@ -10,6 +12,17 @@ const pkg = require('../package.json');
 const createField = (key: keyof IConfig, options: yargs.Options) => {
     yargs.option(key.toString(), options);
 };
+
+yargs.usage('$0 [command] <arguments>');
+
+yargs.version(`testring version: ${pkg.version}`);
+
+yargs.command('run', 'To run tests');
+
+yargs.command('record', 'To make a record');
+
+yargs.help();
+
 
 createField('debug', {
     describe: 'Debugging flag',
@@ -66,29 +79,24 @@ createField('envConfig', {
     type: 'string'
 });
 
-yargs.usage('$0 command')
-    .version(`testring version: ${pkg.version}`)
-    .command('run', 'To run tests')
-    .command('record', 'To make a record')
-    .demandCommand(1, 'Please provide a valid command\n')
-    .help();
-
 // CLI entry point, it makes all initialization job and
 // handles all errors, that was not cached inside command
 
-export const runCLI = (argv: Array<string>) => {
+export const runCLI = async (argv: Array<string>) => {
     const args = yargs.parse(argv);
     const command = args._[2];
+
+    const config = await getConfig(argv);
 
     let commandExecution;
 
     switch (command) {
         case 'run':
-            commandExecution = runTests(argv, process.stdout);
+            commandExecution = runTests(config, process.stdout);
             break;
 
         case 'record':
-            commandExecution = runRecordingProcess(argv, process.stdout);
+            commandExecution = runRecordingProcess(config, process.stdout);
             break;
 
         default:
@@ -97,8 +105,13 @@ export const runCLI = (argv: Array<string>) => {
     }
 
     commandExecution.catch((exception) => {
+        new LoggerServer(config, transport, process.stdout);
+
         loggerClientLocal.error(exception);
-        process.exit(1);
+
+        setTimeout(() => {
+            process.exit(1);
+        }, 500);
     });
 
 };
