@@ -19,10 +19,6 @@ export class ClientWsTransport extends EventEmitter {
 
     private messagesQueue: Array<IQueuedMessage> = [];
 
-    private getConnectionStatus() {
-        return this.connection && this.connection.readyState === 1;
-    }
-
     private resolveQueue() {
         const queuedMessage = this.messagesQueue[0];
 
@@ -53,10 +49,12 @@ export class ClientWsTransport extends EventEmitter {
         this.resolveQueue();
     }
 
-    private messageHandler(message: any): void {
+    private messageHandler(message: MessageEvent): void {
+        const { data } = message;
+
         this.emit(
             ClientWsTransportEvents.MESSAGE,
-            message,
+            data
         );
     }
 
@@ -108,6 +106,10 @@ export class ClientWsTransport extends EventEmitter {
         if (this.connection) {
             this.connection.close();
         }
+    }
+
+    public getConnectionStatus() {
+        return this.connection && this.connection.readyState === 1;
     }
 
     public send(event: RecorderEvents, payload: any): Promise<void> {

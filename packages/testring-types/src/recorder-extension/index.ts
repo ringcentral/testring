@@ -33,3 +33,8 @@ export interface IMessagingTransportMessage {
     event: MessagingTransportEvents;
     payload: any;
 }
+
+export interface IExtensionConfig {
+    connectionId: string;
+    testElementAttribute: string;
+}
