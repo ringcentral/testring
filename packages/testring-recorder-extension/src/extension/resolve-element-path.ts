@@ -1,4 +1,4 @@
-import { ElementPath, TEST_ELEMENT_IDENTIFIER } from '@testring/types';
+import { ElementPath } from '@testring/types';
 
 const composePath = (element: Element, path: Array<Element> = []): Array<Element> => {
     const nextPath = [ ...path, element ];
@@ -20,7 +20,7 @@ const getEventComposedPath = (event: any): Array<Element> => {
     return composePath(event.target);
 };
 
-const makePath = (path: Array<Element>, attribute: string = TEST_ELEMENT_IDENTIFIER): ElementPath => {
+const makePath = (path: Array<Element>, attribute: string): ElementPath => {
     return path.reduce((path, node) => {
         if (!(node instanceof Element)) {
             return path;

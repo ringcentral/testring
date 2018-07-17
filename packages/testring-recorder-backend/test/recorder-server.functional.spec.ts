@@ -157,32 +157,6 @@ describe('Recorder server', () => {
             );
         });
 
-        it('should send message received from transport over websocket', (callback) => {
-            const payload = 'hello';
-            const con = new WebSocket(wsUrl);
-
-            con.on('message', (message) => {
-                chai.expect(message).to.be.equal(payload);
-
-                con.close();
-
-                callback();
-            });
-
-            transport.on(
-                RecorderServerEvents.CONNECTION,
-                async ({ conId }) => {
-                    transport.broadcast(
-                        RecorderServerMessageTypes.MESSAGE,
-                        {
-                            conId: conId,
-                            payload: payload,
-                        }
-                    );
-                },
-            );
-        });
-
         it('should close all connections when server stops', (callback) => {
             new WebSocket(wsUrl);
 

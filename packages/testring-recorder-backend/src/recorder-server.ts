@@ -9,6 +9,8 @@ import {
     IRecorderServer,
     ITransport,
     IWsMessage,
+    IExtensionConfig,
+    RecorderEvents,
 } from '@testring/types';
 
 import { DEFAULT_HOST, DEFAULT_HTTP_PORT, DEFAULT_WS_PORT } from './constants';
@@ -16,6 +18,9 @@ import { RecorderHttpServer } from './http-server';
 import { RecorderWebSocketServer, RecorderWsEvents } from './ws-server';
 
 const nanoid = require('nanoid');
+
+// TODO: move to types, there's a bug, when run e2e
+const ELEMENT_IDENTIFIER = 'data-test-automation-id';
 
 const extensionPath = path.dirname(require.resolve('@testring/recorder-extension'));
 const frontendPath = path.dirname(require.resolve('@testring/recorder-frontend'));
@@ -91,6 +96,18 @@ export class RecorderServer implements IRecorderServer {
             this.unregisterConnection(conId);
         });
 
+        this.send(
+            conId,
+            {
+                event: RecorderEvents.HANDSHAKE,
+                payload: {
+                    connectionId: conId,
+                    // TODO: get identifier from framework config
+                    testElementAttribute: ELEMENT_IDENTIFIER,
+                } as IExtensionConfig,
+            }
+        );
+
         this.transportInstance.broadcast(
             RecorderServerEvents.CONNECTION,
             { conId }
@@ -129,7 +146,7 @@ export class RecorderServer implements IRecorderServer {
     private send(conId: string, message: any): void {
         const connection = this.getConnection(conId);
 
-        connection.send(message);
+        connection.send(JSON.stringify(message));
     }
 
     private handleClose(message: IWsMessage): void {

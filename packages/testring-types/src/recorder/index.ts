@@ -1,5 +1,3 @@
-export const TEST_ELEMENT_IDENTIFIER = 'data-test-automation-id';
-
 export type ElementPath = Array<IElementPathNode>;
 
 export const enum RecorderEvents {
