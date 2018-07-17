@@ -33,7 +33,7 @@ export class ClientWsTransport extends EventEmitter {
 
                 resolve();
 
-                this.messagesQueue.unshift();
+                this.messagesQueue.shift();
 
                 if (this.messagesQueue.length > 0) {
                     this.resolveQueue();
@@ -65,7 +65,11 @@ export class ClientWsTransport extends EventEmitter {
         );
     }
 
-    private wsSend(event: RecorderEvents, payload: any) {
+    private wsSend(event: RecorderEvents, payload: any): void {
+        if (!this.getConnectionStatus()) {
+            throw new Error('WebSocket connection not OPEN');
+        }
+
         this.connection.send(JSON.stringify({ event, payload }));
     }
 
@@ -81,21 +85,25 @@ export class ClientWsTransport extends EventEmitter {
         this.connection = connection;
     }
 
+    public reconnect() {
+        if (this.connection) {
+            this.connect(this.connection.url);
+        }
+    }
+
     public disconnect(): void {
         if (this.connection) {
             this.connection.close();
-
-            delete this.connection;
         }
     }
 
     public send(event: RecorderEvents, payload: any): Promise<void> {
         return new Promise((resolve) => {
-            if (this.messagesQueue.length <= 0 && this.connection) {
+            if (this.messagesQueue.length <= 0) {
                 try {
                     this.wsSend(event, payload);
 
-                    return resolve();
+                    resolve();
                 } catch (e) {
                     this.messagesQueue.push({ event, payload, resolve });
                 }

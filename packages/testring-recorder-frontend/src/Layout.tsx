@@ -1,6 +1,8 @@
 import React from 'react';
 
-export default () => (
+import { Editor } from './components/editor';
+
+export const Layout = () => (
     <div style={{
         display: 'flex',
         flexDirection: 'column',
@@ -33,6 +35,8 @@ export default () => (
         <button>
             Totally out of scope, not good
         </button>
+
+        <Editor />
     </div>
 );
 
