@@ -14,6 +14,7 @@ export const enum RecordingEventTypes {
 export const enum ClientWsTransportEvents {
     OPEN = 'ClientWsTransportEvents/OPEN',
     CLOSE = 'ClientWsTransportEvents/CLOSE',
+    ERROR = 'ClientWsTransportEvents/CLOSE',
     MESSAGE = 'ClientWsTransportEvents/MESSAGE',
 }
 

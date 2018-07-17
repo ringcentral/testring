@@ -10,6 +10,7 @@ interface IQueuedMessage {
 export class ClientWsTransport extends EventEmitter {
     constructor(
         private url: string = 'ws://localhost:3001',
+        private shouldReconnect: boolean = false,
     ) {
         super();
     }
@@ -65,6 +66,17 @@ export class ClientWsTransport extends EventEmitter {
         );
     }
 
+    private errorHandler(e): void {
+        this.emit(
+            ClientWsTransportEvents.ERROR,
+            e,
+        );
+
+        if (this.shouldReconnect) {
+            this.reconnect();
+        }
+    }
+
     private wsSend(event: RecorderEvents, payload: any): void {
         if (!this.getConnectionStatus()) {
             throw new Error('WebSocket connection not OPEN');
@@ -81,6 +93,7 @@ export class ClientWsTransport extends EventEmitter {
         connection.onopen = () => this.openHandler();
         connection.onmessage = (message) => this.messageHandler(message);
         connection.onclose = () => this.closeHandler();
+        connection.onerror = (e) => this.errorHandler(e);
 
         this.connection = connection;
     }
