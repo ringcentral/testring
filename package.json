@@ -52,8 +52,6 @@
     "exclude": [
       "packages/*/src/index.ts",
       "packages/testring-types",
-      "packages/testring-client-ws-transport",
-      "packages/testring-recorder-extension",
       "packages/testring-web-application/src/web-application.ts",
       "packages/testring-web-application/src/web-client.ts",
       "packages/testring-plugin-selenium-driver/src/plugin/index.ts"

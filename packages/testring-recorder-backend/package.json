@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@testring/logger": "^0.2.4",
+    "@testring/constants": "^0.2.4",
     "@testring/recorder-extension": "^0.2.2",
     "@testring/recorder-frontend": "^0.2.4",
     "@testring/transport": "^0.2.4",

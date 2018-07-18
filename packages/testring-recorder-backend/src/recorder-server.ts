@@ -12,15 +12,13 @@ import {
     IExtensionConfig,
     RecorderEvents,
 } from '@testring/types';
+import { RECORDER_ELEMENT_IDENTIFIER } from '@testring/constants';
 
 import { DEFAULT_HOST, DEFAULT_HTTP_PORT, DEFAULT_WS_PORT } from './constants';
 import { RecorderHttpServer } from './http-server';
 import { RecorderWebSocketServer, RecorderWsEvents } from './ws-server';
 
 const nanoid = require('nanoid');
-
-// TODO: move to types, there's a bug, when run e2e
-const ELEMENT_IDENTIFIER = 'data-test-automation-id';
 
 const extensionPath = path.dirname(require.resolve('@testring/recorder-extension'));
 const frontendPath = path.dirname(require.resolve('@testring/recorder-frontend'));
@@ -103,7 +101,7 @@ export class RecorderServer implements IRecorderServer {
                 payload: {
                     connectionId: conId,
                     // TODO: get identifier from framework config
-                    testElementAttribute: ELEMENT_IDENTIFIER,
+                    testElementAttribute: RECORDER_ELEMENT_IDENTIFIER,
                 } as IExtensionConfig,
             }
         );
