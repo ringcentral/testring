@@ -21,6 +21,7 @@ if it's exists, CLI arguments overrides everything.
 * [retryCount](#retrycount)
 * [retryDelay](#retrydelay)
 * [httpThrottle](#httpthrottle)
+* [envParameters](#envparameters)
 * [plugins](#plugins)
 
 <br/>
@@ -194,7 +195,8 @@ $ testring run --retry-delay 10000
 
 ###### `0` <sup>default</sup>
 
-Delay between http requests in milliseconds. Useful if you don't want spam your test environment.
+Delay between http requests in milliseconds. 
+Useful if you don't want spam your test environment.
 
 ```
 $ testring run --http-throttle 500
@@ -203,6 +205,23 @@ $ testring run --http-throttle 500
 ```json
 {
   "httpThrottle": 500
+}
+```
+
+<br/>
+
+## `envParameters`
+
+###### `{}` <sup>default</sup>
+
+Special object, that passed right into test.
+You can get it inside test with `api.getEnvironment()` call.
+
+```json
+{
+  "envParameters": {
+    "custom": [ "test", "data" ]
+  }
 }
 ```
 

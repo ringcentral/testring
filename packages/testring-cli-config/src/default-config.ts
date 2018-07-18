@@ -9,5 +9,6 @@ export const defaultConfiguration: Partial<IConfig> = {
     retryCount: 3,
     retryDelay: 2000,
     httpThrottle: 0,
-    logLevel: LogLevel.info
+    logLevel: LogLevel.info,
+    envParameters: {}
 };

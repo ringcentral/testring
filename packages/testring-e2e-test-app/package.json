@@ -11,7 +11,7 @@
   "license": "MIT",
   "scripts": {
     "test:selenium": "testring run --config ./test/selenium/config.js --log-level debug",
-    "test:simple-run": "testring run --config test/simple/.testringrc --tests test/simple/*.spec.js",
+    "test:simple-run": "testring run --config test/simple/.testringrc",
     "test:run-and-record": "testring record --config test/simple/config.json --tests test/simple/*.spec.js",
     "e2e-simple": "npm run test:simple-run",
     "e2e": "npm run test:simple-run && npm run test:selenium"

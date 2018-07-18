@@ -34,10 +34,17 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     ) {
     }
 
-    public async execute(rawSource: string, filename: string, parameters: object): Promise<any> {
+    public async execute(rawSource: string, filename: string, parameters: any, envParameters: any): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
-                return await this.makeExecutionRequest(rawSource, filename, parameters, resolve, reject);
+                return await this.makeExecutionRequest(
+                    rawSource,
+                    filename,
+                    parameters,
+                    envParameters,
+                    resolve,
+                    reject
+                );
             } catch (error) {
                 reject(error);
             }
@@ -52,7 +59,14 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         }
     }
 
-    private async makeExecutionRequest(rawSource: string, filename: string, parameters: object, resolve, reject) {
+    private async makeExecutionRequest(
+        rawSource: string,
+        filename: string,
+        parameters: any,
+        envParameters: any,
+        resolve,
+        reject
+    ) {
         if (this.worker === null) {
             this.worker = this.createWorker();
         }
@@ -65,7 +79,8 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         const testData = {
             source: compiledSource,
             filename,
-            parameters
+            parameters,
+            envParameters
         };
 
         const relativePath = path.relative(process.cwd(), filename);
