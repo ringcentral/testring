@@ -1,8 +1,7 @@
 import { EventEmitter } from 'events';
 import { Server as WSS } from 'ws';
 import { IServer } from '@testring/types';
-
-import { DEFAULT_HOST, DEFAULT_WS_PORT } from './constants';
+import { DEFAULT_RECORDER_HOST, DEFAULT_RECORDER_WS_PORT } from '@testring/constants';
 
 export const enum RecorderWsEvents {
     CONNECTION = 'CONNECTION'
@@ -10,8 +9,8 @@ export const enum RecorderWsEvents {
 
 export class RecorderWebSocketServer extends EventEmitter implements IServer {
     constructor(
-        private host: string = DEFAULT_HOST,
-        private port: number = DEFAULT_WS_PORT,
+        private host: string = DEFAULT_RECORDER_HOST,
+        private port: number = DEFAULT_RECORDER_WS_PORT,
     ) {
         super();
     }

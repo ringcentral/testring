@@ -13,8 +13,8 @@
     "start:watch": "nodemon --watch 'src/**/*' -e ts,tsx --exec 'ts-node' ./src/index.ts"
   },
   "dependencies": {
-    "@testring/logger": "^0.2.6",
     "@testring/constants": "^0.2.4",
+    "@testring/logger": "^0.2.6",
     "@testring/recorder-extension": "^0.2.2",
     "@testring/recorder-frontend": "^0.2.6",
     "@testring/transport": "^0.2.6",
@@ -26,6 +26,7 @@
     "@types/ws": "^5.1.2",
     "babel-traverse": "^6.26.0",
     "babel-types": "^6.26.0",
+    "chrome-launcher": "^0.10.2",
     "koa": "^2.5.2",
     "koa-static": "^5.0.0",
     "koa-views": "^6.1.4",

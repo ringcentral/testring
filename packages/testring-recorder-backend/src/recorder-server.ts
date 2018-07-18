@@ -1,6 +1,6 @@
 import * as path from 'path';
-import { exec } from 'child_process';
 import * as WebSocket from 'ws';
+import { launch, LaunchedChrome } from 'chrome-launcher';
 import { loggerClientLocal } from '@testring/logger';
 import { transport } from '@testring/transport';
 import {
@@ -12,9 +12,13 @@ import {
     IExtensionConfig,
     RecorderEvents,
 } from '@testring/types';
-import { RECORDER_ELEMENT_IDENTIFIER } from '@testring/constants';
+import {
+    RECORDER_ELEMENT_IDENTIFIER,
+    DEFAULT_RECORDER_HOST,
+    DEFAULT_RECORDER_HTTP_PORT,
+    DEFAULT_RECORDER_WS_PORT,
+} from '@testring/constants';
 
-import { DEFAULT_HOST, DEFAULT_HTTP_PORT, DEFAULT_WS_PORT } from './constants';
 import { RecorderHttpServer } from './http-server';
 import { RecorderWebSocketServer, RecorderWsEvents } from './ws-server';
 
@@ -26,9 +30,9 @@ const templatesPath = path.resolve(__dirname, '../templates/');
 
 export class RecorderServer implements IRecorderServer {
     constructor(
-        private host: string = DEFAULT_HOST,
-        private httpPort: number = DEFAULT_HTTP_PORT,
-        private wsPort: number = DEFAULT_WS_PORT,
+        private host: string = DEFAULT_RECORDER_HOST,
+        private httpPort: number = DEFAULT_RECORDER_HTTP_PORT,
+        private wsPort: number = DEFAULT_RECORDER_WS_PORT,
         private transportInstance: ITransport = transport,
     ) {
         this.wsServer.on(
@@ -169,18 +173,13 @@ export class RecorderServer implements IRecorderServer {
         await this.httpServer.stop();
     }
 
-    public openBrowser(): void {
-        const browserDir = path.resolve(__dirname, `../temp/chromeUser/rcExt${nanoid()}`);
-
-        const command = [
-            'google-chrome',
-            '--new-window',
-            '--no-default-browser-check',
-            `--load-extension="${extensionPath}"`,
-            `--user-data-dir="${browserDir}"`,
-            this.httpServer.getUrl()
-        ];
-
-        exec(command.join(' '));
+    public openBrowser(): Promise<LaunchedChrome> {
+        return launch({
+            enableExtensions: true,
+            startingUrl: this.httpServer.getUrl(),
+            chromeFlags: [
+                `--load-extension=${extensionPath}`,
+            ],
+        });
     }
 }

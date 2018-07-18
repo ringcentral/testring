@@ -1,5 +1,6 @@
-import { ClientWsTransportEvents, RecorderEvents } from '@testring/types';
 import { EventEmitter } from 'events';
+import { ClientWsTransportEvents, RecorderEvents } from '@testring/types';
+import { DEFAULT_RECORDER_HOST, DEFAULT_RECORDER_WS_PORT } from '@testring/constants';
 
 interface IQueuedMessage {
     event: RecorderEvents;
@@ -9,7 +10,7 @@ interface IQueuedMessage {
 
 export class ClientWsTransport extends EventEmitter {
     constructor(
-        private url: string = 'ws://localhost:3001',
+        private url: string = `ws://${DEFAULT_RECORDER_HOST}:${DEFAULT_RECORDER_WS_PORT}`,
         private shouldReconnect: boolean = false,
     ) {
         super();
