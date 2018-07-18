@@ -21,7 +21,7 @@ describe('Get config', () => {
             `--config=${fileConfigPath}`
         ]);
 
-        chai.expect(config).to.have.property('tests', fileConfig.tests);
+        chai.expect(config).to.have.property('workerLimit', fileConfig.workerLimit);
     });
 
     it('should override default and file config fields with env config', async () => {
@@ -30,7 +30,7 @@ describe('Get config', () => {
             `--env-config=${envConfigPath}`
         ]);
 
-        chai.expect(config).to.have.property('tests', envConfig.tests);
+        chai.expect(config).to.have.property('workerLimit', envConfig.workerLimit);
     });
 
     it('should override every resolved config fields with arguments', async () => {
@@ -39,9 +39,9 @@ describe('Get config', () => {
         const config = await getConfig([
             `--config=${fileConfigPath}`,
             `--env-config=${envConfigPath}`,
-            `--tests=${override}`
+            `--worker-limit=${override}`
         ]);
 
-        chai.expect(config).to.have.property('tests', override);
+        chai.expect(config).to.have.property('workerLimit', override);
     });
 });

@@ -1,6 +1,6 @@
 {
   "name": "@testring/types",
-  "version": "0.2.4",
+  "version": "0.2.6",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "repository": {
@@ -11,6 +11,6 @@
   "license": "MIT",
   "dependencies": {
     "@types/request": "^2.47.1",
-    "@types/request-promise": "^4.1.41"
+    "@types/request-promise": "^4.1.42"
   }
 }

@@ -40,6 +40,12 @@ export class Hook {
             }
         }
 
-        return Array.isArray(newData) ? newData[0] : newData;
+        if (newData === data) {
+            return Array.isArray(newData) ?
+                newData[0] :
+                newData;
+        } else {
+            return newData;
+        }
     }
 }

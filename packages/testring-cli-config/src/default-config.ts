@@ -1,8 +1,7 @@
 import { IConfig, LogLevel } from '@testring/types';
 
-export const defaultConfiguration: IConfig = {
-    config: './testring.json',
-    tests: './tests/**/*.js',
+export const defaultConfiguration: Partial<IConfig> = {
+    config: '.testringrc',
     debug: false,
     silent: false,
     bail: false,

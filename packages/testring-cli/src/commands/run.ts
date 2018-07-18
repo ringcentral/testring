@@ -4,10 +4,10 @@ import { TestRunController } from '@testring/test-run-controller';
 import { applyPlugins } from '@testring/plugin-api';
 import { TestsFinder } from '@testring/test-finder';
 import { TestWorker } from '@testring/test-worker';
-import { getConfig } from '@testring/cli-config';
 import { WebApplicationController } from '@testring/web-application';
 import { browserProxyControllerFactory } from '@testring/browser-proxy';
 import { transport } from '@testring/transport';
+import { IConfig } from '@testring/types';
 
 const formatJSON = (obj: any) => {
     const separator = '⋅';
@@ -31,13 +31,15 @@ const formatJSON = (obj: any) => {
     return str + separator.repeat(padding);
 };
 
-export const runTests = async (argv: Array<string>, stdout: NodeJS.WritableStream) => {
-    const userConfig = await getConfig(argv);
+export const runTests = async (config: IConfig, stdout: NodeJS.WritableStream) => {
+    if (typeof config.tests !== 'string') {
+        throw new Error('required field --tests in arguments or config');
+    }
 
-    const loggerServer = new LoggerServer(userConfig, transport, stdout);
+    const loggerServer = new LoggerServer(config, transport, stdout);
     const testFinder = new TestsFinder();
     const testWorker = new TestWorker(transport);
-    const testRunController = new TestRunController(userConfig, testWorker);
+    const testRunController = new TestRunController(config, testWorker);
     const browserProxyController = browserProxyControllerFactory(transport);
     const webApplicationController = new WebApplicationController(browserProxyController, transport);
     const httpClient = new HttpClientLocal(transport);
@@ -49,11 +51,11 @@ export const runTests = async (argv: Array<string>, stdout: NodeJS.WritableStrea
         browserProxy: browserProxyController,
         testRunController: testRunController,
         httpClientInstance: httpClient
-    }, userConfig);
+    }, config);
 
-    loggerClientLocal.info('User config:\n', formatJSON(userConfig));
+    loggerClientLocal.info('User config:\n', formatJSON(config));
 
-    const tests = await testFinder.find(userConfig.tests);
+    const tests = await testFinder.find(config.tests);
 
     loggerClientLocal.info(`Found ${tests.length} test(s) to run.`);
 

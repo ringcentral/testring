@@ -21,6 +21,16 @@ export class Queue<T> {
         return this.array.length;
     }
 
+    public getFirstElement(offset: number = 0): T | null {
+        const elementIndex = offset;
+
+        if (elementIndex >= this.array.length) {
+            return null;
+        }
+
+        return this.array[elementIndex];
+    }
+
     [Symbol.iterator]() {
         return this.array[Symbol.iterator]();
     }

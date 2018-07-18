@@ -2,21 +2,19 @@ import { LoggerServer, loggerClientLocal } from '@testring/logger';
 import { TestRunController } from '@testring/test-run-controller';
 import { applyPlugins } from '@testring/plugin-api';
 import { TestWorker } from '@testring/test-worker';
-import { getConfig } from '@testring/cli-config';
 import { WebApplicationController } from '@testring/web-application';
 import { browserProxyControllerFactory } from '@testring/browser-proxy';
 import { transport } from '@testring/transport';
 import { RecorderServer } from '@testring/recorder-backend';
 import { RecorderServerMessageTypes } from '@testring/types';
 import { HttpClientLocal } from '@testring/http-api';
+import { IConfig } from '@testring/types';
 
 
-export const runRecordingProcess = async (argv: Array<string>, stdout: NodeJS.WritableStream) => {
-    const userConfig = await getConfig(argv);
-
-    const loggerServer = new LoggerServer(userConfig, transport, stdout);
+export const runRecordingProcess = async (config: IConfig, stdout: NodeJS.WritableStream) => {
+    const loggerServer = new LoggerServer(config, transport, stdout);
     const testWorker = new TestWorker(transport);
-    const testRunController = new TestRunController(userConfig, testWorker);
+    const testRunController = new TestRunController(config, testWorker);
     const browserProxyController = browserProxyControllerFactory(transport);
     const webApplicationController = new WebApplicationController(browserProxyController, transport);
     const httpClient = new HttpClientLocal(transport);
@@ -28,7 +26,7 @@ export const runRecordingProcess = async (argv: Array<string>, stdout: NodeJS.Wr
         browserProxy: browserProxyController,
         testRunController: testRunController,
         httpClientInstance: httpClient
-    }, userConfig);
+    }, config);
 
     await browserProxyController.spawn();
     await recorderServer.run();

@@ -61,9 +61,9 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
 
         this.status = LogQueueStatus.RUNNING;
 
-        const entryAfterPlugin = await this.callHook(LoggerPlugins.beforeLog, logEntity);
-
         try {
+            const entryAfterPlugin = await this.callHook(LoggerPlugins.beforeLog, logEntity);
+
             await this.callHook(LoggerPlugins.onLog, entryAfterPlugin);
 
             this.runQueue();
@@ -98,9 +98,7 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
         this.queue.push(entry);
 
         if (shouldRun) {
-            setImmediate(() => {
-                this.runQueue();
-            });
+            this.runQueue();
         }
     }
 
