@@ -35,4 +35,6 @@ export interface IHttpClient {
     delete(options: OptionsWithUrl): Promise<any>;
 
     put(options: OptionsWithUrl): Promise<any>;
+
+    send(options: OptionsWithUrl): Promise<any>;
 }

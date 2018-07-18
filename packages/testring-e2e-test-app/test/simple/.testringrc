@@ -1,4 +1,5 @@
 {
+  "tests": "test/simple/*.spec.js",
   "plugins": [
     [
       "babel",
@@ -8,5 +9,10 @@
         ]
       }
     ]
-  ]
+  ],
+  "envParameters": {
+    "test": 1,
+    "host": "http://example.com",
+    "data": [1, 2, 3, null]
+  }
 }

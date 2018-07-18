@@ -1,6 +1,6 @@
 {
   "name": "@testring/child-process",
-  "version": "0.2.6",
+  "version": "0.2.9",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {

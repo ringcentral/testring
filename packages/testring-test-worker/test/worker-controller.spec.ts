@@ -32,7 +32,8 @@ describe('WorkerController', () => {
                 test();
             `,
             filename: 'test.js',
-            parameters: {}
+            parameters: {},
+            envParameters: null
         });
     });
 
@@ -56,7 +57,8 @@ describe('WorkerController', () => {
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
             source: `throw new Error("${ERROR_TEXT}")`,
             filename: 'test.js',
-            parameters: {}
+            parameters: {},
+            envParameters: null
         });
     });
 
