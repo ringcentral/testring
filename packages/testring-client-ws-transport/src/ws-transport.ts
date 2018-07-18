@@ -1,5 +1,5 @@
 import { ClientWsTransportEvents, RecorderEvents } from '@testring/types';
-import { EventEmitter } from 'eventemitter3';
+import { EventEmitter } from 'events';
 
 interface IQueuedMessage {
     event: RecorderEvents;
