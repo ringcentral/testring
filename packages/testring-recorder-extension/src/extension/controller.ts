@@ -1,4 +1,9 @@
-import {ClientWsTransportEvents, IRecordingEvent, MessagingTransportEvents, RecorderEvents} from '@testring/types';
+import {
+    ClientWsTransportEvents,
+    IRecordingEvent,
+    MessagingTransportEvents,
+    RecorderEvents,
+} from '@testring/types';
 import { ClientWsTransport } from '@testring/client-ws-transport';
 
 import { MessagingTransportServer } from './messaging-transport';
@@ -80,20 +85,6 @@ export class ExtensionController {
         }
     }
 
-    private flushWsMessageQueue() {
-        const message = this.wsMessagesQueue[0];
-
-        if (message) {
-            this.sendMessage(message);
-
-            this.wsMessagesQueue.shift();
-
-            if (this.wsMessagesQueue.length > 0) {
-                this.flushWsMessageQueue();
-            }
-        }
-    }
-
     private handleRecordingEvent(event: IRecordingEvent): void {
         this.wsTransport.send(
             RecorderEvents.RECORDING,
@@ -123,6 +114,20 @@ export class ExtensionController {
                     payload: message
                 }
             );
+        }
+    }
+
+    private flushWsMessageQueue() {
+        const message = this.wsMessagesQueue[0];
+
+        if (message) {
+            this.sendMessage(message);
+
+            this.wsMessagesQueue.shift();
+
+            if (this.wsMessagesQueue.length > 0) {
+                this.flushWsMessageQueue();
+            }
         }
     }
 }
