@@ -5,6 +5,7 @@ import {
     RecorderEvents,
 } from '@testring/types';
 import { ClientWsTransport } from '@testring/client-ws-transport';
+import { Queue } from '@testring/utils';
 
 import { MessagingTransportServer } from './messaging-transport';
 
@@ -21,7 +22,7 @@ export class ExtensionController {
 
     private mainConnectionId: string;
 
-    private wsMessagesQueue: Array<string> = [];
+    private wsMessagesQueue = new Queue<string>();
 
     private registerMessagingListeners() {
         this.messagingServer.on(
@@ -118,7 +119,7 @@ export class ExtensionController {
     }
 
     private flushWsMessageQueue() {
-        const message = this.wsMessagesQueue[0];
+        const message = this.wsMessagesQueue.getFirstElement();
 
         if (message) {
             this.sendMessage(message);

@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import { Queue } from '@testring/utils';
 import { ClientWsTransportEvents, RecorderEvents } from '@testring/types';
 import { DEFAULT_RECORDER_HOST, DEFAULT_RECORDER_WS_PORT } from '@testring/constants';
 
@@ -18,10 +19,10 @@ export class ClientWsTransport extends EventEmitter {
 
     private connection: WebSocket;
 
-    private messagesQueue: Array<IQueuedMessage> = [];
+    private messagesQueue = new Queue<IQueuedMessage>();
 
     private resolveQueue() {
-        const queuedMessage = this.messagesQueue[0];
+        const queuedMessage = this.messagesQueue.getFirstElement();
 
         if (queuedMessage && this.getConnectionStatus()) {
             const { event, payload, resolve } = queuedMessage;

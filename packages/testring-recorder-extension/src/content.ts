@@ -7,16 +7,22 @@ import { resolveElementPath } from './extension/resolve-element-path';
 
 const transportClient = new MessagingTransportClient();
 
+let clickHandlerFunc = (event) => {};
+
 transportClient.on(
     RecorderEvents.HANDSHAKE,
     (config: IExtensionConfig) => {
         const { testElementAttribute } = config;
 
-        document.addEventListener('click', (event) => clickHandler(event, testElementAttribute));
+        document.removeEventListener('click', clickHandlerFunc);
+
+        clickHandlerFunc = (event) => clickHandler(event, testElementAttribute);
+
+        document.addEventListener('click', clickHandlerFunc);
     }
 );
 
-const clickHandler = (event: Event, attribute: string): void => {
+const clickHandler = (event: MouseEvent, attribute: string): void => {
     try {
         const xpath = resolveElementPath(event, attribute);
 
