@@ -34,6 +34,10 @@ export abstract class AbstractHttpClient implements IHttpClient {
         return this.sendRequest({ ...options, method: 'PUT' });
     }
 
+    public send(options: OptionsWithUrl): Promise<any> {
+        return this.sendRequest({ ...options });
+    }
+
     private isValidData(data: any): boolean {
         return (data !== null && data !== undefined);
     }
