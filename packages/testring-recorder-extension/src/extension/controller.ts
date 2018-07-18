@@ -46,12 +46,12 @@ export class ExtensionController {
     }
 
     private registerWsListeners() {
-        this.wsTransport.connect();
-
         this.wsTransport.on(
             ClientWsTransportEvents.MESSAGE,
             (message) => this.handleWsMessage(message),
         );
+
+        this.wsTransport.connect();
     }
 
     /*
