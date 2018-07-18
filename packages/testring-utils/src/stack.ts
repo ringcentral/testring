@@ -30,4 +30,8 @@ export class Stack<T> {
     public get length(): number {
         return this.array.length;
     }
+
+    [Symbol.iterator]() {
+        return this.array[Symbol.iterator]();
+    }
 }
