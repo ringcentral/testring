@@ -1,4 +1,4 @@
-import { HttpClientLocal } from '@testring/http-api';
+import { createHttpServer, HttpClientLocal } from '@testring/http-api';
 import { LoggerServer, loggerClientLocal } from '@testring/logger';
 import { TestRunController } from '@testring/test-run-controller';
 import { applyPlugins } from '@testring/plugin-api';
@@ -35,6 +35,8 @@ export const runTests = async (config: IConfig, stdout: NodeJS.WritableStream) =
     if (typeof config.tests !== 'string') {
         throw new Error('required field --tests in arguments or config');
     }
+
+    createHttpServer(config, transport);
 
     const loggerServer = new LoggerServer(config, transport, stdout);
     const testFinder = new TestsFinder();
