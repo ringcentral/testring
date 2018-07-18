@@ -1,6 +1,6 @@
 # `testring`
 
-> Main package with cli interface and test API.
+> Main package with CLI interface and test API.
 
 ## Install
 Using npm:

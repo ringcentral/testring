@@ -1,7 +1,7 @@
 import { IConfig, LogLevel } from '@testring/types';
 
 export const defaultConfiguration: Partial<IConfig> = {
-    config: '.testring',
+    config: '.testringrc',
     debug: false,
     silent: false,
     bail: false,

@@ -20,12 +20,17 @@ describe('Recorder server', () => {
     let wsUrl = `ws://${DEFAULT_HOST}:${DEFAULT_WS_PORT}`;
 
     beforeEach(async () => {
-        transport = new TransportMock();
+        if (srv) {
+            await srv.stop();
+        }
 
         httpPort = await getAvailablePort(DEFAULT_HTTP_PORT, DEFAULT_HOST);
-        httpUrl = `http://${DEFAULT_HOST}:${httpPort}`;
         wsPort = await getAvailablePort(DEFAULT_WS_PORT, DEFAULT_HOST, [httpPort]);
+
+        httpUrl = `http://${DEFAULT_HOST}:${httpPort}`;
         wsUrl = `ws://${DEFAULT_HOST}:${wsPort}`;
+
+        transport = new TransportMock();
 
         srv = new RecorderServer(
             DEFAULT_HOST,
@@ -37,14 +42,8 @@ describe('Recorder server', () => {
         await srv.run();
     });
 
-    afterEach(async () => {
-        await srv.stop();
-    });
-
-    it('should serve http when run', (callback) => {
-        request(httpUrl).then(() => {
-            callback();
-        });
+    it('should serve http when run', async () => {
+        await request(httpUrl);
     });
 
     context('WebSocket', () => {

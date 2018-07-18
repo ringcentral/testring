@@ -27,7 +27,7 @@ if it's exists, CLI arguments overrides everything.
 
 ## `config`
 
-###### `./testring.json` <sup>default</sup>
+###### `.testringrc` <sup>default</sup>
 
 Path to config file, relative to project root, works only as CLI argument.
 Config can be json or javascript file.
