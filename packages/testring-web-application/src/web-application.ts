@@ -26,10 +26,10 @@ export class WebApplication extends PluggableModule {
 
     public root = createElementPath();
 
-    constructor(testUID: string, transport: ITransport) {
+    constructor(private testUID: string, transport: ITransport) {
         super();
 
-        const applicationID = `${testUID}-${nanoid()}`;
+        const applicationID = `${this.testUID}-${nanoid()}`;
 
         this.client = new WebClient(applicationID, transport);
     }
@@ -953,9 +953,12 @@ export class WebApplication extends PluggableModule {
 
     public async makeScreenshot() {
         const screenshoot = await this.client.makeScreenshot();
+        const screenDate = new Date();
 
-        // TODO make normal screenshot save with name
-        loggerClient.media('screenshot.png', screenshoot);
+        loggerClient.media(
+            `${this.testUID}-${screenDate.toString()}-${nanoid(5)}.png`,
+            screenshoot
+        );
     }
 
     public async uploadFile(fullPath) {

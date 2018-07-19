@@ -18,8 +18,13 @@ export const serializeFunction = (func: Function): ISerializedFunction => {
     const body = content.match(bodyRegExp);
     const args = content.match(argumentsRegExp);
 
-    const normalizedBody = body ? body[1] : '';
     const normalizedArg = args ? args[2].split(',').map(trimString) : [];
+
+    let normalizedBody = body ? body[1] : '';
+
+    if (normalizedBody.includes('[native code]')) {
+        normalizedBody = '';
+    }
 
     return {
         $key: FUNCTION_KEY,

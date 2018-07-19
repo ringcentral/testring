@@ -48,7 +48,7 @@ export class HttpServer extends PluggableModule {
         try {
             uid = data.uid;
             const request = data.request;
-            loggerClientLocal.log(`Sending http request to ${request.url}`);
+            loggerClientLocal.debug(`[http server] Sending http request to ${request.url}`);
 
             this.isBusy = true;
 
@@ -59,7 +59,7 @@ export class HttpServer extends PluggableModule {
                 throw new Error(response.statusMessage);
             }
 
-            loggerClientLocal.log('Successful responses');
+            loggerClientLocal.debug('[http server] Successful responses');
 
             const responseAfterHook = await this.callHook(HttpServerPlugins.beforeResponse, response);
 
