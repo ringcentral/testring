@@ -3,16 +3,19 @@ import * as Koa from 'koa';
 import * as serve from 'koa-static';
 import * as views from 'koa-views';
 import { IServer } from '@testring/types';
-
-import { DEFAULT_HOST, DEFAULT_HTTP_PORT, DEFAULT_WS_PORT } from './constants';
+import {
+    DEFAULT_RECORDER_HOST,
+    DEFAULT_RECORDER_HTTP_PORT,
+    DEFAULT_RECORDER_WS_PORT
+} from '@testring/constants';
 
 export class RecorderHttpServer implements IServer {
     constructor(
         private staticPath: string,
         private templatesPath: string,
-        private host: string = DEFAULT_HOST,
-        private port: number = DEFAULT_HTTP_PORT,
-        private wsPort: number = DEFAULT_WS_PORT,
+        private host: string = DEFAULT_RECORDER_HOST,
+        private port: number = DEFAULT_RECORDER_HTTP_PORT,
+        private wsPort: number = DEFAULT_RECORDER_WS_PORT,
     ) {
     }
 

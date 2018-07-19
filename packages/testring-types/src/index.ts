@@ -9,3 +9,5 @@ export * from './http-api';
 export * from './logger';
 export * from './config';
 export * from './plugin';
+export * from './recorder-extension';
+export * from './recorder';

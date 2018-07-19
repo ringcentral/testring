@@ -1,6 +1,6 @@
 import * as path from 'path';
-import * as opn from 'opn';
 import * as WebSocket from 'ws';
+import { launch, LaunchedChrome } from 'chrome-launcher';
 import { loggerClientLocal } from '@testring/logger';
 import { transport } from '@testring/transport';
 import {
@@ -9,19 +9,30 @@ import {
     IRecorderServer,
     ITransport,
     IWsMessage,
+    IExtensionConfig,
+    RecorderEvents,
 } from '@testring/types';
+import {
+    RECORDER_ELEMENT_IDENTIFIER,
+    DEFAULT_RECORDER_HOST,
+    DEFAULT_RECORDER_HTTP_PORT,
+    DEFAULT_RECORDER_WS_PORT,
+} from '@testring/constants';
 
-import { DEFAULT_HOST, DEFAULT_HTTP_PORT, DEFAULT_WS_PORT } from './constants';
 import { RecorderHttpServer } from './http-server';
 import { RecorderWebSocketServer, RecorderWsEvents } from './ws-server';
 
 const nanoid = require('nanoid');
 
+const extensionPath = path.dirname(require.resolve('@testring/recorder-extension'));
+const frontendPath = path.dirname(require.resolve('@testring/recorder-frontend'));
+const templatesPath = path.resolve(__dirname, '../templates/');
+
 export class RecorderServer implements IRecorderServer {
     constructor(
-        private host: string = DEFAULT_HOST,
-        private httpPort: number = DEFAULT_HTTP_PORT,
-        private wsPort: number = DEFAULT_WS_PORT,
+        private host: string = DEFAULT_RECORDER_HOST,
+        private httpPort: number = DEFAULT_RECORDER_HTTP_PORT,
+        private wsPort: number = DEFAULT_RECORDER_WS_PORT,
         private transportInstance: ITransport = transport,
     ) {
         this.wsServer.on(
@@ -49,8 +60,8 @@ export class RecorderServer implements IRecorderServer {
     private connections: Map<string, WebSocket> = new Map();
 
     private httpServer = new RecorderHttpServer(
-        path.dirname(require.resolve('@testring/recorder-frontend')),
-        path.resolve(__dirname, '../templates/'),
+        frontendPath,
+        templatesPath,
         this.host,
         this.httpPort,
         this.wsPort,
@@ -66,16 +77,38 @@ export class RecorderServer implements IRecorderServer {
 
         this.connections.set(conId, ws);
 
-        ws.on('message', (payload) => {
-            this.transportInstance.broadcast(
-                RecorderServerEvents.MESSAGE,
-                { conId, payload },
-            );
+        ws.on('message', (message: string) => {
+            try {
+                const { event, payload } = JSON.parse(message);
+
+                if (event) {
+                    this.transportInstance.broadcast(
+                        event,
+                        { conId, payload },
+                    );
+                } else {
+                    throw new Error('event type not specified');
+                }
+            } catch (e) {
+                loggerClientLocal.warn(`[WS Server] ${e}`);
+            }
         });
 
         ws.on('close', () => {
             this.unregisterConnection(conId);
         });
+
+        this.send(
+            conId,
+            {
+                event: RecorderEvents.HANDSHAKE,
+                payload: {
+                    connectionId: conId,
+                    // TODO: get identifier from framework config
+                    testElementAttribute: RECORDER_ELEMENT_IDENTIFIER,
+                } as IExtensionConfig,
+            }
+        );
 
         this.transportInstance.broadcast(
             RecorderServerEvents.CONNECTION,
@@ -115,7 +148,7 @@ export class RecorderServer implements IRecorderServer {
     private send(conId: string, message: any): void {
         const connection = this.getConnection(conId);
 
-        connection.send(message);
+        connection.send(JSON.stringify(message));
     }
 
     private handleClose(message: IWsMessage): void {
@@ -140,7 +173,13 @@ export class RecorderServer implements IRecorderServer {
         await this.httpServer.stop();
     }
 
-    public openBrowser(): void {
-        opn(this.httpServer.getUrl());
+    public openBrowser(): Promise<LaunchedChrome> {
+        return launch({
+            enableExtensions: true,
+            startingUrl: this.httpServer.getUrl(),
+            chromeFlags: [
+                `--load-extension=${extensionPath}`,
+            ],
+        });
     }
 }

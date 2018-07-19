@@ -13,6 +13,7 @@
     "@testring/child-process": "^0.2.9",
     "@testring/logger": "^0.2.9",
     "@testring/plugin-api": "^0.2.9",
+    "@testring/recorder-extension": "^0.2.2",
     "@testring/types": "^0.2.9",
     "@types/webdriverio": "^4.10.2",
     "chromedriver": "^2.40.0",

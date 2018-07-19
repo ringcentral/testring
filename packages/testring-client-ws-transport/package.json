@@ -1,0 +1,17 @@
+{
+  "name": "@testring/client-ws-transport",
+  "version": "0.2.2",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "dependencies": {
+    "@testring/constants": "^0.2.4",
+    "@testring/types": "^0.2.2",
+    "@testring/utils": "^0.2.6"
+  }
+}

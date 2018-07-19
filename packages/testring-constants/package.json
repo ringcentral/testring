@@ -1,0 +1,12 @@
+{
+  "name": "@testring/constants",
+  "version": "0.2.4",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT"
+}

@@ -3,37 +3,35 @@
 import * as request from 'request-promise';
 import * as WebSocket from 'ws';
 import * as chai from 'chai';
-import { getAvailablePort } from '@testring/test-utils';
-
-import { TransportMock } from '@testring/test-utils';
+import { getAvailablePort, TransportMock } from '@testring/test-utils';
 import { RecorderServerEvents, RecorderServerMessageTypes } from '@testring/types';
+import { DEFAULT_RECORDER_HOST, DEFAULT_RECORDER_HTTP_PORT, DEFAULT_RECORDER_WS_PORT } from '@testring/constants';
 
 import { RecorderServer } from '../src/recorder-server';
-import { DEFAULT_HOST, DEFAULT_HTTP_PORT, DEFAULT_WS_PORT } from '../src/constants';
 
 describe('Recorder server', () => {
     let srv: RecorderServer;
     let transport: TransportMock;
-    let httpPort = DEFAULT_HTTP_PORT;
-    let httpUrl = `http://${DEFAULT_HOST}:${DEFAULT_HTTP_PORT}`;
-    let wsPort = DEFAULT_WS_PORT;
-    let wsUrl = `ws://${DEFAULT_HOST}:${DEFAULT_WS_PORT}`;
+    let httpPort = DEFAULT_RECORDER_HTTP_PORT;
+    let httpUrl = `http://${DEFAULT_RECORDER_HOST}:${DEFAULT_RECORDER_HTTP_PORT}`;
+    let wsPort = DEFAULT_RECORDER_WS_PORT;
+    let wsUrl = `ws://${DEFAULT_RECORDER_HOST}:${DEFAULT_RECORDER_WS_PORT}`;
 
     beforeEach(async () => {
         if (srv) {
             await srv.stop();
         }
 
-        httpPort = await getAvailablePort(DEFAULT_HTTP_PORT, DEFAULT_HOST);
-        wsPort = await getAvailablePort(DEFAULT_WS_PORT, DEFAULT_HOST, [httpPort]);
+        httpPort = await getAvailablePort(DEFAULT_RECORDER_HTTP_PORT, DEFAULT_RECORDER_HOST);
+        wsPort = await getAvailablePort(DEFAULT_RECORDER_WS_PORT, DEFAULT_RECORDER_HOST, [httpPort]);
 
-        httpUrl = `http://${DEFAULT_HOST}:${httpPort}`;
-        wsUrl = `ws://${DEFAULT_HOST}:${wsPort}`;
+        httpUrl = `http://${DEFAULT_RECORDER_HOST}:${httpPort}`;
+        wsUrl = `ws://${DEFAULT_RECORDER_HOST}:${wsPort}`;
 
         transport = new TransportMock();
 
         srv = new RecorderServer(
-            DEFAULT_HOST,
+            DEFAULT_RECORDER_HOST,
             httpPort,
             wsPort,
             transport,
@@ -70,17 +68,21 @@ describe('Recorder server', () => {
             );
         });
 
-        it('should broadcast MESSAGE over transport on incoming ws message', (callback) => {
+        it('should broadcast event over transport on incoming ws message', (callback) => {
+            const event = 'GREETING';
             const payload = 'HELLO';
 
             const con = new WebSocket(wsUrl);
 
             con.on('open', () => {
-                con.send(payload);
+                con.send(JSON.stringify({
+                    event,
+                    payload,
+                }));
             });
 
             transport.on(
-                RecorderServerEvents.MESSAGE,
+                event,
                 async (message) => {
                     chai.expect(message).to.have.property('conId');
                     chai.expect(message).to.have.property('payload', payload);
@@ -149,32 +151,6 @@ describe('Recorder server', () => {
                         }
                     );
                 }
-            );
-        });
-
-        it('should send message received from transport over websocket', (callback) => {
-            const payload = 'hello';
-            const con = new WebSocket(wsUrl);
-
-            con.on('message', (message) => {
-                chai.expect(message).to.be.equal(payload);
-
-                con.close();
-
-                callback();
-            });
-
-            transport.on(
-                RecorderServerEvents.CONNECTION,
-                async ({ conId }) => {
-                    transport.broadcast(
-                        RecorderServerMessageTypes.MESSAGE,
-                        {
-                            conId: conId,
-                            payload: payload,
-                        }
-                    );
-                },
             );
         });
 
