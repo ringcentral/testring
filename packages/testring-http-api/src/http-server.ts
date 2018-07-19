@@ -1,23 +1,22 @@
-import * as request from 'request';
-import * as requestPromise from 'request-promise';
+import { IHttpRequest, IHttpResponse } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { loggerClientLocal } from '@testring/logger';
 import {
     IConfig,
     ITransport,
-    IHttpRequest,
-    IHttpResponse,
-    IHttpResponseReject,
+    IHttpRequestMessage,
+    IHttpResponseMessage,
+    IHttpResponseRejectMessage,
     HttpMessageType,
     HttpServerPlugins
 } from '@testring/types';
 
 interface QueueRequest {
-    data: IHttpRequest;
+    data: IHttpRequestMessage;
     src: string;
 }
 
-type MakeRequest = (request: requestPromise.OptionsWithUrl) => any;
+type MakeRequest = (request: IHttpRequest) => Promise<IHttpResponse>;
 
 export class HttpServer extends PluggableModule {
     private queue: QueueRequest[] = [];
@@ -48,28 +47,28 @@ export class HttpServer extends PluggableModule {
         try {
             uid = data.uid;
             const request = data.request;
-            loggerClientLocal.debug(`[http server] Sending http request to ${request.url}`);
+            loggerClientLocal.verbose(`[http server] Sending http request to ${request.url}`);
 
             this.isBusy = true;
 
             const requestAfterHook = await this.callHook(HttpServerPlugins.beforeRequest, request);
-            const response: request.Response = await this.request(requestAfterHook);
+            const response = await this.request(requestAfterHook);
 
             if (response.statusCode >= 400) {
                 throw new Error(response.statusMessage);
             }
 
-            loggerClientLocal.debug('[http server] Successful responses');
+            loggerClientLocal.verbose('[http server] Successful response');
 
             const responseAfterHook = await this.callHook(HttpServerPlugins.beforeResponse, response);
 
-            this.send<IHttpResponse>(src, HttpMessageType.response, {
+            this.send<IHttpResponseMessage>(src, HttpMessageType.response, {
                 uid,
                 response: responseAfterHook
             });
             this.setTimer();
         } catch (error) {
-            this.send<IHttpResponseReject>(src, HttpMessageType.reject, {
+            this.send<IHttpResponseRejectMessage>(src, HttpMessageType.reject, {
                 uid,
                 error
             });
@@ -103,7 +102,7 @@ export class HttpServer extends PluggableModule {
     private registerTransportListener(): void {
         loggerClientLocal.debug(`Http server: Register listener for messages [type = ${HttpMessageType.send}]`);
 
-        this.transportInstance.on(HttpMessageType.send, (data: IHttpRequest, src: string) => {
+        this.transportInstance.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
 
             // todo validate data
             if (this.isBusy) {

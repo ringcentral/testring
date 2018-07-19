@@ -1,14 +1,14 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { IHttpRequest, HttpMessageType } from '@testring/types';
+import { IHttpRequestMessage, HttpMessageType } from '@testring/types';
 import { TransportMock } from '@testring/test-utils';
 import { HttpClient } from '../src/http-client';
 
 const DEFAULT_URL = 'test.com/invalid/test/url';
 
 const imitateServer = (transport: TransportMock, response) => {
-    transport.on(HttpMessageType.send, (data: IHttpRequest, src: string) => {
+    transport.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
         transport.send(src, HttpMessageType.response, {
             uid: data.uid,
             response
@@ -17,7 +17,7 @@ const imitateServer = (transport: TransportMock, response) => {
 };
 
 const imitateFailedServer = (transport: TransportMock, error: Error) => {
-    transport.on(HttpMessageType.send, (data: IHttpRequest, src: string) => {
+    transport.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
         transport.send(src, HttpMessageType.reject, {
             uid: data.uid,
             error
@@ -107,7 +107,7 @@ describe('HttpClient', () => {
         const httpClient = new HttpClient(transport);
 
         //imitate a server
-        transport.on(HttpMessageType.send, (data: IHttpRequest, src: string) => {
+        transport.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
             transport.send(src, HttpMessageType.response, {});
         });
 

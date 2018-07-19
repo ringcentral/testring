@@ -1,16 +1,22 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { HttpMessageType } from '@testring/types';
+import { HttpMessageType, IHttpResponse } from '@testring/types';
 import { TransportMock } from '@testring/test-utils';
 import { HttpServer } from '../src/http-server';
 
 const DEFAULT_CONFIG: any = { httpThrottle: 0 };
 
+// TODO add tests for cookies
+
 describe('HttpServer', () => {
     it('Should get data from broadcast', (callback) => {
-        const responseMock = {
-            statusCode: 200
+        const responseMock: IHttpResponse = {
+            statusCode: 200,
+            statusMessage: '',
+            body: null,
+            headers: {},
+            cookies: []
         };
 
         const requestHandler = () => Promise.resolve(responseMock);
@@ -36,10 +42,9 @@ describe('HttpServer', () => {
 
     it('Should throw exception if data isn`t correct', (callback) => {
         const rp = () => Promise.resolve();
-
         const transport = new TransportMock();
 
-        new HttpServer(transport, DEFAULT_CONFIG, rp);
+        new HttpServer(transport, DEFAULT_CONFIG, rp as any);
 
         transport.on(HttpMessageType.reject, (response) => {
             chai.expect(response.error).to.be.instanceOf(Error);
@@ -61,7 +66,7 @@ describe('HttpServer', () => {
 
         const transport = new TransportMock();
 
-        new HttpServer(transport, DEFAULT_CONFIG, rp);
+        new HttpServer(transport, DEFAULT_CONFIG, rp as any);
 
         transport.on(HttpMessageType.reject, (response) => {
             chai.expect(response.error).to.be.instanceOf(Error);

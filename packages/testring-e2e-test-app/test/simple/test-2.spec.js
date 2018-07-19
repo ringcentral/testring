@@ -1,6 +1,6 @@
 import { run } from 'testring';
 
-run((context) => {
-    context.log(context.getEnvironment());
+run((api) => {
+    api.log(api.getEnvironment());
 });
 

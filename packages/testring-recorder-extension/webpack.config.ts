@@ -3,10 +3,21 @@ import * as webpack from 'webpack';
 
 const config: webpack.Configuration = {
     mode: 'development',
+
     entry: {
         background: './src/background.ts',
         content: './src/content.ts',
     },
+
+    output: {
+        path: path.resolve(__dirname, 'dist'),
+        filename: '[name].bundle.js'
+    },
+
+    resolve: {
+        extensions: [ '.tsx', '.ts', '.js' ]
+    },
+
     module: {
         rules: [
             {
@@ -21,17 +32,14 @@ const config: webpack.Configuration = {
             }
         ]
     },
-    resolve: {
-        extensions: [ '.tsx', '.ts', '.js' ]
-    },
-    output: {
-        path: path.resolve(__dirname, 'dist'),
-        filename: '[name].bundle.js'
-    },
+
     node: {
         fs: 'empty',
     },
+
     devtool: false,
+
+    stats: 'errors-only'
 };
 
 export default config;

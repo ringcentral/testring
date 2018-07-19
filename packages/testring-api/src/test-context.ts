@@ -1,4 +1,5 @@
 import { loggerClient } from '@testring/logger';
+import { HttpClient } from '@testring/http-api';
 import { transport } from '@testring/transport';
 import { WebApplication } from '@testring/web-application';
 import { testAPIController } from './test-api-controller';
@@ -12,6 +13,8 @@ export class TestContext {
     private customApplications: Set<WebApplication> = new Set();
 
     public application = new WebApplication(testAPIController.getTestID(), transport);
+
+    public http = new HttpClient(transport);
 
     public async logBusiness(message: string) {
         if (this.lastLoggedBusinessEvent) {

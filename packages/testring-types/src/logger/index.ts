@@ -59,6 +59,8 @@ export interface ILoggerClient {
 
     debug(...args): void;
 
+    verbose(...args): void;
+
     step(message: string, callback: () => Promise<any> | any): Promise<any>;
 
     startStep(message: string): void;

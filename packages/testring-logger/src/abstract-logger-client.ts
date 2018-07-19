@@ -145,6 +145,10 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
         this.createLog(LogTypes.debug, LogLevel.debug, args);
     }
 
+    public verbose(...args): void {
+        this.createLog(LogTypes.debug, LogLevel.verbose, args);
+    }
+
     public media(filename: string, content: Buffer): void {
         this.createLog(LogTypes.media, LogLevel.info, [filename, content]);
     }

@@ -2,7 +2,7 @@
 
 import * as chai from 'chai';
 import { TransportMock } from '@testring/test-utils';
-import { IHttpRequest, HttpMessageType } from '@testring/types';
+import { IHttpRequestMessage, HttpMessageType } from '@testring/types';
 import { HttpClientLocal } from '../src/http-client-local';
 
 
@@ -27,7 +27,7 @@ describe('HttpClientLocal', () => {
         const httpClient = new HttpClientLocal(transport);
         const response = {};
         //imitate a server
-        transport.on(HttpMessageType.send, (data: IHttpRequest, src: string) => {
+        transport.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
             transport.send(src, HttpMessageType.response, {
                 uid: data.uid,
                 response
@@ -43,7 +43,7 @@ describe('HttpClientLocal', () => {
         const httpClient = new HttpClientLocal(transport);
 
         //imitate a server
-        transport.on(HttpMessageType.send, (data: IHttpRequest, src: string) => {
+        transport.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
             transport.send(src, HttpMessageType.response, {});
         });
         httpClient.post({

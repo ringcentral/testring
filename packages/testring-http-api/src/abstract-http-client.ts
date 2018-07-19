@@ -1,54 +1,68 @@
-import { OptionsWithUrl } from 'request-promise';
 import {
+    HttpMessageType,
     ITransport,
     IHttpClient,
-    HttpMessageType,
-    IHttpResponse,
+    IHttpCookieJar,
     IHttpRequest,
-    IHttpResponseReject
+    IHttpResponseMessage,
+    IHttpRequestMessage,
+    IHttpResponseRejectMessage
 } from '@testring/types';
 import { loggerClient } from '@testring/logger';
-
+import { HttpCookieJar } from './cookie-jar';
 
 const nanoid = require('nanoid');
 
+const toString = c => c.toString();
+
 export abstract class AbstractHttpClient implements IHttpClient {
-    protected abstract broadcast(options: IHttpRequest): void;
+    protected abstract broadcast(options: IHttpRequestMessage): void;
 
     constructor(protected transportInstance: ITransport) {
     }
 
-    public post(options: OptionsWithUrl): Promise<any> {
-        return this.sendRequest({ ...options, method: 'POST' });
+    public post(options: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any> {
+        return this.sendRequest({ ...options, method: 'POST' }, cookieJar);
     }
 
-    public get(options: OptionsWithUrl): Promise<any> {
-        return this.sendRequest({ ...options, method: 'GET' });
+    public get(options: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any> {
+        return this.sendRequest({ ...options, method: 'GET' }, cookieJar);
     }
 
-    public delete(options: OptionsWithUrl): Promise<any> {
-        return this.sendRequest({ ...options, method: 'DELETE' });
+    public delete(options: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any> {
+        return this.sendRequest({ ...options, method: 'DELETE' }, cookieJar);
     }
 
-    public put(options: OptionsWithUrl): Promise<any> {
-        return this.sendRequest({ ...options, method: 'PUT' });
+    public put(options: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any> {
+        return this.sendRequest({ ...options, method: 'PUT' }, cookieJar);
     }
 
-    public send(options: OptionsWithUrl): Promise<any> {
-        return this.sendRequest({ ...options });
+    public send(options: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any> {
+        return this.sendRequest({ ...options }, cookieJar);
+    }
+
+    public createCookieJar() {
+        return new HttpCookieJar();
     }
 
     private isValidData(data: any): boolean {
         return (data !== null && data !== undefined);
     }
 
-    private isValidRequest(request: OptionsWithUrl): boolean {
+    private isValidRequest(request: IHttpRequest): boolean {
         return (this.isValidData(request) && request.hasOwnProperty('url'));
     }
 
-    private async sendRequest(options: OptionsWithUrl): Promise<any> {
-        if (!this.isValidRequest(options)) {
-            loggerClient.error(`Http Client: ${options} request is not valid`);
+    private async sendRequest(requestParameters: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any> {
+        if (cookieJar) {
+            requestParameters = {
+                ...requestParameters,
+                cookies: cookieJar.getCookies(requestParameters.url).map(toString)
+            };
+        }
+
+        if (!this.isValidRequest(requestParameters)) {
+            loggerClient.error(`Http Client: ${requestParameters} request is not valid`);
 
             throw new Error('request is not valid');
         }
@@ -58,14 +72,20 @@ export abstract class AbstractHttpClient implements IHttpClient {
         return new Promise((resolve, reject) => {
             const removeResponseHandler = this.transportInstance.on(
                 HttpMessageType.response,
-                (response: IHttpResponse) => {
+                (response: IHttpResponseMessage) => {
                     if (!response.uid) {
                         loggerClient.error('Http Client: no response uid');
                         throw new Error('no uid');
                     }
+
                     if (response.uid === requestUID) {
                         removeResponseHandler();
                         removeRejectHandler();
+
+                        if (cookieJar) {
+                            cookieJar.setCookies(response.response.cookies, requestParameters.url);
+                        }
+
                         resolve(response.response);
                     }
                 }
@@ -73,7 +93,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
 
             const removeRejectHandler = this.transportInstance.on(
                 HttpMessageType.reject,
-                (response: IHttpResponseReject) => {
+                (response: IHttpResponseRejectMessage) => {
                     if (!response.uid) {
                         loggerClient.error('Http Client: no response uid');
                         throw new Error('no uid');
@@ -82,8 +102,6 @@ export abstract class AbstractHttpClient implements IHttpClient {
                     if (response.uid === requestUID) {
                         removeRejectHandler();
                         removeResponseHandler();
-                        loggerClient.error(`Http Client: failed with error ${response.error}`);
-
                         reject(response.error);
                     }
                 }
@@ -91,7 +109,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
 
             this.broadcast({
                 uid: requestUID,
-                request: options
+                request: requestParameters
             });
         });
     }

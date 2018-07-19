@@ -1,6 +1,3 @@
-import * as request from 'request';
-import { OptionsWithUrl } from 'request-promise';
-
 export const enum HttpMessageType {
     send = 'sendHttpRequest',
     response = 'responseHttpRequest',
@@ -12,29 +9,65 @@ export const enum HttpServerPlugins {
     beforeResponse = 'beforeResponse'
 }
 
-export interface IHttpResponse {
-    response: request.Response;
-    uid: string;
+interface IHttpHeaders {
+    [key: string]: any;
 }
 
-export interface IHttpResponseReject {
-    error: request.Response;
-    uid: string;
+interface IHttpQueryParameters {
+    [key: string]: any;
+}
+
+export interface IHttpResponse {
+    statusCode: number;
+    statusMessage: string;
+    body: any;
+    headers: IHttpHeaders;
+    cookies: Array<any>;
 }
 
 export interface IHttpRequest {
-    request: OptionsWithUrl;
+    url: string;
+    method?: 'POST' | 'GET' | 'PUT' | 'DELETE';
+    body?: any;
+    timeout?: number;
+    headers?: IHttpHeaders;
+    query?: IHttpQueryParameters;
+    cookies?: Array<any>;
+}
+
+export interface IHttpRequestMessage {
     uid: string;
+    request: IHttpRequest;
+}
+
+export interface IHttpResponseMessage {
+    uid: string;
+    response: IHttpResponse;
+}
+
+export interface IHttpResponseRejectMessage {
+    uid: string;
+    error: IHttpResponse;
+}
+
+export interface IHttpCookieJar {
+    setCookie(cookie: any, url: string): void;
+
+    setCookies(cookies: Array<any>, url: string): void;
+
+    getCookies(url: string): Array<any>;
+
+    createCookie(properties: any): any;
 }
 
 export interface IHttpClient {
-    post(options: OptionsWithUrl): Promise<any>;
+    send(options: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any>;
 
-    get(options: OptionsWithUrl): Promise<any>;
+    delete(options: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any>;
 
-    delete(options: OptionsWithUrl): Promise<any>;
+    post(options: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any>;
 
-    put(options: OptionsWithUrl): Promise<any>;
+    get(options: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any>;
 
-    send(options: OptionsWithUrl): Promise<any>;
+    put(options: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any>;
 }
