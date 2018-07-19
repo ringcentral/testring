@@ -7,6 +7,8 @@ export class TestAPIController {
 
     private testParameters: object = {};
 
+    private environmentParameters: object = {};
+
     public getBus() {
         return this.bus;
     }
@@ -25,6 +27,14 @@ export class TestAPIController {
 
     public getTestParameters(): object {
         return this.testParameters;
+    }
+
+    public setEnvironmentParameters(parameters: object) {
+        this.environmentParameters = parameters;
+    }
+
+    public getEnvironmentParameters(): object {
+        return this.environmentParameters;
     }
 }
 

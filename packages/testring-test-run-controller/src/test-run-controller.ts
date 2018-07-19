@@ -181,7 +181,12 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         try {
             await this.callHook(TestRunControllerPlugins.beforeTest, queuedTest);
 
-            await worker.execute(queuedTest.test.content, queuedTest.test.path, queuedTest.test.meta);
+            await worker.execute(
+                queuedTest.test.content,
+                queuedTest.test.path,
+                queuedTest.test.meta,
+                this.config.envParameters
+            );
 
             await this.callHook(TestRunControllerPlugins.afterTest, queuedTest);
         } catch (error) {

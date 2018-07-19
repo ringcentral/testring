@@ -8,16 +8,16 @@
 
 A simple way to create, run and support automatic UI tests, based on Node.js.
 
-<p align="center">
+
 Documentation:
-<br/>
+
 
 [API reference](docs/api.md)
 |
 [Config API reference](docs/config.md)
 |
 [Plugin API reference](docs/plugin-handbook.md)
-</p>
+
 
 ## Getting Started
 

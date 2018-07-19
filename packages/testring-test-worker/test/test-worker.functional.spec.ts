@@ -16,7 +16,7 @@ describe('TestWorkerInstance', () => {
             const instance = testWorker.spawn();
 
             try {
-                await instance.execute(defaultSyncTestContent, defaultFilename, {});
+                await instance.execute(defaultSyncTestContent, defaultFilename, {}, null);
             } catch (error) {
                 throw error;
             } finally {
@@ -30,7 +30,7 @@ describe('TestWorkerInstance', () => {
             const testWorker = new TestWorker(transport);
             const instance = testWorker.spawn();
 
-            instance.execute(rawSource, defaultFilename, {})
+            instance.execute(rawSource, defaultFilename, {}, null)
                 .then(() => {
                     callback('Test was completed somehow');
                 })
@@ -51,7 +51,7 @@ describe('TestWorkerInstance', () => {
         const testWorker = new TestWorker(transport);
         const instance = testWorker.spawn();
 
-        instance.execute(defaultSyncTestContent, defaultFilename, {})
+        instance.execute(defaultSyncTestContent, defaultFilename, {}, null)
             .then(() => {
                 callback('Test was completed somehow');
             })
@@ -80,8 +80,9 @@ describe('TestWorkerInstance', () => {
                 });
             }
 
-            instance.execute(defaultSyncTestContent, defaultFilename, {}).catch(() => {
-            });
+            instance.execute(defaultSyncTestContent, defaultFilename, {}, null)
+                .catch(() => {
+                });
             instance.kill();
         });
 
@@ -100,7 +101,7 @@ describe('TestWorkerInstance', () => {
                 });
             }
 
-            instance.execute(defaultSyncTestContent, defaultFilename, {})
+            instance.execute(defaultSyncTestContent, defaultFilename, {}, null)
                 .then(() => {
                     callback('Test was compiled somehow');
                 })

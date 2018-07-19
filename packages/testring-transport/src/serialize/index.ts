@@ -13,30 +13,42 @@ const isAcceptable = (struct: any) => (
     struct === null
 );
 
-export const serialize: TransportSerializer = (struct: any) => {
-    if (isAcceptable(struct)) {
-        return struct;
-    }
+export const serialize: TransportSerializer = (rootStruct: any) => {
+    const processedStructs: Set<any> = new Set();
 
-    if (struct instanceof Error) {
-        return serializeError(struct);
-    }
+    const innerSerialize = (struct: any) => {
+        if (isAcceptable(struct)) {
+            return struct;
+        }
 
-    if (struct instanceof Buffer) {
-        return serializeBuffer(struct);
-    }
+        if (processedStructs.has(struct)) {
+            return '(Circular)';
+        }
 
-    if (Array.isArray(struct)) {
-        return serializeArray(struct, serialize);
-    }
+        processedStructs.add(struct);
 
-    if (typeof struct === 'object') {
-        return serializeObject(struct, serialize);
-    }
+        if (struct instanceof Error) {
+            return serializeError(struct);
+        }
 
-    if (typeof struct === 'function') {
-        return serializeFunction(struct);
-    }
+        if (struct instanceof Buffer) {
+            return serializeBuffer(struct);
+        }
+
+        if (Array.isArray(struct)) {
+            return serializeArray(struct, innerSerialize);
+        }
+
+        if (typeof struct === 'object') {
+            return serializeObject(struct, innerSerialize);
+        }
+
+        if (typeof struct === 'function') {
+            return serializeFunction(struct);
+        }
+    };
+
+    return innerSerialize(rootStruct);
 };
 
 export const deserialize: TransportDeserializer = (struct: ITransportSerializedStruct) => {

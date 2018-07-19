@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { loggerClientLocal } from '@testring/logger';
+import { requirePackage } from '@testring/utils';
 import { IConfig } from '@testring/types';
 
 const findFile = (configPath: string) => {
@@ -16,7 +17,8 @@ const findFile = (configPath: string) => {
 
 const readJSConfig = async (configPath: string, config: IConfig): Promise<IConfig | null> => {
     try {
-        const configFile = require(configPath);
+        const fullPath = path.resolve(configPath);
+        const configFile = requirePackage(fullPath);
 
         if (typeof configFile === 'function') {
             return await configFile(config);
@@ -59,22 +61,22 @@ const readConfig = async (
     }
 
     const extension = path.extname(configPath);
-    loggerClientLocal.log(`Read config file: ${configPath}`);
+
+    loggerClientLocal.debug(`Read config file: ${configPath}`);
 
     switch (extension) {
-        case '.js' :
+        case '.js':
             return readJSConfig(configPath, config);
-        case '.json' :
+
+        case '.json':
+        case '':
             return readJSONConfig(configPath);
+
         default:
             throw new Error(`${extension} is not supported`);
     }
 };
 
-export const getFileConfig = async (userConfig: IConfig) => {
-    return await readConfig(userConfig.config, userConfig);
-};
-
-export const getEnvConfig = async (userConfig: IConfig) => {
-    return await readConfig(userConfig.envConfig, userConfig);
+export const getFileConfig = async (configPath: string | void, userConfig: IConfig) => {
+    return await readConfig(configPath, userConfig);
 };

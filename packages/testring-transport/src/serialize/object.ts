@@ -11,11 +11,9 @@ export const serializeObject = (object: object, serialize: TransportSerializer):
     const dictionary = {};
 
     for (let key in object) {
-        if (!object.hasOwnProperty(key)) {
-            continue;
+        if (key in object) {
+            dictionary[key] = serialize(object[key]);
         }
-
-        dictionary[key] = serialize(object[key]);
     }
 
     return {

@@ -1,36 +1,41 @@
 /// <reference types="chrome" />
 
-import { MessagingTransportEvents, RecordingEventTypes } from '@testring/types';
+import { MessagingTransportEvents, RecordingEventTypes, RecorderEvents, IExtensionConfig } from '@testring/types';
 
 import { MessagingTransportClient } from './extension/messaging-transport';
 import { resolveElementPath } from './extension/resolve-element-path';
 
 const transportClient = new MessagingTransportClient();
 
+let clickHandlerFunc = (event) => {};
+
 transportClient.on(
-    MessagingTransportEvents.CONNECT,
-    () => {
-        document.addEventListener('click', clickHandler);
+    RecorderEvents.HANDSHAKE,
+    (config: IExtensionConfig) => {
+        const { testElementAttribute } = config;
+
+        document.removeEventListener('click', clickHandlerFunc);
+
+        clickHandlerFunc = (event) => clickHandler(event, testElementAttribute);
+
+        document.addEventListener('click', clickHandlerFunc);
     }
 );
 
-transportClient.on(
-    MessagingTransportEvents.DISCONNECT,
-    () => {
-        document.removeEventListener('click', clickHandler);
-    }
-);
+const clickHandler = (event: MouseEvent, attribute: string): void => {
+    try {
+        const xpath = resolveElementPath(event, attribute);
 
-const clickHandler = (event: Event): void => {
-    const xpath = resolveElementPath(event);
-
-    if (xpath) {
-        transportClient.send({
-            event: MessagingTransportEvents.RECORDING_EVENT,
-            payload: {
-                type: RecordingEventTypes.CLICK,
-                elementPath: xpath,
-            },
-        });
+        if (xpath) {
+            transportClient.send({
+                event: MessagingTransportEvents.RECORDING_EVENT,
+                payload: {
+                    type: RecordingEventTypes.CLICK,
+                    elementPath: xpath,
+                },
+            });
+        }
+    } catch (e) {
+        console.warn(e) // eslint-disable-line
     }
 };

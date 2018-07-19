@@ -1,6 +1,6 @@
 /// <reference types="chrome" />
 
-import * as EventEmitter from 'eventemitter3';
+import * as EventEmitter from 'events';
 import { IMessagingTransportMessage, MessagingTransportEvents } from '@testring/types';
 
 import Port = chrome.runtime.Port;

@@ -1,5 +1,7 @@
+import { EventEmitter } from 'events';
+import { Queue } from '@testring/utils';
 import { ClientWsTransportEvents, RecorderEvents } from '@testring/types';
-import { EventEmitter } from 'eventemitter3';
+import { DEFAULT_RECORDER_HOST, DEFAULT_RECORDER_WS_PORT } from '@testring/constants';
 
 interface IQueuedMessage {
     event: RecorderEvents;
@@ -9,21 +11,18 @@ interface IQueuedMessage {
 
 export class ClientWsTransport extends EventEmitter {
     constructor(
-        private url: string = 'ws://localhost:3001',
+        private url: string = `ws://${DEFAULT_RECORDER_HOST}:${DEFAULT_RECORDER_WS_PORT}`,
+        private shouldReconnect: boolean = false,
     ) {
         super();
     }
 
     private connection: WebSocket;
 
-    private messagesQueue: Array<IQueuedMessage> = [];
-
-    private getConnectionStatus() {
-        return this.connection && this.connection.readyState === 1;
-    }
+    private messagesQueue = new Queue<IQueuedMessage>();
 
     private resolveQueue() {
-        const queuedMessage = this.messagesQueue[0];
+        const queuedMessage = this.messagesQueue.getFirstElement();
 
         if (queuedMessage && this.getConnectionStatus()) {
             const { event, payload, resolve } = queuedMessage;
@@ -33,7 +32,7 @@ export class ClientWsTransport extends EventEmitter {
 
                 resolve();
 
-                this.messagesQueue.unshift();
+                this.messagesQueue.shift();
 
                 if (this.messagesQueue.length > 0) {
                     this.resolveQueue();
@@ -52,10 +51,12 @@ export class ClientWsTransport extends EventEmitter {
         this.resolveQueue();
     }
 
-    private messageHandler(message: any): void {
+    private messageHandler(message: MessageEvent): void {
+        const { data } = message;
+
         this.emit(
             ClientWsTransportEvents.MESSAGE,
-            message,
+            data
         );
     }
 
@@ -65,7 +66,22 @@ export class ClientWsTransport extends EventEmitter {
         );
     }
 
-    private wsSend(event: RecorderEvents, payload: any) {
+    private errorHandler(e): void {
+        this.emit(
+            ClientWsTransportEvents.ERROR,
+            e,
+        );
+
+        if (this.shouldReconnect) {
+            this.reconnect();
+        }
+    }
+
+    private wsSend(event: RecorderEvents, payload: any): void {
+        if (!this.getConnectionStatus()) {
+            throw new Error('WebSocket connection not OPEN');
+        }
+
         this.connection.send(JSON.stringify({ event, payload }));
     }
 
@@ -77,25 +93,34 @@ export class ClientWsTransport extends EventEmitter {
         connection.onopen = () => this.openHandler();
         connection.onmessage = (message) => this.messageHandler(message);
         connection.onclose = () => this.closeHandler();
+        connection.onerror = (e) => this.errorHandler(e);
 
         this.connection = connection;
+    }
+
+    public reconnect() {
+        if (this.connection) {
+            this.connect(this.connection.url);
+        }
     }
 
     public disconnect(): void {
         if (this.connection) {
             this.connection.close();
-
-            delete this.connection;
         }
+    }
+
+    public getConnectionStatus() {
+        return this.connection && this.connection.readyState === 1;
     }
 
     public send(event: RecorderEvents, payload: any): Promise<void> {
         return new Promise((resolve) => {
-            if (this.messagesQueue.length <= 0 && this.connection) {
+            if (this.messagesQueue.length <= 0) {
                 try {
                     this.wsSend(event, payload);
 
-                    return resolve();
+                    resolve();
                 } catch (e) {
                     this.messagesQueue.push({ event, payload, resolve });
                 }

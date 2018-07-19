@@ -98,4 +98,25 @@ describe('serialize', () => {
 
         chai.expect(callResult).to.be.equal(6);
     });
+
+    it('should serialize objects with circular links', () => {
+        const obj1: any = {};
+        const obj2: any = {};
+
+        obj1.a = obj1;
+        obj1.b = obj2;
+        obj2.a = obj1;
+        obj2.b = obj2;
+
+        const serializedFunction = serialize(obj1);
+        const deserializedFunction = deserialize(serializedFunction);
+
+        chai.expect(deserializedFunction).to.be.deep.equal({
+            a: '(Circular)',
+            b: {
+                a: '(Circular)',
+                b: '(Circular)'
+            }
+        });
+    });
 });

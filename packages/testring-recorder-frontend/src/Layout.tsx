@@ -1,7 +1,8 @@
 import React from 'react';
+
 import { Editor } from './components/editor';
 
-export default () => (
+export const Layout = () => (
     <div style={{
         display: 'flex',
         flexDirection: 'column',

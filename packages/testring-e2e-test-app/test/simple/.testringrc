@@ -1,0 +1,18 @@
+{
+  "tests": "test/simple/*.spec.js",
+  "plugins": [
+    [
+      "babel",
+      {
+        "presets": [
+          "es2015"
+        ]
+      }
+    ]
+  ],
+  "envParameters": {
+    "test": 1,
+    "host": "http://example.com",
+    "data": [1, 2, 3, null]
+  }
+}

@@ -24,7 +24,8 @@ export const enum TestWorkerAction {
 export interface ITestExecutionMessage {
     source: string;
     filename: string;
-    parameters: object;
+    parameters: any;
+    envParameters: any;
 }
 
 export interface ITestExecutionCompleteMessage {
@@ -33,7 +34,7 @@ export interface ITestExecutionCompleteMessage {
 }
 
 export interface ITestWorkerInstance {
-    execute(rawSource: string, filename: string, parameters: object): Promise<any>;
+    execute(rawSource: string, filename: string, parameters: any, envParameters: any): Promise<any>;
 
     kill(): void;
 }

@@ -112,26 +112,6 @@ describe('Logger Server', () => {
         transport.broadcast(LoggerMessageTypes.REPORT, successEntry); // this one should succeed
     });
 
-    it('should abort after log fail', (callback) => {
-        const transport = new TransportMock();
-        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout);
-        const onLog = loggerServer.getHook(LoggerPlugins.onLog);
-
-        if (onLog) {
-            process.prependOnceListener('unhandledRejection', () => {
-                callback();
-            });
-
-            onLog.readHook('testPlugin', () => {
-                throw new Error('NOPE');
-            });
-        }
-
-        transport.broadcast(LoggerMessageTypes.REPORT, LOG_ENTITY);
-        transport.broadcast(LoggerMessageTypes.REPORT, LOG_ENTITY);
-    });
-
     it('should accept batch reports from logger clients, and pass individual entries to queue', (callback) => {
         const spy = sinon.spy();
         const transport = new TransportMock();

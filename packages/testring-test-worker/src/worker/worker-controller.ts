@@ -45,6 +45,7 @@ export class WorkerController {
 
         let isAsync = false;
 
+        this.testAPI.setEnvironmentParameters(message.envParameters);
         this.testAPI.setTestParameters(message.parameters);
         this.testAPI.setTestID(testID);
 

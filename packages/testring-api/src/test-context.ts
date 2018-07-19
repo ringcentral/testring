@@ -39,6 +39,10 @@ export class TestContext {
         return testAPIController.getTestParameters();
     }
 
+    public getEnvironment(): any {
+        return testAPIController.getEnvironmentParameters();
+    }
+
     public initCustomApplication<T extends WebApplication = WebApplication>(Ctr: { new(...args: Array<any>): T; }) {
         const customApplication = new Ctr(testAPIController.getTestID(), transport);
 
