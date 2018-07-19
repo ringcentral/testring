@@ -3,12 +3,14 @@ import traverse from 'babel-traverse';
 import * as t from 'babel-types';
 import generate from 'babel-generator';
 
-const fs = require('fs');
+const template = require('babel-template');
+
 export function generateCode({cursor, code, event}): any {
     const ast = babylon.parse(code);
+    //const isAsync: boolean;
+
     traverse(ast, {
         enter(path) {
-            console.log(path.node.loc);
             if (path.node.loc && isEqualPosition(path.node.loc.end, cursor)) {
                 path.insertAfter(
                     makeNode(event)
@@ -17,13 +19,15 @@ export function generateCode({cursor, code, event}): any {
             }
         }
     });
-    console.log(ast);
+
     const output = generate(ast);
-    fs.writeFile('./example.js', output.code, (err) => {
-        console.log(err);
-    });
+
     return {
-        code: output.code
+        code: output.code,
+        cursor: {
+            line: cursor.line + 1,
+            column: cursor.column
+        }
     };
 }
 
@@ -33,6 +37,7 @@ function isEqualPosition(end, cursor) {
 
 
 function makeNode(event): any {
+    //TODO function should return node depends on event type
     const newPath = [
         {
             id: 'api'
@@ -45,20 +50,19 @@ function makeNode(event): any {
         },
         ...event.payload.elementPath
     ];
-    return t.expressionStatement(
-        t.awaitExpression(
-            t.callExpression(
-                t.memberExpression(
-                    t.memberExpression(
-                        t.identifier('api'),
-                        t.identifier('application')
-                    ),
-                    t.identifier('click')
-                ),
-                [createSelector(newPath)]
-            )
-        )
+    const node = template(`
+        api.application.click(ELEMENT_SELECTOR)
+    `)(
+        {
+            ELEMENT_SELECTOR: createSelector(newPath)
+        }
     );
+    if (t.isCallExpression(node.expression)) {
+        const asyncNode = t.expressionStatement(t.awaitExpression(node.expression));
+
+        return asyncNode;
+    }
+    return node;
 }
 
 function createSelector(path) {
@@ -74,3 +78,8 @@ function createSelector(path) {
         t.identifier(element.id)
     );
 }
+
+//
+// function wrapInAsync(code) {
+//
+// }
