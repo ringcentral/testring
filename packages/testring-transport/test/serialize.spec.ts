@@ -67,6 +67,34 @@ describe('serialize', () => {
         chai.expect(callResult).to.be.equal(6);
     });
 
+    it('should serialize arrow function with zero arguments', () => {
+        const arrowFunction = () => 2;
+
+        const serializedFunction = serialize(arrowFunction);
+        const deserializedFunction = deserialize(serializedFunction);
+
+        chai.expect(deserializedFunction).to.be.a('function');
+        chai.expect(deserializedFunction.length).to.be.equal(0);
+
+        const callResult = deserializedFunction(1);
+
+        chai.expect(callResult).to.be.equal(2);
+    });
+
+    it('should serialize arrow function without body', () => {
+        const arrowFunction = a => a + 2;
+
+        const serializedFunction = serialize(arrowFunction);
+        const deserializedFunction = deserialize(serializedFunction);
+
+        chai.expect(deserializedFunction).to.be.a('function');
+        chai.expect(deserializedFunction.length).to.be.equal(1);
+
+        const callResult = deserializedFunction(1);
+
+        chai.expect(callResult).to.be.equal(3);
+    });
+
     it('should serialize anonymous function', () => {
         const anonymousFunction = function(a, b) {
             return a + b + 2;
@@ -81,6 +109,22 @@ describe('serialize', () => {
         const callResult = deserializedFunction(1, 3);
 
         chai.expect(callResult).to.be.equal(6);
+    });
+
+    it('should serialize anonymous function without arguments', () => {
+        const anonymousFunction = function() {
+            return 2;
+        };
+
+        const serializedFunction = serialize(anonymousFunction);
+        const deserializedFunction = deserialize(serializedFunction);
+
+        chai.expect(deserializedFunction).to.be.a('function');
+        chai.expect(deserializedFunction.length).to.be.equal(0);
+
+        const callResult = deserializedFunction();
+
+        chai.expect(callResult).to.be.equal(2);
     });
 
     it('should serialize named function', () => {

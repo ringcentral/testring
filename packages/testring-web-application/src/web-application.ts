@@ -133,31 +133,27 @@ export class WebApplication extends PluggableModule {
 
     public async openPage(uri) {
         if (typeof uri === 'string') {
-            return this._open(uri);
+            let prevUrlObj: any = await this.url();
+            let result;
+
+            let prevUrl = prevUrlObj.value;
+
+            if (url.parse(prevUrl).path === url.parse(uri).path) {
+                await this.url(uri);
+                await this.refresh();
+                result = this.documentReadyWait();
+                await this.logNavigatorVersion();
+                return result;
+            } else {
+                await this.url(uri);
+                result = this.documentReadyWait();
+                await this.logNavigatorVersion();
+                return result;
+            }
         } else if (typeof uri === 'function') {
             return uri(this);
         } else {
             throw new Error('Unsupported path type for openPage');
-        }
-    }
-
-    public async _open(val) {
-        let prevUrlObj: any = await this.url();
-        let result;
-
-        let prevUrl = prevUrlObj.value;
-
-        if (url.parse(prevUrl).path === url.parse(val).path) {
-            await this.url(val);
-            await this.refresh();
-            result = this._documentReadyWait();
-            await this.logNavigatorVersion();
-            return result;
-        } else {
-            await this.url(val);
-            result = this._documentReadyWait();
-            await this.logNavigatorVersion();
-            return result;
         }
     }
 
@@ -227,7 +223,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.debug(userAgent.value);
     }
 
-    _documentReadyWait() {
+    private documentReadyWait() {
         const attemptCount = 1000;
         const attemptInterval = 200;
 
@@ -235,11 +231,9 @@ export class WebApplication extends PluggableModule {
             let i = 0;
             let result = false;
             while (i < attemptCount) {
-                const ready = { value: '' };
+                const ready = await this.execute(() => document.readyState === 'complete');
 
-                await this.execute(() => document.readyState === 'complete');
-
-                if (ready && ready.value) {
+                if (ready) {
                     result = true;
                     break;
                 } else {
@@ -367,7 +361,7 @@ export class WebApplication extends PluggableModule {
 
         await this.waitForExist(xpath, timeout);
 
-        const text = (await this._getTextsInternal(xpath, trim)).join(' ');
+        const text = (await this.getTextsInternal(xpath, trim)).join(' ');
 
         loggerClient.debug(`Get text from ${logXpath} returns "${text}"`);
 
@@ -379,7 +373,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.debug(`Get tooltip text from ${logXpath}`);
         await this.waitForExist(xpath, timeout, true);
 
-        let text = (await this._getTextsInternal(xpath, true)).join(' ');
+        let text = (await this.getTextsInternal(xpath, true)).join(' ');
 
         loggerClient.debug(`Get tooltip text from ${logXpath} returns "${text}"`);
         return text;
@@ -390,7 +384,7 @@ export class WebApplication extends PluggableModule {
         loggerClient.debug(`Get texts from ${logXpath}`);
         await this.waitForExist(xpath, timeout);
 
-        let texts = await this._getTextsInternal(xpath, trim);
+        let texts = await this.getTextsInternal(xpath, trim);
 
         loggerClient.debug(`Get texts from ${logXpath} returns "${texts.join('\n')}"`);
         return texts;
@@ -896,7 +890,7 @@ export class WebApplication extends PluggableModule {
         return this.client.toParent();
     }
 
-    async _getTextsInternal(xpath, trim) {
+    private async getTextsInternal(xpath, trim) {
         xpath = this.normalizeSelector(xpath);
 
         let result: string[] = [];
@@ -919,7 +913,7 @@ export class WebApplication extends PluggableModule {
     }
 
     async pause(timeout) {
-        loggerClient.debug(`DELAY for ${timeout}ms`);
+        loggerClient.verbose(`DELAY for ${timeout}ms`);
 
         return new Promise(resolve => setTimeout(resolve, timeout));
     }
@@ -954,9 +948,10 @@ export class WebApplication extends PluggableModule {
     public async makeScreenshot() {
         const screenshoot = await this.client.makeScreenshot();
         const screenDate = new Date();
+        const formattedDate = screenDate.toString().replace(/\s+/g, '_');
 
         loggerClient.media(
-            `${this.testUID}-${screenDate.toString()}-${nanoid(5)}.png`,
+            `${this.testUID}-${formattedDate}-${nanoid(5)}.png`,
             screenshoot
         );
     }

@@ -10,26 +10,51 @@ export const FUNCTION_KEY = 'Function';
 
 const trimString = (str) => str.trim();
 
-export const serializeFunction = (func: Function): ISerializedFunction => {
-    const bodyRegExp = /{([^]*)}$/;
-    const argumentsRegExp = /^(function)?[^(]*\(([^)]*)\)/;
-    const content = func.toString();
+const getBody = (fn: string) => {
+    const blockBodyRegExp = /{([^]*)}$/;
+    const inlineBodyRegExp = /=>\s*(.+)$/;
 
-    const body = content.match(bodyRegExp);
-    const args = content.match(argumentsRegExp);
+    // TODO need to handle all cases
+    // () => ({ test: 1 }), for example
+    if (fn.includes('{')) {
+        const blockBody = fn.match(blockBodyRegExp);
 
-    const normalizedArg = args ? args[2].split(',').map(trimString) : [];
+        let normalizedBody = blockBody ? blockBody[1] : '';
 
-    let normalizedBody = body ? body[1] : '';
+        if (normalizedBody.includes('[native code]')) {
+            normalizedBody = '';
+        }
 
-    if (normalizedBody.includes('[native code]')) {
-        normalizedBody = '';
+        return normalizedBody;
+    } else {
+        const inlineBody = fn.match(inlineBodyRegExp);
+
+        return inlineBody ? `return ${inlineBody[1]}` : '';
     }
+};
+
+const getArguments = (fn: string) => {
+    const argumentsRegExp = /^(function)?([^(]*\(([^)]*)\)|[A-z]+)/;
+    const args = fn.match(argumentsRegExp);
+
+    let matchedArgs = args ? args[3] || args[2] : '';
+
+    if (matchedArgs.includes('()')) {
+        return [];
+    }
+
+    return matchedArgs.split(',').map(trimString);
+};
+
+export const serializeFunction = (func: Function): ISerializedFunction => {
+    const content = func.toString();
+    const body = getBody(content);
+    const args = getArguments(content);
 
     return {
         $key: FUNCTION_KEY,
-        body: normalizedBody,
-        arguments: normalizedArg
+        body: body,
+        arguments: args
     };
 };
 
