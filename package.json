@@ -32,7 +32,7 @@
     "build:clear": "npm run lint && npm run build",
     "build:precommit": "npm run build:clear && npm run test && npm run test:e2e-simple",
     "build:ci": "npm run build:clear && npm run test:ci",
-    "publish": "npm run generate-readme && lerna publish",
+    "publish": "npm run generate-readme && lerna publish --exact",
     "publish:ci": "node ./bin/publish.js",
     "check-deps": "lerna exec -- npm-check --skip-unused --ignore @testring/*"
   },

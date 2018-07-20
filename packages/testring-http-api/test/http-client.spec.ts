@@ -44,49 +44,57 @@ describe('HttpClient', () => {
     it('should get response from server (GET)', async () => {
         const transport = new TransportMock();
         const httpClient = new HttpClient(transport);
-        const response = {};
+        const response = {
+            body: {}
+        };
 
         imitateServer(transport, response);
 
         const result = await httpClient.get({ url: DEFAULT_URL });
 
-        chai.expect(result).equal(response);
+        chai.expect(result).equal(response.body);
     });
 
     it('should get response from server (POST)', async () => {
         const transport = new TransportMock();
         const httpClient = new HttpClient(transport);
-        const response = {};
+        const response = {
+            body: {}
+        };
 
         imitateServer(transport, response);
 
         const result = await httpClient.post({ url: DEFAULT_URL });
 
-        chai.expect(result).equal(response);
+        chai.expect(result).equal(response.body);
     });
 
     it('should get response from server (PUT)', async () => {
         const transport = new TransportMock();
         const httpClient = new HttpClient(transport);
-        const response = {};
+        const response = {
+            body: {}
+        };
 
         imitateServer(transport, response);
 
         const result = await httpClient.put({ url: DEFAULT_URL });
 
-        chai.expect(result).equal(response);
+        chai.expect(result).equal(response.body);
     });
 
     it('should get response from server (DELETE)', async () => {
         const transport = new TransportMock();
         const httpClient = new HttpClient(transport);
-        const response = {};
+        const response = {
+            body: {}
+        };
 
         imitateServer(transport, response);
 
         const result = await httpClient.delete({ url: DEFAULT_URL });
 
-        chai.expect(result).equal(response);
+        chai.expect(result).equal(response.body);
     });
 
     it('should fail correctly, if server returns error', async () => {

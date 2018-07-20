@@ -1,5 +1,5 @@
 import { IHttpRequest, IHttpResponse } from '@testring/types';
-import { Response, OptionsWithUrl, jar } from 'request';
+import { Response, jar } from 'request';
 import * as requestPromise from 'request-promise';
 
 const toString = c => c.toString();
@@ -16,28 +16,39 @@ const createCookieStore = (cookies: Array<string> | void, url: string) => {
     return cookieJar;
 };
 
+const filterRequestField = (rawRequest) => (request, key) => {
+    if (typeof rawRequest[key] !== 'undefined') {
+        request[key] = rawRequest[key];
+    }
+
+    return request;
+};
+
+const mapResponse = (response: Response, cookies) => ({
+    statusCode: response.statusCode,
+    statusMessage: response.statusMessage,
+    headers: response.headers,
+    body: response.body,
+    cookies: cookies
+});
+
 export const requestFunction = async (request: IHttpRequest): Promise<IHttpResponse> => {
     const cookieJar = createCookieStore(request.cookies, request.url);
 
-    const normalizedRequest: OptionsWithUrl = {
+    const rawRequest: any = {
         url: request.url,
-        body: request.body,
-        qs: request.query,
         method: request.method,
         timeout: request.timeout,
         headers: request.headers,
-        json: true,
-        jar: cookieJar
+        json: request.json,
+        body: request.body,
+        jar: cookieJar,
+        resolveWithFullResponse: true
     };
 
-    const response: Response = await requestPromise(normalizedRequest);
-    const responseCookies = cookieJar.getCookies(request.url).map(toString);
+    const normalizedRequest = Object.keys(rawRequest).reduce(filterRequestField(rawRequest), {});
+    const response = await requestPromise(normalizedRequest);
+    const cookies = cookieJar.getCookies(request.url).map(toString);
 
-    return {
-        statusCode: response.statusCode,
-        statusMessage: response.statusMessage,
-        headers: response.headers,
-        body: response.body,
-        cookies: responseCookies
-    };
+    return mapResponse(response, cookies);
 };

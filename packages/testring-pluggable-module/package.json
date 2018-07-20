@@ -10,6 +10,6 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/types": "^0.2.11"
+    "@testring/types": "0.2.11"
   }
 }

@@ -86,7 +86,11 @@ export abstract class AbstractHttpClient implements IHttpClient {
                             cookieJar.setCookies(response.response.cookies, requestParameters.url);
                         }
 
-                        resolve(response.response);
+                        if (requestParameters.resolveWithFullResponse) {
+                            resolve(response.response);
+                        } else {
+                            resolve(response.response.body);
+                        }
                     }
                 }
             );

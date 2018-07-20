@@ -10,9 +10,9 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/logger": "^0.2.11",
-    "@testring/pluggable-module": "^0.2.11",
-    "@testring/types": "^0.2.11",
+    "@testring/logger": "0.2.11",
+    "@testring/pluggable-module": "0.2.11",
+    "@testring/types": "0.2.11",
     "glob": "^7.1.2"
   }
 }
