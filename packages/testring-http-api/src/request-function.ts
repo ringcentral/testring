@@ -37,11 +37,12 @@ export const requestFunction = async (request: IHttpRequest): Promise<IHttpRespo
 
     const rawRequest: any = {
         url: request.url,
+        qs: request.query,
+        body: request.body,
         method: request.method,
         timeout: request.timeout,
         headers: request.headers,
         json: request.json,
-        body: request.body,
         jar: cookieJar,
         resolveWithFullResponse: true
     };

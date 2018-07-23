@@ -20,7 +20,9 @@ describe('testring CLI', () => {
             '--silent'
         ]);
 
-        await runTests(config, stdout);
+        const command = runTests(config, stdout);
+
+        await command.execute();
     });
 
     it('should fail on negative tests', async () => {
@@ -34,7 +36,9 @@ describe('testring CLI', () => {
         let passed: boolean;
 
         try {
-            await runTests(config, stdout);
+            const command = runTests(config, stdout);
+
+            await command.execute();
             passed = true;
         } catch {
             passed = false;
@@ -46,12 +50,11 @@ describe('testring CLI', () => {
     });
 
     it('should fail with empty config', (callback) => {
-        runTests({} as any, stdout)
-            .then(() => {
-                callback('Tests finished somehow');
-            })
-            .catch(() => {
-                callback();
-            });
+        try {
+            runTests({} as any, stdout);
+            callback('Tests finished somehow');
+        } catch {
+            callback();
+        }
     });
 });

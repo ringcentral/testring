@@ -1,6 +1,10 @@
-import { ITransport, BrowserProxyActions } from '@testring/types';
-import { IExecuteMessage, IResponseMessage } from './interfaces';
-import { WebApplicationMessageType } from './structs';
+import {
+    ITransport,
+    IWebApplicationExecuteMessage,
+    IWebApplicationResponseMessage,
+    WebApplicationMessageType,
+    BrowserProxyActions
+} from '@testring/types';
 
 const nanoid = require('nanoid');
 
@@ -14,7 +18,7 @@ export class WebClient {
 
         return new Promise((resolve, reject) => {
             const uid = nanoid();
-            const request: IExecuteMessage = {
+            const request: IWebApplicationExecuteMessage = {
                 uid: uid,
                 applicant: this.applicant,
                 command: {
@@ -23,7 +27,7 @@ export class WebClient {
                 }
             };
 
-            const removeListener = transport.on<IResponseMessage>(
+            const removeListener = transport.on<IWebApplicationResponseMessage>(
                 WebApplicationMessageType.response,
                 (message) => {
                     if (message.uid === uid) {

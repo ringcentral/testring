@@ -3,7 +3,7 @@ import * as yargs from 'yargs';
 import { loggerClientLocal, LoggerServer } from '@testring/logger';
 import { getConfig } from '@testring/cli-config';
 import { transport } from '@testring/transport';
-import { IConfig } from '@testring/types';
+import { ICLICommand, IConfig } from '@testring/types';
 import { runTests } from './commands/run';
 import { runRecordingProcess } from './commands/record';
 
@@ -88,7 +88,7 @@ export const runCLI = async (argv: Array<string>) => {
 
     const config = await getConfig(argv);
 
-    let commandExecution;
+    let commandExecution: ICLICommand;
 
     switch (command) {
         case 'run':
@@ -104,7 +104,23 @@ export const runCLI = async (argv: Array<string>) => {
             return;
     }
 
-    commandExecution.catch((exception) => {
+    const processExitHandler = async () => {
+        await commandExecution.shutdown();
+
+        process.stdout.write('\nUser caused exit. \n');
+        process.exit(0);
+    };
+
+    //catches ctrl+c event or "kill pid"
+    process.on('SIGINT', processExitHandler);
+    process.on('SIGUSR1', processExitHandler);
+    process.on('SIGUSR2', processExitHandler);
+    process.on('SIGHUP', processExitHandler);
+    process.on('SIGQUIT', processExitHandler);
+    process.on('SIGABRT', processExitHandler);
+    process.on('SIGTERM', processExitHandler);
+
+    commandExecution.execute().catch((exception) => {
         new LoggerServer(config, transport, process.stdout);
 
         loggerClientLocal.error(exception);

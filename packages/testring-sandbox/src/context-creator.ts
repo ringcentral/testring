@@ -37,7 +37,7 @@ export const createContext = (sandbox: Sandbox, filename: string) => {
     const ownContext = {
         __dirname: path.dirname(filename),
         __filename: filename,
-        require: requirePackage,
+        require: (requestPath) => requirePackage(requestPath, filename),
         module: module
     };
 

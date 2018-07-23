@@ -26,10 +26,14 @@ const readJSConfig = async (configPath: string, config: IConfig): Promise<IConfi
             return configFile;
         }
     } catch (exception) {
-        throw new SyntaxError(`
-            Config file ${configPath} can't be parsed: invalid JS.
+        const error = new SyntaxError(`
+            Config file ${configPath} can't be parsed.
             ${exception.message}
         `);
+
+        error.stack = exception.stack;
+
+        throw error;
     }
 };
 

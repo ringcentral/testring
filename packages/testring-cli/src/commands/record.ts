@@ -1,55 +1,67 @@
+import { RecorderServerMessageTypes, ICLICommand, IConfig  } from '@testring/types';
+import { browserProxyControllerFactory } from '@testring/browser-proxy';
+import { createHttpServer, HttpClientLocal } from '@testring/http-api';
+import { WebApplicationController } from '@testring/web-application';
 import { LoggerServer, loggerClientLocal } from '@testring/logger';
 import { TestRunController } from '@testring/test-run-controller';
+import { RecorderServer } from '@testring/recorder-backend';
 import { applyPlugins } from '@testring/plugin-api';
 import { TestWorker } from '@testring/test-worker';
-import { WebApplicationController } from '@testring/web-application';
-import { browserProxyControllerFactory } from '@testring/browser-proxy';
 import { transport } from '@testring/transport';
-import { RecorderServer } from '@testring/recorder-backend';
-import { RecorderServerMessageTypes } from '@testring/types';
-import { HttpClientLocal } from '@testring/http-api';
-import { IConfig } from '@testring/types';
 
+class RecordCommand implements ICLICommand {
 
-export const runRecordingProcess = async (config: IConfig, stdout: NodeJS.WritableStream) => {
-    const loggerServer = new LoggerServer(config, transport, stdout);
-    const testWorker = new TestWorker(transport);
-    const testRunController = new TestRunController(config, testWorker);
-    const browserProxyController = browserProxyControllerFactory(transport);
-    const webApplicationController = new WebApplicationController(browserProxyController, transport);
-    const httpClient = new HttpClientLocal(transport);
-    const recorderServer = new RecorderServer();
+    constructor(private config: IConfig, private stdout: NodeJS.WritableStream) {}
 
-    applyPlugins({
-        logger: loggerServer,
-        testWorker: testWorker,
-        browserProxy: browserProxyController,
-        testRunController: testRunController,
-        httpClientInstance: httpClient
-    }, config);
+    async execute() {
+        createHttpServer(this.config, transport);
 
-    await browserProxyController.spawn();
-    await recorderServer.run();
+        const loggerServer = new LoggerServer(this.config, transport, this.stdout);
+        const testWorker = new TestWorker(transport);
+        const testRunController = new TestRunController(this.config, testWorker);
+        const browserProxyController = browserProxyControllerFactory(transport);
+        const webApplicationController = new WebApplicationController(browserProxyController, transport);
+        const httpClient = new HttpClientLocal(transport);
+        const recorderServer = new RecorderServer();
 
-    webApplicationController.init();
+        applyPlugins({
+            logger: loggerServer,
+            testWorker: testWorker,
+            browserProxy: browserProxyController,
+            testRunController: testRunController,
+            httpClientInstance: httpClient
+        }, this.config);
 
-    loggerClientLocal.info('Recorder Server started');
+        await browserProxyController.spawn();
+        await recorderServer.run();
 
-    transport.on(RecorderServerMessageTypes.MESSAGE, async (message) => {
-        const testStr = message.payload;
+        webApplicationController.init();
 
-        try {
-            const testResult = await testRunController.pushTestIntoQueue(testStr);
+        loggerClientLocal.info('Recorder Server started');
 
-            loggerClientLocal.info(`Test executed with result: ${testResult}`);
-        } catch (e) {
-            loggerClientLocal.info(`Test executed failed with error: ${e}`);
-        }
-    });
+        transport.on(RecorderServerMessageTypes.MESSAGE, async (message) => {
+            const testStr = message.payload;
 
-    transport.on(RecorderServerMessageTypes.CLOSE, () => {
-        throw new Error('Recorder Server disconnected');
-    });
+            try {
+                const testResult = await testRunController.pushTestIntoQueue(testStr);
 
+                loggerClientLocal.info(`Test executed with result: ${testResult}`);
+            } catch (e) {
+                loggerClientLocal.info(`Test executed failed with error: ${e}`);
+            }
+        });
+
+        transport.on(RecorderServerMessageTypes.CLOSE, () => {
+            throw new Error('Recorder Server disconnected');
+        });
+    }
+
+    async shutdown() {
+        // TODO stop all processes
+    }
+}
+
+export const runRecordingProcess = (config, stdout) => {
+    return new RecordCommand(config, stdout);
 };
 

@@ -37,8 +37,8 @@ export class ClientWsTransport extends EventEmitter {
                 if (this.messagesQueue.length > 0) {
                     this.resolveQueue();
                 }
-            } catch (e) {
-                console.warn(e); // eslint-disable-line
+            } catch (error) {
+                console.warn(error); // eslint-disable-line
             }
         }
     }

@@ -4,10 +4,10 @@ import * as path from 'path';
 import * as chai from 'chai';
 import { fork } from '@testring/child-process';
 import { Transport } from '@testring/transport';
+import { WebApplicationControllerEventType } from '@testring/types';
 import { BrowserProxyControllerMock } from '@testring/test-utils';
-import { WebApplicationControllerEventType } from '../src/structs';
-import { ELEMENT_NAME, TEST_NAME } from './fixtures/constants';
 import { WebApplicationController } from '../src/web-application-controller';
+import { ELEMENT_NAME, TEST_NAME } from './fixtures/constants';
 
 const nanoid = require('nanoid');
 

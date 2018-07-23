@@ -1,4 +1,4 @@
-function logXpath(xpath) { //+
+function logXpath(xpath) {
     let result = xpath;
 
     if (xpath === undefined) {

@@ -1,11 +1,16 @@
 import { EventEmitter } from 'events';
-import { ITransport, IBrowserProxyController } from '@testring/types';
-import { IExecuteMessage, IResponseMessage } from './interfaces';
-import { WebApplicationMessageType, WebApplicationControllerEventType } from './structs';
+import {
+    ITransport,
+    IBrowserProxyController,
+    IWebApplicationExecuteMessage,
+    IWebApplicationResponseMessage,
+    WebApplicationMessageType,
+    WebApplicationControllerEventType
+} from '@testring/types';
 
 export class WebApplicationController extends EventEmitter {
 
-    private onExecuteRequest = async (message: IExecuteMessage, source: string) => {
+    private onExecuteRequest = async (message: IWebApplicationExecuteMessage, source: string) => {
         this.emit(WebApplicationControllerEventType.execute, message);
 
         try {
@@ -13,7 +18,7 @@ export class WebApplicationController extends EventEmitter {
 
             this.emit(WebApplicationControllerEventType.response, response);
 
-            await this.transport.send<IResponseMessage>(source, WebApplicationMessageType.response, {
+            await this.transport.send<IWebApplicationResponseMessage>(source, WebApplicationMessageType.response, {
                 uid: message.uid,
                 response: response,
                 error: null
@@ -21,7 +26,7 @@ export class WebApplicationController extends EventEmitter {
 
             this.emit(WebApplicationControllerEventType.afterResponse, message, response);
         } catch (error) {
-            await this.transport.send<IResponseMessage>(source, WebApplicationMessageType.response, {
+            await this.transport.send<IWebApplicationResponseMessage>(source, WebApplicationMessageType.response, {
                 uid: message.uid,
                 response: null,
                 error: error
