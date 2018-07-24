@@ -8,7 +8,7 @@ import {
     ITestExecutionCompleteMessage,
     ITestExecutionMessage,
     TestWorkerAction,
-    TestCompiler,
+    FileCompiler,
     TestStatus
 } from '@testring/types';
 
@@ -30,7 +30,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     constructor(
         private transport: ITransport,
-        private compile: TestCompiler
+        private compile: FileCompiler
     ) {
     }
 

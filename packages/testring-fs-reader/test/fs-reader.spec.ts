@@ -5,14 +5,14 @@
 
 import * as path from 'path';
 import * as chai from 'chai';
-import { TestsFinder } from '../src/test-finder';
+import { FSReader } from '../src/fs-reader';
 
 const glob = path.resolve(__dirname, './fixtures/testfiles/**/**/*.test.js');
 const falseGlob = path.resolve(__dirname, './fixtures/testfiles/**/**/*.spec.ts');
 
 describe('TestsFinder', () => {
     it('should throw error if no path passed', (callback) => {
-        const testFinder = new TestsFinder();
+        const testFinder = new FSReader();
 
         testFinder.find(undefined as any)
             .then(() => {
@@ -24,7 +24,7 @@ describe('TestsFinder', () => {
     });
 
     it('should throw error if no files to passed glob', (callback) => {
-        const testFinder = new TestsFinder();
+        const testFinder = new FSReader();
 
         testFinder.find(falseGlob)
             .then(() => {
@@ -36,7 +36,7 @@ describe('TestsFinder', () => {
     });
 
     it('should resolve files from glob', async () => {
-        const testFinder = new TestsFinder();
+        const testFinder = new FSReader();
         const tests = await testFinder.find(glob);
 
         chai.expect(tests).to.be.an('array').that.not.empty;

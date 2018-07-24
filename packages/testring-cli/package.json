@@ -16,7 +16,7 @@
     "@testring/logger": "0.2.12",
     "@testring/plugin-api": "0.2.12",
     "@testring/recorder-backend": "0.2.12",
-    "@testring/test-finder": "0.2.12",
+    "@testring/fs-reader": "0.2.12",
     "@testring/test-run-controller": "0.2.12",
     "@testring/test-worker": "0.2.12",
     "@testring/transport": "0.2.12",

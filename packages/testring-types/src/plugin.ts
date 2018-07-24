@@ -1,5 +1,5 @@
 import { ILoggerServer } from './logger';
-import { ITestFinder } from './test-finder';
+import { IFSReader } from './fs-reader';
 import { ITestWorker } from './test-worker';
 import { ITestRunController } from './test-run-controller';
 import { IPluggableModule } from './pluggable-module';
@@ -12,7 +12,7 @@ export type Plugin = (pluginAPI: any, config: PluginConfig) => void;
 
 export interface IPluginModules {
     logger: ILoggerServer & IPluggableModule;
-    testFinder?: ITestFinder & IPluggableModule;
+    testFinder?: IFSReader & IPluggableModule;
     testWorker: ITestWorker & IPluggableModule;
     testRunController: ITestRunController & IPluggableModule;
     browserProxy: IBrowserProxyController & IPluggableModule;

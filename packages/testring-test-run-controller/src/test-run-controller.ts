@@ -2,7 +2,7 @@ import {
     IConfig,
     ITestWorker,
     ITestWorkerInstance,
-    ITestFile,
+    IFile,
     IQueuedTest,
     ITestRunController,
     TestRunControllerPlugins
@@ -39,8 +39,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     public async pushTestIntoQueue(testString: string) {
         const testQueueItem = this.prepareTest({
             path: '',
-            content: testString,
-            meta: {}
+            content: testString
         });
         if (Array.isArray(this.currentQueue)) {
             this.currentQueue.push(testQueueItem);
@@ -52,7 +51,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         return this.currentRun;
     }
 
-    public async runQueue(testSet: Array<ITestFile>): Promise<Error[] | null> {
+    public async runQueue(testSet: Array<IFile>): Promise<Error[] | null> {
         const testQueue = await this.prepareTests(testSet);
 
         loggerClientLocal.debug('Run controller: tests queue created.');
@@ -112,15 +111,16 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         return workers;
     }
 
-    private prepareTest(testFile: ITestFile) {
+    private prepareTest(testFile: IFile): IQueuedTest {
         return {
             retryCount: 0,
             retryErrors: [],
-            test: testFile
+            test: testFile,
+            parameters: {}
         };
     }
 
-    private async prepareTests(testFiles: Array<ITestFile>): Promise<TestQueue> {
+    private async prepareTests(testFiles: Array<IFile>): Promise<TestQueue> {
         const testQueue = new Array(testFiles.length);
 
         for (let index = 0; index < testFiles.length; index++) {
@@ -184,7 +184,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             await worker.execute(
                 queuedTest.test.content,
                 queuedTest.test.path,
-                queuedTest.test.meta,
+                queuedTest.parameters,
                 this.config.envParameters
             );
 

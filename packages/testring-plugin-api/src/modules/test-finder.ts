@@ -1,12 +1,12 @@
-import { TestsFinderPlugins } from '@testring/types';
+import { FSReaderPlugins } from '@testring/types';
 import { AbstractAPI } from './abstract';
 
 export class TestFinderAPI extends AbstractAPI {
     onBeforeResolve(callback) {
-        this.registryWritePlugin(TestsFinderPlugins.beforeResolve, callback);
+        this.registryWritePlugin(FSReaderPlugins.beforeResolve, callback);
     }
 
     onAfterResolve(callback) {
-        this.registryWritePlugin(TestsFinderPlugins.afterResolve, callback);
+        this.registryWritePlugin(FSReaderPlugins.afterResolve, callback);
     }
 }

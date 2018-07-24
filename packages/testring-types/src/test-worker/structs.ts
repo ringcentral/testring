@@ -1,6 +1,6 @@
 import { TestStatus } from './enums';
 
-export type TestCompiler = (source: string, filename: string) => Promise<string>;
+export type FileCompiler = (source: string, filename: string) => Promise<string>;
 
 export interface ITestExecutionMessage {
     source: string;

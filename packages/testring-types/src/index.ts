@@ -6,7 +6,7 @@ export * from './pluggable-module';
 
 export * from './recorder-backend';
 
-export * from './test-finder';
+export * from './fs-reader';
 
 export * from './browser-proxy/structs';
 export * from './browser-proxy/enums';

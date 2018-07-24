@@ -1,4 +1,4 @@
-import { ITestFile } from '../test-finder';
+import { IFile } from '../fs-reader';
 
 export const enum TestRunControllerPlugins {
     beforeRun = 'beforeRun',
@@ -11,9 +11,10 @@ export const enum TestRunControllerPlugins {
 export interface IQueuedTest {
     retryCount: number;
     retryErrors: Array<any>;
-    test: ITestFile;
+    test: IFile;
+    parameters: any;
 }
 
 export interface ITestRunController {
-    runQueue(testSet: Array<ITestFile>): Promise<Error[] | null>;
+    runQueue(testSet: Array<IFile>): Promise<Error[] | null>;
 }

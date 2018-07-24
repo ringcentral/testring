@@ -1,5 +1,5 @@
 {
-  "name": "@testring/test-finder",
+  "name": "@testring/fs-reader",
   "version": "0.2.12",
   "main": "./dist/index.js",
   "types": "./src/index.ts",

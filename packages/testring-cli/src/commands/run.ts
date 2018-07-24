@@ -2,7 +2,7 @@ import { createHttpServer, HttpClientLocal } from '@testring/http-api';
 import { LoggerServer, loggerClientLocal } from '@testring/logger';
 import { TestRunController } from '@testring/test-run-controller';
 import { applyPlugins } from '@testring/plugin-api';
-import { TestsFinder } from '@testring/test-finder';
+import { FSReader } from '@testring/fs-reader';
 import { TestWorker } from '@testring/test-worker';
 import { WebApplicationController } from '@testring/web-application';
 import { browserProxyControllerFactory, BrowserProxyController } from '@testring/browser-proxy';
@@ -43,7 +43,7 @@ class RunCommand implements ICLICommand {
         this.browserProxyController = browserProxyControllerFactory(transport);
 
         const loggerServer = new LoggerServer(this.config, transport, this.stdout);
-        const testFinder = new TestsFinder();
+        const testFinder = new FSReader();
         const testWorker = new TestWorker(transport);
         const testRunController = new TestRunController(this.config, testWorker);
         const webApplicationController = new WebApplicationController(this.browserProxyController, transport);
