@@ -47,7 +47,7 @@ describe('resolve tests', () => {
         const res = await resolveFiles(testPaths);
 
         res.forEach(file => {
-            chai.expect(file).to.have.all.keys('path', 'content', 'meta');
+            chai.expect(file).to.have.all.keys('path', 'content');
         });
     });
 

@@ -27,11 +27,12 @@ describe('WorkerController', () => {
         });
 
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
-            source: `
+            content: `
                 function test () {} 
                 test();
             `,
-            filename: 'test.js',
+            path: 'test.js',
+            dependencies: {},
             parameters: {},
             envParameters: null
         });
@@ -55,8 +56,9 @@ describe('WorkerController', () => {
         });
 
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
-            source: `throw new Error("${ERROR_TEXT}")`,
-            filename: 'test.js',
+            content: `throw new Error("${ERROR_TEXT}")`,
+            path: 'test.js',
+            dependencies: {},
             parameters: {},
             envParameters: null
         });

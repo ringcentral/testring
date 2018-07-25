@@ -11,12 +11,17 @@ describe('TestWorkerInstance', () => {
 
     context('test execution', () => {
         it('should run sync test', async () => {
+            const file = {
+                content: defaultSyncTestContent,
+                path: defaultFilename
+            };
+
             const transport = new Transport();
             const testWorker = new TestWorker(transport);
             const instance = testWorker.spawn();
 
             try {
-                await instance.execute(defaultSyncTestContent, defaultFilename, {}, null);
+                await instance.execute(file, {}, null);
             } catch (error) {
                 throw error;
             } finally {
@@ -25,12 +30,16 @@ describe('TestWorkerInstance', () => {
         });
 
         it('should fail sync test correctly', (callback) => {
-            const rawSource = 'throw new Error("Something happened")';
+            const file = {
+                content: 'throw new Error("Something happened")',
+                path: defaultFilename
+            };
+
             const transport = new Transport();
             const testWorker = new TestWorker(transport);
             const instance = testWorker.spawn();
 
-            instance.execute(rawSource, defaultFilename, {}, null)
+            instance.execute(file, {}, null)
                 .then(() => {
                     callback('Test was completed somehow');
                 })
@@ -47,11 +56,16 @@ describe('TestWorkerInstance', () => {
     });
 
     it('should fail execution, if process was killed', (callback) => {
+        const file = {
+            content: defaultSyncTestContent,
+            path: defaultFilename
+        };
+
         const transport = new Transport();
         const testWorker = new TestWorker(transport);
         const instance = testWorker.spawn();
 
-        instance.execute(defaultSyncTestContent, defaultFilename, {}, null)
+        instance.execute(file, {}, null)
             .then(() => {
                 callback('Test was completed somehow');
             })
@@ -64,6 +78,11 @@ describe('TestWorkerInstance', () => {
 
     context('compilation', () => {
         it('should compile source without errors', (callback) => {
+            const file = {
+                content: defaultSyncTestContent,
+                path: defaultFilename
+            };
+
             const transport = new Transport();
             const testWorker = new TestWorker(transport);
             const instance = testWorker.spawn();
@@ -80,13 +99,18 @@ describe('TestWorkerInstance', () => {
                 });
             }
 
-            instance.execute(defaultSyncTestContent, defaultFilename, {}, null)
+            instance.execute(file, {}, null)
                 .catch(() => {
                 });
             instance.kill();
         });
 
         it('should handle compilation exception', (callback) => {
+            const file = {
+                content: defaultSyncTestContent,
+                path: defaultFilename
+            };
+
             const transport = new Transport();
             const testWorker = new TestWorker(transport);
             const instance = testWorker.spawn();
@@ -101,7 +125,7 @@ describe('TestWorkerInstance', () => {
                 });
             }
 
-            instance.execute(defaultSyncTestContent, defaultFilename, {}, null)
+            instance.execute(file, {}, null)
                 .then(() => {
                     callback('Test was compiled somehow');
                 })

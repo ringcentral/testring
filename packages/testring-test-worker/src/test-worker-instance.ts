@@ -84,6 +84,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         };
 
         const dependencies = await buildDependencyDictionary(compiledFile, this.readDependency.bind(this));
+
         const relativePath = path.relative(process.cwd(), file.path);
 
         loggerClientLocal.debug(`Sending test for execution: ${relativePath}`);

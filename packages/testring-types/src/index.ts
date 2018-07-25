@@ -36,4 +36,6 @@ export * from './recorder-extension';
 
 export * from './recorder';
 
+export * from './dependencies-builder';
+
 export * from './web-application';

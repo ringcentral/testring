@@ -1,20 +1,14 @@
 import { parse } from 'babylon';
 import { CallExpression, Identifier } from 'babel-types';
 import traverse, { NodePath } from 'babel-traverse';
-import { IFile } from '@testring/types';
+import {
+    IFile,
+    IDependencyDictionary,
+    IDependencyDictionaryNode,
+    IDependencyTreeNode,
+    DependencyFileReader
+} from '@testring/types';
 import { resolveAbsolutePath } from './absolute-path-resolver';
-
-type FileReader = (filePath: string) => Promise<string>;
-
-interface Dictionary<T> {
-    [key: string]: T;
-}
-
-interface DictionaryNode extends IFile {}
-
-interface TreeNode extends DictionaryNode {
-    nodes: Dictionary<TreeNode> | null;
-}
 
 const getDependencies = (absolutePath: string, content: string): Array<string> => {
     const requests: Array<string> = [];
@@ -50,14 +44,18 @@ const getDependencies = (absolutePath: string, content: string): Array<string> =
     return requests;
 };
 
-const createTreeNode = (path: string, content: string, nodes: Dictionary<TreeNode> | null): TreeNode => ({
+const createTreeNode = (
+    path: string,
+    content: string,
+    nodes: IDependencyDictionary<IDependencyTreeNode> | null
+): IDependencyTreeNode => ({
     content,
     path,
     nodes
 });
 
 
-const createDictionaryNode = (path: string, content: string): DictionaryNode => ({
+const createDictionaryNode = (path: string, content: string): IDependencyDictionaryNode => ({
     content,
     path
 });
@@ -65,19 +63,19 @@ const createDictionaryNode = (path: string, content: string): DictionaryNode => 
 const buildNodes = async (
     parentPath: string,
     parentContent: string,
-    nodesCache: Dictionary<TreeNode>,
-    readFile: FileReader
-): Promise<TreeNode['nodes']> => {
+    nodesCache: IDependencyDictionary<IDependencyTreeNode>,
+    readFile: DependencyFileReader
+): Promise<IDependencyTreeNode['nodes']> => {
     const dependencies = getDependencies(parentPath, parentContent);
 
     if (dependencies.length === 0) {
         return null;
     }
 
-    const resultNodes: TreeNode['nodes'] = {};
+    const resultNodes: IDependencyTreeNode['nodes'] = {};
 
     let dependency: string;
-    let node: TreeNode;
+    let node: IDependencyTreeNode;
     for (let index = 0; index < dependencies.length; index++) {
         dependency = dependencies[index];
 
@@ -118,8 +116,11 @@ const buildNodes = async (
     return resultNodes;
 };
 
-export const buildDependencyGraph = async (file: IFile, readFile: FileReader): Promise<TreeNode> => {
-    const tree: TreeNode = createTreeNode(
+export const buildDependencyGraph = async (
+    file: IFile,
+    readFile: DependencyFileReader
+): Promise<IDependencyTreeNode> => {
+    const tree: IDependencyTreeNode = createTreeNode(
         file.path,
         file.content,
         null
@@ -135,10 +136,10 @@ export const buildDependencyGraph = async (file: IFile, readFile: FileReader): P
 };
 
 
-export const buildDependencyDictionary = async (file: IFile, readFile: FileReader) => {
-    const dictionary: Dictionary<Dictionary<DictionaryNode>> = {};
+export const buildDependencyDictionary = async (file: IFile, readFile: DependencyFileReader) => {
+    const dictionary: IDependencyDictionary<IDependencyDictionary<IDependencyDictionaryNode>> = {};
 
-    const tree: TreeNode = createTreeNode(
+    const tree: IDependencyTreeNode = createTreeNode(
         file.path,
         file.content,
         null
@@ -150,7 +151,7 @@ export const buildDependencyDictionary = async (file: IFile, readFile: FileReade
 
     tree.nodes = await buildNodes(file.path, file.content, nodesCache, readFile);
 
-    const getNodeDependencies = (node: TreeNode) => {
+    const getNodeDependencies = (node: IDependencyTreeNode) => {
         const nodes = {};
 
         if (node.nodes === null) {
