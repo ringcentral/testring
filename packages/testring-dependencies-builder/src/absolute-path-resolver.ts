@@ -1,11 +1,12 @@
-const Module: any = module.constructor;
+import * as path from 'path';
+import { resolvePackage } from '@testring/utils';
 
 export const resolveAbsolutePath = (request: string, parentPath: string) => {
-    const parent = {
-        filename: parentPath,
-        id: parentPath,
-        paths: Module._nodeModulePaths(parentPath)
-    };
+    if (request.includes('./')) {
+        const normalizedRequest = path.resolve(path.dirname(parentPath), request);
 
-    return Module._resolveFilename(request, parent, false);
+        return resolvePackage(normalizedRequest);
+    } else {
+        return resolvePackage(request);
+    }
 };

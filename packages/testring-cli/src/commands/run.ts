@@ -43,7 +43,7 @@ class RunCommand implements ICLICommand {
         this.browserProxyController = browserProxyControllerFactory(transport);
 
         const loggerServer = new LoggerServer(this.config, transport, this.stdout);
-        const testFinder = new FSReader();
+        const fsReader = new FSReader();
         const testWorker = new TestWorker(transport);
         const testRunController = new TestRunController(this.config, testWorker);
         const webApplicationController = new WebApplicationController(this.browserProxyController, transport);
@@ -51,7 +51,7 @@ class RunCommand implements ICLICommand {
 
         applyPlugins({
             logger: loggerServer,
-            testFinder: testFinder,
+            fsReader: fsReader,
             testWorker: testWorker,
             browserProxy: this.browserProxyController,
             testRunController: testRunController,
@@ -60,7 +60,7 @@ class RunCommand implements ICLICommand {
 
         loggerClientLocal.info('User config:\n', formatJSON(this.config));
 
-        const tests = await testFinder.find(this.config.tests);
+        const tests = await fsReader.find(this.config.tests);
 
         loggerClientLocal.info(`Found ${tests.length} test(s) to run.`);
 

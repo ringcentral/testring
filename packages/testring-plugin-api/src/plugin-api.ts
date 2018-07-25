@@ -1,6 +1,6 @@
 import { IPluginModules } from '@testring/types';
 import { BrowserProxyAPI } from './modules/browser-proxy';
-import { TestFinderAPI } from './modules/test-finder';
+import { FSReaderAPI } from './modules/fs-reader';
 import { LoggerAPI } from './modules/logger';
 import { TestWorkerAPI } from './modules/test-worker';
 import { TestRunControllerAPI } from './modules/test-run-controller';
@@ -13,9 +13,9 @@ export class PluginAPI {
         return new LoggerAPI(this.pluginName, this.modules.logger);
     }
 
-    getTestFinder() {
-        if (this.modules.testFinder) {
-            return new TestFinderAPI(this.pluginName, this.modules.testFinder);
+    getFSReader() {
+        if (this.modules.fsReader) {
+            return new FSReaderAPI(this.pluginName, this.modules.fsReader);
         }
 
         return null;

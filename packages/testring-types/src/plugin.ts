@@ -12,7 +12,7 @@ export type Plugin = (pluginAPI: any, config: PluginConfig) => void;
 
 export interface IPluginModules {
     logger: ILoggerServer & IPluggableModule;
-    testFinder?: IFSReader & IPluggableModule;
+    fsReader?: IFSReader & IPluggableModule;
     testWorker: ITestWorker & IPluggableModule;
     testRunController: ITestRunController & IPluggableModule;
     browserProxy: IBrowserProxyController & IPluggableModule;

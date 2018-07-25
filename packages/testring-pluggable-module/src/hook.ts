@@ -22,11 +22,14 @@ export class Hook {
     public async callHooks(...data: Array<any>) {
         const { writeHooks, readHooks } = this;
 
-        let newData = data;
+        let dataArguments = data;
 
         for (const [key, hook] of writeHooks) {
             try {
-                newData = await hook(...newData);
+                dataArguments = [
+                    await hook(...dataArguments),
+                    ...dataArguments.slice(1)
+                ];
             } catch (error) {
                 throw this.generateError(key, error);
             }
@@ -34,18 +37,12 @@ export class Hook {
 
         for (const [key, hook] of readHooks) {
             try {
-                await hook(...newData);
+                await hook(...dataArguments);
             } catch (error) {
                 throw this.generateError(key, error);
             }
         }
 
-        if (newData === data) {
-            return Array.isArray(newData) ?
-                newData[0] :
-                newData;
-        } else {
-            return newData;
-        }
+        return dataArguments[0];
     }
 }

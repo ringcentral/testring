@@ -93,7 +93,7 @@ const buildNodes = async (
             dependencyAbsolutePath.includes('node_modules') ||
             // Fix for local e2e tests running (lerna makes symlink and resolver eats it as path for real file)
             // require 'node_modules/testring' = require 'packages/testring/dist'
-            dependencyAbsolutePath.includes('packages/testring/dist')
+            dependencyAbsolutePath.includes('testring/dist')
         ) {
             continue;
         }

@@ -7,7 +7,11 @@ export const resolvePackage = (modulePath: string, parentModule?: string): strin
             const parentModuleDir = path.dirname(parentModule);
             const relativeModulePath = path.resolve(parentModuleDir, modulePath);
 
-            return require.resolve(relativeModulePath);
+            try {
+                return require.resolve(relativeModulePath);
+            } catch {
+                return require.resolve(modulePath);
+            }
         }
 
         return require.resolve(modulePath);
