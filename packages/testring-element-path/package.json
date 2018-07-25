@@ -1,6 +1,6 @@
 {
   "name": "@testring/element-path",
-  "version": "0.2.12",
+  "version": "0.2.13",
   "main": "./dist/index.js",
   "typings": "./src/index.ts",
   "repository": {
