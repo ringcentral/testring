@@ -39,8 +39,9 @@ export class WorkerController {
 
     private async executeTest(message: ITestExecutionMessage): Promise<TestStatus> {
         // TODO pass message.parameters somewhere inside web application
-        const testID = path.relative(process.cwd(), message.filename);
-        const sandbox = new Sandbox(message.source, message.filename);
+        const testID = path.relative(process.cwd(), message.path);
+
+        const sandbox = new Sandbox(message.content, message.path, message.dependencies);
         const bus = this.testAPI.getBus();
 
         let isAsync = false;

@@ -8,7 +8,8 @@ export default (pluginAPI: PluginAPI, config: babelCore.TransformOptions | null)
         const result = babelCore.transform(code, {
             ...config,
             filename: filename,
-            sourceMaps: false
+            sourceMaps: false,
+            sourceRoot: process.cwd()
         });
 
         return result.code || '';

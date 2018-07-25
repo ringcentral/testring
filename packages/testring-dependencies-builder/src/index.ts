@@ -1,7 +1,7 @@
-import { IFile } from '@testring/types';
 import { parse } from 'babylon';
 import { CallExpression, Identifier } from 'babel-types';
 import traverse, { NodePath } from 'babel-traverse';
+import { IFile } from '@testring/types';
 import { resolveAbsolutePath } from './absolute-path-resolver';
 
 type FileReader = (filePath: string) => Promise<string>;
@@ -10,10 +10,7 @@ interface Dictionary<T> {
     [key: string]: T;
 }
 
-interface DictionaryNode {
-    content: string;
-    path: string;
-}
+interface DictionaryNode extends IFile {}
 
 interface TreeNode extends DictionaryNode {
     nodes: Dictionary<TreeNode> | null;
@@ -94,7 +91,12 @@ const buildNodes = async (
 
         // Do not bundle node_modules, only user dependencies
         // TODO check, if this hardcode can break some cases
-        if (dependencyAbsolutePath.includes('node_modules')) {
+        if (
+            dependencyAbsolutePath.includes('node_modules') ||
+            // Fix for local e2e tests running (lerna makes symlink and resolver eats it as path for real file)
+            // require 'node_modules/testring' = require 'packages/testring/dist'
+            dependencyAbsolutePath.includes('packages/testring/dist')
+        ) {
             continue;
         }
 

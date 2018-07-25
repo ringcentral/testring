@@ -12,6 +12,8 @@
   "dependencies": {
     "@testring/api": "0.2.12",
     "@testring/child-process": "0.2.12",
+    "@testring/dependencies-builder": "0.2.12",
+    "@testring/fs-reader": "0.2.12",
     "@testring/logger": "0.2.12",
     "@testring/pluggable-module": "0.2.12",
     "@testring/sandbox": "0.2.12",

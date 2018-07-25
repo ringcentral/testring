@@ -1,7 +1,10 @@
 import * as path from 'path';
 import { ChildProcess } from 'child_process';
+import { IFile } from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
 import { fork } from '@testring/child-process';
+import { buildDependencyDictionary } from '@testring/dependencies-builder';
+import { FSReader } from '@testring/fs-reader';
 import {
     ITransport,
     ITestWorkerInstance,
@@ -20,6 +23,8 @@ const WORKER_ROOT = require.resolve(
 
 export class TestWorkerInstance implements ITestWorkerInstance {
 
+    private fsReader = new FSReader();
+
     private compileCache: Map<string, string> = new Map();
 
     private abortTestExecution: Function | null = null;
@@ -34,12 +39,11 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     ) {
     }
 
-    public async execute(rawSource: string, filename: string, parameters: any, envParameters: any): Promise<any> {
+    public async execute(file: IFile, parameters: any, envParameters: any): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
                 return await this.makeExecutionRequest(
-                    rawSource,
-                    filename,
+                    file,
                     parameters,
                     envParameters,
                     resolve,
@@ -60,8 +64,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     }
 
     private async makeExecutionRequest(
-        rawSource: string,
-        filename: string,
+        file: IFile,
         parameters: any,
         envParameters: any,
         resolve,
@@ -72,18 +75,16 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         }
 
         // Calling external hooks to compile source
-        const compiledSource = await this.compileSource(rawSource, filename);
-
+        const compiledSource = await this.compileSource(file.content, file.path);
         // TODO implement code instrumentation here
 
-        const testData = {
-            source: compiledSource,
-            filename,
-            parameters,
-            envParameters
+        const compiledFile = {
+            path: file.path,
+            content: compiledSource
         };
 
-        const relativePath = path.relative(process.cwd(), filename);
+        const dependencies = await buildDependencyDictionary(compiledFile, this.readDependency.bind(this));
+        const relativePath = path.relative(process.cwd(), file.path);
 
         loggerClientLocal.debug(`Sending test for execution: ${relativePath}`);
 
@@ -111,7 +112,12 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             reject();
         };
 
-        await this.transport.send<ITestExecutionMessage>(this.workerName, TestWorkerAction.executeTest, testData);
+        await this.transport.send<ITestExecutionMessage>(this.workerName, TestWorkerAction.executeTest, {
+            ...compiledFile,
+            dependencies,
+            parameters,
+            envParameters
+        });
     }
 
     private async compileSource(source: string, filename: string): Promise<string> {
@@ -158,5 +164,12 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         loggerClientLocal.debug(`Registered child process ${this.workerName}`);
 
         return worker;
+    }
+
+    private async readDependency(dependencyPath: string): Promise<string> {
+        const rawFile = await this.fsReader.readFile(dependencyPath);
+        const rawContent = rawFile ? rawFile.content : '';
+
+        return this.compile(rawContent, dependencyPath);
     }
 }

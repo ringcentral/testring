@@ -1,6 +1,7 @@
 import * as vm from 'vm';
+import * as path from 'path';
+import { requirePackage } from '@testring/utils';
 import { Script } from './script';
-import { createContext } from './context-creator';
 
 class Sandbox {
 
@@ -10,8 +11,8 @@ class Sandbox {
 
     public exports = {};
 
-    constructor(private source: string, private filename: string) {
-        this.context = this.createContext(this.filename);
+    constructor(private source: string, private filename: string, private dependencies: any) {
+        this.context = this.createContext(this.filename, this.dependencies);
     }
 
     public getContext() {
@@ -53,15 +54,113 @@ class Sandbox {
         }
     }
 
-    private createContext(filename: string): object {
-        return createContext(this, filename);
-    }
-
     public static clearCache(): void {
         Sandbox.scriptCache.clear();
     }
 
     private static scriptCache: Map<string, Script> = new Map();
+
+
+    private require(requestPath) {
+        const dependencies = this.dependencies[this.filename];
+
+        if (
+            dependencies &&
+            dependencies[requestPath]
+        ) {
+            const dependencySandbox = new Sandbox(
+                dependencies[requestPath].content,
+                dependencies[requestPath].path,
+                this.dependencies
+            );
+
+            return dependencySandbox.execute();
+        }
+
+        return requirePackage(requestPath, this.filename);
+    }
+
+    private createContext(filename: string, dependencies) {
+        const moduleObject = {
+            filename: filename,
+            id: filename
+        };
+
+        const module = new Proxy(moduleObject, {
+            get: (target: any, key: string): any => {
+                switch (key) {
+                    case 'exports': {
+                        return this.exports;
+                    }
+
+                    default: {
+                        return target[key];
+                    }
+                }
+            },
+
+            set: (target: any, key: string, value: any): any => {
+                switch (key) {
+                    case 'exports': {
+                        return this.exports = value;
+                    }
+
+                    default: {
+                        return target[key] = value;
+                    }
+                }
+            }
+        });
+
+        const ownContext = {
+            __dirname: path.dirname(filename),
+            __filename: filename,
+            require: this.require.bind(this),
+            module: module
+        };
+
+        const contextProxy = new Proxy(ownContext, {
+            get: (target: any, key: string): any => {
+                switch (key) {
+                    case 'global': {
+                        return contextProxy;
+                    }
+
+                    case 'exports': {
+                        return this.exports;
+                    }
+
+                    default: {
+                        if (key in target) {
+                            return target[key];
+                        } else if (key in global) {
+                            return (global as any)[key];
+                        }
+
+                        return undefined;
+                    }
+                }
+            },
+
+            set: (target: any, key: string, value: any): any => {
+                switch (key) {
+                    case 'exports': {
+                        return this.exports = value;
+                    }
+
+                    default: {
+                        return target[key] = value;
+                    }
+                }
+            },
+
+            has: (target: any, key: string): boolean => {
+                return (key in target) || (key in global);
+            }
+        });
+
+        return contextProxy;
+    }
 }
 
 export { Sandbox };

@@ -24,6 +24,6 @@ export const requirePackage = (modulePath: string, parentModule?: string): any =
     try {
         return require(fileName);
     } catch (exception) {
-        throw new ReferenceError(`Can't find plugin "${modulePath}". Is it installed?`);
+        throw new ReferenceError(`Can't find module "${modulePath}". Is it installed?`);
     }
 };

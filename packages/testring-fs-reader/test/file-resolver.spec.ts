@@ -6,7 +6,7 @@
 import * as path from 'path';
 import * as chai from 'chai';
 
-import { resolveFile } from '../src/file-resolver';
+import { resolveFiles } from '../src/file-resolver';
 
 const testPaths = [
     path.resolve(__dirname, './fixtures/testfiles/foo.test.js'),
@@ -22,7 +22,7 @@ const falsePaths = [
 
 describe('resolve tests', () => {
     it('should throw error if no argument passed', (callback) => {
-        resolveFile(undefined as any)
+        resolveFiles(undefined as any)
             .then(() => {
                 callback('resolveTests did\'t throw');
             })
@@ -33,7 +33,7 @@ describe('resolve tests', () => {
     });
 
     it('should throw error if empty array passed', (callback) => {
-        resolveFile([])
+        resolveFiles([])
             .then(() => {
                 callback('resolveTests did\'t throw');
             })
@@ -44,7 +44,7 @@ describe('resolve tests', () => {
     });
 
     it('should resolve array of objects that contain ', async () => {
-        const res = await resolveFile(testPaths);
+        const res = await resolveFiles(testPaths);
 
         res.forEach(file => {
             chai.expect(file).to.have.all.keys('path', 'content', 'meta');
@@ -52,18 +52,18 @@ describe('resolve tests', () => {
     });
 
     it('should resolve array of same length for array of valid files', async () => {
-        chai.expect(await resolveFile(testPaths)).to.be.an('array').of.length(testPaths.length);
+        chai.expect(await resolveFiles(testPaths)).to.be.an('array').of.length(testPaths.length);
     });
 
     it('should resolve only existing files', async () => {
         const files = [...testPaths, ...falsePaths];
-        const resolvedTests = await resolveFile(files);
+        const resolvedTests = await resolveFiles(files);
 
         chai.expect(resolvedTests).to.be.an('array').of.length(testPaths.length);
     });
 
     it('should throw error if none of files passed to it was read', (callback) => {
-        resolveFile(falsePaths)
+        resolveFiles(falsePaths)
             .then(() => {
                 callback('resolveTests did\'t throw');
             })

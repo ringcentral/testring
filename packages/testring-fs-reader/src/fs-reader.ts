@@ -1,7 +1,7 @@
 import { IFSReader, IFile, FSReaderPlugins } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { locateFiles } from './file-locator';
-import { resolveFile } from './file-resolver';
+import { resolveFiles, readFile } from './file-resolver';
 import { loggerClientLocal } from '@testring/logger';
 
 
@@ -23,11 +23,15 @@ export class FSReader extends PluggableModule implements IFSReader {
             throw new Error(`No test files found by pattern: ${pattern}`);
         }
 
-        const resolverTests = await resolveFile(testsAfterPlugin);
+        const resolvedFiles = await resolveFiles(testsAfterPlugin);
 
         return await this.callHook(
             FSReaderPlugins.afterResolve,
-            resolverTests
+            resolvedFiles
         );
+    }
+
+    public async readFile(fileName: string): Promise<IFile | null> {
+        return readFile(fileName);
     }
 }
