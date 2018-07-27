@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { IBrowserProxyPlugin } from '@testring/types';
 import { spawn } from '@testring/child-process';
-import { Config, Client, remote } from 'webdriverio';
+import { Config, Client, RawResult, remote } from 'webdriverio';
 import { ChildProcess } from 'child_process';
 import { loggerClient } from '@testring/logger';
 
@@ -84,11 +84,17 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         this.browserClients.set(applicant, client);
     }
 
-    private wrapWithPromise<T>(item: Client<T>): Promise<T> {
+    private wrapWithPromise<T>(item: Client<RawResult<T> | T>): Promise<T> {
         return new Promise<T>((resolve, reject) => {
             try {
                 item
-                    .then(resolve)
+                    .then((rawResult) => {
+                        if (rawResult && 'value' in (rawResult as RawResult<T>)) {
+                            resolve(rawResult['value']);
+                        } else {
+                            resolve(rawResult as T);
+                        }
+                    })
                     .catch(reject);
             } catch (error) {
                 reject(error);

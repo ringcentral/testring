@@ -133,10 +133,9 @@ export class WebApplication extends PluggableModule {
 
     public async openPage(uri) {
         if (typeof uri === 'string') {
-            let prevUrlObj: any = await this.url();
-            let result;
+            const prevUrl: any = await this.url();
 
-            let prevUrl = prevUrlObj.value;
+            let result;
 
             if (url.parse(prevUrl).path === url.parse(uri).path) {
                 await this.url(uri);
@@ -222,7 +221,7 @@ export class WebApplication extends PluggableModule {
             return window.navigator && window.navigator.userAgent;
         });
 
-        loggerClient.debug(userAgent.value);
+        loggerClient.debug(userAgent);
     }
 
     private documentReadyWait() {
@@ -233,7 +232,9 @@ export class WebApplication extends PluggableModule {
             let i = 0;
             let result = false;
             while (i < attemptCount) {
-                const ready = await this.execute(() => document.readyState === 'complete');
+                const ready = await this.execute(function() {
+                    return document.readyState === 'complete'
+                });
 
                 if (ready) {
                     result = true;
@@ -306,8 +307,8 @@ export class WebApplication extends PluggableModule {
                 }
             }, xpath, value);
 
-            if (result.value) {
-                throw new Error(result.value);
+            if (result) {
+                throw new Error(result);
             } else {
                 loggerClient.debug(`[web-application] Value ${value} was entered into ${utils.logXpath(xpath)} using JS emulation`);
             }
@@ -347,8 +348,8 @@ export class WebApplication extends PluggableModule {
             }
         }, xpath);
 
-        if (result.value) {
-            throw new Error(result.value);
+        if (result) {
+            throw new Error(result);
         } else {
             loggerClient.debug(`[web-application] Element ${utils.logXpath(xpath)} was made visible and clicked`);
         }
@@ -434,7 +435,7 @@ export class WebApplication extends PluggableModule {
             }
         }, xpath, prop);
 
-        return result.value;
+        return result;
     }
 
     public async getSelectTexts(xpath, trim = true) {
@@ -556,18 +557,20 @@ export class WebApplication extends PluggableModule {
     async getElementsIds(xpath, timeout = WAIT_TIMEOUT) {
         await this.waitForExist(xpath, timeout);
         let elements: any = await this.elements(xpath);
-        let elementsArr: any[] = elements.value;
         let elementIds: any[] = [];
-        for (let i = 0; i < elementsArr.length; i++) {
-            let elem: any = elementsArr[i];
+
+        for (let i = 0; i < elements.length; i++) {
+            let elem: any = elements[i];
             elementIds.push(elem.ELEMENT);
         }
+
         return (elementIds.length > 1) ? elementIds : elementIds[0];
     }
 
     async isElementSelected(elementId) {
         let elementSelected: any = await this.client.elementIdSelected(elementId.toString());
-        return !!elementSelected.value;
+
+        return !!elementSelected;
     }
 
     async isChecked(xpath) {
@@ -743,7 +746,7 @@ export class WebApplication extends PluggableModule {
         await this.waitForExist(''); //root element xpath
 
         let elems: any = await this.elements(xpath);
-        return elems.value.length;
+        return elems.length;
     }
 
     public async notExists(xpath) {
@@ -899,13 +902,13 @@ export class WebApplication extends PluggableModule {
         const elements: any = await this.client.elements(xpath);
         const result: Array<string> = [];
 
-        for (const item of elements.value) {
+        for (const item of elements) {
             const response: any = await this.client.elementIdText(item.ELEMENT);
             
             if (trim) {
-                result.push(response.value.trim());
+                result.push(response.trim());
             } else {
-                result.push(response.value);
+                result.push(response);
             }
         }
 
