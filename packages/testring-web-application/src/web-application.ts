@@ -703,11 +703,13 @@ export class WebApplication extends PluggableModule {
     public async isCSSClassExists(xpath, ...suitableClasses) {
         const elemClasses: any = await this.getAttribute(xpath, 'class');
         const elemClassesArr = elemClasses.trim().toLowerCase().split(/\s+/g);
+
         return suitableClasses.some((suitableClass) => elemClassesArr.includes(suitableClass.toLowerCase()));
     }
 
     public async moveToObject(xpath, x, y) {
         loggerClient.debug(`[web-application] Move cursor to ${utils.logXpath(xpath)}`);
+
         await this.waitForExist(xpath);
 
         xpath = this.normalizeSelector(xpath);
@@ -716,6 +718,7 @@ export class WebApplication extends PluggableModule {
 
     public async scroll(xpath, x, y) {
         loggerClient.debug(`[web-application] Scroll ${utils.logXpath(xpath)}`);
+
         await this.waitForExist(xpath);
 
         xpath = this.normalizeSelector(xpath);
@@ -735,17 +738,21 @@ export class WebApplication extends PluggableModule {
         return this.client.dragAndDrop(xpathSource, xpathDestination);
     }
 
-    public async elements(xpath) {
+    public elements(xpath) {
         loggerClient.debug(`[web-application] elements ${utils.logXpath(xpath)}`);
-        xpath = this.normalizeSelector(xpath);
-        return this.client.elements(xpath);
+
+        return this.client.elements(
+            this.normalizeSelector(xpath)
+        );
     }
 
     public async getElementsCount(xpath) {
         loggerClient.debug(`[web-application] Get elements count ${utils.logXpath(xpath)}`);
+
         await this.waitForExist(''); //root element xpath
 
-        let elems: any = await this.elements(xpath);
+        const elems: any = await this.elements(xpath);
+
         return elems.length;
     }
 
@@ -829,8 +836,10 @@ export class WebApplication extends PluggableModule {
 
     public async closeAllOtherTabs() {
         let tabIds: any = await this.getTabIds();
+
         while (tabIds.length > 1) {
             await this.closeFirstSiblingTab();
+
             tabIds = await this.getTabIds();
         }
     }

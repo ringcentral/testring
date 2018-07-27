@@ -89,7 +89,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             try {
                 item
                     .then((rawResult) => {
-                        if (rawResult && 'value' in (rawResult as RawResult<T>)) {
+                        if (
+                            rawResult !== null &&
+                            typeof rawResult === 'object' &&
+                            'value' in (rawResult as RawResult<T>)
+                        ) {
                             resolve(rawResult['value']);
                         } else {
                             resolve(rawResult as T);
