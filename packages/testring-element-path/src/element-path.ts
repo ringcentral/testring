@@ -48,10 +48,11 @@ export type NodePath = {
 };
 
 export class ElementPath {
-    private readonly regexp = {
+    private readonly REGEXP = {
         QUERY_RE: /^(\*?[^{(=]*\*?)?(=?{([^}]*)})?(\(([^)]*)\))?$/,
-        SUB_QUERY_RE: /^(\*?[^{=]*\*?)(=?{([^}]*)})?$/
+        SUB_QUERY_RE: /^(\*?[^{=]*\*?)(=?{([^}]*)})?$/,
     };
+    private readonly GENERIC_TYPE = Symbol('@generic');
 
     private readonly flows: FlowsObject;
     private readonly attributeName: string;
@@ -156,7 +157,7 @@ export class ElementPath {
         }
 
         const query = subQuery.slice(1, -1);
-        const parts = query.match(this.regexp.SUB_QUERY_RE) || [];
+        const parts = query.match(this.REGEXP.SUB_QUERY_RE) || [];
         const mask = parts[1];
         const textSearch = parts[2];
 
@@ -170,7 +171,7 @@ export class ElementPath {
     }
 
     protected parseQueryKey(key): SearchObject {
-        const parts = key.match(this.regexp.QUERY_RE);
+        const parts = key.match(this.REGEXP.QUERY_RE);
         const mask = parts[1];
         const textSearch = parts[2];
         const subQueryPart = parts[4];
@@ -439,6 +440,16 @@ export class ElementPath {
 
     public getSearchOptions(): SearchObject {
         return this.searchOptions;
+    }
+
+    public getElementType(): string | symbol {
+        const searchOptions = this.getSearchOptions();
+
+        if (hasOwn(searchOptions, 'exactKey') && searchOptions.exactKey !== undefined) {
+            return searchOptions.exactKey;
+        }
+
+        return this.GENERIC_TYPE;
     }
 
     public toString(allowMultipleNodesInResult: boolean = false): string {

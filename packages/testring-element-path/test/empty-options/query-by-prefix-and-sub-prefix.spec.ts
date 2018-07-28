@@ -108,4 +108,10 @@ describe('empty options ElementPath root[\'foo*(barName)\']', () => {
             expect(childFoo.__getReversedChain(false)).to.be.equal('["foo*(barName)"]');
         });
     });
+
+    describe('.__getChildType() call', () => {
+        it('return type check', () => {
+            expect(childFoo.__getChildType()).to.be.a('symbol');
+        });
+    });
 });

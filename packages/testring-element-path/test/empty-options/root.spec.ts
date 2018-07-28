@@ -82,4 +82,13 @@ describe('empty options ElementPath root', () => {
             expect(empty.__getReversedChain(false)).to.be.equal('');
         });
     });
+
+    describe('.__getChildType() call', () => {
+        it('return type check', () => {
+            expect(empty.__getChildType()).to.be.a('string');
+        });
+        it('return value check', () => {
+            expect(empty.__getChildType()).to.be.equal('root');
+        });
+    });
 });

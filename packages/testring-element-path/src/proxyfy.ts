@@ -102,6 +102,16 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true) {
             };
         }
 
+        if (key === '__getChildType') {
+            return function __getChildType() {
+                if (this === proxy) {
+                    return instance.getElementType.apply(instance, arguments);
+                } else {
+                    return instance.getElementType.apply(this, arguments);
+                }
+            };
+        }
+
         if (key === '__getReversedChain') {
             return function __getReversedChain() {
                 if (this === proxy) {

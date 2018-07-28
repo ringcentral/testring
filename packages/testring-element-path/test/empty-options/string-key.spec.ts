@@ -99,4 +99,13 @@ describe('empty options ElementPath root.foo', () => {
             expect(childFoo.__getReversedChain(false)).to.be.equal('.foo');
         });
     });
+
+    describe('.__getChildType() call', () => {
+        it('return type check', () => {
+            expect(childFoo.__getChildType()).to.be.a('string');
+        });
+        it('return value check', () => {
+            expect(childFoo.__getChildType()).to.be.equal('foo');
+        });
+    });
 });
