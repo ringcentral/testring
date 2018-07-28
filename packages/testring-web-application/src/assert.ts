@@ -48,9 +48,9 @@ export const createAssertion = (isSoft = false) => {
                     if (successMessage) {
                         await loggerClient.info(successMessage);
                         //TODO makeScreenShot
-                        await loggerClient.info(assertMessage);
+                        await loggerClient.debug(assertMessage);
                     } else {
-                        await loggerClient.info(assertMessage);
+                        await loggerClient.debug(assertMessage);
                         //TODO makeScreenShot
                     }
                 } catch (error) {
