@@ -122,6 +122,16 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true) {
             };
         }
 
+        if (key === '__findChildren') {
+            return function __findChildren() {
+                if (this === proxy) {
+                    return proxyfy(instance.generateChildElementPathByOptions.apply(instance, arguments), strictMode);
+                } else {
+                    return proxyfy(instance.generateChildElementPathByOptions.apply(this, arguments), strictMode);
+                }
+            };
+        }
+
         if (strictMode && (key === 'xpathByElement' || key === 'xpath')) {
             throw Error('Can not use xpath query in strict mode');
         }

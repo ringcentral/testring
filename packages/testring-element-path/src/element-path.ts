@@ -321,7 +321,12 @@ export class ElementPath {
             } else if (node.query && node.query.xpath) {
                 memo.push(`.xpath("${node.query.xpath}")`);
             } else {
-                if (node.query.exactKey && Object.keys(node.query).length === 1) {
+                const queryLength = Object.keys(node.query).length;
+
+                if (
+                    (node.query.exactKey && queryLength === 1)
+                    || (hasOwn(node.query, 'exactKey') && hasOwn(node.query, 'index') && queryLength === 2)
+                ) {
                     memo.push(`.${node.query.exactKey}`);
                 } else {
                     memo.push(`["${this.queryToString(node.query)}"]`);
@@ -376,6 +381,30 @@ export class ElementPath {
             searchOptions: { xpath },
             parent: this
         });
+    }
+
+    public generateChildElementPathByOptions(searchOptions: SearchObject): ElementPath {
+        if (hasOwn(searchOptions, 'index')) {
+            if (hasOwn(this.searchOptions, 'index')) {
+                throw Error('Can not select index element from already sliced element');
+            }
+
+            if (this.parent === null) {
+                throw new TypeError('Root Element is not enumerable');
+            }
+
+            return new ElementPath({
+                flows: this.flows,
+                searchOptions: Object.assign({}, this.searchOptions, searchOptions),
+                parent: this.parent || undefined
+            });
+        } else {
+            return new ElementPath({
+                searchOptions: Object.assign({}, searchOptions),
+                flows: this.flows,
+                parent: this
+            });
+        }
     }
 
     public generateChildElementsPath(key: string | number): ElementPath {
