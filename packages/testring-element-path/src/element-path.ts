@@ -48,10 +48,11 @@ export type NodePath = {
 };
 
 export class ElementPath {
-    private readonly regexp = {
+    private readonly REGEXP = {
         QUERY_RE: /^(\*?[^{(=]*\*?)?(=?{([^}]*)})?(\(([^)]*)\))?$/,
-        SUB_QUERY_RE: /^(\*?[^{=]*\*?)(=?{([^}]*)})?$/
+        SUB_QUERY_RE: /^(\*?[^{=]*\*?)(=?{([^}]*)})?$/,
     };
+    private readonly GENERIC_TYPE = Symbol('@generic');
 
     private readonly flows: FlowsObject;
     private readonly attributeName: string;
@@ -156,7 +157,7 @@ export class ElementPath {
         }
 
         const query = subQuery.slice(1, -1);
-        const parts = query.match(this.regexp.SUB_QUERY_RE) || [];
+        const parts = query.match(this.REGEXP.SUB_QUERY_RE) || [];
         const mask = parts[1];
         const textSearch = parts[2];
 
@@ -170,7 +171,7 @@ export class ElementPath {
     }
 
     protected parseQueryKey(key): SearchObject {
-        const parts = key.match(this.regexp.QUERY_RE);
+        const parts = key.match(this.REGEXP.QUERY_RE);
         const mask = parts[1];
         const textSearch = parts[2];
         const subQueryPart = parts[4];
@@ -320,7 +321,12 @@ export class ElementPath {
             } else if (node.query && node.query.xpath) {
                 memo.push(`.xpath("${node.query.xpath}")`);
             } else {
-                if (node.query.exactKey && Object.keys(node.query).length === 1) {
+                const queryLength = Object.keys(node.query).length;
+
+                if (
+                    (node.query.exactKey && queryLength === 1)
+                    || (hasOwn(node.query, 'exactKey') && hasOwn(node.query, 'index') && queryLength === 2)
+                ) {
                     memo.push(`.${node.query.exactKey}`);
                 } else {
                     memo.push(`["${this.queryToString(node.query)}"]`);
@@ -375,6 +381,30 @@ export class ElementPath {
             searchOptions: { xpath },
             parent: this
         });
+    }
+
+    public generateChildElementPathByOptions(searchOptions: SearchObject): ElementPath {
+        if (hasOwn(searchOptions, 'index')) {
+            if (hasOwn(this.searchOptions, 'index')) {
+                throw Error('Can not select index element from already sliced element');
+            }
+
+            if (this.parent === null) {
+                throw new TypeError('Root Element is not enumerable');
+            }
+
+            return new ElementPath({
+                flows: this.flows,
+                searchOptions: Object.assign({}, this.searchOptions, searchOptions),
+                parent: this.parent || undefined
+            });
+        } else {
+            return new ElementPath({
+                searchOptions: Object.assign({}, searchOptions),
+                flows: this.flows,
+                parent: this
+            });
+        }
     }
 
     public generateChildElementsPath(key: string | number): ElementPath {
@@ -439,6 +469,16 @@ export class ElementPath {
 
     public getSearchOptions(): SearchObject {
         return this.searchOptions;
+    }
+
+    public getElementType(): string | symbol {
+        const searchOptions = this.getSearchOptions();
+
+        if (hasOwn(searchOptions, 'exactKey') && searchOptions.exactKey !== undefined) {
+            return searchOptions.exactKey;
+        }
+
+        return this.GENERIC_TYPE;
     }
 
     public toString(allowMultipleNodesInResult: boolean = false): string {

@@ -100,4 +100,10 @@ describe('empty options ElementPath root[\'foo*\'][0]', () => {
             expect(childFoo.__getReversedChain(false)).to.be.equal('["foo*"][0]');
         });
     });
+
+    describe('.__getChildType() call', () => {
+        it('return type check', () => {
+            expect(childFoo.__getChildType()).to.be.a('symbol');
+        });
+    });
 });

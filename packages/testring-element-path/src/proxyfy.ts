@@ -102,12 +102,32 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true) {
             };
         }
 
+        if (key === '__getChildType') {
+            return function __getChildType() {
+                if (this === proxy) {
+                    return instance.getElementType.apply(instance, arguments);
+                } else {
+                    return instance.getElementType.apply(this, arguments);
+                }
+            };
+        }
+
         if (key === '__getReversedChain') {
             return function __getReversedChain() {
                 if (this === proxy) {
                     return instance.getReversedChain.apply(instance, arguments);
                 } else {
                     return instance.getReversedChain.apply(this, arguments);
+                }
+            };
+        }
+
+        if (key === '__findChildren') {
+            return function __findChildren() {
+                if (this === proxy) {
+                    return proxyfy(instance.generateChildElementPathByOptions.apply(instance, arguments), strictMode);
+                } else {
+                    return proxyfy(instance.generateChildElementPathByOptions.apply(this, arguments), strictMode);
                 }
             };
         }
