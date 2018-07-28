@@ -1,6 +1,6 @@
 {
   "name": "@testring/plugin-selenium-driver",
-  "version": "0.2.15",
+  "version": "0.2.16",
   "main": "./dist/index.js",
   "typings": "./src/index.ts",
   "repository": {
@@ -10,11 +10,11 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/child-process": "0.2.15",
-    "@testring/logger": "0.2.15",
-    "@testring/plugin-api": "0.2.15",
-    "@testring/recorder-extension": "0.2.15",
-    "@testring/types": "0.2.15",
+    "@testring/child-process": "0.2.16",
+    "@testring/logger": "0.2.16",
+    "@testring/plugin-api": "0.2.16",
+    "@testring/recorder-extension": "0.2.16",
+    "@testring/types": "0.2.16",
     "@types/webdriverio": "4.10.2",
     "chromedriver": "^2.40.0",
     "selenium-server": "^3.13.0",
