@@ -99,7 +99,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                             resolve(rawResult as T);
                         }
                     })
-                    .catch(reject);
+                    .catch((exception) => {
+                        const formattedError = new Error(exception.message);
+
+                        reject(formattedError);
+                    });
             } catch (error) {
                 reject(error);
             }

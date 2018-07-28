@@ -53,15 +53,16 @@ export class WebApplication extends PluggableModule {
     public async waitForExist(xpath, timeout: number = WAIT_TIMEOUT, skipMoveToObject = false) {
         loggerClient.debug(`[web-application] Waiting ${xpath} for ${timeout}`);
 
+        const normalizedXPath = this.normalizeSelector(xpath);
         const exists = await this.client.waitForExist(
-            this.normalizeSelector(xpath),
+            normalizedXPath,
             timeout
         );
 
         if (!skipMoveToObject) {
             try {
-                await this.client.moveToObject(xpath, 1, 1);
-            } catch (ignore) {
+                await this.client.moveToObject(normalizedXPath, 1, 1);
+            } catch {
             }
         }
 
@@ -757,11 +758,19 @@ export class WebApplication extends PluggableModule {
     }
 
     public async notExists(xpath) {
-        return ((await this.getElementsCount(xpath)) === 0);
+        const elementsCount = await this.getElementsCount(
+            this.normalizeSelector(xpath)
+        );
+
+        return (elementsCount === 0);
     }
 
     public async isElementsExist(xpath) {
-        return ((await this.getElementsCount(xpath)) > 0);
+        const elementsCount = await this.getElementsCount(
+            this.normalizeSelector(xpath)
+        );
+
+        return (elementsCount > 0);
     }
 
     public async alertAccept(timeout = WAIT_TIMEOUT) {

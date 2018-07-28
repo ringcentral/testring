@@ -14,6 +14,7 @@ export class WebClient {
     }
 
     private makeRequest(action: BrowserProxyActions, args: Array<any>): Promise<any> {
+        const error = new Error();
         const transport = this.transport;
 
         return new Promise((resolve, reject) => {
@@ -34,7 +35,9 @@ export class WebClient {
                         removeListener();
 
                         if (message.error) {
-                            reject(message.error);
+                            error.message = message.error.message;
+
+                            reject(error);
                         } else {
                             resolve(message.response);
                         }
