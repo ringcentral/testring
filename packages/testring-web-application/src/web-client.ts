@@ -13,7 +13,7 @@ export class WebClient {
     constructor(private applicant: string, private transport: ITransport) {
     }
 
-    private makeRequest(action: BrowserProxyActions, args: Array<any>): Promise<any> {
+    private makeRequest(action: BrowserProxyActions, args: Array<any> = []): Promise<any> {
         const error = new Error();
         const transport = this.transport;
 
@@ -173,12 +173,12 @@ export class WebClient {
         return this.makeRequest(BrowserProxyActions.dragAndDrop, [xpathSource, xpathDestination]);
     }
 
-    public addCommand(str, fn) {
-        return this.makeRequest(BrowserProxyActions.addCommand, [str, fn]);
+    public frame(name) {
+        return this.makeRequest(BrowserProxyActions.frame, [name]);
     }
 
-    public toFrame(name) {
-        return this.makeRequest(BrowserProxyActions.toFrame, [name]);
+    public parentFrame() {
+        return this.makeRequest(BrowserProxyActions.frame);
     }
 
     public getCookie(cookieName) {
@@ -215,10 +215,6 @@ export class WebClient {
 
     public windowHandles() {
         return this.makeRequest(BrowserProxyActions.windowHandles, []);
-    }
-
-    public toParent() {
-        return this.makeRequest(BrowserProxyActions.toParent, []);
     }
 
     public getTagName(xpath) {

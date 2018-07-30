@@ -1,4 +1,4 @@
-module.exports = {
+module.exports = async () =>  ({
     workerLimit: 5,
     retryCount: 0,
     tests: 'test/selenium/test/*.spec.js',
@@ -10,4 +10,4 @@ module.exports = {
             ]
         }]
     ]
-};
+});

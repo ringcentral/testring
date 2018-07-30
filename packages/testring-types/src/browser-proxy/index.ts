@@ -33,6 +33,10 @@ export interface IBrowserProxyPlugin {
 
     executeAsync(applicant: string, fn: any, args: Array<any>): Promise<any>;
 
+    frame(applicant: string, frameID: any): Promise<any>;
+
+    parentFrame(applicant: string): Promise<any>;
+
     getTitle(applicant: string): Promise<any>;
 
     clearElement(applicant: string, xpath: string): Promise<any>;
