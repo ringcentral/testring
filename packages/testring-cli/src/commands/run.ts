@@ -68,6 +68,8 @@ class RunCommand implements ICLICommand {
 
         webApplicationController.init();
 
+        loggerClientLocal.info('Executing...');
+
         const testRunResult = await testRunController.runQueue(tests);
 
         this.browserProxyController.kill();

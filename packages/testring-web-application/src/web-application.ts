@@ -210,11 +210,12 @@ export class WebApplication extends PluggableModule {
     public async click(xpath, timeout = WAIT_TIMEOUT) {
         loggerClient.debug(`[web-application] Click on ${utils.logXpath(xpath)}`);
 
-        await this.waitForExist(xpath, timeout);
+        const normalizedSelector = this.normalizeSelector(xpath);
+
+        await this.waitForExist(normalizedSelector, timeout);
         await this.makeScreenshot();
-        
-        xpath = this.normalizeSelector(xpath);
-        return this.client.click(xpath);
+
+        return this.client.click(normalizedSelector);
     }
 
     public async logNavigatorVersion() {

@@ -16,6 +16,8 @@ export const run = async (...tests: Array<TestFunction>) => {
     const testID = testAPIController.getTestID();
     const bus = testAPIController.getBus();
 
+    const api = new TestContext();
+
     try {
         bus.emit(TestEvents.started);
 
@@ -23,21 +25,7 @@ export const run = async (...tests: Array<TestFunction>) => {
         loggerClient.debug('Memory usage before run:', getMemoryUsage());
 
         for (let test of tests) {
-            const api = new TestContext();
-
-            let caughtError;
-
-            try {
-                await test.call(api, api);
-            } catch (error) {
-                caughtError = error;
-            } finally {
-                await api.end();
-            }
-
-            if (caughtError) {
-                throw caughtError;
-            }
+            await test.call(api, api);
         }
 
         loggerClient.debug('Memory usage after run:', getMemoryUsage());
@@ -49,5 +37,7 @@ export const run = async (...tests: Array<TestFunction>) => {
         loggerClient.endStep(testID, 'Test failed', error);
 
         bus.emit(TestEvents.failed, error);
+    } finally {
+        await api.end();
     }
 };
