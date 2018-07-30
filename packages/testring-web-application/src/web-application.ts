@@ -713,17 +713,6 @@ export class WebApplication extends PluggableModule {
         return this.client.isEnabled(xpath);
     }
 
-    public async isEnabledOldUI(xpath) {
-        let isEnabled = false;
-        loggerClient.debug(`[web-application] Get attributes 'enabled' from ${utils.logXpath(xpath)}`);
-        if (await this.isElementsExist(xpath)) {
-            xpath = this.normalizeSelector(xpath);
-            let attribute: any = await this.client.getAttribute(xpath, 'class');
-            isEnabled = attribute.indexOf('disabled') === -1;
-        }
-        return isEnabled;
-    }
-
     public async isCSSClassExists(xpath, ...suitableClasses) {
         const elemClasses: any = await this.getAttribute(xpath, 'class');
         const elemClassesArr = elemClasses.trim().toLowerCase().split(/\s+/g);
