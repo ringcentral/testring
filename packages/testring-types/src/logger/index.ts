@@ -1,11 +1,10 @@
 import { LogTypes, LogLevel, LogQueueStatus } from './enums';
 
-export interface ILogEntry {
+export interface ILogEntity {
     time: Date;
     type: LogTypes;
     logLevel: LogLevel;
     content: Array<any>;
-    formattedMessage: string;
     stepUid?: string;
     parentStep: string | null;
     logEnvironment?: any;

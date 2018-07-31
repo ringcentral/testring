@@ -10,7 +10,7 @@
   "author": "RingCentral",
   "license": "MIT",
   "scripts": {
-    "test:selenium": "testring run --config ./test/selenium/config.js",
+    "test:selenium": "testring run --config ./test/selenium/config.js --log-level verbose",
     "test:simple-run": "testring run --config test/simple/.testringrc",
     "test:run-and-record": "testring record --config test/simple/config.json --tests test/simple/*.spec.js",
     "e2e-simple": "npm run test:simple-run",

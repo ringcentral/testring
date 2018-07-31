@@ -31,7 +31,7 @@
     "koa-static": "^5.0.0",
     "koa-views": "^6.1.4",
     "nanoid": "^1.1.0",
-    "ws": "^5.2.2"
+    "ws": "^6.0.0"
   },
   "devDependencies": {
     "@testring/test-utils": "0.2.20",

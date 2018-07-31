@@ -4,6 +4,7 @@ import { ISerializedError, serializeError, deserializeError, ERROR_KEY } from '.
 import { ISerializedObject, serializeObject, deserializeObject, OBJECT_KEY } from './object';
 import { ISerializedBuffer, serializeBuffer, deserializeBuffer, BUFFER_KEY } from './buffer';
 import { ISerializedFunction, serializeFunction, deserializeFunction, FUNCTION_KEY } from './function';
+import { ISerializedDate, serializeDate, deserializeDate, DATE_KEY } from './date';
 
 const isAcceptable = (struct: any) => (
     typeof struct === 'number' ||
@@ -33,6 +34,10 @@ export const serialize: TransportSerializer = (rootStruct: any) => {
 
         if (struct instanceof Buffer) {
             return serializeBuffer(struct);
+        }
+
+        if (struct instanceof Date) {
+            return serializeDate(struct);
         }
 
         if (Array.isArray(struct)) {
@@ -71,5 +76,8 @@ export const deserialize: TransportDeserializer = (struct: ITransportSerializedS
 
         case BUFFER_KEY:
             return deserializeBuffer(struct as ISerializedBuffer);
+
+        case DATE_KEY:
+            return deserializeDate(struct as ISerializedDate);
     }
 };

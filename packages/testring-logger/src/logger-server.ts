@@ -3,12 +3,13 @@ import { Queue } from '@testring/utils';
 import {
     IConfig,
     ITransport,
-    ILogEntry,
+    ILogEntity,
     ILoggerServer,
     LoggerMessageTypes,
     LogQueueStatus,
     LoggerPlugins
 } from '@testring/types';
+import { formatLog } from './log-formatter';
 
 export enum LogLevelNumeric {
     verbose,
@@ -21,7 +22,7 @@ export enum LogLevelNumeric {
 
 export class LoggerServer extends PluggableModule implements ILoggerServer {
 
-    private queue: Queue<ILogEntry> = new Queue();
+    private queue: Queue<ILogEntity> = new Queue();
 
     private status: LogQueueStatus = LogQueueStatus.EMPTY;
 
@@ -42,11 +43,11 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
     }
 
     private registerTransportListeners(): void {
-        this.transportInstance.on(LoggerMessageTypes.REPORT, (entry: ILogEntry) => {
+        this.transportInstance.on(LoggerMessageTypes.REPORT, (entry: ILogEntity) => {
             this.log(entry);
         });
 
-        this.transportInstance.on(LoggerMessageTypes.REPORT_BATCH, (batch: Array<ILogEntry>) => {
+        this.transportInstance.on(LoggerMessageTypes.REPORT_BATCH, (batch: Array<ILogEntity>) => {
             batch.forEach((entry) => this.log(entry));
         });
     }
@@ -81,7 +82,7 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
         }
     }
 
-    private log(entry: ILogEntry): void {
+    private log(entry: ILogEntity): void {
         // fast checking aliases
         if (this.config.silent) {
             return;
@@ -93,8 +94,9 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
         }
 
         const shouldRun = this.queue.length === 0;
+        const formattedMessage = formatLog(entry);
 
-        this.stdout.write(`${entry.formattedMessage}\n`);
+        this.stdout.write(`${formattedMessage}\n`);
         this.queue.push(entry);
 
         if (shouldRun) {

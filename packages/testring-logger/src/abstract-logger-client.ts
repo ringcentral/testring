@@ -1,8 +1,6 @@
-import * as util from 'util';
-import * as bytes from 'bytes';
 import { Stack } from '@testring/utils';
 import { transport } from '@testring/transport';
-import { ITransport, ILogEntry, ILoggerClient, LoggerMessageTypes, LogTypes, LogLevel } from '@testring/types';
+import { ILogEntity, ILoggerClient, ITransport, LoggerMessageTypes, LogLevel, LogTypes } from '@testring/types';
 
 const nanoid = require('nanoid');
 
@@ -16,36 +14,6 @@ const decomposeStepName = (stepID: string): string => {
     return stepID.split(STEP_NAME_SEPARATOR)[0];
 };
 
-const formatLog = (
-    logType: LogTypes,
-    logLevel: LogLevel,
-    time: Date,
-    prefix: string,
-    content: Array<any>
-): string => {
-    const formattedPrefix = `${prefix ? `[${prefix}] ` : ''}[${time.toLocaleTimeString()}] [${logLevel}]`;
-
-    switch (logType) {
-        case LogTypes.media: {
-            const filename = content[0];
-            const media = content[1];
-
-            return util.format(
-                `${formattedPrefix} [media]`,
-                `Filename: ${filename};`,
-                `Size: ${bytes.format(media.length)};`
-            );
-        }
-
-        case LogTypes.step: {
-            return util.format(`${formattedPrefix} [step]`, ...content);
-        }
-
-        default:
-            return util.format(formattedPrefix, ...content);
-    }
-};
-
 export abstract class AbstractLoggerClient implements ILoggerClient {
     constructor(
         protected transportInstance: ITransport = transport,
@@ -57,7 +25,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
 
     protected stepStack: Stack<string> = new Stack();
 
-    protected logBatch: Array<ILogEntry> = [];
+    protected logBatch: Array<ILogEntity> = [];
 
     protected getCurrentStep(): string | null {
         return this.stepStack.getLastElement();
@@ -72,9 +40,8 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
         content: Array<any>,
         logLevel: LogLevel,
         logEnvironment: any
-    ): ILogEntry {
+    ): ILogEntity {
         const time = new Date();
-        const formattedMessage = formatLog(logType, logLevel, time, this.prefix, content);
         const currentStep = this.getCurrentStep();
         const previousStep = this.getPreviousStep();
 
@@ -91,7 +58,6 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
             type: logType,
             logLevel,
             content,
-            formattedMessage,
             stepUid,
             parentStep,
             logEnvironment
