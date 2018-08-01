@@ -1,6 +1,6 @@
 {
   "name": "@testring/fs-reader",
-  "version": "0.2.20",
+  "version": "0.2.21",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,9 +10,9 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/logger": "0.2.20",
-    "@testring/pluggable-module": "0.2.20",
-    "@testring/types": "0.2.20",
+    "@testring/logger": "0.2.21",
+    "@testring/pluggable-module": "0.2.21",
+    "@testring/types": "0.2.21",
     "glob": "^7.1.2"
   }
 }

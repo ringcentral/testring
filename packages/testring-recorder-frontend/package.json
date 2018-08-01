@@ -1,6 +1,6 @@
 {
   "name": "@testring/recorder-frontend",
-  "version": "0.2.20",
+  "version": "0.2.21",
   "main": "./dist/index.bundle.js",
   "repository": {
     "type": "git",
