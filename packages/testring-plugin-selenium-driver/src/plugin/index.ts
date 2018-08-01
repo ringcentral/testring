@@ -141,7 +141,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         // safe buffer if clients are still active
         await delay(2000);
 
-        this.localSelenium.kill();
+        if (this.localSelenium) {
+            this.localSelenium.kill();
+        }
     }
 
     public async refresh(applicant: string) {

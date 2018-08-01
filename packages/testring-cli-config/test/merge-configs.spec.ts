@@ -11,7 +11,7 @@ describe('getConfig', () => {
                 plugins: ['plugin1', 'plugin2']
             },
             {
-                plugins: ['plugin1', 'plugin3']
+                plugins: ['plugin2', 'plugin3']
             }
         );
 
@@ -23,14 +23,20 @@ describe('getConfig', () => {
     it('should get config with correct array of plugins (arrays)', () => {
         const config = mergeConfigs<IConfig>(
             {
-                plugins: [['plugin1', {
-                    cache: false
-                }]]
+                plugins: [
+                    'plugin2',
+                    ['plugin1', {
+                        cache: false
+                    }]
+                ]
             },
             {
                 plugins: [
                     ['plugin1', {
                         debug: true
+                    }],
+                    ['plugin2', {
+                        test: 1
                     }]
                 ]
             }
@@ -38,6 +44,9 @@ describe('getConfig', () => {
 
         chai.expect(config).to.be.deep.equals({
             plugins: [
+                ['plugin2', {
+                    test: 1
+                }],
                 ['plugin1', {
                     cache: false,
                     debug: true
@@ -49,7 +58,10 @@ describe('getConfig', () => {
     it('should get config with correct array of plugins (string + array)', () => {
         const config = mergeConfigs<IConfig>(
             {
-                plugins: ['plugin1']
+                plugins: [
+                    'plugin2',
+                    'plugin1'
+                ]
             },
             {
                 plugins: [
@@ -62,6 +74,7 @@ describe('getConfig', () => {
 
         chai.expect(config).to.be.deep.equals({
             plugins: [
+                'plugin2',
                 ['plugin1', {
                     debug: true
                 }]
