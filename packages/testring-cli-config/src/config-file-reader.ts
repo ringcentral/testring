@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as process from 'process';
 import { loggerClientLocal } from '@testring/logger';
 import { requirePackage } from '@testring/utils';
 import { IConfig } from '@testring/types';
@@ -21,7 +22,9 @@ const readJSConfig = async (configPath: string, config: IConfig): Promise<IConfi
         const configFile = requirePackage(fullPath);
 
         if (typeof configFile === 'function') {
-            return await configFile(config);
+            // TODO move process.env outside function
+            // TODO write tests for env passing
+            return await configFile(config, process.env);
         } else {
             return configFile;
         }

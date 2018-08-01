@@ -19,8 +19,12 @@ const delay = (milliseconds: number) => new Promise((resolve) => {
 
 export class TestRunController extends PluggableModule implements ITestRunController {
 
+    private workers: Array<ITestWorkerInstance> = [];
+
     private errors: Array<Error> = [];
+
     private currentQueue: TestQueue | null = null;
+
     private currentRun: Promise<any> | null = null;
 
     constructor(
@@ -66,9 +70,22 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         return this.currentRun;
     }
 
+    public async kill(): Promise<void> {
+        this.workers.forEach((worker) => {
+            worker.kill();
+        });
+
+        this.workers.length = 0;
+        if (this.currentQueue) {
+            this.currentQueue.clean();
+        }
+    }
+
     private async executeQueue(testQueue: TestQueue): Promise<Error[] | null> {
         const workerLimit = this.getWorkerLimit(testQueue);
         const workers = this.createWorkers(workerLimit);
+
+        this.workers = workers;
 
         loggerClientLocal.debug(`Run controller: ${workerLimit} worker(s) created.`);
 
@@ -82,6 +99,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             this.errors.push(error);
         }
 
+        this.workers = [];
         this.currentQueue = null;
 
         if (this.errors.length) {

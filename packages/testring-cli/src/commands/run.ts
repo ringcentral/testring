@@ -6,8 +6,7 @@ import { FSReader } from '@testring/fs-reader';
 import { TestWorker } from '@testring/test-worker';
 import { WebApplicationController } from '@testring/web-application';
 import { browserProxyControllerFactory, BrowserProxyController } from '@testring/browser-proxy';
-import { transport } from '@testring/transport';
-import { ICLICommand, IConfig } from '@testring/types';
+import { ICLICommand, IConfig, ITransport } from '@testring/types';
 
 const formatJSON = (obj: any) => {
     const separator = '⋅';
@@ -33,28 +32,31 @@ const formatJSON = (obj: any) => {
 
 class RunCommand implements ICLICommand {
 
+    private webApplicationController: WebApplicationController;
     private browserProxyController: BrowserProxyController;
+    private testRunController: TestRunController;
 
-    constructor(private config: IConfig, private stdout: NodeJS.WritableStream) {}
+    constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {}
     
     async execute() {
-        createHttpServer(this.config, transport);
+        createHttpServer(this.config, this.transport);
 
-        this.browserProxyController = browserProxyControllerFactory(transport);
+        const testWorker = new TestWorker(this.transport);
 
-        const loggerServer = new LoggerServer(this.config, transport, this.stdout);
+        this.browserProxyController = browserProxyControllerFactory(this.transport);
+        this.testRunController = new TestRunController(this.config, testWorker);
+        this.webApplicationController = new WebApplicationController(this.browserProxyController, this.transport);
+
+        const loggerServer = new LoggerServer(this.config, this.transport, this.stdout);
         const fsReader = new FSReader();
-        const testWorker = new TestWorker(transport);
-        const testRunController = new TestRunController(this.config, testWorker);
-        const webApplicationController = new WebApplicationController(this.browserProxyController, transport);
-        const httpClient = new HttpClientLocal(transport);
+        const httpClient = new HttpClientLocal(this.transport);
 
         applyPlugins({
             logger: loggerServer,
             fsReader: fsReader,
             testWorker: testWorker,
             browserProxy: this.browserProxyController,
-            testRunController: testRunController,
+            testRunController: this.testRunController,
             httpClientInstance: httpClient
         }, this.config);
 
@@ -66,13 +68,13 @@ class RunCommand implements ICLICommand {
 
         await this.browserProxyController.spawn();
 
-        webApplicationController.init();
+        this.webApplicationController.init();
 
         loggerClientLocal.info('Executing...');
 
-        const testRunResult = await testRunController.runQueue(tests);
+        const testRunResult = await this.testRunController.runQueue(tests);
 
-        this.browserProxyController.kill();
+        await this.shutdown();
 
         if (testRunResult) {
             loggerClientLocal.error('Founded errors:');
@@ -88,15 +90,25 @@ class RunCommand implements ICLICommand {
     }
 
     async shutdown() {
-        this.browserProxyController.kill();
+        const testRunController = this.testRunController;
+        const browserProxyController = this.browserProxyController;
+        const webApplicationController = this.webApplicationController;
+
+        this.testRunController = (null as any);
+        this.browserProxyController = (null as any);
+        this.webApplicationController = (null as any);
+
+        await webApplicationController.kill();
+        await testRunController.kill();
+        await browserProxyController.kill();
     }
 }
 
-export const runTests = (config, stdout) => {
+export const runTests = (config, transport, stdout) => {
     if (typeof config.tests !== 'string') {
         throw new Error('required field --tests in arguments or config');
     }
     
-    return new RunCommand(config, stdout);
+    return new RunCommand(config, transport, stdout);
 };
 

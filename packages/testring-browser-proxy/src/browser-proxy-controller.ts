@@ -7,7 +7,8 @@ import {
     IBrowserProxyCommandResponse,
     IBrowserProxyPendingCommand,
     BrowserProxyMessageTypes,
-    BrowserProxyPlugins
+    BrowserProxyPlugins,
+    BrowserProxyActions
 } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { loggerClientLocal } from '@testring/logger';
@@ -16,7 +17,7 @@ const nanoid = require('nanoid');
 
 export class BrowserProxyController extends PluggableModule implements IBrowserProxyController {
     constructor(
-        private transportInstance: ITransport,
+        private transport: ITransport,
         private workerCreator: (onActionPluginPath: string, config: any) => ChildProcess
     ) {
         super([ BrowserProxyPlugins.getPlugin ]);
@@ -26,19 +27,19 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
     private worker: ChildProcess;
 
-    private workerId: string;
+    private workerID: string;
 
     private pendingCommandsQueue: Set<IBrowserProxyPendingCommand> = new Set();
 
     private pendingCommandsPool: Map<string, IBrowserProxyPendingCommand> = new Map();
 
     private registerResponseListener() {
-        this.transportInstance.on(
+        this.transport.on(
             BrowserProxyMessageTypes.response,
             (response) => this.onCommandResponse(response)
         );
 
-        this.transportInstance.on(BrowserProxyMessageTypes.exception, (error) => {
+        this.transport.on(BrowserProxyMessageTypes.exception, (error) => {
             this.kill();
 
             throw error;
@@ -78,7 +79,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
     }
 
     private onExit = (code, error): void => {
-        delete this.workerId;
+        delete this.workerID;
 
         loggerClientLocal.debug(
             'Browser Proxy controller: miss connection with child process',
@@ -95,8 +96,8 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
         this.pendingCommandsPool.set(uid, item);
 
-        this.transportInstance.send(
-            this.workerId,
+        this.transport.send(
+            this.workerID,
             BrowserProxyMessageTypes.execute,
             {
                 uid,
@@ -107,7 +108,6 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
     }
 
     public async spawn(): Promise<number> {
-
         if (typeof this.workerCreator !== 'function') {
             loggerClientLocal.error(`Unsupported worker type "${typeof this.workerCreator}"`);
             throw new Error(`Unsupported worker type "${typeof this.workerCreator}"`);
@@ -120,7 +120,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
         this.worker = this.workerCreator(externalPlugin.plugin, externalPlugin.config);
 
-        this.workerId = `proxy-${this.worker.pid}`;
+        this.workerID = `proxy-${this.worker.pid}`;
 
         this.worker.on('exit', this.onExit);
 
@@ -128,11 +128,11 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
             loggerClientLocal.log(`[browser-proxy] [logged] ${message.toString()}`);
         });
 
-        this.transportInstance.registerChildProcess(this.workerId, this.worker);
+        this.transport.registerChildProcess(this.workerID, this.worker);
 
         this.onProxyConnect();
 
-        loggerClientLocal.debug(`Browser Proxy controller: register child process [id = ${this.workerId}]`);
+        loggerClientLocal.debug(`Browser Proxy controller: register child process [id = ${this.workerID}]`);
 
         return this.worker.pid;
     }
@@ -156,7 +156,12 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
         });
     }
 
-    public kill(): void {
+    public async kill(): Promise<void> {
+        await this.execute('root', {
+            action: BrowserProxyActions.kill,
+            args: []
+        });
+
         if (this.worker) {
             this.worker.removeListener('exit', this.onExit);
             this.worker.kill();

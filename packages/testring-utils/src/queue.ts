@@ -17,8 +17,8 @@ export class Queue<T> {
         return this.array.shift();
     }
 
-    public get length(): number {
-        return this.array.length;
+    public clean(): void {
+        this.array.length = 0;
     }
 
     public getFirstElement(offset: number = 0): T | null {
@@ -29,6 +29,11 @@ export class Queue<T> {
         }
 
         return this.array[elementIndex];
+    }
+
+
+    public get length(): number {
+        return this.array.length;
     }
 
     [Symbol.iterator]() {

@@ -1,10 +1,10 @@
 import {
-    ITransport,
-    IBrowserProxyMessage,
-    IBrowserProxyCommandResponse,
-    IBrowserProxyPlugin,
+    BrowserProxyActions,
     BrowserProxyMessageTypes,
-    BrowserProxyActions
+    IBrowserProxyCommandResponse,
+    IBrowserProxyMessage,
+    IBrowserProxyPlugin,
+    ITransport
 } from '@testring/types';
 import { requirePlugin } from '@testring/utils';
 import { loggerClient } from '@testring/logger';
@@ -21,6 +21,8 @@ const resolvePlugin = (pluginPath: string): IBrowserProxyPlugin => {
 
 export class BrowserProxy {
     private plugin: IBrowserProxyPlugin;
+
+    private killed = false;
 
     constructor(
         private transportInstance: ITransport,
@@ -53,35 +55,42 @@ export class BrowserProxy {
     }
 
     private registerCommandListener() {
-        loggerClient.debug(
-            `Browser Proxy: Register listener for messages [type = ${BrowserProxyMessageTypes.execute}]`
-        );
-
         this.transportInstance.on(
             BrowserProxyMessageTypes.execute,
             (message) => this.onMessage(message)
         );
+    }
 
-        process.on('exit', async () => {
-            await this.plugin.kill();
-        });
+    private sendEmptyResponse(uid: string) {
+        this.transportInstance.broadcast(
+            BrowserProxyMessageTypes.response,
+            { uid }
+        );
     }
 
     private async onMessage(message: IBrowserProxyMessage) {
         const { uid, applicant, command } = message;
 
         try {
-            if (!this.plugin) {
-                if (message.command.action !== BrowserProxyActions.end) {
-                    throw new ReferenceError('Cannot find browser proxy plugin!');
-                } else {
-                    this.transportInstance.broadcast(
-                        BrowserProxyMessageTypes.response,
-                        { uid }
-                    );
+            if (this.killed) {
+                this.sendEmptyResponse(uid);
+                return;
+            }
 
+            if (!this.plugin) {
+                if (
+                    command.action === BrowserProxyActions.end ||
+                    command.action === BrowserProxyActions.kill
+                ) {
+                    this.sendEmptyResponse(uid);
                     return;
+                } else {
+                    throw new ReferenceError('Cannot find browser proxy plugin!');
                 }
+            }
+
+            if (command.action === BrowserProxyActions.kill) {
+                this.killed = true;
             }
 
             const response = await this.plugin[command.action](applicant, ...command.args);

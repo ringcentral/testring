@@ -92,11 +92,11 @@ export const runCLI = async (argv: Array<string>) => {
 
     switch (command) {
         case 'run':
-            commandExecution = runTests(config, process.stdout);
+            commandExecution = runTests(config, transport, process.stdout);
             break;
 
         case 'record':
-            commandExecution = runRecordingProcess(config, process.stdout);
+            commandExecution = runRecordingProcess(config, transport, process.stdout);
             break;
 
         default:
@@ -104,10 +104,19 @@ export const runCLI = async (argv: Array<string>) => {
             return;
     }
 
-    const processExitHandler = async () => {
+    let isExitHandling = false;
+
+    const processExitHandler = async (signal) => {
+        if (isExitHandling) {
+            return;
+        }
+
+        isExitHandling = true;
+
+        process.stdout.write('\nUser caused exit... \n');
+
         await commandExecution.shutdown();
 
-        process.stdout.write('\nUser caused exit. \n');
         process.exit(0);
     };
 
@@ -120,10 +129,16 @@ export const runCLI = async (argv: Array<string>) => {
     process.on('SIGABRT', processExitHandler);
     process.on('SIGTERM', processExitHandler);
 
-    commandExecution.execute().catch((exception) => {
+    commandExecution.execute().catch(async (exception) => {
+        if (isExitHandling) {
+            return;
+        }
+
         new LoggerServer(config, transport, process.stdout);
 
         loggerClientLocal.error(exception);
+
+        await commandExecution.shutdown();
 
         setTimeout(() => {
             process.exit(1);

@@ -5,7 +5,7 @@ export interface IBrowserProxyController {
 
     execute(applicant: string, command: IBrowserProxyCommand): Promise<void>;
 
-    kill();
+    kill(): Promise<void>;
 }
 
 export interface IBrowserProxyPlugin {

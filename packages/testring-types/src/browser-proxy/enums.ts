@@ -56,5 +56,6 @@ export const enum BrowserProxyActions {
     timeoutsAsyncScript = 'timeoutsAsyncScript',
     makeScreenshot = 'makeScreenshot',
     uploadFile = 'uploadFile',
-    end = 'end'
+    end = 'end',
+    kill = 'kill'
 }

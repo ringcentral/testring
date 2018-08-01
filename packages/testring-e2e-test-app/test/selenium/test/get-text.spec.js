@@ -9,4 +9,3 @@ run(async (api) => {
 
     await api.application.assert.equal(loginTitle, 'Sign In');
 });
-

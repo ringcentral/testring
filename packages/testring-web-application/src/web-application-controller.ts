@@ -10,11 +10,17 @@ import {
 
 export class WebApplicationController extends EventEmitter {
 
+    private killed = false;
+
     private onExecuteRequest = async (message: IWebApplicationExecuteMessage, source: string) => {
         this.emit(WebApplicationControllerEventType.execute, message);
 
         try {
             const response = await this.browserProxyController.execute(message.applicant, message.command);
+
+            if (this.killed) {
+                return;
+            }
 
             this.emit(WebApplicationControllerEventType.response, response);
 
@@ -26,6 +32,10 @@ export class WebApplicationController extends EventEmitter {
 
             this.emit(WebApplicationControllerEventType.afterResponse, message, response);
         } catch (error) {
+            if (this.killed) {
+                return;
+            }
+
             await this.transport.send<IWebApplicationResponseMessage>(source, WebApplicationMessageType.response, {
                 uid: message.uid,
                 response: null,
@@ -43,5 +53,9 @@ export class WebApplicationController extends EventEmitter {
 
     public init() {
         this.transport.on(WebApplicationMessageType.execute, this.onExecuteRequest);
+    }
+
+    public kill() {
+        this.killed = true;
     }
 }

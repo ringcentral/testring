@@ -55,11 +55,11 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         });
     }
 
-    public kill() {
+    public kill(signal: NodeJS.Signals = 'SIGTERM') {
         if (this.worker !== null) {
-            this.worker.kill();
-            loggerClientLocal.debug(`Killed child process ${this.workerName}`);
+            this.worker.kill(signal);
             this.worker = null;
+            loggerClientLocal.debug(`Killed child process ${this.workerName}`);
         }
     }
 
@@ -84,7 +84,6 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         };
 
         const dependencies = await buildDependencyDictionary(compiledFile, this.readDependency.bind(this));
-
         const relativePath = path.relative(process.cwd(), file.path);
 
         loggerClientLocal.debug(`Sending test for execution: ${relativePath}`);
@@ -107,10 +106,13 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             }
         );
 
-        this.abortTestExecution = () => {
-            loggerClientLocal.error('Aborted test execution');
+        this.abortTestExecution = (error) => {
             removeListener();
-            reject();
+            if (error) {
+                reject(error);
+            } else {
+                resolve();
+            }
         };
 
         await this.transport.send<ITestExecutionMessage>(this.workerName, TestWorkerAction.executeTest, {
@@ -154,9 +156,13 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             loggerClientLocal.error(`[${this.workerName}] [error] ${data.toString().trim()}`);
         });
 
-        worker.on('close', (error) => {
+        worker.on('close', (exitCode) => {
             if (this.abortTestExecution !== null) {
-                this.abortTestExecution(error);
+                this.abortTestExecution(
+                    exitCode ?
+                        new Error(`[${this.workerName}] unexpected worker shutdown.`) :
+                        null
+                );
                 this.abortTestExecution = null;
             }
         });

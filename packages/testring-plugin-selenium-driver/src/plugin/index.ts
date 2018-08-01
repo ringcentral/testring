@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as deepmerge from 'deepmerge';
 import { IBrowserProxyPlugin } from '@testring/types';
 import { spawn } from '@testring/child-process';
 import { Config, Client, RawResult, remote } from 'webdriverio';
@@ -11,11 +12,17 @@ const DEFAULT_CONFIG: Config = {
     port: 4444,
     desiredCapabilities: {
         browserName: 'chrome',
-        chromeOptions: { args: [
-            `load-extension=${extensionPath}`,
-        ] },
+        chromeOptions: {
+            args: [
+                `load-extension=${extensionPath}`
+            ]
+        }
     }
 };
+
+function waitFor(client: Client<any>) {
+    return client.waitUntil(() => client.isExisting('body'), 10000);
+}
 
 function delay(timeout) {
     return new Promise<void>((resolve) => setTimeout(() => resolve(), timeout));
@@ -70,14 +77,17 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     private async createClient(applicant: string): Promise<void> {
         await this.waitForReadyState;
+
         if (this.browserClients.has(applicant)) {
             return;
         }
 
-        const client = remote({
-            ...DEFAULT_CONFIG,
-            ...this.config
-        } as any);
+        const client = remote(
+            deepmerge.all([
+                DEFAULT_CONFIG,
+                this.config
+            ])
+        );
 
         await client.init();
 
@@ -111,25 +121,27 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     public async end(applicant: string) {
-        await this.createClient(applicant);
+        await this.waitForReadyState;
+
         const client = this.browserClients.get(applicant);
 
         if (client) {
             this.browserClients.delete(applicant);
-            return this.wrapWithPromise(client.end());
+
+            await this.wrapWithPromise(waitFor(client));
+            await this.wrapWithPromise(client.end());
         }
     }
 
     public async kill() {
-        const requests: Array<any> = [];
+        for (const applicant of this.browserClients.keys()) {
+            await this.end(applicant);
+        }
 
-        this.browserClients.forEach((client) => {
-            requests.push(client.end());
-        });
+        // safe buffer if clients are still active
+        await delay(2000);
 
         this.localSelenium.kill();
-
-        await Promise.all(requests);
     }
 
     public async refresh(applicant: string) {

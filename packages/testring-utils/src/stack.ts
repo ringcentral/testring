@@ -17,6 +17,10 @@ export class Stack<T> {
         return this.array.pop();
     }
 
+    public clean(): void {
+        this.array.length = 0;
+    }
+
     public getLastElement(offset: number = 0): T | null {
         const elementIndex = this.array.length - 1 - offset;
 

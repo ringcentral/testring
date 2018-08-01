@@ -944,7 +944,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public pause(timeout) {
-        loggerClient.verbose(`[web-application] DELAY for ${timeout}ms`);
+        loggerClient.verbose(`[web-application] delay for ${timeout}ms`);
 
         return new Promise(resolve => setTimeout(resolve, timeout));
     }

@@ -1,4 +1,4 @@
-import { RecorderServerMessageTypes, ICLICommand, IConfig  } from '@testring/types';
+import { RecorderServerMessageTypes, ICLICommand, IConfig, ITransport } from '@testring/types';
 import { browserProxyControllerFactory } from '@testring/browser-proxy';
 import { createHttpServer, HttpClientLocal } from '@testring/http-api';
 import { WebApplicationController } from '@testring/web-application';
@@ -7,21 +7,20 @@ import { TestRunController } from '@testring/test-run-controller';
 import { RecorderServer } from '@testring/recorder-backend';
 import { applyPlugins } from '@testring/plugin-api';
 import { TestWorker } from '@testring/test-worker';
-import { transport } from '@testring/transport';
 
 class RecordCommand implements ICLICommand {
 
-    constructor(private config: IConfig, private stdout: NodeJS.WritableStream) {}
+    constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {}
 
     async execute() {
-        createHttpServer(this.config, transport);
+        createHttpServer(this.config, this.transport);
 
-        const loggerServer = new LoggerServer(this.config, transport, this.stdout);
-        const testWorker = new TestWorker(transport);
+        const loggerServer = new LoggerServer(this.config, this.transport, this.stdout);
+        const testWorker = new TestWorker(this.transport);
         const testRunController = new TestRunController(this.config, testWorker);
-        const browserProxyController = browserProxyControllerFactory(transport);
-        const webApplicationController = new WebApplicationController(browserProxyController, transport);
-        const httpClient = new HttpClientLocal(transport);
+        const browserProxyController = browserProxyControllerFactory(this.transport);
+        const webApplicationController = new WebApplicationController(browserProxyController, this.transport);
+        const httpClient = new HttpClientLocal(this.transport);
         const recorderServer = new RecorderServer();
 
         applyPlugins({
@@ -39,7 +38,7 @@ class RecordCommand implements ICLICommand {
 
         loggerClientLocal.info('Recorder Server started');
 
-        transport.on(RecorderServerMessageTypes.MESSAGE, async (message) => {
+        this.transport.on(RecorderServerMessageTypes.MESSAGE, async (message) => {
             const testStr = message.payload;
 
             try {
@@ -51,7 +50,7 @@ class RecordCommand implements ICLICommand {
             }
         });
 
-        transport.on(RecorderServerMessageTypes.CLOSE, () => {
+        this.transport.on(RecorderServerMessageTypes.CLOSE, () => {
             throw new Error('Recorder Server disconnected');
         });
     }
@@ -61,7 +60,7 @@ class RecordCommand implements ICLICommand {
     }
 }
 
-export const runRecordingProcess = (config, stdout) => {
-    return new RecordCommand(config, stdout);
+export const runRecordingProcess = (config, transport, stdout) => {
+    return new RecordCommand(config, transport, stdout);
 };
 

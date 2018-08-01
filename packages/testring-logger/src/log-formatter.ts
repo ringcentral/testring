@@ -15,16 +15,16 @@ const textTemplate = (logLevel: LogLevel) => `[${logLevel}]`.padEnd(9);
 const emojiTemplate = (logLevel: LogLevel) => {
     switch (logLevel) {
         case LogLevel.info:
-            return 'ℹ️';
+            return 'ℹ';
 
         case LogLevel.debug:
             return '🔍';
 
         case LogLevel.warning:
-            return '⚠️';
+            return '⚠';
 
         case LogLevel.error:
-            return '❗';
+            return '✖';
 
         case LogLevel.verbose:
             return '🔈';
@@ -34,7 +34,7 @@ const emojiTemplate = (logLevel: LogLevel) => {
     }
 };
 
-const format = (logLevel: LogLevel): string => {
+const formatLogLevel = (logLevel: LogLevel): string => {
     const template = HAS_EMOJI_SUPPORT ?
         emojiTemplate(logLevel) :
         textTemplate(logLevel);
@@ -60,10 +60,12 @@ const format = (logLevel: LogLevel): string => {
     }
 };
 
+const formatTime = (time: Date) => chalk.grey(`${time.toLocaleTimeString()}`);
+
 export const formatLog = (
     logEntity: ILogEntity
 ): string => {
-    const formattedPrefix = `[${logEntity.time.toLocaleTimeString()}] ${format(logEntity.logLevel)}`;
+    const formattedPrefix = `${formatTime(logEntity.time)} | ${formatLogLevel(logEntity.logLevel)}`;
 
     switch (logEntity.type) {
         case LogTypes.media: {
@@ -73,7 +75,7 @@ export const formatLog = (
             return util.format(
                 formattedPrefix, '[media]',
                 `Filename: ${filename};`,
-                `Size: ${bytes.format(media.length)};`
+                `Size: ${bytes.format(media ? media.length : 0)};`
             );
         }
 

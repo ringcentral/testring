@@ -1,12 +1,11 @@
 import * as path from 'path';
-import { Transport } from '@testring/transport';
 import { fork } from '@testring/child-process';
-
+import { ITransport } from '@testring/types';
 import { BrowserProxyController } from './browser-proxy-controller';
 
 const WORKER_PATH = path.join(__dirname, './browser-proxy');
 
-const browserProxyControllerFactory = (transport: Transport) => {
+const browserProxyControllerFactory = (transport: ITransport) => {
     return new BrowserProxyController(transport, (pluginName, config) => {
 
         return fork(WORKER_PATH, [
