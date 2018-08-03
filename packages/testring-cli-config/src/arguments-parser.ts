@@ -3,11 +3,33 @@ import { IConfig } from '@testring/types';
 
 const RESTRICTED_FIELDS = ['_', '$0', 'version', 'help'];
 
-const convert = (matches) => matches[1].toUpperCase();
+const trimString = (string: string): string => string.trim();
+const firstLetterToUpperCase = (matches) => matches[1].toUpperCase();
 const toCamelCase = (string: string): string => string.replace(
     /(-\w)/g,
-    convert
+    firstLetterToUpperCase
 );
+
+const normalizeArg = (arg: any): any => {
+    switch (typeof arg) {
+        case 'object':
+            if (!Array.isArray(arg) && arg !== null) {
+                return normalize(arg);
+            } else {
+                return arg;
+            }
+
+        case 'string':
+            if (arg.includes(',')) {
+                return arg.split(',').map(trimString);
+            } else {
+                return arg;
+            }
+
+        default:
+            return arg;
+    }
+};
 
 const normalize = (args: yargs.Arguments): Partial<IConfig> => {
     const normalizedArgs = {};
@@ -20,7 +42,7 @@ const normalize = (args: yargs.Arguments): Partial<IConfig> => {
             continue;
         }
 
-        arg = args[key];
+        arg = normalizeArg(args[key]);
 
         if (arg === undefined) {
             continue;

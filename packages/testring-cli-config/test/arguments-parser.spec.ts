@@ -1,7 +1,6 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { IConfig } from '@testring/types';
 import { getArguments } from '../src/arguments-parser';
 
 describe('argument parser', () => {
@@ -21,6 +20,7 @@ describe('argument parser', () => {
         const customConfigPath = './customConfig.json';
         const customTestsPath = './tests/**/*.test.js';
         const pluginsSet = ['plugin1', 'plugin2', 'plugin3'];
+        const customFieldSet = ['#P0', '#P1', '#P2'];
         const argv = [
             '',
             // boolean
@@ -32,15 +32,24 @@ describe('argument parser', () => {
             `--plugins=${pluginsSet[2]}`,
             // value without assign
             '--tests',
-            customTestsPath
+            customTestsPath,
+            '--custom-field',
+            `${customFieldSet[0]},${customFieldSet[1]},${customFieldSet[2]}`,
+            '--my-namespaced.custom-field',
+            `${customFieldSet[0]},${customFieldSet[1]},${customFieldSet[2]}`
         ];
 
         const args = getArguments(argv);
-        const expected: Partial<IConfig> = {
+        const expected = {
             debug: true,
             config: customConfigPath,
             tests: customTestsPath,
-            plugins: pluginsSet
+            plugins: pluginsSet,
+            customField: customFieldSet,
+            myNamespacedCustomField: customFieldSet,
+            myNamespaced: {
+                customField: customFieldSet
+            }
         };
 
         chai.expect(args).to.be.deep.equal(expected);
