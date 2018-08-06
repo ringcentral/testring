@@ -20,7 +20,6 @@
     "@testring/plugin-babel": "0.2.22",
     "@testring/plugin-selenium-driver": "0.2.22",
     "babel-preset-es2015": "^6.24.1",
-    "selenium-server": "^3.13.0",
     "testring": "0.2.22"
   }
 }
