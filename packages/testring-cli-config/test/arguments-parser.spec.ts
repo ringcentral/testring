@@ -36,7 +36,9 @@ describe('argument parser', () => {
             '--custom-field',
             `${customFieldSet[0]},${customFieldSet[1]},${customFieldSet[2]}`,
             '--my-namespaced.custom-field',
-            `${customFieldSet[0]},${customFieldSet[1]},${customFieldSet[2]}`
+            `${customFieldSet[0]},${customFieldSet[1]},${customFieldSet[2]}`,
+            '--my-namespaced.second-custom-field',
+            `${customFieldSet[0]}`
         ];
 
         const args = getArguments(argv);
@@ -47,8 +49,10 @@ describe('argument parser', () => {
             plugins: pluginsSet,
             customField: customFieldSet,
             myNamespacedCustomField: customFieldSet,
+            myNamespacedSecondCustomField: customFieldSet[0],
             myNamespaced: {
-                customField: customFieldSet
+                customField: customFieldSet,
+                secondCustomField: customFieldSet[0]
             }
         };
 

@@ -14,7 +14,7 @@ const normalizeArg = (arg: any): any => {
     switch (typeof arg) {
         case 'object':
             if (!Array.isArray(arg) && arg !== null) {
-                return normalize(arg);
+                return normalize(arg, false);
             } else {
                 return arg;
             }
@@ -31,7 +31,7 @@ const normalizeArg = (arg: any): any => {
     }
 };
 
-const normalize = (args: yargs.Arguments): Partial<IConfig> => {
+const normalize = (args: yargs.Arguments, isRoot: boolean): Partial<IConfig> => {
     const normalizedArgs = {};
 
     let arg;
@@ -51,7 +51,7 @@ const normalize = (args: yargs.Arguments): Partial<IConfig> => {
         // Removing kebab-case fields in favor of camelCase
         // Config has both variants: 'test-field' and 'testField'
         if (key.includes('-')) {
-            if (typeof arg === 'object') {
+            if (typeof arg === 'object' || !isRoot) {
                 normalizedArgs[toCamelCase(key)] = arg;
             }
 
@@ -71,5 +71,5 @@ export const getArguments = (argv: Array<string>): Partial<IConfig> | null => {
 
     const args = yargs.parse(argv);
 
-    return normalize(args);
+    return normalize(args, true);
 };
