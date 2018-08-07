@@ -52,10 +52,10 @@
     ],
     "exclude": [
       "packages/*/src/index.ts",
-      "packages/testring-types",
-      "packages/testring-web-application/src/web-application.ts",
-      "packages/testring-web-application/src/web-client.ts",
-      "packages/testring-plugin-selenium-driver/src/plugin/index.ts"
+      "packages/types",
+      "packages/web-application/src/web-application.ts",
+      "packages/web-application/src/web-client.ts",
+      "packages/plugin-selenium-driver/src/plugin/index.ts"
     ],
     "extension": [
       ".ts"
