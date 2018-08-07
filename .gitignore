@@ -1,8 +1,14 @@
 packages/**/dist
 packages/**/node_modules
 packages/**/mocha.opts
+
 packages/**/tsconfig.json
+!packages/testring-recorder-frontend/tsconfig.json
+!packages/testring-recorder-extension/tsconfig.json
+
 packages/**/.npmignore
+!packages/testring-recorder-frontend/.npmignore
+!packages/testring-recorder-extension/.npmignore
 
 .idea
 .nyc_output
