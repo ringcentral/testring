@@ -3,12 +3,12 @@ packages/**/node_modules
 packages/**/mocha.opts
 
 packages/**/tsconfig.json
-!packages/testring-recorder-frontend/tsconfig.json
-!packages/testring-recorder-extension/tsconfig.json
+!packages/recorder-frontend/tsconfig.json
+!packages/recorder-extension/tsconfig.json
 
 packages/**/.npmignore
-!packages/testring-recorder-frontend/.npmignore
-!packages/testring-recorder-extension/.npmignore
+!packages/recorder-frontend/.npmignore
+!packages/recorder-extension/.npmignore
 
 .idea
 .nyc_output
