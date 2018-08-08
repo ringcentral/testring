@@ -38,6 +38,7 @@ export type SearchSubQueryObject = {
 export type SearchObject = SearchMaskObject & SearchTextObject & SearchSubQueryObject & {
     index?: number;
     xpath?: string;
+    id?: string;
 };
 
 export type NodePath = {
@@ -45,6 +46,12 @@ export type NodePath = {
     name?: string;
     xpath: string;
     isRoot: boolean;
+};
+
+export type XpathLocator = {
+    id: string;
+    xpath: string;
+    parent?: string;
 };
 
 export class ElementPath {
@@ -80,7 +87,11 @@ export class ElementPath {
             options.searchOptions !== undefined
         ) {
             this.searchOptions = options.searchOptions;
-            this.searchMask = null;
+            if (Object.keys(options.searchOptions).length === 1 && typeof options.searchOptions.exactKey === 'string') {
+                this.searchMask = options.searchOptions.exactKey;
+            } else {
+                this.searchMask = null;
+            }
         } else if (options.searchMask !== undefined && options.searchMask !== null) {
             this.searchOptions = this.parseQueryKey(options.searchMask);
             this.searchMask = options.searchMask;
@@ -375,7 +386,7 @@ export class ElementPath {
         return null;
     }
 
-    public generateChildByXpath(xpath: string): ElementPath {
+    public generateChildByXpath(id: string, xpath: string): ElementPath {
         return new ElementPath({
             flows: this.flows,
             searchOptions: { xpath },
@@ -396,7 +407,17 @@ export class ElementPath {
             return new ElementPath({
                 flows: this.flows,
                 searchOptions: Object.assign({}, this.searchOptions, searchOptions),
-                parent: this.parent || undefined
+                parent: this.parent
+            });
+        } else if (hasOwn(this.searchOptions, 'xpath')) {
+            if (!hasOwn(this.searchOptions, 'id')) {
+                throw Error('No xpath id argument');
+            }
+
+            return new ElementPath({
+                searchOptions: Object.assign({}, searchOptions),
+                flows: this.flows,
+                parent: this
             });
         } else {
             return new ElementPath({
@@ -409,26 +430,32 @@ export class ElementPath {
 
     public generateChildElementsPath(key: string | number): ElementPath {
         if (isInteger(key)) {
-            if (hasOwn(this.searchOptions, 'index')) {
-                throw Error('Can not select index element from already sliced element');
-            }
+            return this.generateChildElementPathByOptions(Object.assign({}, this.searchOptions, {
+                index: +key
+            }));
+        } else {
+            return this.generateChildElementPathByOptions(this.parseQueryKey(`${key}`));
+        }
+    }
 
-            if (this.parent === null) {
-                throw new TypeError('Root Element is not enumerable');
-            }
+    public generateChildByLocator(locator: XpathLocator): ElementPath {
+        if (this.parent !== null && typeof locator.parent === 'string') {
+            throw new Error('Method can be called only from root element');
+        }
 
-            return new ElementPath({
-                flows: this.flows,
-                searchOptions: Object.assign({}, this.searchOptions, {
-                    index: +key
-                }),
-                parent: this.parent || undefined
+        if (typeof locator.parent === 'string') {
+            const genParent = locator.parent.split('.').reduce((memo: ElementPath, key: string) => {
+                return memo.generateChildElementsPath(key);
+            }, this);
+
+            return genParent.generateChildElementPathByOptions({
+                xpath: locator.xpath,
+                id: locator.id,
             });
         } else {
-            return new ElementPath({
-                flows: this.flows,
-                searchMask: key,
-                parent: this
+            return this.generateChildElementPathByOptions({
+                xpath: locator.xpath,
+                id: locator.id,
             });
         }
     }
