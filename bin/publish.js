@@ -35,7 +35,7 @@ const batchedPackages = PackageUtilities.topologicallyBatchPackages(Object.value
 });
 
 const task = (pkg) => (callback) => {
-    process.stdout.write(`Publishing package: ${pkg.name}...\n`);
+    process.stdout.write(`Publishing package: ${pkg.name}...\n  path: ${packagePaths[pkg.name]}\\n`);
 
     childProcess.exec(
         `node ${path.resolve(__dirname, './npm-publish.js')}`,
