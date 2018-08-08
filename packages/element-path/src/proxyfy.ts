@@ -1,5 +1,5 @@
 import { hasOwn, isGenKeyType } from './utils';
-import {ElementPath, XpathLocator} from './element-path';
+import {ElementPath} from './element-path';
 
 type KeyType = string | number | symbol;
 
@@ -12,7 +12,11 @@ type PropertyDescriptor = {
     setter?: () => any;
 } | undefined;
 
-type XpathLocatorProxified = XpathLocator;
+type XpathLocatorProxified = {
+    id: string;
+    locator: string;
+    parent?: string;
+};
 
 const PROXY_OWN_PROPS = ['__flows', '__path'];
 const PROXY_PROPS = ['__path', '__parentPath', '__flows', '__searchOptions', '__proxy'];
@@ -140,19 +144,27 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true) {
 
         if (key === 'xpathByLocator') {
             return (element: XpathLocatorProxified) => {
-                return proxyfy(instance.generateChildByLocator(element), strictMode);
+                if (typeof element.locator !== 'string') {
+                    throw Error('Invalid options, "locator" string is required');
+                }
+
+                return proxyfy(instance.generateChildByLocator({
+                    xpath: element.locator,
+                    id: element.id,
+                    parent: element.parent,
+                }), strictMode);
             };
         }
 
         if (key === 'xpathByElement') {
             return (element: { id: string, xpath: string }) => {
-                return proxyfy(instance.generateChildByLocator(element), strictMode);
+                return proxyfy(instance.generateChildByXpath(element), strictMode);
             };
         }
 
         if (key === 'xpath') {
             return (id: string, xpath: string) => {
-                return proxyfy(instance.generateChildByLocator({id, xpath}), strictMode);
+                return proxyfy(instance.generateChildByXpath({id, xpath}), strictMode);
             };
         }
 

@@ -18,8 +18,13 @@ describe('.xpathByElement()', () => {
     let xpathSelectorCall = root.foo.xpathByElement({ id: 'selected', xpath: '//*[@class=\'selected\']' });
 
     describe('arguments validation', () => {
-        it('call without xpath', () => {
+        it('call without xpath and id', () => {
             const error = () => root.foo.xpathByElement({});
+            expect(error).to.throw('Invalid options, "id" string is required');
+        });
+
+        it('call without xpath', () => {
+            const error = () => root.foo.xpathByElement({id: 'selected'});
             expect(error).to.throw('Invalid options, "xpath" string is required');
         });
 

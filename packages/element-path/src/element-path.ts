@@ -258,9 +258,14 @@ export class ElementPath {
         return conditions;
     }
 
-    protected getSearchQueryXpath(searchOptions: SearchObject = this.searchOptions): string {
+    protected getSearchQueryXpath(): string {
+        const searchOptions: SearchObject = this.searchOptions;
         let conditions: string[] = [];
         let xpath = '';
+
+        if (searchOptions.xpath !== undefined) {
+            return searchOptions.xpath;
+        }
 
         conditions.push(...this.getMaskXpathParts(searchOptions));
 
@@ -357,18 +362,20 @@ export class ElementPath {
     public getElementPathChain(): NodePath[] {
         const isRoot = this.parent === null;
 
-        if (isRoot) {
-            return [{
-                isRoot,
-                name: 'root',
-                xpath: this.getSearchQueryXpath()
-            }];
-        } else if (this.searchOptions.xpath !== undefined) {
-            return (this.getParentElementPathChain() || []).concat([{
-                isRoot,
-                query: this.searchOptions,
-                xpath: this.searchOptions.xpath
-            }]);
+        if (this.parent === null) {
+            if (Object.keys(this.searchOptions).length === 1 && this.searchOptions.exactKey === 'root') {
+                return [{
+                    isRoot,
+                    name: 'root',
+                    xpath: this.getSearchQueryXpath()
+                }];
+            } else {
+                return [{
+                    isRoot: false,
+                    query: this.searchOptions,
+                    xpath: this.getSearchQueryXpath()
+                }];
+            }
         } else {
             return (this.getParentElementPathChain() || []).concat([{
                 isRoot,
@@ -386,15 +393,7 @@ export class ElementPath {
         return null;
     }
 
-    public generateChildByXpath(id: string, xpath: string): ElementPath {
-        return new ElementPath({
-            flows: this.flows,
-            searchOptions: { xpath },
-            parent: this
-        });
-    }
-
-    public generateChildElementPathByOptions(searchOptions: SearchObject): ElementPath {
+    public generateChildElementPathByOptions(searchOptions: SearchObject, withoutParent = false): ElementPath {
         // @TODO move validation into constructor
         if (hasOwn(searchOptions, 'index')) {
             if (hasOwn(this.searchOptions, 'index')) {
@@ -415,10 +414,14 @@ export class ElementPath {
                 throw Error('Invalid options, "id" string is required');
             }
 
+            if (typeof searchOptions.xpath !== 'string') {
+                throw Error('Invalid options, "xpath" string is required');
+            }
+
             return new ElementPath({
                 searchOptions: Object.assign({}, searchOptions),
                 flows: this.flows,
-                parent: this
+                parent: withoutParent ? undefined : this
             });
         } else {
             return new ElementPath({
@@ -439,16 +442,38 @@ export class ElementPath {
         }
     }
 
+    public generateChildByXpath(element: { id: string, xpath: string }): ElementPath {
+        return this.generateChildElementPathByOptions({
+            xpath: element.xpath,
+            id: element.id,
+        });
+    }
+
     public generateChildByLocator(locator: XpathLocator): ElementPath {
         if (typeof locator.xpath !== 'string') {
             throw Error('Invalid options, "xpath" string is required');
         }
 
-        if (typeof locator.parent === 'string') {
-            const genParent = locator.parent.split('.').reduce((memo: ElementPath, key: string) => {
-                return memo.generateChildElementsPath(key);
-            }, this);
 
+        if (typeof locator.parent === 'string') {
+            if (locator.parent === '') {
+                throw Error('Invalid options, "parent" string must not be empty');
+            }
+
+            const genParent = locator.parent.split('.').reduce((memo: ElementPath, key: string) => {
+                if (memo) {
+                    return memo.generateChildElementsPath(key);
+                } else {
+                    return new ElementPath({
+                        searchOptions: {
+                            exactKey: key,
+                        },
+                    });
+                }
+            }, null);
+
+            // Can not be null
+            // @ts-ignore
             return genParent.generateChildElementPathByOptions({
                 xpath: locator.xpath,
                 id: locator.id,
@@ -457,7 +482,7 @@ export class ElementPath {
             return this.generateChildElementPathByOptions({
                 xpath: locator.xpath,
                 id: locator.id,
-            });
+            }, true);
         }
     }
 

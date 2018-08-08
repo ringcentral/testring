@@ -16,49 +16,57 @@ describe('.xpathByLocator() with parent', () => {
         strictMode: false
     });
     let xpathSelectorCall = root.xpathByLocator({
+        locator: '//*[@class=\'selected\']',
         id: 'selected',
-        xpath: '//*[@class=\'selected\']',
         parent: 'foo.bar'
     });
 
     describe('arguments validation', () => {
         it('call without xpath', () => {
             const error = () => root.xpathByLocator({ parent: 'foo.bar'});
-            expect(error).to.throw('Invalid options, "xpath" string is required');
+            expect(error).to.throw('Invalid options, "locator" string is required');
+        });
+
+        it('call with empty string parent', () => {
+            const error = () => root.xpathByLocator({
+                id: 'selected',
+                locator: '//*[@class=\'selected\']',
+                parent: ''
+            });
+            expect(error).to.throw('Invalid options, "parent" string must not be empty');
         });
 
         it('call without id', () => {
-            const error = () => root.xpathByLocator({ xpath: '//*[@class=\'selected\']', parent: 'foo.bar' });
+            const error = () => root.xpathByLocator({ locator: '//*[@class=\'selected\']', parent: 'foo.bar' });
             expect(error).to.throw('Invalid options, "id" string is required');
         });
 
         it('call with empty string id', () => {
-            const error = () => root.xpathByLocator({ id: '', xpath: '//*[@class=\'selected\']', parent: 'foo.bar' });
+            const error = () => root.xpathByLocator({ id: '', locator: '//*[@class=\'selected\']', parent: 'foo.bar' });
             expect(error).to.throw('Invalid options, "id" string is required');
         });
 
         it('call with not string', () => {
-            const error = () => root.xpathByLocator({ id: 0, xpath: '//*[@class=\'selected\']', parent: 'foo.bar' });
+            const error = () => root.xpathByLocator({ id: 0, locator: '//*[@class=\'selected\']', parent: 'foo.bar' });
             expect(error).to.throw('Invalid options, "id" string is required');
         });
     });
 
     describe('basic Object methods', () => {
         it('.toString()', () => {
-            expect(xpathSelectorCall.toString()).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
-                '//*[@data-test-automation-id=\'foo\']//*[@data-test-automation-id=\'bar\']' +
+            expect(xpathSelectorCall.toString()).to.be.equal(
+                '(//*[@data-test-automation-id=\'foo\']//*[@data-test-automation-id=\'bar\']' +
                 '//*[@class=\'selected\'])[1]');
         });
 
         it('to string converting', () => {
-            expect(`${xpathSelectorCall}`).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
-                '//*[@data-test-automation-id=\'foo\']//*[@data-test-automation-id=\'bar\']' +
+            expect(`${xpathSelectorCall}`).to.be.equal(
+                '(//*[@data-test-automation-id=\'foo\']//*[@data-test-automation-id=\'bar\']' +
                 '//*[@class=\'selected\'])[1]');
         });
 
         it('.toString(true)', () => {
             expect(xpathSelectorCall.toString(true)).to.be.equal(
-                '//*[@data-test-automation-id=\'root\']' +
                 '//*[@data-test-automation-id=\'foo\']//*[@data-test-automation-id=\'bar\']' +
                 '//*[@class=\'selected\']'
             );
@@ -77,11 +85,6 @@ describe('.xpathByLocator() with parent', () => {
             object: xpathSelectorCall,
             key: '__path',
             valueDescriptor: getDescriptor([
-                {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']'
-                },
                 {
                     'isRoot': false,
                     'query': {
@@ -132,11 +135,6 @@ describe('.xpathByLocator() with parent', () => {
             key: '__parentPath',
             valueDescriptor: getPrivateDescriptor([
                 {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']'
-                },
-                {
                     'isRoot': false,
                     'query': {
                         'exactKey': 'foo'
@@ -157,7 +155,7 @@ describe('.xpathByLocator() with parent', () => {
     describe('.__getReversedChain call', () => {
         it('with root', () => {
             expect(xpathSelectorCall.__getReversedChain()).to.be.equal(
-                'root.foo.bar.xpath("selected", "//*[@class=\'selected\']")'
+                '.foo.bar.xpath("selected", "//*[@class=\'selected\']")'
             );
         });
         it('without root', () => {
