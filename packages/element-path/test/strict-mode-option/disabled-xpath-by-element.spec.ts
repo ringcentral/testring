@@ -11,11 +11,33 @@ import {
 } from '../utils';
 
 
-describe('disabled strictMode', () => {
+describe('.xpathByElement()', () => {
     let root = createElementPath({
         strictMode: false
     });
-    let xpathSelectorCall = root.foo.xpathByElement({ xpath: '//*[@class=\'selected\']' });
+    let xpathSelectorCall = root.foo.xpathByElement({ id: 'selected', xpath: '//*[@class=\'selected\']' });
+
+    describe('arguments validation', () => {
+        it('call without xpath', () => {
+            const error = () => root.foo.xpathByElement({});
+            expect(error).to.throw('Invalid options, "xpath" string is required');
+        });
+
+        it('call without id', () => {
+            const error = () => root.foo.xpathByElement({ xpath: '//*[@class=\'selected\']' });
+            expect(error).to.throw('Invalid options, "id" string is required');
+        });
+
+        it('call with empty string id', () => {
+            const error = () => root.foo.xpathByElement({ id: '', xpath: '//*[@class=\'selected\']' });
+            expect(error).to.throw('Invalid options, "id" string is required');
+        });
+
+        it('call with not string', () => {
+            const error = () => root.foo.xpathByElement({ id: 0, xpath: '//*[@class=\'selected\']' });
+            expect(error).to.throw('Invalid options, "id" string is required');
+        });
+    });
 
     describe('basic Object methods', () => {
         it('.toString()', () => {
@@ -62,6 +84,7 @@ describe('disabled strictMode', () => {
                 {
                     'isRoot': false,
                     'query': {
+                        'id': 'selected',
                         'xpath': '//*[@class=\'selected\']'
                     },
                     'xpath': '//*[@class=\'selected\']'
@@ -83,6 +106,7 @@ describe('disabled strictMode', () => {
             object: xpathSelectorCall,
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
+                'id': 'selected',
                 'xpath': '//*[@class=\'selected\']'
             })
         });
@@ -110,10 +134,14 @@ describe('disabled strictMode', () => {
 
     describe('.__getReversedChain call', () => {
         it('with root', () => {
-            expect(xpathSelectorCall.__getReversedChain()).to.be.equal('root.foo.xpath("//*[@class=\'selected\']")');
+            expect(xpathSelectorCall.__getReversedChain()).to.be.equal(
+                'root.foo.xpath("selected", "//*[@class=\'selected\']")'
+            );
         });
         it('without root', () => {
-            expect(xpathSelectorCall.__getReversedChain(false)).to.be.equal('.foo.xpath("//*[@class=\'selected\']")');
+            expect(xpathSelectorCall.__getReversedChain(false)).to.be.equal(
+                '.foo.xpath("selected", "//*[@class=\'selected\']")'
+            );
         });
     });
 });

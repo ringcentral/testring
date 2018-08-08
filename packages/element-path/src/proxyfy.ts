@@ -146,13 +146,13 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true) {
 
         if (key === 'xpathByElement') {
             return (element: { id: string, xpath: string }) => {
-                return proxyfy(instance.generateChildByXpath(element.id, element.xpath), strictMode);
+                return proxyfy(instance.generateChildByLocator(element), strictMode);
             };
         }
 
         if (key === 'xpath') {
             return (id: string, xpath: string) => {
-                return proxyfy(instance.generateChildByXpath(id, xpath), strictMode);
+                return proxyfy(instance.generateChildByLocator({id, xpath}), strictMode);
             };
         }
 

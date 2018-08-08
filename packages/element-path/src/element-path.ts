@@ -330,7 +330,7 @@ export class ElementPath {
                     memo.push(node.name);
                 }
             } else if (node.query && node.query.xpath) {
-                memo.push(`.xpath("${node.query.xpath}")`);
+                memo.push(`.xpath(${node.query.id ? `"${node.query.id}", ` : '' }"${node.query.xpath}")`);
             } else {
                 const queryLength = Object.keys(node.query).length;
 
@@ -395,6 +395,7 @@ export class ElementPath {
     }
 
     public generateChildElementPathByOptions(searchOptions: SearchObject): ElementPath {
+        // @TODO move validation into constructor
         if (hasOwn(searchOptions, 'index')) {
             if (hasOwn(this.searchOptions, 'index')) {
                 throw Error('Can not select index element from already sliced element');
@@ -409,9 +410,9 @@ export class ElementPath {
                 searchOptions: Object.assign({}, this.searchOptions, searchOptions),
                 parent: this.parent
             });
-        } else if (hasOwn(this.searchOptions, 'xpath')) {
-            if (!hasOwn(this.searchOptions, 'id')) {
-                throw Error('No xpath id argument');
+        } else if (hasOwn(searchOptions, 'xpath')) {
+            if (typeof searchOptions.id !== 'string' || searchOptions.id === '') {
+                throw Error('Invalid options, "id" string is required');
             }
 
             return new ElementPath({
@@ -439,8 +440,8 @@ export class ElementPath {
     }
 
     public generateChildByLocator(locator: XpathLocator): ElementPath {
-        if (this.parent !== null && typeof locator.parent === 'string') {
-            throw new Error('Method can be called only from root element');
+        if (typeof locator.xpath !== 'string') {
+            throw Error('Invalid options, "xpath" string is required');
         }
 
         if (typeof locator.parent === 'string') {
