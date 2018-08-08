@@ -8,11 +8,11 @@
     "url": "https://github.com/ringcentral/testring.git"
   },
   "scripts": {
-    "postinstall": "lerna bootstrap && npm run link",
+    "postinstall": "lerna bootstrap && npm run symlinks:add",
     "preversion": "npm run build:precommit",
     "reinstall": "node ./bin/cleanup.js && npm install",
-    "link": "lerna exec --no-sort -- node ../../bin/link",
-    "unlink": "lerna exec --no-sort -- node ../../bin/unlink",
+    "symlinks:add": "lerna exec --no-sort -- node ../../bin/symlinks-add",
+    "symlinks:remove": "lerna exec --no-sort -- node ../../bin/symlinks-remove",
     "generate-readme": "lerna exec --no-sort -- node ../../bin/generate-readme",
     "lint": "npm run lint:src && npm run lint:test",
     "lint:src": "lerna exec --parallel -- eslint ./src/**.ts",
@@ -24,7 +24,7 @@
     "test:coverage": "nyc npm test",
     "test:publish": "coveralls < ./coverage/lcov.info && rimraf ./coverage -G",
     "test:ci": "npm run test:coverage && npm run test:e2e && npm run test:publish",
-    "cleanup": "lerna clean --yes && lerna exec --parallel -- rimraf ./dist -G && npm run unlink && rimraf ./node_modules",
+    "cleanup": "lerna clean --yes && lerna exec --parallel -- rimraf ./dist -G && npm run symlinks:remove && rimraf ./node_modules",
     "build": "npm run build:main && npm run build:recorder && npm run build:extension",
     "build:main": "lerna exec -- tsc --target es2015",
     "build:recorder": "lerna run --stream --scope @testring/recorder-frontend build",
@@ -52,10 +52,10 @@
     ],
     "exclude": [
       "packages/*/src/index.ts",
-      "packages/testring-types",
-      "packages/testring-web-application/src/web-application.ts",
-      "packages/testring-web-application/src/web-client.ts",
-      "packages/testring-plugin-selenium-driver/src/plugin/index.ts"
+      "packages/types",
+      "packages/web-application/src/web-application.ts",
+      "packages/web-application/src/web-client.ts",
+      "packages/plugin-selenium-driver/src/plugin/index.ts"
     ],
     "extension": [
       ".ts"
