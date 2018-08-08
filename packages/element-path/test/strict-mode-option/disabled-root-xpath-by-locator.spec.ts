@@ -11,27 +11,48 @@ import {
 } from '../utils';
 
 
-describe('disabled strictMode', () => {
+describe('.xpathByLocator() from root', () => {
     let root = createElementPath({
         strictMode: false
     });
-    let xpathSelectorCall = root.foo.xpathByElement({ xpath: '//*[@class=\'selected\']' });
+    let xpathSelectorCall = root.xpathByLocator({
+        locator: '//*[@class=\'selected\']',
+        id: 'selected',
+    });
+
+    describe('arguments validation', () => {
+        it('call without xpath', () => {
+            const error = () => root.xpathByLocator({});
+            expect(error).to.throw('Invalid options, "locator" string is required');
+        });
+
+        it('call without id', () => {
+            const error = () => root.xpathByLocator({ locator: '//*[@class=\'selected\']' });
+            expect(error).to.throw('Invalid options, "id" string is required');
+        });
+
+        it('call with empty string id', () => {
+            const error = () => root.xpathByLocator({ id: '', locator: '//*[@class=\'selected\']' });
+            expect(error).to.throw('Invalid options, "id" string is required');
+        });
+
+        it('call with not string', () => {
+            const error = () => root.xpathByLocator({ id: 0, locator: '//*[@class=\'selected\']' });
+            expect(error).to.throw('Invalid options, "id" string is required');
+        });
+    });
 
     describe('basic Object methods', () => {
         it('.toString()', () => {
-            expect(xpathSelectorCall.toString()).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
-                '//*[@data-test-automation-id=\'foo\']//*[@class=\'selected\'])[1]');
+            expect(xpathSelectorCall.toString()).to.be.equal('(//*[@class=\'selected\'])[1]');
         });
 
         it('to string converting', () => {
-            expect(`${xpathSelectorCall}`).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
-                '//*[@data-test-automation-id=\'foo\']//*[@class=\'selected\'])[1]');
+            expect(`${xpathSelectorCall}`).to.be.equal('(//*[@class=\'selected\'])[1]');
         });
 
         it('.toString(true)', () => {
-            expect(xpathSelectorCall.toString(true)).to.be.equal(
-                '//*[@data-test-automation-id=\'root\']//*[@data-test-automation-id=\'foo\']//*[@class=\'selected\']'
-            );
+            expect(xpathSelectorCall.toString(true)).to.be.equal('//*[@class=\'selected\']');
         });
 
         checkAccessMethods(xpathSelectorCall);
@@ -48,20 +69,9 @@ describe('disabled strictMode', () => {
             key: '__path',
             valueDescriptor: getDescriptor([
                 {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']'
-                },
-                {
                     'isRoot': false,
                     'query': {
-                        'exactKey': 'foo'
-                    },
-                    'xpath': '//*[@data-test-automation-id=\'foo\']'
-                },
-                {
-                    'isRoot': false,
-                    'query': {
+                        'id': 'selected',
                         'xpath': '//*[@class=\'selected\']'
                     },
                     'xpath': '//*[@class=\'selected\']'
@@ -83,6 +93,7 @@ describe('disabled strictMode', () => {
             object: xpathSelectorCall,
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
+                'id': 'selected',
                 'xpath': '//*[@class=\'selected\']'
             })
         });
@@ -91,29 +102,20 @@ describe('disabled strictMode', () => {
         checkProperty({
             object: xpathSelectorCall,
             key: '__parentPath',
-            valueDescriptor: getPrivateDescriptor([
-                {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']'
-                },
-                {
-                    'isRoot': false,
-                    'query': {
-                        'exactKey': 'foo'
-                    },
-                    'xpath': '//*[@data-test-automation-id=\'foo\']'
-                }
-            ])
+            valueDescriptor: getPrivateDescriptor(null)
         });
     });
 
     describe('.__getReversedChain call', () => {
         it('with root', () => {
-            expect(xpathSelectorCall.__getReversedChain()).to.be.equal('root.foo.xpath("//*[@class=\'selected\']")');
+            expect(xpathSelectorCall.__getReversedChain()).to.be.equal(
+                '.xpath("selected", "//*[@class=\'selected\']")'
+            );
         });
         it('without root', () => {
-            expect(xpathSelectorCall.__getReversedChain(false)).to.be.equal('.foo.xpath("//*[@class=\'selected\']")');
+            expect(xpathSelectorCall.__getReversedChain(false)).to.be.equal(
+                '.xpath("selected", "//*[@class=\'selected\']")'
+            );
         });
     });
 });

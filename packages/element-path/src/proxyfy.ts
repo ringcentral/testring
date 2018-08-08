@@ -1,5 +1,5 @@
 import { hasOwn, isGenKeyType } from './utils';
-import { ElementPath } from './element-path';
+import {ElementPath} from './element-path';
 
 type KeyType = string | number | symbol;
 
@@ -11,6 +11,12 @@ type PropertyDescriptor = {
     getter?: () => any;
     setter?: () => any;
 } | undefined;
+
+type XpathLocatorProxified = {
+    id: string;
+    locator: string;
+    parent?: string;
+};
 
 const PROXY_OWN_PROPS = ['__flows', '__path'];
 const PROXY_PROPS = ['__path', '__parentPath', '__flows', '__searchOptions', '__proxy'];
@@ -132,16 +138,34 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true) {
             };
         }
 
-        if (strictMode && (key === 'xpathByElement' || key === 'xpath')) {
+        if (strictMode && (key === 'xpathByElement' || key === 'xpath' || key === 'xpathByLocator')) {
             throw Error('Can not use xpath query in strict mode');
         }
 
+        if (key === 'xpathByLocator') {
+            return (element: XpathLocatorProxified) => {
+                if (typeof element.locator !== 'string') {
+                    throw Error('Invalid options, "locator" string is required');
+                }
+
+                return proxyfy(instance.generateChildByLocator({
+                    xpath: element.locator,
+                    id: element.id,
+                    parent: element.parent,
+                }), strictMode);
+            };
+        }
+
         if (key === 'xpathByElement') {
-            return (element: { xpath: string }) => proxyfy(instance.generateChildByXpath(element.xpath), strictMode);
+            return (element: { id: string, xpath: string }) => {
+                return proxyfy(instance.generateChildByXpath(element), strictMode);
+            };
         }
 
         if (key === 'xpath') {
-            return (xpath: string) => proxyfy(instance.generateChildByXpath(xpath), strictMode);
+            return (id: string, xpath: string) => {
+                return proxyfy(instance.generateChildByXpath({id, xpath}), strictMode);
+            };
         }
 
         if (typeof key !== 'symbol' && instance.hasFlow(key)) {

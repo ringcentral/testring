@@ -38,6 +38,7 @@ export type SearchSubQueryObject = {
 export type SearchObject = SearchMaskObject & SearchTextObject & SearchSubQueryObject & {
     index?: number;
     xpath?: string;
+    id?: string;
 };
 
 export type NodePath = {
@@ -45,6 +46,12 @@ export type NodePath = {
     name?: string;
     xpath: string;
     isRoot: boolean;
+};
+
+export type XpathLocator = {
+    id: string;
+    xpath: string;
+    parent?: string;
 };
 
 export class ElementPath {
@@ -80,7 +87,11 @@ export class ElementPath {
             options.searchOptions !== undefined
         ) {
             this.searchOptions = options.searchOptions;
-            this.searchMask = null;
+            if (Object.keys(options.searchOptions).length === 1 && typeof options.searchOptions.exactKey === 'string') {
+                this.searchMask = options.searchOptions.exactKey;
+            } else {
+                this.searchMask = null;
+            }
         } else if (options.searchMask !== undefined && options.searchMask !== null) {
             this.searchOptions = this.parseQueryKey(options.searchMask);
             this.searchMask = options.searchMask;
@@ -247,9 +258,14 @@ export class ElementPath {
         return conditions;
     }
 
-    protected getSearchQueryXpath(searchOptions: SearchObject = this.searchOptions): string {
+    protected getSearchQueryXpath(): string {
+        const searchOptions: SearchObject = this.searchOptions;
         let conditions: string[] = [];
         let xpath = '';
+
+        if (searchOptions.xpath !== undefined) {
+            return searchOptions.xpath;
+        }
 
         conditions.push(...this.getMaskXpathParts(searchOptions));
 
@@ -319,7 +335,7 @@ export class ElementPath {
                     memo.push(node.name);
                 }
             } else if (node.query && node.query.xpath) {
-                memo.push(`.xpath("${node.query.xpath}")`);
+                memo.push(`.xpath(${node.query.id ? `"${node.query.id}", ` : '' }"${node.query.xpath}")`);
             } else {
                 const queryLength = Object.keys(node.query).length;
 
@@ -346,18 +362,20 @@ export class ElementPath {
     public getElementPathChain(): NodePath[] {
         const isRoot = this.parent === null;
 
-        if (isRoot) {
-            return [{
-                isRoot,
-                name: 'root',
-                xpath: this.getSearchQueryXpath()
-            }];
-        } else if (this.searchOptions.xpath !== undefined) {
-            return (this.getParentElementPathChain() || []).concat([{
-                isRoot,
-                query: this.searchOptions,
-                xpath: this.searchOptions.xpath
-            }]);
+        if (this.parent === null) {
+            if (Object.keys(this.searchOptions).length === 1 && this.searchOptions.exactKey === 'root') {
+                return [{
+                    isRoot,
+                    name: 'root',
+                    xpath: this.getSearchQueryXpath()
+                }];
+            } else {
+                return [{
+                    isRoot: false,
+                    query: this.searchOptions,
+                    xpath: this.getSearchQueryXpath()
+                }];
+            }
         } else {
             return (this.getParentElementPathChain() || []).concat([{
                 isRoot,
@@ -375,15 +393,8 @@ export class ElementPath {
         return null;
     }
 
-    public generateChildByXpath(xpath: string): ElementPath {
-        return new ElementPath({
-            flows: this.flows,
-            searchOptions: { xpath },
-            parent: this
-        });
-    }
-
-    public generateChildElementPathByOptions(searchOptions: SearchObject): ElementPath {
+    public generateChildElementPathByOptions(searchOptions: SearchObject, withoutParent = false): ElementPath {
+        // @TODO move validation into constructor
         if (hasOwn(searchOptions, 'index')) {
             if (hasOwn(this.searchOptions, 'index')) {
                 throw Error('Can not select index element from already sliced element');
@@ -396,7 +407,21 @@ export class ElementPath {
             return new ElementPath({
                 flows: this.flows,
                 searchOptions: Object.assign({}, this.searchOptions, searchOptions),
-                parent: this.parent || undefined
+                parent: this.parent
+            });
+        } else if (hasOwn(searchOptions, 'xpath')) {
+            if (typeof searchOptions.id !== 'string' || searchOptions.id === '') {
+                throw Error('Invalid options, "id" string is required');
+            }
+
+            if (typeof searchOptions.xpath !== 'string') {
+                throw Error('Invalid options, "xpath" string is required');
+            }
+
+            return new ElementPath({
+                searchOptions: Object.assign({}, searchOptions),
+                flows: this.flows,
+                parent: withoutParent ? undefined : this
             });
         } else {
             return new ElementPath({
@@ -409,27 +434,55 @@ export class ElementPath {
 
     public generateChildElementsPath(key: string | number): ElementPath {
         if (isInteger(key)) {
-            if (hasOwn(this.searchOptions, 'index')) {
-                throw Error('Can not select index element from already sliced element');
+            return this.generateChildElementPathByOptions(Object.assign({}, this.searchOptions, {
+                index: +key
+            }));
+        } else {
+            return this.generateChildElementPathByOptions(this.parseQueryKey(`${key}`));
+        }
+    }
+
+    public generateChildByXpath(element: { id: string, xpath: string }): ElementPath {
+        return this.generateChildElementPathByOptions({
+            xpath: element.xpath,
+            id: element.id,
+        });
+    }
+
+    public generateChildByLocator(locator: XpathLocator): ElementPath {
+        if (typeof locator.xpath !== 'string') {
+            throw Error('Invalid options, "xpath" string is required');
+        }
+
+
+        if (typeof locator.parent === 'string') {
+            if (locator.parent === '') {
+                throw Error('Invalid options, "parent" string must not be empty');
             }
 
-            if (this.parent === null) {
-                throw new TypeError('Root Element is not enumerable');
-            }
+            const genParent = locator.parent.split('.').reduce((memo: ElementPath, key: string) => {
+                if (memo) {
+                    return memo.generateChildElementsPath(key);
+                } else {
+                    return new ElementPath({
+                        searchOptions: {
+                            exactKey: key,
+                        },
+                    });
+                }
+            }, null);
 
-            return new ElementPath({
-                flows: this.flows,
-                searchOptions: Object.assign({}, this.searchOptions, {
-                    index: +key
-                }),
-                parent: this.parent || undefined
+            // Can not be null
+            // @ts-ignore
+            return genParent.generateChildElementPathByOptions({
+                xpath: locator.xpath,
+                id: locator.id,
             });
         } else {
-            return new ElementPath({
-                flows: this.flows,
-                searchMask: key,
-                parent: this
-            });
+            return this.generateChildElementPathByOptions({
+                xpath: locator.xpath,
+                id: locator.id,
+            }, true);
         }
     }
 
