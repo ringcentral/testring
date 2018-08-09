@@ -28,27 +28,27 @@ describe('.xpathByLocator() with parent', () => {
         });
 
         it('call with empty string parent', () => {
-            const error = () => root.xpathByLocator({
+            const child = root.xpathByLocator({
                 id: 'selected',
                 locator: '//*[@class=\'selected\']',
                 parent: ''
             });
-            expect(error).to.throw('Invalid options, "parent" string must not be empty');
+            expect(child.toString()).to.be.equal('(//*[@class=\'selected\'])[1]');
         });
 
         it('call without id', () => {
-            const error = () => root.xpathByLocator({ locator: '//*[@class=\'selected\']', parent: 'foo.bar' });
-            expect(error).to.throw('Invalid options, "id" string is required');
+            const child = root.xpathByLocator({ locator: '//*[@class=\'selected\']', parent: 'foo.bar' });
+            expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
 
         it('call with empty string id', () => {
-            const error = () => root.xpathByLocator({ id: '', locator: '//*[@class=\'selected\']', parent: 'foo.bar' });
-            expect(error).to.throw('Invalid options, "id" string is required');
+            const child = root.xpathByLocator({ id: '', locator: '//*[@class=\'selected\']', parent: 'foo.bar' });
+            expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
 
         it('call with not string', () => {
-            const error = () => root.xpathByLocator({ id: 0, locator: '//*[@class=\'selected\']', parent: 'foo.bar' });
-            expect(error).to.throw('Invalid options, "id" string is required');
+            const child = root.xpathByLocator({ id: 0, locator: '//*[@class=\'selected\']', parent: 'foo.bar' });
+            expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
     });
 

@@ -20,7 +20,7 @@ describe('.xpath()', () => {
     describe('arguments validation', () => {
         it('call without xpath and id', () => {
             const error = () => root.foo.xpath();
-            expect(error).to.throw('Invalid options, "id" string is required');
+            expect(error).to.throw('Invalid options, "xpath" string is required');
         });
 
         it('call without xpath', () => {
@@ -29,18 +29,18 @@ describe('.xpath()', () => {
         });
 
         it('call without id', () => {
-            const error = () => root.foo.xpath(undefined, '//*[@class=\'selected\']');
-            expect(error).to.throw('Invalid options, "id" string is required');
+            const child = root.foo.xpath(undefined, '//*[@class=\'selected\']');
+            expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
 
         it('call with empty string id', () => {
-            const error = () => root.foo.xpath('', '//*[@class=\'selected\']');
-            expect(error).to.throw('Invalid options, "id" string is required');
+            const child = root.foo.xpath('', '//*[@class=\'selected\']');
+            expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
 
         it('call with not string', () => {
-            const error = () => root.foo.xpath(0, '//*[@class=\'selected\']');
-            expect(error).to.throw('Invalid options, "id" string is required');
+            const child = root.foo.xpath(0, '//*[@class=\'selected\']');
+            expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
     });
 

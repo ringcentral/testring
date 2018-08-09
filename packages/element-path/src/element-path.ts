@@ -410,10 +410,6 @@ export class ElementPath {
                 parent: this.parent
             });
         } else if (hasOwn(searchOptions, 'xpath')) {
-            if (typeof searchOptions.id !== 'string' || searchOptions.id === '') {
-                throw Error('Invalid options, "id" string is required');
-            }
-
             if (typeof searchOptions.xpath !== 'string') {
                 throw Error('Invalid options, "xpath" string is required');
             }
@@ -455,11 +451,7 @@ export class ElementPath {
         }
 
 
-        if (typeof locator.parent === 'string') {
-            if (locator.parent === '') {
-                throw Error('Invalid options, "parent" string must not be empty');
-            }
-
+        if (typeof locator.parent === 'string' && locator.parent !== '') {
             const genParent = locator.parent.split('.').reduce((memo: ElementPath, key: string) => {
                 if (memo) {
                     return memo.generateChildElementsPath(key);
