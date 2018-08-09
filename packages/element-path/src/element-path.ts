@@ -1,6 +1,7 @@
 import {
-    hasOwn, isInteger,
-    keysCount
+    hasOwn,
+    isInteger,
+    keysCount,
 } from './utils';
 
 export type FlowFn = () => any;
@@ -335,7 +336,9 @@ export class ElementPath {
                     memo.push(node.name);
                 }
             } else if (node.query && node.query.xpath) {
-                memo.push(`.xpath(${node.query.id ? `"${node.query.id}", ` : '' }"${node.query.xpath}")`);
+                let queryId = node.query.id ? `"${node.query.id}", ` : '';
+
+                memo.push(`.xpath(${queryId}"${node.query.xpath}")`);
             } else {
                 const queryLength = Object.keys(node.query).length;
 
@@ -406,7 +409,10 @@ export class ElementPath {
 
             return new ElementPath({
                 flows: this.flows,
-                searchOptions: Object.assign({}, this.searchOptions, searchOptions),
+                searchOptions: {
+                    ...this.searchOptions,
+                    ...searchOptions,
+                },
                 parent: this.parent
             });
         } else if (hasOwn(searchOptions, 'xpath')) {
@@ -415,13 +421,13 @@ export class ElementPath {
             }
 
             return new ElementPath({
-                searchOptions: Object.assign({}, searchOptions),
+                searchOptions: {...searchOptions},
                 flows: this.flows,
                 parent: withoutParent ? undefined : this
             });
         } else {
             return new ElementPath({
-                searchOptions: Object.assign({}, searchOptions),
+                searchOptions: {...searchOptions},
                 flows: this.flows,
                 parent: this
             });
@@ -430,9 +436,10 @@ export class ElementPath {
 
     public generateChildElementsPath(key: string | number): ElementPath {
         if (isInteger(key)) {
-            return this.generateChildElementPathByOptions(Object.assign({}, this.searchOptions, {
-                index: +key
-            }));
+            return this.generateChildElementPathByOptions({
+                ...this.searchOptions,
+                index: +key,
+            });
         } else {
             return this.generateChildElementPathByOptions(this.parseQueryKey(`${key}`));
         }

@@ -1,4 +1,7 @@
-import { hasOwn, isGenKeyType } from './utils';
+import {
+    hasOwn,
+    isGenKeyType,
+} from './utils';
 import {ElementPath} from './element-path';
 
 type KeyType = string | number | symbol;
@@ -21,7 +24,7 @@ type XpathLocatorProxified = {
 const PROXY_OWN_PROPS = ['__flows', '__path'];
 const PROXY_PROPS = ['__path', '__parentPath', '__flows', '__searchOptions', '__proxy'];
 
-export function proxyfy(instance: ElementPath, strictMode: boolean = true) {
+export function proxify(instance: ElementPath, strictMode: boolean = true) {
     const revocable = Proxy.revocable<any>(instance, {
         get: getTrap,
         set: setTrap,
@@ -75,7 +78,7 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true) {
         }
 
         if (hasOwn(instance, key) && typeof key !== 'symbol') {
-            return proxyfy(instance.generateChildElementsPath(key), strictMode);
+            return proxify(instance.generateChildElementsPath(key), strictMode);
         }
 
         if (key === '__flows') {
@@ -131,9 +134,9 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true) {
         if (key === '__findChildren') {
             return function __findChildren() {
                 if (this === proxy) {
-                    return proxyfy(instance.generateChildElementPathByOptions.apply(instance, arguments), strictMode);
+                    return proxify(instance.generateChildElementPathByOptions.apply(instance, arguments), strictMode);
                 } else {
-                    return proxyfy(instance.generateChildElementPathByOptions.apply(this, arguments), strictMode);
+                    return proxify(instance.generateChildElementPathByOptions.apply(this, arguments), strictMode);
                 }
             };
         }
@@ -148,7 +151,7 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true) {
                     throw Error('Invalid options, "locator" string is required');
                 }
 
-                return proxyfy(instance.generateChildByLocator({
+                return proxify(instance.generateChildByLocator({
                     xpath: element.locator,
                     id: element.id,
                     parent: element.parent,
@@ -158,13 +161,13 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true) {
 
         if (key === 'xpathByElement') {
             return (element: { id: string, xpath: string }) => {
-                return proxyfy(instance.generateChildByXpath(element), strictMode);
+                return proxify(instance.generateChildByXpath(element), strictMode);
             };
         }
 
         if (key === 'xpath') {
             return (id: string, xpath: string) => {
-                return proxyfy(instance.generateChildByXpath({id, xpath}), strictMode);
+                return proxify(instance.generateChildByXpath({id, xpath}), strictMode);
             };
         }
 
@@ -177,7 +180,7 @@ export function proxyfy(instance: ElementPath, strictMode: boolean = true) {
         }
 
         if (isGenKeyType(key) && typeof key !== 'symbol') {
-            return proxyfy(instance.generateChildElementsPath(key), strictMode);
+            return proxify(instance.generateChildElementsPath(key), strictMode);
         }
     }
 
