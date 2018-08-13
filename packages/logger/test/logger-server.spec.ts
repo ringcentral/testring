@@ -16,6 +16,29 @@ const DEFAULT_WRITABLE_CONFIG = {
 };
 
 describe('Logger Server', () => {
+    it('should get a processId in beforeLog and onLog hook', (callback) => {
+        const transport = new TransportMock();        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout);
+        const beforeLog = loggerServer.getHook(LoggerPlugins.beforeLog);
+        const onLog = loggerServer.getHook(LoggerPlugins.onLog);
+        const PROCESS_ID = 'testId';
+
+        if (beforeLog && onLog) {
+            beforeLog.writeHook('testPlugin',  (entry, processId) => {
+                chai.expect(processId).to.be.equal(PROCESS_ID);
+                return entry;
+            });
+
+            onLog.readHook('testPlugin', (entry, processId) => {
+                chai.expect(processId).to.be.equal(PROCESS_ID);
+
+                callback();
+            });
+        }
+
+        transport.broadcastFrom(LoggerMessageTypes.REPORT, LOG_ENTITY, PROCESS_ID);
+    });
+
     it('should call beforeLog hook and pass transformed entry to log', (callback) => {
         const transport = new TransportMock();
         const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
@@ -63,6 +86,29 @@ describe('Logger Server', () => {
         }
 
         transport.broadcast(LoggerMessageTypes.REPORT, LOG_ENTITY);
+    });
+
+    it('should get a processId in onError hook', (callback) => {
+        const transport = new TransportMock();
+        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout, 0, true);
+        const onLog = loggerServer.getHook(LoggerPlugins.onLog);
+        const onError = loggerServer.getHook(LoggerPlugins.onError);
+        const PROCESS_ID = 'testIdError';
+
+        if (onLog && onError) {
+            onLog.readHook('testPlugin', (entry, processId) => {
+                chai.expect(processId).to.be.equal(PROCESS_ID);
+                throw new Error('WHOOPS!');
+            });
+
+            onError.readHook('testPlugin', (error, processId) => {
+                chai.expect(processId).to.be.equal(PROCESS_ID);
+                callback();
+            });
+        }
+
+        transport.broadcastFrom(LoggerMessageTypes.REPORT, LOG_ENTITY, PROCESS_ID);
     });
 
     it('should retry 1 time then log successfully', (callback) => {

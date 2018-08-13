@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import { ITransport } from '@testring/types';
 import { ChildProcess } from 'child_process';
 
+
 export class TransportMock extends EventEmitter implements ITransport {
 
 
@@ -17,6 +18,10 @@ export class TransportMock extends EventEmitter implements ITransport {
 
     public broadcast<T = any>(messageType: string, payload: T) {
         this.emit(messageType, payload);
+    }
+
+    public broadcastFrom<T = any>(messageType: string, payload: T, processId: string) {
+        this.emit(messageType, payload, processId);
     }
 
     public broadcastLocal<T = any>(messageType: string, payload: T) {
@@ -35,13 +40,13 @@ export class TransportMock extends EventEmitter implements ITransport {
         return () => this.removeListener(messageType, callback);
     }
 
-    public once(messageType, callback): any {
+    public once<T = any>(messageType: string, callback: (m: T, source?: string) => void): any {
         super.on(messageType, callback);
 
         return () => this.removeListener(messageType, callback);
     }
 
-    public onceFrom(processID, messageType, callback): any {
+    public onceFrom<T = any>(processID: string, messageType: string, callback: (m: T, source?: string) => void): any {
         const handler = (message, source) => {
             if (processID === source) {
                 callback(message);
