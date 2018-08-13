@@ -66,7 +66,7 @@ export class Transport implements ITransport {
         return () => this.emitter.removeListener(messageType, handler);
     }
 
-    private triggerListeners(message: ITransportDirectMessage, source?: string) {
-        this.emitter.emit(message.type, message.payload, source);
+    private triggerListeners(message: ITransportDirectMessage, processID?: string) {
+        this.emitter.emit(message.type, message.payload, processID);
     }
 }

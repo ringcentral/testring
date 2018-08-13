@@ -10,6 +10,11 @@ export interface ILogEntity {
     logEnvironment?: any;
 }
 
+export interface ILogQueue {
+    logEntity: ILogEntity;
+    processId?: string;
+}
+
 export interface ILoggerServer {
     getQueueStatus(): LogQueueStatus;
 }

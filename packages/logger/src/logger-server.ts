@@ -4,6 +4,7 @@ import {
     IConfig,
     ITransport,
     ILogEntity,
+    ILogQueue,
     ILoggerServer,
     LoggerMessageTypes,
     LogQueueStatus,
@@ -22,7 +23,7 @@ export enum LogLevelNumeric {
 
 export class LoggerServer extends PluggableModule implements ILoggerServer {
 
-    private queue: Queue<ILogEntity> = new Queue();
+    private queue: Queue<ILogQueue> = new Queue();
 
     private status: LogQueueStatus = LogQueueStatus.EMPTY;
 
@@ -43,36 +44,38 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
     }
 
     private registerTransportListeners(): void {
-        this.transportInstance.on(LoggerMessageTypes.REPORT, (entry: ILogEntity) => {
-            this.log(entry);
+        this.transportInstance.on(LoggerMessageTypes.REPORT, (entry: ILogEntity, processId?: string) => {
+            this.log(entry, processId);
         });
 
-        this.transportInstance.on(LoggerMessageTypes.REPORT_BATCH, (batch: Array<ILogEntity>) => {
-            batch.forEach((entry) => this.log(entry));
+        this.transportInstance.on(LoggerMessageTypes.REPORT_BATCH, (batch: Array<ILogEntity>, processId?: string) => {
+            batch.forEach((entry) => this.log(entry, processId));
         });
     }
 
     private async runQueue(retry: number = this.numberOfRetries): Promise<void> {
-        const logEntity = this.queue.shift();
+        const queueItem = this.queue.shift();
 
-        if (logEntity === undefined) {
+        if (queueItem === undefined) {
             this.status = LogQueueStatus.EMPTY;
             return;
         }
 
+        const {logEntity, processId} = queueItem;
+
         this.status = LogQueueStatus.RUNNING;
 
         try {
-            const entryAfterPlugin = await this.callHook(LoggerPlugins.beforeLog, logEntity);
+            const entryAfterPlugin = await this.callHook(LoggerPlugins.beforeLog, logEntity, processId);
 
-            await this.callHook(LoggerPlugins.onLog, entryAfterPlugin);
+            await this.callHook(LoggerPlugins.onLog, entryAfterPlugin, processId);
 
             this.runQueue();
         } catch (error) {
-            await this.callHook(LoggerPlugins.onError, error);
+            await this.callHook(LoggerPlugins.onError, error, processId);
 
             if (retry > 0) {
-                this.queue.push(logEntity);
+                this.queue.push({logEntity, processId});
                 this.runQueue(retry - 1);
             } else if (this.shouldSkip) {
                 this.runQueue();
@@ -82,7 +85,7 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
         }
     }
 
-    private log(entry: ILogEntity): void {
+    private log(entry: ILogEntity, processId?: string): void {
         // fast checking aliases
         if (this.config.silent) {
             return;
@@ -97,7 +100,10 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
         const formattedMessage = formatLog(entry);
 
         this.stdout.write(`${formattedMessage}\n`);
-        this.queue.push(entry);
+        this.queue.push({
+            logEntity: entry,
+            processId,
+        });
 
         if (shouldRun) {
             this.runQueue();

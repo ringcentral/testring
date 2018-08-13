@@ -38,8 +38,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
     protected buildEntry(
         logType: LogTypes,
         content: Array<any>,
-        logLevel: LogLevel,
-        logEnvironment: any
+        logLevel: LogLevel
     ): ILogEntity {
         const time = new Date();
         const currentStep = this.getCurrentStep();
@@ -60,17 +59,15 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
             content,
             stepUid,
             parentStep,
-            logEnvironment
         };
     }
 
     protected createLog(
         type: LogTypes,
         logLevel: LogLevel,
-        content: Array<any>,
-        logEnvironment: any = null
+        content: Array<any>
     ): void {
-        const logEntry = this.buildEntry(type, content, logLevel, logEnvironment);
+        const logEntry = this.buildEntry(type, content, logLevel);
 
         if (this.getCurrentStep()) {
             this.logBatch.push(logEntry);
@@ -117,17 +114,6 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
 
     public media(filename: string, content: Buffer): void {
         this.createLog(LogTypes.media, LogLevel.info, [filename, content]);
-    }
-
-    public withLogEnvironment(logEnvironment: any) {
-        return {
-            log: (...args) => this.createLog(LogTypes.log, LogLevel.info, args, logEnvironment),
-            info: (...args) => this.createLog(LogTypes.info, LogLevel.info, args, logEnvironment),
-            warn: (...args) => this.createLog(LogTypes.warning, LogLevel.warning, args, logEnvironment),
-            error: (...args) => this.createLog(LogTypes.error, LogLevel.error, args, logEnvironment),
-            debug: (...args) => this.createLog(LogTypes.debug, LogLevel.debug, args, logEnvironment),
-            media: (...args) => this.createLog(LogTypes.media, LogLevel.info, args, logEnvironment)
-        };
     }
 
     public startStep(key: string): void {
