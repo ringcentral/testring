@@ -9,6 +9,7 @@ import { LOG_ENTITY } from './fixtures/constants';
 import { voidLogger } from './fixtures/voidLogger';
 import { LoggerServer } from '../src/logger-server';
 
+const PROCESS_ID = 'testId';
 const DEFAULT_CONFIG: any = {};
 const DEFAULT_WRITABLE_CONFIG = {
     write: () => {
@@ -16,21 +17,21 @@ const DEFAULT_WRITABLE_CONFIG = {
 };
 
 describe('Logger Server', () => {
-    it('should get a processId in beforeLog and onLog hook', (callback) => {
-        const transport = new TransportMock();        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
+    it('should get a processID in beforeLog and onLog hook', (callback) => {
+        const transport = new TransportMock();
+        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
         const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout);
         const beforeLog = loggerServer.getHook(LoggerPlugins.beforeLog);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
-        const PROCESS_ID = 'testId';
 
         if (beforeLog && onLog) {
-            beforeLog.writeHook('testPlugin',  (entry, processId) => {
-                chai.expect(processId).to.be.equal(PROCESS_ID);
+            beforeLog.writeHook('testPlugin',  (entry, {processID}) => {
+                chai.expect(processID).to.be.equal(PROCESS_ID);
                 return entry;
             });
 
-            onLog.readHook('testPlugin', (entry, processId) => {
-                chai.expect(processId).to.be.equal(PROCESS_ID);
+            onLog.readHook('testPlugin', (entry, {processID}) => {
+                chai.expect(processID).to.be.equal(PROCESS_ID);
 
                 callback();
             });
@@ -94,16 +95,15 @@ describe('Logger Server', () => {
         const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout, 0, true);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
         const onError = loggerServer.getHook(LoggerPlugins.onError);
-        const PROCESS_ID = 'testIdError';
 
         if (onLog && onError) {
-            onLog.readHook('testPlugin', (entry, processId) => {
-                chai.expect(processId).to.be.equal(PROCESS_ID);
+            onLog.readHook('testPlugin', (entry, {processID}) => {
+                chai.expect(processID).to.be.equal(PROCESS_ID);
                 throw new Error('WHOOPS!');
             });
 
-            onError.readHook('testPlugin', (error, processId) => {
-                chai.expect(processId).to.be.equal(PROCESS_ID);
+            onError.readHook('testPlugin', (error, {processID}) => {
+                chai.expect(processID).to.be.equal(PROCESS_ID);
                 callback();
             });
         }

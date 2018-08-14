@@ -3,8 +3,12 @@ import { ITestWorker, ITestWorkerInstance } from '@testring/types';
 class TestWorkerMockInstance implements ITestWorkerInstance {
 
     private executeCalls = 0;
+    private workerID = 'worker/test';
 
-    constructor(private shouldFail: boolean) {
+    constructor(private shouldFail: boolean) {}
+
+    getWorkerID() {
+        return this.workerID;
     }
 
     execute() {

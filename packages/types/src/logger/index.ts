@@ -12,7 +12,9 @@ export interface ILogEntity {
 
 export interface ILogQueue {
     logEntity: ILogEntity;
-    processId?: string;
+    meta: {
+        processID?: string;
+    };
 }
 
 export interface ILoggerServer {

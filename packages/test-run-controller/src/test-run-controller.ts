@@ -2,10 +2,11 @@ import {
     IConfig,
     ITestWorker,
     ITestWorkerInstance,
+    ITestWorkerCallbackMeta,
     IFile,
     IQueuedTest,
     ITestRunController,
-    TestRunControllerPlugins
+    TestRunControllerPlugins,
 } from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
 import { PluggableModule } from '@testring/pluggable-module';
@@ -129,6 +130,12 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         return workers;
     }
 
+    private getWorkerMeta(worker: ITestWorkerInstance): ITestWorkerCallbackMeta {
+        return {
+            processID: worker.getWorkerID(),
+        };
+    }
+
     private prepareTest(testFile: IFile): IQueuedTest {
         return {
             retryCount: 0,
@@ -168,7 +175,11 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             throw error;
         }
 
-        const shouldRetry = await this.callHook(TestRunControllerPlugins.shouldRetry, queueItem.test.path);
+        const shouldRetry = await this.callHook(
+            TestRunControllerPlugins.shouldRetry,
+            queueItem.test.path,
+            this.getWorkerMeta(worker)
+        );
 
         if (
             !!shouldRetry &&
@@ -184,7 +195,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         } else {
             this.errors.push(error);
 
-            await this.callHook(TestRunControllerPlugins.afterTest, queueItem);
+            await this.callHook(TestRunControllerPlugins.afterTest, queueItem, error, this.getWorkerMeta(worker));
             await this.occupyWorker(worker, queue);
         }
     }
@@ -197,7 +208,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         }
 
         try {
-            await this.callHook(TestRunControllerPlugins.beforeTest, queuedTest);
+            await this.callHook(TestRunControllerPlugins.beforeTest, queuedTest, this.getWorkerMeta(worker));
 
             await worker.execute(
                 queuedTest.test,
@@ -205,7 +216,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 this.config.envParameters
             );
 
-            await this.callHook(TestRunControllerPlugins.afterTest, queuedTest);
+            await this.callHook(TestRunControllerPlugins.afterTest, queuedTest, null, this.getWorkerMeta(worker));
         } catch (error) {
             queuedTest.retryErrors.push(error);
 

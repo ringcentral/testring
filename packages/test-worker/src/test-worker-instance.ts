@@ -31,7 +31,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private worker: ChildProcess | null = null;
 
-    private workerName = `worker/${nanoid()}`;
+    private workerID = `worker/${nanoid()}`;
 
     constructor(
         private transport: ITransport,
@@ -55,11 +55,15 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         });
     }
 
+    public getWorkerID() {
+        return this.workerID;
+    }
+
     public kill(signal: NodeJS.Signals = 'SIGTERM') {
         if (this.worker !== null) {
             this.worker.kill(signal);
             this.worker = null;
-            loggerClientLocal.debug(`Killed child process ${this.workerName}`);
+            loggerClientLocal.debug(`Killed child process ${this.workerID}`);
         }
     }
 
@@ -89,7 +93,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         loggerClientLocal.debug(`Sending test for execution: ${relativePath}`);
 
         const removeListener = this.transport.onceFrom<ITestExecutionCompleteMessage>(
-            this.workerName,
+            this.workerID,
             TestWorkerAction.executionComplete,
             (message) => {
                 switch (message.status) {
@@ -115,7 +119,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             }
         };
 
-        await this.transport.send<ITestExecutionMessage>(this.workerName, TestWorkerAction.executeTest, {
+        await this.transport.send<ITestExecutionMessage>(this.workerID, TestWorkerAction.executeTest, {
             ...compiledFile,
             dependencies,
             parameters,
@@ -149,26 +153,26 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         const worker = fork(WORKER_ROOT);
 
         worker.stdout.on('data', (data) => {
-            loggerClientLocal.log(`[${this.workerName}] [logged] ${data.toString().trim()}`);
+            loggerClientLocal.log(`[${this.workerID}] [logged] ${data.toString().trim()}`);
         });
 
         worker.stderr.on('data', (data) => {
-            loggerClientLocal.error(`[${this.workerName}] [error] ${data.toString().trim()}`);
+            loggerClientLocal.error(`[${this.workerID}] [error] ${data.toString().trim()}`);
         });
 
         worker.on('close', (exitCode) => {
             if (this.abortTestExecution !== null) {
                 this.abortTestExecution(
                     exitCode ?
-                        new Error(`[${this.workerName}] unexpected worker shutdown.`) :
+                        new Error(`[${this.workerID}] unexpected worker shutdown.`) :
                         null
                 );
                 this.abortTestExecution = null;
             }
         });
 
-        this.transport.registerChildProcess(this.workerName, worker);
-        loggerClientLocal.debug(`Registered child process ${this.workerName}`);
+        this.transport.registerChildProcess(this.workerID, worker);
+        loggerClientLocal.debug(`Registered child process ${this.workerID}`);
 
         return worker;
     }
