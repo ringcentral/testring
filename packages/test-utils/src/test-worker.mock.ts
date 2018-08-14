@@ -1,5 +1,10 @@
 import { ITestWorker, ITestWorkerInstance } from '@testring/types';
 
+const ERROR_INSTANCE = {
+    test: 'file.js',
+    error: new Error('test')
+};
+
 class TestWorkerMockInstance implements ITestWorkerInstance {
 
     private executeCalls = 0;
@@ -15,10 +20,7 @@ class TestWorkerMockInstance implements ITestWorkerInstance {
         this.executeCalls++;
 
         if (this.shouldFail) {
-            return Promise.reject({
-                test: 'file.js',
-                error: new Error('test')
-            });
+            return Promise.reject(this.$getErrorInstance());
         }
 
         return Promise.resolve();
@@ -29,6 +31,10 @@ class TestWorkerMockInstance implements ITestWorkerInstance {
 
     $getExecuteCallsCount() {
         return this.executeCalls;
+    }
+
+    $getErrorInstance() {
+        return ERROR_INSTANCE;
     }
 }
 
@@ -45,6 +51,14 @@ export class TestWorkerMock implements ITestWorker {
         this.spawnedInstances.push(instance);
 
         return instance;
+    }
+
+    $getInstanceName() {
+        return this.spawnedInstances[0].getWorkerID();
+    }
+
+    $getErrorInstance() {
+        return this.spawnedInstances[0].$getErrorInstance();
     }
 
     $getSpawnedCount() {

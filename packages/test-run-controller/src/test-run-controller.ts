@@ -172,6 +172,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         queue: TestQueue
     ): Promise<void> {
         if (this.config.bail) {
+            await this.callHook(TestRunControllerPlugins.afterTest, queueItem, error, this.getWorkerMeta(worker));
             throw error;
         }
 
