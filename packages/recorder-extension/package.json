@@ -1,6 +1,6 @@
 {
   "name": "@testring/recorder-extension",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "main": "./dist/background.bundle.js",
   "repository": {
     "type": "git",
@@ -16,9 +16,9 @@
     "build": "npm run build:static && npm run build:script"
   },
   "devDependencies": {
-    "@testring/client-ws-transport": "0.3.3",
-    "@testring/types": "0.3.3",
-    "@testring/utils": "0.3.3",
+    "@testring/client-ws-transport": "0.3.4",
+    "@testring/types": "0.3.4",
+    "@testring/utils": "0.3.4",
     "@types/chrome": "0.0.69",
     "@types/webpack": "4.4.5",
     "mkdirp": "^0.5.1",
