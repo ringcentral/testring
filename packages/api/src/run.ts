@@ -12,6 +12,17 @@ const getMemoryUsage = () => {
     return bytes.format(memoryAfter.heapUsed);
 };
 
+const getValidCopyVmError = (error) => {
+    if (error instanceof Error) {
+        return error;
+    }
+
+    // TODO check signature
+    let tmpError = new Error(error.message);
+    tmpError.stack = error.stack;
+    return tmpError;
+};
+
 export const run = async (...tests: Array<TestFunction>) => {
     const testID = testAPIController.getTestID();
     const bus = testAPIController.getBus();
@@ -32,7 +43,7 @@ export const run = async (...tests: Array<TestFunction>) => {
 
         passed = true;
     } catch (error) {
-        catchedError = error;
+        catchedError = getValidCopyVmError(error);
     } finally {
         await api.end();
 
