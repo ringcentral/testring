@@ -21,7 +21,7 @@ export class TransportMock extends EventEmitter implements ITransport {
     }
 
     public broadcastFrom<T = any>(messageType: string, payload: T, processID: string) {
-        this.emit(messageType, payload, { processID });
+        this.emit(messageType, payload, processID);
     }
 
     public broadcastLocal<T = any>(messageType: string, payload: T) {
