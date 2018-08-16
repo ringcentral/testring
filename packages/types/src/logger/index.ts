@@ -10,11 +10,13 @@ export interface ILogEntity {
     logEnvironment?: any;
 }
 
+export interface ILogMeta {
+    processID?: string;
+}
+
 export interface ILogQueue {
     logEntity: ILogEntity;
-    meta: {
-        processID?: string;
-    };
+    meta: ILogMeta;
 }
 
 export interface ILoggerServer {

@@ -62,18 +62,17 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
         }
 
         const { logEntity, meta } = queueItem;
-        const { processID } = meta;
 
         this.status = LogQueueStatus.RUNNING;
 
         try {
-            const entryAfterPlugin = await this.callHook(LoggerPlugins.beforeLog, logEntity, processID);
+            const entryAfterPlugin = await this.callHook(LoggerPlugins.beforeLog, logEntity, meta);
 
-            await this.callHook(LoggerPlugins.onLog, entryAfterPlugin, processID);
+            await this.callHook(LoggerPlugins.onLog, entryAfterPlugin, meta);
 
             this.runQueue();
         } catch (error) {
-            await this.callHook(LoggerPlugins.onError, error, processID);
+            await this.callHook(LoggerPlugins.onError, error, meta);
 
             if (retry > 0) {
                 this.queue.push({logEntity, meta});
