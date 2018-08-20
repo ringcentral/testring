@@ -466,7 +466,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.browserClients.get(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.switchTab(tabId));
+            let result = this.wrapWithPromise(client.switchTab(tabId));
+            await waitFor(client);
+
+            return result;
         }
     }
 
