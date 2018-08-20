@@ -37,7 +37,7 @@ class RunCommand implements ICLICommand {
     private testRunController: TestRunController;
 
     constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {}
-    
+
     async execute() {
         createHttpServer(this.config, this.transport);
 
@@ -98,9 +98,9 @@ class RunCommand implements ICLICommand {
         this.browserProxyController = (null as any);
         this.webApplicationController = (null as any);
 
-        await webApplicationController.kill();
-        await testRunController.kill();
-        await browserProxyController.kill();
+        webApplicationController && await webApplicationController.kill();
+        testRunController && await testRunController.kill();
+        browserProxyController && await browserProxyController.kill();
     }
 }
 
@@ -108,7 +108,7 @@ export const runTests = (config, transport, stdout) => {
     if (typeof config.tests !== 'string') {
         throw new Error('required field --tests in arguments or config');
     }
-    
+
     return new RunCommand(config, transport, stdout);
 };
 

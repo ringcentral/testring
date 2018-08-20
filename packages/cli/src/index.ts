@@ -134,6 +134,8 @@ export const runCLI = async (argv: Array<string>) => {
             return;
         }
 
+        isExitHandling = true;
+
         new LoggerServer(config, transport, process.stdout);
 
         loggerClientLocal.error(exception);
