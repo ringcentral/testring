@@ -1,0 +1,33 @@
+{
+  "name": "@testring/ui-kit",
+  "version": "0.3.5",
+  "main": "./dist/index.bundle.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "scripts": {
+    "storybook": "start-storybook -p 9001 -c .storybook"
+  },
+  "devDependencies": {
+    "@storybook/addon-actions": "^3.4.10",
+    "@storybook/addon-options": "^3.4.10",
+    "@storybook/react": "4.0.0-alpha.16",
+    "@types/storybook__react": "^3.0.9",
+    "@types/storybook__addon-actions": "^3.4.1",
+    "@types/storybook__addon-options": "^3.2.2",
+    "@types/react": "^16.4.6",
+    "@types/react-dom": "^16.0.6",
+    "@types/webpack": "4.4.5",
+    "babel-core": "^6.26.3",
+    "css-loader": "1.0.0",
+    "monaco-editor-webpack-plugin": "1.4.0",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "react-monaco-editor": "0.17.2",
+    "style-loader": "^0.21.0",
+    "ts-loader": "^4.5.0"
+  }
+}

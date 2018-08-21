@@ -35,6 +35,7 @@
     "build:ci": "npm run build:clear && npm run test:ci",
     "publish": "npm run generate-readme && lerna publish --exact",
     "publish:ci": "node ./bin/publish.js",
+    "storybook": "lerna run --stream --scope @testring/ui-kit storybook",
     "check-deps": "lerna exec -- npm-check --skip-unused --ignore @testring/*"
   },
   "precommit": "build:precommit",
