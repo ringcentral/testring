@@ -24,11 +24,6 @@ yargs.command('record', 'To make a record');
 yargs.help();
 
 
-createField('debug', {
-    describe: 'Debugging flag',
-    type: 'boolean'
-});
-
 createField('bail', {
     describe: 'Shut down app after test fail',
     type: 'boolean'
@@ -106,7 +101,7 @@ export const runCLI = async (argv: Array<string>) => {
 
     let isExitHandling = false;
 
-    const processExitHandler = async (signal) => {
+    const processExitHandler = async () => {
         if (isExitHandling) {
             return;
         }
@@ -133,6 +128,8 @@ export const runCLI = async (argv: Array<string>) => {
         if (isExitHandling) {
             return;
         }
+
+        isExitHandling = true;
 
         new LoggerServer(config, transport, process.stdout);
 
