@@ -7,6 +7,7 @@ import { buildDependencyDictionary } from '@testring/dependencies-builder';
 import { FSReader } from '@testring/fs-reader';
 import {
     ITransport,
+    ITestWorkerConfig,
     ITestWorkerInstance,
     ITestExecutionCompleteMessage,
     ITestExecutionMessage,
@@ -33,10 +34,17 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private workerID = `worker/${nanoid()}`;
 
+    private config: ITestWorkerConfig = { debug: false };
+
     constructor(
         private transport: ITransport,
-        private compile: FileCompiler
+        private compile: FileCompiler,
+        workerConfig: Partial<ITestWorkerConfig> = {}
     ) {
+        this.config = {
+            ...this.config,
+            ...workerConfig
+        };
     }
 
     public async execute(file: IFile, parameters: any, envParameters: any): Promise<any> {
@@ -75,7 +83,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         reject
     ) {
         if (this.worker === null) {
-            this.worker = this.createWorker();
+            this.worker = await this.createWorker();
         }
 
         // Calling external hooks to compile source
@@ -149,8 +157,8 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         }
     }
 
-    private createWorker(): ChildProcess {
-        const worker = fork(WORKER_ROOT);
+    private async createWorker(): Promise<ChildProcess> {
+        const worker = await fork(WORKER_ROOT, [], this.config.debug);
 
         worker.stdout.on('data', (data) => {
             loggerClientLocal.log(`[${this.workerID}] [logged] ${data.toString().trim()}`);

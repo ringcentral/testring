@@ -13,7 +13,7 @@ const browserProxyControllerFactory = (transport: ITransport) => {
             pluginName,
             '--config',
             JSON.stringify(config)
-        ]);
+        ], false);
     });
 };
 

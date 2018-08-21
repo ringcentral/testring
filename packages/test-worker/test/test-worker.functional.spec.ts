@@ -17,7 +17,7 @@ describe('TestWorkerInstance', () => {
             };
 
             const transport = new Transport();
-            const testWorker = new TestWorker(transport);
+            const testWorker = new TestWorker(transport, { debug: false });
             const instance = testWorker.spawn();
 
             try {
@@ -36,7 +36,7 @@ describe('TestWorkerInstance', () => {
             };
 
             const transport = new Transport();
-            const testWorker = new TestWorker(transport);
+            const testWorker = new TestWorker(transport, { debug: false });
             const instance = testWorker.spawn();
 
             instance.execute(file, {}, null)
@@ -63,7 +63,7 @@ describe('TestWorkerInstance', () => {
         };
 
         const transport = new Transport();
-        const testWorker = new TestWorker(transport);
+        const testWorker = new TestWorker(transport, { debug: false });
         const instance = testWorker.spawn();
 
         const execution = instance.execute(file, {}, null);
@@ -81,7 +81,7 @@ describe('TestWorkerInstance', () => {
             };
 
             const transport = new Transport();
-            const testWorker = new TestWorker(transport);
+            const testWorker = new TestWorker(transport, { debug: false });
             const instance = testWorker.spawn();
 
             const hook = testWorker.getHook(TestWorkerPlugin.compile);
@@ -109,13 +109,13 @@ describe('TestWorkerInstance', () => {
             };
 
             const transport = new Transport();
-            const testWorker = new TestWorker(transport);
+            const testWorker = new TestWorker(transport, { debug: false });
             const instance = testWorker.spawn();
 
             const hook = testWorker.getHook(TestWorkerPlugin.compile);
 
             if (hook) {
-                hook.writeHook('testPlugin', (source, file) => {
+                hook.writeHook('testPlugin', () => {
                     // throw new Error('compilation failed');
 
                     return Promise.reject(new Error('compilation failed'));
@@ -126,7 +126,7 @@ describe('TestWorkerInstance', () => {
                 .then(() => {
                     callback('Test was compiled somehow');
                 })
-                .catch((message) => {
+                .catch(() => {
                     callback();
                 })
                 .catch(callback)
