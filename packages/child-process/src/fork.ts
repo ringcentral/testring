@@ -71,7 +71,7 @@ export async function fork(
     let processArgs: Array<string> = [];
 
     if (debugEnabled) {
-        let port = await getAvailablePort(PREFERED_DEBUG_PORTS);
+        const port = await getAvailablePort(PREFERED_DEBUG_PORTS);
 
         processArgs = [`--inspect-brk=${port}`];
     }
