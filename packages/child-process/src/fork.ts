@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as process from 'process';
 import * as childProcess from 'child_process';
-import { getAvailablePort } from './find-ports';
+import { getAvailablePort } from '@testring/utils';
 import { resolveBinary } from './resolve-binary';
 import { spawn } from './spawn';
 
@@ -13,7 +13,8 @@ const getNumberRange = (start: number, end: number): Array<number> => {
 
 const PREFERED_DEBUG_PORTS: Array<number> = [
     /* Default debug ports */
-    9229, 9222,
+    9229,
+    9222,
     /* A few ports from 9230 - 9240 */
     ...getNumberRange(9230, 9240),
 ];

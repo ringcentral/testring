@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as chai from 'chai';
 import * as request from 'request-promise';
 
-import { getAvailablePort } from '@testring/test-utils';
+import { getAvailableFollowingPort } from '@testring/utils';
 
 import { RecorderHttpServer } from '../src/http-server';
 
@@ -20,7 +20,7 @@ describe('Recorder HTTP server', () => {
     let httpPort = 8080;
 
     beforeEach(async () => {
-        httpPort = await getAvailablePort(httpPort, host);
+        httpPort = await getAvailableFollowingPort(httpPort, host);
     });
 
     it('should serve over HTTP until it stopped', (callback) => {

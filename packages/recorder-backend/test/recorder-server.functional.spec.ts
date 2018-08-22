@@ -3,7 +3,8 @@
 import * as request from 'request-promise';
 import * as WebSocket from 'ws';
 import * as chai from 'chai';
-import { getAvailablePort, TransportMock } from '@testring/test-utils';
+import { getAvailableFollowingPort } from '@testring/utils';
+import { TransportMock } from '@testring/test-utils';
 import { RecorderServerEvents, RecorderServerMessageTypes } from '@testring/types';
 import { DEFAULT_RECORDER_HOST, DEFAULT_RECORDER_HTTP_PORT, DEFAULT_RECORDER_WS_PORT } from '@testring/constants';
 
@@ -22,8 +23,8 @@ describe('Recorder server', () => {
             await srv.stop();
         }
 
-        httpPort = await getAvailablePort(DEFAULT_RECORDER_HTTP_PORT, DEFAULT_RECORDER_HOST);
-        wsPort = await getAvailablePort(DEFAULT_RECORDER_WS_PORT, DEFAULT_RECORDER_HOST, [httpPort]);
+        httpPort = await getAvailableFollowingPort(DEFAULT_RECORDER_HTTP_PORT, DEFAULT_RECORDER_HOST);
+        wsPort = await getAvailableFollowingPort(DEFAULT_RECORDER_WS_PORT, DEFAULT_RECORDER_HOST, [httpPort]);
 
         httpUrl = `http://${DEFAULT_RECORDER_HOST}:${httpPort}`;
         wsUrl = `ws://${DEFAULT_RECORDER_HOST}:${wsPort}`;
