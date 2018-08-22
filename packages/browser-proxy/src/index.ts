@@ -6,14 +6,13 @@ import { BrowserProxyController } from './browser-proxy-controller';
 const WORKER_PATH = path.join(__dirname, './browser-proxy');
 
 const browserProxyControllerFactory = (transport: ITransport) => {
-    return new BrowserProxyController(transport, (pluginName, config) => {
-
+    return new BrowserProxyController(transport, (pluginName, config = {}) => {
         return fork(WORKER_PATH, [
             '--name',
             pluginName,
             '--config',
             JSON.stringify(config)
-        ], false);
+        ], !!config.debug);
     });
 };
 
