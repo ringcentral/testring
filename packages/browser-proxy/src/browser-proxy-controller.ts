@@ -104,7 +104,9 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
                 command,
                 applicant
             }
-        );
+        ).catch((err) => {
+            loggerClientLocal.error(err);
+        });
     }
 
     public async spawn(): Promise<number> {

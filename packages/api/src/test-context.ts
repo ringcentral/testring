@@ -54,7 +54,7 @@ export class TestContext {
         return customApplication;
     }
 
-    public end() {
+    public end(): Promise<any> {
         const requests = [
             this.application.end()
         ];
@@ -65,6 +65,9 @@ export class TestContext {
             );
         }
 
-        return Promise.all(requests);
+        return Promise.all(requests)
+            .catch((error) => {
+                this.logError(error);
+            });
     }
 }

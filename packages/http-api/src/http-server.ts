@@ -79,7 +79,8 @@ export class HttpServer extends PluggableModule {
 
     private send<T>(source: string | null, messageType: string, payload: T) {
         if (source) {
-            this.transportInstance.send<T>(source, messageType, payload);
+            this.transportInstance.send<T>(source, messageType, payload)
+                .catch((error) => loggerClientLocal.error(error));
         } else {
             this.transportInstance.broadcastLocal<T>(messageType, payload);
         }
