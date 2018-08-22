@@ -12,6 +12,10 @@ export interface ITestWorkerCallbackMeta {
     processID: string;
 }
 
+export interface ITestWorkerConfig {
+    debug: boolean;
+}
+
 export interface ITestWorker {
     spawn(): ITestWorkerInstance;
 }

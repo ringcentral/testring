@@ -21,35 +21,36 @@ describe('WebApplication functional', () => {
         const transport = new Transport();
         const browserProxyMock = new BrowserProxyControllerMock();
         const controller = new WebApplicationController(browserProxyMock, transport);
-        const testProcess = fork(testProcessPath);
 
-        controller.init();
-        transport.registerChildProcess(processID, testProcess);
+        fork(testProcessPath).then((testProcess) => {
+            controller.init();
+            transport.registerChildProcess(processID, testProcess);
 
-        controller.on(WebApplicationControllerEventType.afterResponse, (message) => {
-            try {
-                const requests = browserProxyMock.$getCommands();
+            controller.on(WebApplicationControllerEventType.afterResponse, (message) => {
+                try {
+                    const requests = browserProxyMock.$getCommands();
 
-                chai.expect(requests).to.have.lengthOf(1);
+                    chai.expect(requests).to.have.lengthOf(1);
 
-                const request = requests[0];
+                    const request = requests[0];
 
-                chai.expect(request.args[0]).includes(ELEMENT_NAME);
-                chai.expect(message.command).to.be.equal(request);
-                chai.expect(message.applicant).includes(TEST_NAME);
+                    chai.expect(request.args[0]).includes(ELEMENT_NAME);
+                    chai.expect(message.command).to.be.equal(request);
+                    chai.expect(message.applicant).includes(TEST_NAME);
 
-                callback();
-            } catch (e) {
-                callback(e);
-            } finally {
-                setImmediate(() => {
-                    testProcess.kill();
-                });
-            }
-        });
+                    callback();
+                } catch (e) {
+                    callback(e);
+                } finally {
+                    setImmediate(() => {
+                        testProcess.kill();
+                    });
+                }
+            });
 
-        testProcess.stderr.on('data', (message) => {
-            callback(message.toString());
+            testProcess.stderr.on('data', (message) => {
+                callback(message.toString());
+            });
         });
     });
 });

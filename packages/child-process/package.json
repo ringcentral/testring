@@ -7,6 +7,9 @@
     "type": "git",
     "url": "https://github.com/ringcentral/testring.git"
   },
+  "dependencies": {
+    "@testring/utils": "0.3.6"
+  },
   "author": "RingCentral",
   "license": "MIT"
 }

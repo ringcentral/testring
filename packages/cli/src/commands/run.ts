@@ -41,7 +41,9 @@ class RunCommand implements ICLICommand {
     async execute() {
         createHttpServer(this.config, this.transport);
 
-        const testWorker = new TestWorker(this.transport);
+        const testWorker = new TestWorker(this.transport, {
+            debug: this.config.debug,
+        });
 
         this.browserProxyController = browserProxyControllerFactory(this.transport);
         this.testRunController = new TestRunController(this.config, testWorker);

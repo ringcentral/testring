@@ -7,6 +7,7 @@ import { buildDependencyDictionary } from '@testring/dependencies-builder';
 import { FSReader } from '@testring/fs-reader';
 import {
     ITransport,
+    ITestWorkerConfig,
     ITestWorkerInstance,
     ITestExecutionCompleteMessage,
     ITestExecutionMessage,
@@ -31,12 +32,21 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private worker: ChildProcess | null = null;
 
+    private queuedWorker: Promise<ChildProcess> | null = null;
+
     private workerID = `worker/${nanoid()}`;
+
+    private config: ITestWorkerConfig = { debug: false };
 
     constructor(
         private transport: ITransport,
-        private compile: FileCompiler
+        private compile: FileCompiler,
+        workerConfig: Partial<ITestWorkerConfig> = {}
     ) {
+        this.config = {
+            ...this.config,
+            ...workerConfig
+        };
     }
 
     public async execute(file: IFile, parameters: any, envParameters: any): Promise<any> {
@@ -60,7 +70,12 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     }
 
     public kill(signal: NodeJS.Signals = 'SIGTERM') {
-        if (this.worker !== null) {
+        if (this.queuedWorker !== null) {
+            this.queuedWorker.then(() => {
+                this.kill(signal);
+            });
+            loggerClientLocal.debug(`Waiting for queue ${this.workerID}`);
+        } else if (this.worker !== null) {
             this.worker.kill(signal);
             this.worker = null;
             loggerClientLocal.debug(`Killed child process ${this.workerID}`);
@@ -74,9 +89,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         resolve,
         reject
     ) {
-        if (this.worker === null) {
-            this.worker = this.createWorker();
-        }
+        this.worker = await this.getWorker();
 
         // Calling external hooks to compile source
         const compiledSource = await this.compileSource(file.content, file.path);
@@ -149,8 +162,26 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         }
     }
 
-    private createWorker(): ChildProcess {
-        const worker = fork(WORKER_ROOT);
+    private async getWorker(): Promise<ChildProcess> {
+        if (this.queuedWorker) {
+            return this.queuedWorker;
+        }
+
+        if (this.worker === null) {
+            this.queuedWorker = this.createWorker().then((worker) => {
+                this.worker = worker;
+                this.queuedWorker = null;
+                return Promise.resolve(worker);
+            });
+
+            return this.queuedWorker;
+        }
+
+        return this.worker;
+    }
+
+    private async createWorker(): Promise<ChildProcess> {
+        const worker = await fork(WORKER_ROOT, [], this.config.debug);
 
         worker.stdout.on('data', (data) => {
             loggerClientLocal.log(`[${this.workerID}] [logged] ${data.toString().trim()}`);

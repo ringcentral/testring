@@ -8,18 +8,18 @@ const fixtures = path.resolve(__dirname, './fixtures');
 
 describe('fork', () => {
     it('should fork .js files with node', (callback) => {
-        const ps = fork(path.join(fixtures, 'javascript.js'));
+        fork(path.join(fixtures, 'javascript.js')).then((ps) => {
+            ps.on('close', (error) => {
+                if (error) {
+                    callback(error);
+                } else {
+                    chai.expect(ps['spawnfile'].endsWith('node')).to.equal(true);
 
-        ps.on('close', (error) => {
-            if (error) {
-                callback(error);
-            } else {
-                chai.expect(ps['spawnfile'].endsWith('node')).to.equal(true);
+                    callback();
+                }
+            });
 
-                callback();
-            }
+            ps.kill();
         });
-
-        ps.kill();
     });
 });

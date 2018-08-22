@@ -18,7 +18,7 @@ const nanoid = require('nanoid');
 export class BrowserProxyController extends PluggableModule implements IBrowserProxyController {
     constructor(
         private transport: ITransport,
-        private workerCreator: (onActionPluginPath: string, config: any) => ChildProcess
+        private workerCreator: (onActionPluginPath: string, config: any) => ChildProcess | Promise<ChildProcess>
     ) {
         super([ BrowserProxyPlugins.getPlugin ]);
 
@@ -118,7 +118,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
             config: null
         });
 
-        this.worker = this.workerCreator(externalPlugin.plugin, externalPlugin.config);
+        this.worker = await this.workerCreator(externalPlugin.plugin, externalPlugin.config);
 
         this.workerID = `proxy-${this.worker.pid}`;
 

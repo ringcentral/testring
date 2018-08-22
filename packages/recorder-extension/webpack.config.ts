@@ -34,6 +34,7 @@ const config: webpack.Configuration = {
     },
 
     node: {
+        net: 'empty',
         fs: 'empty',
     },
 

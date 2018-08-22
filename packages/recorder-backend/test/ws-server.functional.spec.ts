@@ -2,7 +2,7 @@
 
 import * as WebSocket from 'ws';
 import * as chai from 'chai';
-import { getAvailablePort } from '@testring/test-utils';
+import { getAvailableFollowingPort } from '@testring/utils';
 
 import { RecorderWebSocketServer, RecorderWsEvents } from '../src/ws-server';
 
@@ -12,7 +12,7 @@ describe('Recorder WebsSocket server', () => {
     let port = 8080;
 
     beforeEach(async () => {
-        port = await getAvailablePort(port, host);
+        port = await getAvailableFollowingPort(port, host);
     });
 
     it('should start ws server and emit event of connections', (callback) => {
