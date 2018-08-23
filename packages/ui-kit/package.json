@@ -1,6 +1,6 @@
 {
   "name": "@testring/ui-kit",
-  "version": "0.3.6",
+  "version": "0.4.0",
   "main": "./dist/index.bundle.js",
   "repository": {
     "type": "git",
@@ -15,11 +15,11 @@
     "@storybook/addon-actions": "3.4.10",
     "@storybook/addon-options": "3.4.10",
     "@storybook/react": "4.0.0-alpha.16",
-    "@types/storybook__react": "3.0.9",
-    "@types/storybook__addon-actions": "3.4.1",
-    "@types/storybook__addon-options": "3.2.2",
     "@types/react": "16.4.11",
     "@types/react-dom": "16.0.7",
+    "@types/storybook__addon-actions": "3.4.1",
+    "@types/storybook__addon-options": "3.2.2",
+    "@types/storybook__react": "3.0.9",
     "@types/webpack": "4.4.5",
     "babel-core": "6.26.3",
     "css-loader": "1.0.0",
