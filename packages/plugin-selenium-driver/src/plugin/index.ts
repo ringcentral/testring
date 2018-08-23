@@ -20,12 +20,6 @@ const DEFAULT_CONFIG: Config = {
     }
 };
 
-const CLOSED_ERROR_TEXTS: Array<string> = [
-    'Promise was rejected with the following reason: no such window: target window already closed\n' +
-    'from unknown error: web view not found',
-    'Promise was rejected with the following reason: chrome not reachable',
-];
-
 function waitFor(client: Client<any>) {
     return client.waitUntil(() => client.isExisting('body'), 10000);
 }
@@ -132,16 +126,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.browserClients.get(applicant);
 
         if (client) {
-            try {
-                this.browserClients.delete(applicant);
+            this.browserClients.delete(applicant);
 
-                await this.wrapWithPromise(waitFor(client));
-                await this.wrapWithPromise(client.end());
-            } catch (error) {
-                if (CLOSED_ERROR_TEXTS.indexOf(error.message) === -1) {
-                    throw error;
-                }
-            }
+            await this.wrapWithPromise(waitFor(client));
+            await this.wrapWithPromise(client.end());
         }
     }
 
