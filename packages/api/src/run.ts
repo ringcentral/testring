@@ -45,7 +45,12 @@ export const run = async (...tests: Array<TestFunction>) => {
     } catch (error) {
         catchedError = getValidCopyVmError(error);
     } finally {
-        await api.end();
+        let exitError;
+        try {
+            await api.end();
+        } catch (error) {
+            exitError = error;
+        }
 
         loggerClient.debug('Memory usage after run:', getMemoryUsage());
 
@@ -57,6 +62,10 @@ export const run = async (...tests: Array<TestFunction>) => {
             loggerClient.endStep(testID, 'Test failed', catchedError);
 
             bus.emit(TestEvents.failed, catchedError);
+        }
+
+        if (exitError) {
+            loggerClient.error(exitError);
         }
     }
 };
