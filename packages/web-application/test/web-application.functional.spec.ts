@@ -52,5 +52,5 @@ describe('WebApplication functional', () => {
                 callback(message.toString());
             });
         });
-    });
+    }).timeout(30000);
 });

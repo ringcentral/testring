@@ -17,7 +17,7 @@ const decomposeStepName = (stepID: string): string => {
 export abstract class AbstractLoggerClient implements ILoggerClient {
     constructor(
         protected transportInstance: ITransport = transport,
-        protected prefix: string = ''
+        protected prefix: string = '',
     ) {
     }
 
@@ -52,6 +52,8 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
             ? previousStep
             : currentStep;
 
+        const prefix = this.prefix || undefined;
+
         return {
             time,
             type: logType,
@@ -59,6 +61,7 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
             content,
             stepUid,
             parentStep,
+            prefix,
         };
     }
 

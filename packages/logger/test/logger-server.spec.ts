@@ -98,13 +98,21 @@ describe('Logger Server', () => {
 
         if (onLog && onError) {
             onLog.readHook('testPlugin', (entry, {processID}) => {
-                chai.expect(processID).to.be.equal(PROCESS_ID);
+                try {
+                    chai.expect(processID).to.be.equal(PROCESS_ID);
+                } catch (e) {
+                    callback(e);
+                }
                 throw new Error('WHOOPS!');
             });
 
             onError.readHook('testPlugin', (error, {processID}) => {
-                chai.expect(processID).to.be.equal(PROCESS_ID);
-                callback();
+                try {
+                    chai.expect(processID).to.be.equal(PROCESS_ID);
+                    callback();
+                }  catch (e) {
+                    callback(e);
+                }
             });
         }
 
@@ -119,9 +127,12 @@ describe('Logger Server', () => {
 
         const errorSpy = sinon.spy();
         const logHandler = voidLogger(1, true, errorSpy, () => {
-            chai.expect(errorSpy.callCount).to.be.equal(1);
-
-            callback();
+            try {
+                chai.expect(errorSpy.callCount).to.be.equal(1);
+                callback();
+            } catch (e) {
+                callback(e);
+            }
         });
 
         if (onLog) {
@@ -144,10 +155,14 @@ describe('Logger Server', () => {
 
         const errorSpy = sinon.spy();
         const logHandler = voidLogger(1, true, errorSpy, (entry) => {
-            chai.expect(errorSpy.callCount).to.be.equal(1);
-            chai.expect(entry).to.be.deep.equal(successEntry);
+            try {
+                chai.expect(errorSpy.callCount).to.be.equal(1);
+                chai.expect(entry).to.be.deep.equal(successEntry);
 
-            callback();
+                callback();
+            } catch (e) {
+                callback(e);
+            }
         });
 
         if (onLog) {

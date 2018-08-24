@@ -10,7 +10,7 @@ import {
     LogQueueStatus,
     LoggerPlugins
 } from '@testring/types';
-import { formatLog } from './log-formatter';
+import { formatLog } from './format-log';
 
 export enum LogLevelNumeric {
     verbose,

@@ -2,7 +2,7 @@
 
 import * as url from 'url';
 import { ITransport } from '@testring/types';
-import { loggerClient } from '@testring/logger';
+import { LoggerClient } from '@testring/logger';
 import { PluggableModule } from '@testring/pluggable-module';
 import { createElementPath, ElementPath } from '@testring/element-path';
 import { createAssertion } from './assert';
@@ -15,8 +15,9 @@ const WAIT_TIMEOUT = 30000;
 const TICK_TIMEOUT = 100;
 
 export class WebApplication extends PluggableModule {
+    private _logger: LoggerClient | null = null;
 
-    protected client: WebClient;
+    private _client: WebClient | null = null;
 
     private mainTabID = 1;
 
@@ -26,17 +27,14 @@ export class WebApplication extends PluggableModule {
 
     public root = createElementPath();
 
-    constructor(private testUID: string, transport: ITransport) {
+    constructor(private testUID: string, private transport: ITransport) {
         super();
-
-        const applicationID = `${this.testUID}-${nanoid()}`;
-
-        this.client = new WebClient(applicationID, transport);
     }
 
-    protected logXpath(xpath) {
+    protected formatXpath(xpath) {
         return utils.logXpath(xpath);
     }
+
 
     protected normalizeSelector(selector: string | ElementPath): string {
         if (!selector) {
@@ -46,12 +44,33 @@ export class WebApplication extends PluggableModule {
         return selector.toString();
     }
 
-    public get logger() {
-        return loggerClient;
+    public get client(): WebClient {
+        // TODO lazy decorator?
+        if (this._client) {
+            return this._client;
+        }
+
+        const applicationID = `${this.testUID}-${nanoid()}`;
+        this._client = new WebClient(applicationID, this.transport);
+
+        return this._client;
+    }
+
+    public get logger(): LoggerClient {
+        if (this._logger) {
+            return this._logger;
+        }
+
+        this._logger = new LoggerClient(
+            this.transport,
+            '[web-application]',
+        );
+
+        return this._logger;
     }
 
     public async waitForExist(xpath, timeout: number = WAIT_TIMEOUT, skipMoveToObject = false) {
-        loggerClient.debug(`[web-application] Waiting ${xpath} for ${timeout}`);
+        this.logger.debug(`Waiting ${xpath} for ${timeout}`);
 
         const normalizedXPath = this.normalizeSelector(xpath);
         const exists = await this.client.waitForExist(
@@ -74,7 +93,7 @@ export class WebApplication extends PluggableModule {
 
         try {
             xpath = this.normalizeSelector(xpath);
-            loggerClient.debug(`[web-application] Waiting not exists ${xpath} for ${timeout}`);
+            this.logger.debug(`Waiting not exists ${xpath} for ${timeout}`);
             await this.client.waitForExist(xpath, Number(timeout) || WAIT_TIMEOUT);
             exists = true;
         } catch {
@@ -91,7 +110,7 @@ export class WebApplication extends PluggableModule {
 
         xpath = this.normalizeSelector(xpath);
 
-        loggerClient.debug(`[web-application] Waiting for not visible ${path} for ${timeout}`);
+        this.logger.debug(`Waiting for not visible ${path} for ${timeout}`);
 
         try {
             await this.client.waitForExist(xpath, timeout);
@@ -128,7 +147,7 @@ export class WebApplication extends PluggableModule {
 
         xpath = this.normalizeSelector(xpath);
 
-        loggerClient.debug(`[web-application] Waiting for visible ${utils.logXpath(xpath)} for ${waitTime}`);
+        this.logger.debug(`Waiting for visible ${utils.logXpath(xpath)} for ${waitTime}`);
 
         return this.client.waitForVisible(xpath, waitTime);
     }
@@ -159,10 +178,10 @@ export class WebApplication extends PluggableModule {
     }
 
     public async isBecomeVisible(xpath, timeout = WAIT_TIMEOUT) {
-        loggerClient.debug(`[web-application] Waiting for become visible ${utils.logXpath(xpath)} for ${timeout}`);
-        
+        this.logger.debug(`Waiting for become visible ${utils.logXpath(xpath)} for ${timeout}`);
+
         xpath = this.normalizeSelector(xpath);
-        
+
         try {
             await this.client.waitForVisible(xpath, timeout);
             return true;
@@ -172,7 +191,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async isBecomeHidden(xpath, timeout = WAIT_TIMEOUT) {
-        loggerClient.debug(`[web-application] Waiting for become hidden ${utils.logXpath(xpath)} for ${timeout}`);
+        this.logger.debug(`Waiting for become hidden ${utils.logXpath(xpath)} for ${timeout}`);
 
         const expires = Date.now() + timeout;
         xpath = this.normalizeSelector(xpath);
@@ -209,7 +228,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async click(xpath, timeout = WAIT_TIMEOUT) {
-        loggerClient.debug(`[web-application] Click on ${utils.logXpath(xpath)}`);
+        this.logger.debug(`Click on ${utils.logXpath(xpath)}`);
 
         const normalizedSelector = this.normalizeSelector(xpath);
 
@@ -222,7 +241,7 @@ export class WebApplication extends PluggableModule {
     public async logNavigatorVersion() {
         const userAgent = await this.execute(() => window.navigator && window.navigator.userAgent);
 
-        loggerClient.debug(userAgent);
+        this.logger.debug(userAgent);
     }
 
     private documentReadyWait() {
@@ -249,7 +268,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async getValue(xpath, timeout = WAIT_TIMEOUT) {
-        loggerClient.debug(`[web-application] Get value from ${utils.logXpath(xpath)}`);
+        this.logger.debug(`Get value from ${utils.logXpath(xpath)}`);
         await this.waitForExist(xpath, timeout);
 
         xpath = this.normalizeSelector(xpath);
@@ -261,7 +280,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async setValue(xpath, value, emulateViaJS = false, timeout = WAIT_TIMEOUT) {
-        loggerClient.debug(`[web-application] Set value ${value} to ${utils.logXpath(xpath)}`);
+        this.logger.debug(`Set value ${value} to ${utils.logXpath(xpath)}`);
         await this.waitForExist(xpath, timeout);
         xpath = this.normalizeSelector(xpath);
 
@@ -273,7 +292,7 @@ export class WebApplication extends PluggableModule {
                 await this.client.setValue(xpath, value);
             }
 
-            loggerClient.debug(`[web-application] Value ${value} was entered into ${utils.logXpath(xpath)} using Selenium`);
+            this.logger.debug(`Value ${value} was entered into ${utils.logXpath(xpath)} using Selenium`);
         } else {
             let result = await this.client.executeAsync((xpath, value, done) => {
 
@@ -310,7 +329,7 @@ export class WebApplication extends PluggableModule {
             if (result) {
                 throw new Error(result);
             } else {
-                loggerClient.debug(`[web-application] Value ${value} was entered into ${utils.logXpath(xpath)} using JS emulation`);
+                this.logger.debug(`Value ${value} was entered into ${utils.logXpath(xpath)} using JS emulation`);
             }
         }
 
@@ -318,7 +337,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async clickHiddenElement(xpath, timeout = WAIT_TIMEOUT) {
-        loggerClient.debug(`[web-application] Make ${utils.logXpath(xpath)} visible and click`);
+        this.logger.debug(`Make ${utils.logXpath(xpath)} visible and click`);
         await this.waitForExist(xpath, timeout);
         xpath = this.normalizeSelector(xpath);
 
@@ -351,7 +370,7 @@ export class WebApplication extends PluggableModule {
         if (result) {
             throw new Error(result);
         } else {
-            loggerClient.debug(`[web-application] Element ${utils.logXpath(xpath)} was made visible and clicked`);
+            this.logger.debug(`Element ${utils.logXpath(xpath)} was made visible and clicked`);
         }
 
         await this.makeScreenshot();
@@ -360,41 +379,41 @@ export class WebApplication extends PluggableModule {
     public async getText(xpath, trim = true, timeout = WAIT_TIMEOUT) {
         const logXpath = utils.logXpath(xpath);
 
-        loggerClient.debug(`[web-application] Get text from ${logXpath}`);
+        this.logger.debug(`Get text from ${logXpath}`);
 
         await this.waitForExist(xpath, timeout);
 
         const text = (await this.getTextsInternal(xpath, trim)).join(' ');
 
-        loggerClient.debug(`[web-application] Get text from ${logXpath} returns "${text}"`);
+        this.logger.debug(`Get text from ${logXpath} returns "${text}"`);
 
         return text;
     }
 
     public async getTooltipText(xpath, timeout = WAIT_TIMEOUT) {
         let logXpath = utils.logXpath(xpath);
-        loggerClient.debug(`[web-application] Get tooltip text from ${logXpath}`);
+        this.logger.debug(`Get tooltip text from ${logXpath}`);
         await this.waitForExist(xpath, timeout, true);
 
         let text = (await this.getTextsInternal(xpath, true)).join(' ');
 
-        loggerClient.debug(`[web-application] Get tooltip text from ${logXpath} returns "${text}"`);
+        this.logger.debug(`Get tooltip text from ${logXpath} returns "${text}"`);
         return text;
     }
 
     public async getTexts(xpath, trim = true, timeout = WAIT_TIMEOUT) {
         let logXpath = utils.logXpath(xpath);
-        loggerClient.debug(`[web-application] Get texts from ${logXpath}`);
+        this.logger.debug(`Get texts from ${logXpath}`);
         await this.waitForExist(xpath, timeout);
 
         let texts = await this.getTextsInternal(xpath, trim);
 
-        loggerClient.debug(`[web-application] Get texts from ${logXpath} returns "${texts.join('\n')}"`);
+        this.logger.debug(`Get texts from ${logXpath} returns "${texts.join('\n')}"`);
         return texts;
     }
 
     public async getOptionsProperty(xpath, prop, timeout = WAIT_TIMEOUT) {
-        loggerClient.debug(`[web-application] Get options ${prop} ${utils.logXpath(xpath)}`);
+        this.logger.debug(`Get options ${prop} ${utils.logXpath(xpath)}`);
         await this.waitForExist(xpath, timeout);
 
         xpath = this.normalizeSelector(xpath);
@@ -469,7 +488,7 @@ export class WebApplication extends PluggableModule {
         const logXpath = utils.logXpath(xpath);
         const errorMessage = `Could not select by index "${value}": ${logXpath}`;
 
-        loggerClient.debug(`[web-application] Select by index ${logXpath} ${value}`);
+        this.logger.debug(`Select by index ${logXpath} ${value}`);
 
         xpath = this.normalizeSelector(xpath);
 
@@ -487,7 +506,7 @@ export class WebApplication extends PluggableModule {
         const logXpath = utils.logXpath(xpath);
         const errorMessage = `Could not select by name "${value}": ${logXpath}`;
 
-        loggerClient.debug(`[web-application] Select by name ${logXpath} ${value}`);
+        this.logger.debug(`Select by name ${logXpath} ${value}`);
 
         xpath = this.normalizeSelector(xpath);
 
@@ -505,7 +524,7 @@ export class WebApplication extends PluggableModule {
         const logXpath = utils.logXpath(xpath);
         const errorMessage = `Could not select by value "${value}": ${logXpath}`;
 
-        loggerClient.debug(`[web-application] Select by value ${logXpath} ${value}`);
+        this.logger.debug(`Select by value ${logXpath} ${value}`);
 
         xpath = this.normalizeSelector(xpath);
 
@@ -523,7 +542,7 @@ export class WebApplication extends PluggableModule {
         const logXpath = utils.logXpath(xpath);
         const errorMessage = `Could not select by visible text "${value}": ${logXpath}`;
 
-        loggerClient.debug(`[web-application] Select by visible text ${logXpath} ${value}`);
+        this.logger.debug(`Select by visible text ${logXpath} ${value}`);
 
         xpath = this.normalizeSelector(xpath);
 
@@ -538,7 +557,7 @@ export class WebApplication extends PluggableModule {
     }
 
     async getSelectedText(xpath, timeout = WAIT_TIMEOUT) {
-        loggerClient.debug(`[web-application] Get selected text ${utils.logXpath(xpath)}`);
+        this.logger.debug(`Get selected text ${utils.logXpath(xpath)}`);
 
         xpath = this.normalizeSelector(xpath);
 
@@ -581,7 +600,7 @@ export class WebApplication extends PluggableModule {
     }
 
     async isChecked(xpath) {
-        loggerClient.debug(`[web-application] Is checked/selected ${utils.logXpath(xpath)}`);
+        this.logger.debug(`Is checked/selected ${utils.logXpath(xpath)}`);
 
         xpath = this.normalizeSelector(xpath);
 
@@ -597,7 +616,7 @@ export class WebApplication extends PluggableModule {
     }
 
     async setChecked(xpath, checked = true) {
-        loggerClient.debug(`[web-application] Set checked ${utils.logXpath(xpath)} ${!!checked}`);
+        this.logger.debug(`Set checked ${utils.logXpath(xpath)} ${!!checked}`);
 
         xpath = this.normalizeSelector(xpath);
 
@@ -611,7 +630,7 @@ export class WebApplication extends PluggableModule {
     }
 
     async isDisabled(xpath) {
-        loggerClient.debug(`[web-application] Is disabled ${utils.logXpath(xpath)}`);
+        this.logger.debug(`Is disabled ${utils.logXpath(xpath)}`);
 
         xpath = this.normalizeSelector(xpath);
 
@@ -634,7 +653,7 @@ export class WebApplication extends PluggableModule {
             'textarea'
         ];
 
-        loggerClient.debug(`[web-application] Is read only ${logXpath}`);
+        this.logger.debug(`Is read only ${logXpath}`);
 
         xpath = this.normalizeSelector(xpath);
 
@@ -665,7 +684,7 @@ export class WebApplication extends PluggableModule {
             await this.client.windowHandleMaximize();
             return true;
         } catch (e) {
-            loggerClient.error(`[web-application] failed to maxmize window, ${e}`);
+            this.logger.error(`failed to maxmize window, ${e}`);
             return false;
         }
     }
@@ -673,7 +692,7 @@ export class WebApplication extends PluggableModule {
     public async isVisible(xpath, timeout = WAIT_TIMEOUT) {
         const logXpath = utils.logXpath(xpath);
 
-        loggerClient.debug(`[web-application] Is visible ${logXpath}`);
+        this.logger.debug(`Is visible ${logXpath}`);
 
         await this.waitForExist('', 0);
 
@@ -684,19 +703,19 @@ export class WebApplication extends PluggableModule {
 
     public async rootlessIsVisible(xpath) {
         let logXpath = utils.logXpath(xpath);
-        loggerClient.debug(`[web-application] Is visible ${logXpath}`);
+        this.logger.debug(`Is visible ${logXpath}`);
         xpath = this.normalizeSelector(xpath);
         return this.client.isVisible(xpath);
     }
 
     public async rootlessWaitForVisible(xpath) {
-        loggerClient.debug(`[web-application] Is visible ${utils.logXpath(xpath)}`);
+        this.logger.debug(`Is visible ${utils.logXpath(xpath)}`);
 
         return this.client.waitForVisible(this.normalizeSelector(xpath), 0);
     }
 
     public async getAttribute(xpath, attr, timeout = WAIT_TIMEOUT) {
-        loggerClient.debug(`[web-application] Get attribute ${attr} from ${utils.logXpath(xpath)}`);
+        this.logger.debug(`Get attribute ${attr} from ${utils.logXpath(xpath)}`);
 
         xpath = this.normalizeSelector(xpath);
 
@@ -706,7 +725,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async isEnabled(xpath) {
-        loggerClient.debug(`[web-application] Get attributes 'enabled' from ${utils.logXpath(xpath)}`);
+        this.logger.debug(`Get attributes 'enabled' from ${utils.logXpath(xpath)}`);
         await this.waitForExist(xpath);
 
         xpath = this.normalizeSelector(xpath);
@@ -721,7 +740,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async moveToObject(xpath, x, y) {
-        loggerClient.debug(`[web-application] Move cursor to ${utils.logXpath(xpath)}`);
+        this.logger.debug(`Move cursor to ${utils.logXpath(xpath)}`);
 
         await this.waitForExist(xpath);
 
@@ -730,7 +749,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async scroll(xpath, x, y) {
-        loggerClient.debug(`[web-application] Scroll ${utils.logXpath(xpath)}`);
+        this.logger.debug(`Scroll ${utils.logXpath(xpath)}`);
 
         await this.waitForExist(xpath);
 
@@ -743,16 +762,16 @@ export class WebApplication extends PluggableModule {
         await this.waitForExist(xpathSource);
         await this.waitForExist(xpathDestination);
 
-        loggerClient.debug(`[web-application] dragAndDrop ${utils.logXpath(xpathSource)} to ${utils.logXpath(xpathDestination)}`);
-        
+        this.logger.debug(`dragAndDrop ${utils.logXpath(xpathSource)} to ${utils.logXpath(xpathDestination)}`);
+
         xpathSource = this.normalizeSelector(xpathSource);
         xpathDestination = this.normalizeSelector(xpathDestination);
-        
+
         return this.client.dragAndDrop(xpathSource, xpathDestination);
     }
 
     public elements(xpath) {
-        loggerClient.debug(`[web-application] elements ${utils.logXpath(xpath)}`);
+        this.logger.debug(`elements ${utils.logXpath(xpath)}`);
 
         return this.client.elements(
             this.normalizeSelector(xpath)
@@ -760,7 +779,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async getElementsCount(xpath) {
-        loggerClient.debug(`[web-application] Get elements count ${utils.logXpath(xpath)}`);
+        this.logger.debug(`Get elements count ${utils.logXpath(xpath)}`);
 
         await this.waitForExist(''); //root element xpath
 
@@ -840,7 +859,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async getHTML(xpath) {
-        loggerClient.debug(`[web-application] Get HTML from ${utils.logXpath(xpath)}`);
+        this.logger.debug(`Get HTML from ${utils.logXpath(xpath)}`);
         await this.waitForExist(xpath, 0);
 
         xpath = this.normalizeSelector(xpath);
@@ -866,7 +885,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async setActiveTab(tabId) {
-        loggerClient.debug(`[web-application] Switching to tab ${tabId}`);
+        this.logger.debug(`Switching to tab ${tabId}`);
 
         await this.switchTab(tabId);
         await this.window(tabId);
@@ -928,7 +947,7 @@ export class WebApplication extends PluggableModule {
 
         for (const item of elements) {
             const response: any = await this.client.elementIdText(item.ELEMENT);
-            
+
             if (trim) {
                 result.push(response.trim());
             } else {
@@ -944,7 +963,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public pause(timeout) {
-        loggerClient.verbose(`[web-application] delay for ${timeout}ms`);
+        this.logger.verbose(`delay for ${timeout}ms`);
 
         return new Promise(resolve => setTimeout(resolve, timeout));
     }
@@ -954,7 +973,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async clearElement(xpath) {
-        loggerClient.debug(`[web-application] Clear element ${utils.logXpath(xpath)}`);
+        this.logger.debug(`Clear element ${utils.logXpath(xpath)}`);
 
         await this.waitForExist(xpath);
 
@@ -963,7 +982,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public keys(value) {
-        loggerClient.debug(`[web-application] Send keys ${value}`);
+        this.logger.debug(`Send keys ${value}`);
 
         return this.client.keys(value);
     }
@@ -981,7 +1000,7 @@ export class WebApplication extends PluggableModule {
         const screenDate = new Date();
         const formattedDate = (`${screenDate.toLocaleTimeString()} ${screenDate.toDateString()}`).replace(/\s+/g, '_');
 
-        loggerClient.media(
+        this.logger.media(
             `${this.testUID}-${formattedDate}-${nanoid(5)}.png`,
             screenshoot
         );
