@@ -45,7 +45,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public get client(): WebClient {
-        // TODO lazy decorator?
+        // TODO (@flops) lazy decorator?
         if (this._client) {
             return this._client;
         }
