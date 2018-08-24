@@ -7,7 +7,7 @@ export interface ILogEntity {
     content: Array<any>;
     stepUid?: string;
     parentStep: string | null;
-    logEnvironment?: any;
+    prefix?: string;
 }
 
 export interface ILogMeta {

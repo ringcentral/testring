@@ -8,7 +8,7 @@ import {
     LogTypes
 } from '@testring/types';
 
-const HAS_EMOJI_SUPPORT = process.stdout.isTTY && process.platform === 'darwin';
+const HAS_EMOJI_SUPPORT: boolean = !!(process.stdout.isTTY && process.platform === 'darwin');
 
 const textTemplate = (logLevel: LogLevel) => `[${logLevel}]`.padEnd(9);
 
@@ -34,10 +34,10 @@ const emojiTemplate = (logLevel: LogLevel) => {
     }
 };
 
-const formatLogLevel = (logLevel: LogLevel): string => {
-    const template = HAS_EMOJI_SUPPORT ?
-        emojiTemplate(logLevel) :
-        textTemplate(logLevel);
+const formatLogLevel = (logLevel: LogLevel, emojiSupport: boolean): string => {
+    const template = emojiSupport
+        ? emojiTemplate(logLevel)
+        : textTemplate(logLevel);
 
     switch (logLevel) {
         case LogLevel.info:
@@ -63,27 +63,31 @@ const formatLogLevel = (logLevel: LogLevel): string => {
 const formatTime = (time: Date) => chalk.grey(`${time.toLocaleTimeString()}`);
 
 export const formatLog = (
-    logEntity: ILogEntity
+    logEntity: ILogEntity,
+    emojiSupport: boolean = HAS_EMOJI_SUPPORT,
 ): string => {
-    const formattedPrefix = `${formatTime(logEntity.time)} | ${formatLogLevel(logEntity.logLevel)}`;
+    const formattedPrefix = `${formatTime(logEntity.time)} | ${formatLogLevel(logEntity.logLevel, emojiSupport)}`;
+    let prefixes = logEntity.prefix ? [logEntity.prefix] : [];
 
     switch (logEntity.type) {
         case LogTypes.media: {
             const filename = logEntity.content[0];
             const media = logEntity.content[1];
+            prefixes.push('[media]');
 
             return util.format(
-                formattedPrefix, '[media]',
+                formattedPrefix, ...prefixes,
                 `Filename: ${filename};`,
                 `Size: ${bytes.format(media ? media.length : 0)};`
             );
         }
 
         case LogTypes.step: {
-            return util.format(formattedPrefix, '[step]', ...logEntity.content);
+            prefixes.push('[step]');
+            return util.format(formattedPrefix, ...prefixes, ...logEntity.content);
         }
 
         default:
-            return util.format(formattedPrefix, ...logEntity.content);
+            return util.format(formattedPrefix, ...prefixes, ...logEntity.content);
     }
 };
