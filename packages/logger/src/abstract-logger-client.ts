@@ -99,6 +99,10 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
         this.createLog(LogTypes.info, LogLevel.info, args);
     }
 
+    public success(...args): void {
+        this.createLog(LogTypes.success, LogLevel.info, args);
+    }
+
     public warn(...args): void {
         this.createLog(LogTypes.warning, LogLevel.warning, args);
     }

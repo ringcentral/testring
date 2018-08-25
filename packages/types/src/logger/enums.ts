@@ -6,6 +6,7 @@ export const enum LogTypes {
     debug = 'debug',
     step = 'step',
     media = 'media',
+    success = 'success',
 }
 
 export const enum LogLevel {
