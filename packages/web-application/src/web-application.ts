@@ -15,9 +15,9 @@ const WAIT_TIMEOUT = 30000;
 const TICK_TIMEOUT = 100;
 
 export class WebApplication extends PluggableModule {
-    private _logger: LoggerClient | null = null;
+    protected _logger: LoggerClient | null = null;
 
-    private _client: WebClient | null = null;
+    protected _client: WebClient | null = null;
 
     private mainTabID = 1;
 
@@ -27,7 +27,7 @@ export class WebApplication extends PluggableModule {
 
     public root = createElementPath();
 
-    constructor(private testUID: string, private transport: ITransport) {
+    constructor(private testUID: string, protected transport: ITransport) {
         super();
     }
 
