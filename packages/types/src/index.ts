@@ -38,4 +38,6 @@ export * from './recorder';
 
 export * from './dependencies-builder';
 
+export * from './utils';
+
 export * from './web-application';
