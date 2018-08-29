@@ -61,10 +61,7 @@ export class WebApplication extends PluggableModule {
             return this._logger;
         }
 
-        this._logger = new LoggerClient(
-            this.transport,
-            '[web-application]',
-        );
+        this._logger = new LoggerClient(this.transport, '[web-application]');
 
         return this._logger;
     }

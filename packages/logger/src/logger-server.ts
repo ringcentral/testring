@@ -47,10 +47,6 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
         this.transportInstance.on(LoggerMessageTypes.REPORT, (entry: ILogEntity, processID?: string) => {
             this.log(entry, processID);
         });
-
-        this.transportInstance.on(LoggerMessageTypes.REPORT_BATCH, (batch: Array<ILogEntity>, processID?: string) => {
-            batch.forEach((entry) => this.log(entry, processID));
-        });
     }
 
     private async runQueue(retry: number = this.numberOfRetries): Promise<void> {
@@ -85,24 +81,25 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
         }
     }
 
-    private log(entry: ILogEntity, processID?: string): void {
+    private log(logEntity: ILogEntity, processID?: string): void {
         // fast checking aliases
         if (this.config.silent) {
             return;
         }
 
         // filtering by log level
-        if (LogLevelNumeric[entry.logLevel] < LogLevelNumeric[this.config.logLevel]) {
+        if (LogLevelNumeric[logEntity.logLevel] < LogLevelNumeric[this.config.logLevel]) {
             return;
         }
 
         const shouldRun = this.queue.length === 0;
-        const formattedMessage = formatLog(entry);
+        const formattedMessage = formatLog(logEntity);
+        const meta = processID ? { processID } : {};
 
         this.stdout.write(`${formattedMessage}\n`);
         this.queue.push({
-            logEntity: entry,
-            meta: processID ? { processID } : {},
+            logEntity,
+            meta,
         });
 
         if (shouldRun) {

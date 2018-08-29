@@ -2,8 +2,10 @@
 
 import * as chai from 'chai';
 import * as sinon from 'sinon';
+
 import { TransportMock } from '@testring/test-utils';
 import { LoggerMessageTypes, LogTypes } from '@testring/types';
+
 import { LoggerClient } from '../src/logger-client';
 import { report } from './fixtures/constants';
 
@@ -20,8 +22,15 @@ describe('Logger client', () => {
         loggerClient.warn(...report);
         loggerClient.error(...report);
         loggerClient.debug(...report);
+        loggerClient.success(...report);
+        loggerClient.verbose(...report);
+        loggerClient.media('filename', Buffer.from('file'));
 
-        chai.expect(spy.callCount).to.be.equal(5);
+        chai.expect(spy.callCount).to.be.equal(8);
+
+        for (let i = 0, len = spy.callCount; i < len; i++) {
+            chai.expect(spy.getCall(i).args[0].prefix).to.be.equal(null);
+        }
     });
 
     it('should broadcast messages log, info, warn, error and debug with prefix', () => {
@@ -36,253 +45,132 @@ describe('Logger client', () => {
         loggerClient.warn(...report);
         loggerClient.error(...report);
         loggerClient.debug(...report);
+        loggerClient.success(...report);
+        loggerClient.verbose(...report);
+        loggerClient.media('filename', Buffer.from('file'));
 
-        chai.expect(spy.callCount).to.be.equal(5);
+        chai.expect(spy.callCount).to.be.equal(8);
 
-        for (let i = 0, len = 5; i < len; i++) {
+        for (let i = 0, len = spy.callCount; i < len; i++) {
             chai.expect(spy.getCall(i).args[0].prefix).to.be.equal(PREFIX);
         }
     });
 
-    it('should batch log reports when step started, and broadcast them to server when step finished', () => {
+    it('should broadcast messages log, info, warn, error and debug from generated logger', () => {
+        const PREFIX = 'addingPrefix';
         const spy = sinon.spy();
         const transport = new TransportMock();
-        const loggerClient = new LoggerClient(transport);
-        const message = 'test step';
+        const loggerParent = new LoggerClient(transport);
+        const loggerClient = loggerParent.getLogger(PREFIX);
 
-        transport.on(LoggerMessageTypes.REPORT_BATCH, spy);
+        transport.on(LoggerMessageTypes.REPORT, spy);
+        loggerClient.log(...report);
+        loggerClient.info(...report);
+        loggerClient.warn(...report);
+        loggerClient.error(...report);
+        loggerClient.debug(...report);
+        loggerClient.success(...report);
+        loggerClient.verbose(...report);
 
-        loggerClient.step(message, () => {
-            loggerClient.log('foo');
-            loggerClient.log('bar');
+        chai.expect(spy.callCount).to.be.equal(7);
+
+        for (let i = 0, len = spy.callCount; i < len; i++) {
+            chai.expect(spy.getCall(i).args[0].prefix).to.be.equal(PREFIX);
+        }
+    });
+
+    it('should broadcast messages log, info, warn, error and debug from generated logger saving prefix', () => {
+        const PREFIX = 'savingPrefix';
+        const spy = sinon.spy();
+        const transport = new TransportMock();
+        const loggerParent = new LoggerClient(transport, PREFIX);
+        const loggerClient = loggerParent.getLogger();
+
+        transport.on(LoggerMessageTypes.REPORT, spy);
+        loggerClient.log(...report);
+        loggerClient.info(...report);
+        loggerClient.warn(...report);
+        loggerClient.error(...report);
+        loggerClient.debug(...report);
+        loggerClient.success(...report);
+        loggerClient.verbose(...report);
+
+        chai.expect(spy.callCount).to.be.equal(7);
+
+        for (let i = 0, len = spy.callCount; i < len; i++) {
+            chai.expect(spy.getCall(i).args[0].prefix).to.be.equal(PREFIX);
+        }
+    });
+
+    it('should broadcast messages from different instances but with saving levels', async () => {
+        const PREFIX = 'savingPrefixWithSteps';
+        const spy = sinon.spy();
+        const transport = new TransportMock();
+        const loggerParent = new LoggerClient(transport, PREFIX);
+        const loggerClient = loggerParent.getLogger();
+
+        transport.on(LoggerMessageTypes.REPORT, spy);
+
+        await loggerParent.step('start step', () => {
+            loggerClient.log(...report);
+            loggerParent.info(...report);
         });
 
-        const batch = spy.getCall(0).args[0];
+        loggerClient.warn(...report);
+        loggerParent.error(...report);
 
-        chai.expect(batch).to.be.an('array').with.length(3);
+        await loggerClient.step('start second step', async () => {
+            loggerClient.debug(...report);
+            loggerParent.verbose(...report);
+        });
 
-        chai.expect(batch[0]).to.deep.include({
+        chai.expect(spy.callCount).to.be.equal(8);
+
+        for (let i = 0, len = spy.callCount; i < len; i++) {
+            chai.expect(spy.getCall(i).args[0].prefix).to.be.equal(PREFIX);
+        }
+
+        chai.expect(spy.getCall(0).args[0]).to.deep.include({
+            content: ['start step'],
             type: LogTypes.step,
-            content: [message],
-            parentStep: null
+            parentStep: null,
         });
-
-        const { stepUid } = batch[0];
-
-        chai.expect(batch[1]).to.deep.include({
+        chai.expect(spy.getCall(1).args[0]).to.deep.include({
+            content: report,
             type: LogTypes.log,
-            content: ['foo'],
-            parentStep: stepUid
+            parentStep: spy.getCall(0).args[0].stepUid,
+        });
+        chai.expect(spy.getCall(2).args[0]).to.deep.include({
+            content: report,
+            type: LogTypes.info,
+            parentStep: spy.getCall(0).args[0].stepUid,
         });
 
-        chai.expect(batch[2]).to.deep.include({
-            type: LogTypes.log,
-            content: ['bar'],
-            parentStep: stepUid
+        chai.expect(spy.getCall(3).args[0]).to.deep.include({
+            content: report,
+            type: LogTypes.warning,
+            parentStep: null,
         });
-    });
-
-    it('should wait for promise to resolve before end step', (callback) => {
-        const transport = new TransportMock();
-        const loggerClient = new LoggerClient(transport);
-        const message = 'test step';
-
-        transport.on(LoggerMessageTypes.REPORT_BATCH, (batch) => {
-            try {
-                chai.expect(batch).to.be.an('array').with.length(3);
-                callback();
-            } catch (e) {
-                callback(e);
-            }
+        chai.expect(spy.getCall(4).args[0]).to.deep.include({
+            content: report,
+            type: LogTypes.error,
+            parentStep: null,
         });
 
-        loggerClient.step(message, () => new Promise(
-            (resolve) => {
-                setTimeout(() => {
-                    resolve();
-                }, 100);
-            }
-        ));
-
-        loggerClient.log('foo');
-        loggerClient.log('bar');
-    });
-
-    it('should nest steps', (callback) => {
-        const transport = new TransportMock();
-        const loggerClient = new LoggerClient(transport);
-        const stepMessage1 = 'step 1';
-        const stepMessage2 = 'step 2';
-
-        transport.on(LoggerMessageTypes.REPORT_BATCH, (batch) => {
-            try {
-                chai.expect(batch).to.be.an('array').with.length(5);
-
-                chai.expect(batch[0]).to.deep.include({
-                    type: LogTypes.step,
-                    content: [stepMessage1],
-                    parentStep: null
-                });
-
-                const step1 = batch[0].stepUid;
-
-                chai.expect(batch[1]).to.deep.include({
-                    type: LogTypes.log,
-                    content: ['foo'],
-                    parentStep: step1
-                });
-
-                chai.expect(batch[2]).to.deep.include({
-                    type: LogTypes.step,
-                    content: [stepMessage2],
-                    parentStep: step1
-                });
-
-                const step2 = batch[2].stepUid;
-
-                chai.expect(batch[3]).to.deep.include({
-                    type: LogTypes.log,
-                    content: ['bar'],
-                    parentStep: step2
-                });
-
-                chai.expect(batch[4]).to.deep.include({
-                    type: LogTypes.log,
-                    content: ['baz'],
-                    parentStep: step1
-                });
-                callback();
-            } catch (e) {
-                callback(e);
-            }
+        chai.expect(spy.getCall(5).args[0]).to.deep.include({
+            content: ['start second step'],
+            type: LogTypes.step,
+            parentStep: null,
         });
-
-        loggerClient.step(stepMessage1, async () => {
-            loggerClient.log('foo');
-
-            loggerClient.step(stepMessage2, () => {
-                loggerClient.log('bar');
-            });
-
-            loggerClient.log('baz');
+        chai.expect(spy.getCall(6).args[0]).to.deep.include({
+            content: report,
+            type: LogTypes.debug,
+            parentStep: spy.getCall(5).args[0].stepUid,
         });
-    });
-
-    it('should allow to start and stop steps manually', (callback) => {
-        const transport = new TransportMock();
-        const loggerClient = new LoggerClient(transport);
-
-        transport.on(LoggerMessageTypes.REPORT_BATCH, (batch) => {
-            try {
-                const step1 = batch[0].stepUid;
-                const step2 = batch[2].stepUid;
-
-                chai.expect(batch).to.be.an('array').with.length(4);
-
-                chai.expect(batch[0]).to.deep.include({
-                    type: LogTypes.step,
-                    content: ['step1'],
-                    parentStep: null
-                });
-
-                chai.expect(batch[1]).to.deep.include({
-                    type: LogTypes.log,
-                    content: ['foo'],
-                    parentStep: step1
-                });
-
-                chai.expect(batch[2]).to.deep.include({
-                    type: LogTypes.step,
-                    content: ['step2'],
-                    parentStep: step1
-                });
-
-                chai.expect(batch[3]).to.deep.include({
-                    type: LogTypes.log,
-                    content: ['baz'],
-                    parentStep: step2
-                });
-                callback();
-            } catch (e) {
-                callback(e);
-            }
-        });
-
-        loggerClient.startStep('step1');
-        loggerClient.log('foo');
-        loggerClient.startStep('step2');
-        loggerClient.log('baz');
-        loggerClient.endStep('step1');
-    });
-
-    it('should nest manually started steps', (callback) => {
-        const transport = new TransportMock();
-        const loggerClient = new LoggerClient(transport);
-
-        transport.on(LoggerMessageTypes.REPORT_BATCH, (batch) => {
-            try {
-                chai.expect(batch).to.be.an('array').with.length(5);
-
-                chai.expect(batch[0]).to.deep.include({
-                    type: LogTypes.step,
-                    content: ['step1'],
-                    parentStep: null
-                });
-
-                const step1 = batch[0].stepUid;
-
-                chai.expect(batch[1]).to.deep.include({
-                    type: LogTypes.log,
-                    content: ['foo'],
-                    parentStep: step1
-                });
-
-                chai.expect(batch[2]).to.deep.include({
-                    type: LogTypes.step,
-                    content: ['step2'],
-                    parentStep: step1
-                });
-
-                const step2 = batch[2].stepUid;
-
-                chai.expect(batch[3]).to.deep.include({
-                    type: LogTypes.log,
-                    content: ['bar'],
-                    parentStep: step2
-                });
-
-                chai.expect(batch[4]).to.deep.include({
-                    type: LogTypes.log,
-                    content: ['baz'],
-                    parentStep: step1
-                });
-                callback();
-            } catch (e) {
-                callback(e);
-            }
-        });
-
-        loggerClient.startStep('step1');
-        loggerClient.log('foo');
-        loggerClient.startStep('step2');
-        loggerClient.log('bar');
-        loggerClient.endStep();
-        loggerClient.log('baz');
-        loggerClient.endStep();
-    });
-
-    it('should not try to send log batch if endStep was invoked when step stack is empty', (callback) => {
-        const transport = new TransportMock();
-        const loggerClient = new LoggerClient(transport);
-
-        transport.on(LoggerMessageTypes.REPORT_BATCH, () => {
-            callback(new Error('batch was sent'));
-        });
-
-        loggerClient.endStep();
-
-        setImmediate(() => {
-            callback();
+        chai.expect(spy.getCall(7).args[0]).to.deep.include({
+            content: report,
+            type: LogTypes.debug,
+            parentStep: spy.getCall(5).args[0].stepUid,
         });
     });
 });

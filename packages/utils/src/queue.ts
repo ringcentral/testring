@@ -1,4 +1,6 @@
-export class Queue<T> {
+import { IQueue } from '@testring/types';
+
+export class Queue<T> implements IQueue<T> {
     private array: Array<T>;
 
     constructor(initialArray?: Array<T>) {

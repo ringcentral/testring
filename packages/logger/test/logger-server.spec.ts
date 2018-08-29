@@ -53,7 +53,7 @@ describe('Logger Server', () => {
         };
 
         if (beforeLog && onLog) {
-            beforeLog.writeHook('testPlugin', async (entryBeforeTransform) => {
+            beforeLog.writeHook('testPlugin', (entryBeforeTransform) => {
                 chai.expect(entryBeforeTransform).to.be.deep.equal(LOG_ENTITY);
 
                 return alteredEntry;
@@ -171,30 +171,6 @@ describe('Logger Server', () => {
 
         transport.broadcast(LoggerMessageTypes.REPORT, LOG_ENTITY); // this one should fail
         transport.broadcast(LoggerMessageTypes.REPORT, successEntry); // this one should succeed
-    });
-
-    it('should accept batch reports from logger clients, and pass individual entries to queue', (callback) => {
-        const spy = sinon.spy();
-        const transport = new TransportMock();
-        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout);
-        const onLog = loggerServer.getHook(LoggerPlugins.onLog);
-
-        if (onLog) {
-            onLog.readHook('testPlugin', () => {
-                spy();
-
-                if (spy.callCount === 5) {
-                    callback();
-                } else if (spy.callCount > 5) {
-                    callback(`hook called ${spy.callCount} times`);
-                }
-            });
-        }
-
-        transport.broadcast(LoggerMessageTypes.REPORT_BATCH, [
-            LOG_ENTITY, LOG_ENTITY, LOG_ENTITY, LOG_ENTITY, LOG_ENTITY
-        ]);
     });
 
     it('should not call onLog hook if config.silent is true', (callback) => {

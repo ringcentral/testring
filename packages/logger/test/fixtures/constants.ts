@@ -7,5 +7,7 @@ export const LOG_ENTITY: ILogEntity = {
     time: new Date(),
     logLevel: LogLevel.verbose,
     content: ['foo', 'bar'],
-    parentStep: null
+    parentStep: null,
+    stepUid: null,
+    prefix: null,
 };
