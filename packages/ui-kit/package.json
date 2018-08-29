@@ -1,6 +1,6 @@
 {
   "name": "@testring/ui-kit",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "main": "./dist/index.bundle.js",
   "repository": {
     "type": "git",
