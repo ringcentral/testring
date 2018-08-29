@@ -20,7 +20,6 @@ export const enum LogLevel {
 
 export const enum LoggerMessageTypes {
     REPORT = 'logger/REPORT',
-    REPORT_BATCH = 'logger/REPORT_BATCH',
 }
 
 export const enum LogQueueStatus {

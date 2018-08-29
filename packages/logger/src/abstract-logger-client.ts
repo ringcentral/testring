@@ -1,6 +1,13 @@
 import { Stack } from '@testring/utils';
 import { transport } from '@testring/transport';
-import { ILogEntity, ILoggerClient, ITransport, LoggerMessageTypes, LogLevel, LogTypes } from '@testring/types';
+import {
+    ILogEntity,
+    ILoggerClient,
+    ITransport,
+    LoggerMessageTypes,
+    LogLevel,
+    LogTypes,
+} from '@testring/types';
 
 const nanoid = require('nanoid');
 
@@ -14,18 +21,18 @@ const decomposeStepName = (stepID: string): string => {
     return stepID.split(STEP_NAME_SEPARATOR)[0];
 };
 
-export abstract class AbstractLoggerClient implements ILoggerClient {
+type LoggerStack = Stack<string>;
+type AbstractLoggerType = ILoggerClient<ITransport, string | null, LoggerStack>;
+
+export abstract class AbstractLoggerClient implements AbstractLoggerType {
     constructor(
         protected transportInstance: ITransport = transport,
-        protected prefix: string = '',
+        protected prefix: string | null = null,
+        protected stepStack: LoggerStack = new Stack(),
     ) {
     }
 
     protected abstract broadcast(messageType: string, payload: any): void;
-
-    protected stepStack: Stack<string> = new Stack();
-
-    protected logBatch: Array<ILogEntity> = [];
 
     protected getCurrentStep(): string | null {
         return this.stepStack.getLastElement();
@@ -46,13 +53,13 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
 
         const stepUid = logType === LogTypes.step && currentStep
             ? currentStep
-            : undefined;
+            : null;
 
         const parentStep = logType === LogTypes.step
             ? previousStep
             : currentStep;
 
-        const prefix = this.prefix || undefined;
+        const prefix = this.prefix || null;
 
         return {
             time,
@@ -72,23 +79,10 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
     ): void {
         const logEntry = this.buildEntry(type, content, logLevel);
 
-        if (this.getCurrentStep()) {
-            this.logBatch.push(logEntry);
-        } else {
-            this.broadcast(
-                LoggerMessageTypes.REPORT,
-                logEntry
-            );
-        }
-    }
-
-    protected sendBatchedLog(): void {
         this.broadcast(
-            LoggerMessageTypes.REPORT_BATCH,
-            this.logBatch
+            LoggerMessageTypes.REPORT,
+            logEntry
         );
-
-        this.logBatch = [];
     }
 
     public log(...args): void {
@@ -153,10 +147,6 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
                 }
             }
         }
-
-        if (stepID && this.stepStack.length === 0) {
-            this.sendBatchedLog();
-        }
     }
 
     public async step(message: string, callback: () => any): Promise<void> {
@@ -169,5 +159,9 @@ export abstract class AbstractLoggerClient implements ILoggerClient {
         }
 
         this.endStep(message);
+    }
+
+    public getLogger(prefix: string | null = this.prefix, stepStack: LoggerStack = this.stepStack) {
+        return new (this.constructor as any)(this.transportInstance, prefix, stepStack) as this;
     }
 }

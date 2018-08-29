@@ -1,13 +1,17 @@
-import { LogTypes, LogLevel, LogQueueStatus } from './enums';
+import {
+    LogTypes,
+    LogLevel,
+    LogQueueStatus
+} from './enums';
 
 export interface ILogEntity {
     time: Date;
     type: LogTypes;
     logLevel: LogLevel;
     content: Array<any>;
-    stepUid?: string;
+    stepUid: string | null;
     parentStep: string | null;
-    prefix?: string;
+    prefix: string | null;
 }
 
 export interface ILogMeta {
@@ -23,7 +27,7 @@ export interface ILoggerServer {
     getQueueStatus(): LogQueueStatus;
 }
 
-export interface ILoggerClient {
+export interface ILoggerClient<Transport, Prefix, Stack> {
     log(...args): void;
 
     info(...args): void;
@@ -43,4 +47,6 @@ export interface ILoggerClient {
     startStep(message: string): void;
 
     endStep(): void;
+
+    getLogger(prefix?: Prefix, stepStack?: Stack): ILoggerClient<Transport, Prefix, Stack>;
 }

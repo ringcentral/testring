@@ -5,7 +5,7 @@ export interface IStack<T> {
 
     clean(): void;
 
-    getLastElement(): T | null;
+    getLastElement(offset?: number): T | null;
 
     length: number;
 }
@@ -18,7 +18,7 @@ export interface IQueue<T> {
 
     clean(): void;
 
-    getFirstElement(offset: number): T | null;
+    getFirstElement(offset?: number): T | null;
 
     length: number;
 }
