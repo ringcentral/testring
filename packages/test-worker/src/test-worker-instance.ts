@@ -138,6 +138,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             parameters,
             envParameters
         });
+        //await this.kill();
     }
 
     private async compileSource(source: string, filename: string): Promise<string> {

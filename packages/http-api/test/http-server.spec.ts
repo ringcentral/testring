@@ -7,7 +7,7 @@ import { HttpServer } from '../src/http-server';
 
 const DEFAULT_CONFIG: any = { httpThrottle: 0 };
 
-// TODO add tests for cookies
+// TODO (flops) add tests for cookies and hooks
 
 describe('HttpServer', () => {
     it('Should get data from broadcast', (callback) => {
@@ -29,9 +29,12 @@ describe('HttpServer', () => {
         });
 
         transport.on(HttpMessageType.response, (response) => {
-            chai.expect(response.response).to.be.equal(responseMock);
-
-            callback();
+            try {
+                chai.expect(response.response).to.be.equal(responseMock);
+                callback();
+            } catch (err) {
+                callback(err);
+            }
         });
 
         transport.broadcast(HttpMessageType.send, {
@@ -47,8 +50,12 @@ describe('HttpServer', () => {
         new HttpServer(transport, DEFAULT_CONFIG, rp as any);
 
         transport.on(HttpMessageType.reject, (response) => {
-            chai.expect(response.error).to.be.instanceOf(Error);
-            callback();
+            try {
+                chai.expect(response.error).to.be.instanceOf(Error);
+                callback();
+            } catch (err) {
+                callback(err);
+            }
         });
 
         transport.on(HttpMessageType.response, (response) => {
@@ -69,20 +76,96 @@ describe('HttpServer', () => {
         new HttpServer(transport, DEFAULT_CONFIG, rp as any);
 
         transport.on(HttpMessageType.reject, (response) => {
-            chai.expect(response.error).to.be.instanceOf(Error);
-            callback();
+            try {
+                chai.expect(response.error).to.be.instanceOf(Error);
+                callback();
+            } catch (err) {
+                callback(err);
+            }
         });
 
         transport.on(HttpMessageType.response, (response) => {
-            if (response.status > 400) {
-                callback('response error');
+            try {
+                chai.expect(response.status < 400, 'Response error').to.equal(true);
+            } catch (err) {
+                callback(err);
             }
+
             callback(`request complete somehow ${response}`);
         });
 
         transport.broadcast(HttpMessageType.send, {
             uid: 'test',
             request: {}
+        });
+    });
+
+    it('Should finish queued requests', (callback) => {
+        const responseMock: IHttpResponse = {
+            statusCode: 200,
+            statusMessage: '',
+            body: null,
+            headers: {},
+            cookies: []
+        };
+        const transport = new TransportMock();
+
+
+        const rp = (request) => {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    switch (request.url) {
+                        case 'test1':
+                            reject(new Error('rejected'));
+                            break;
+                        case 'test2':
+                            resolve(responseMock);
+                            break;
+                        default:
+                            callback('Invalid request call');
+                    }
+                }, 200);
+            });
+        };
+
+        let responseId = 0;
+        const spy = (...args) => {
+            try {
+                switch (responseId) {
+                    case 0:
+                        chai.expect(args[0].error).to.be.instanceOf(Error);
+                        break;
+                    case 1:
+                        chai.expect(args[0].response).to.be.deep.equal(responseMock);
+                        callback();
+                        break;
+                    default:
+                        throw new Error('Called to many times');
+                }
+            } catch (err) {
+                callback(err);
+            }
+
+            responseId++;
+        };
+
+        new HttpServer(transport, DEFAULT_CONFIG, rp as any);
+
+        transport.on(HttpMessageType.response, spy);
+        transport.on(HttpMessageType.reject, spy);
+
+        transport.broadcast(HttpMessageType.send, {
+            uid: 'uuid1',
+            request: {
+                url: 'test1',
+            }
+        });
+
+        transport.broadcast(HttpMessageType.send, {
+            uid: 'uuid2',
+            request: {
+                url: 'test2',
+            }
         });
     });
 });

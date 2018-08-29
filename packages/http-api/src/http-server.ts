@@ -1,6 +1,6 @@
 import { IHttpRequest, IHttpResponse } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
-import { loggerClientLocal } from '@testring/logger';
+import { LoggerClientLocal, loggerClientLocal } from '@testring/logger';
 import {
     IConfig,
     ITransport,
@@ -19,7 +19,10 @@ interface QueueRequest {
 type MakeRequest = (request: IHttpRequest) => Promise<IHttpResponse>;
 
 export class HttpServer extends PluggableModule {
+    private _logger: LoggerClientLocal | null = null;
+
     private queue: QueueRequest[] = [];
+
     private isBusy: boolean = false;
 
     constructor(
@@ -29,60 +32,77 @@ export class HttpServer extends PluggableModule {
     ) {
         super([
             HttpServerPlugins.beforeResponse,
-            HttpServerPlugins.beforeRequest
+            HttpServerPlugins.beforeRequest,
+            HttpServerPlugins.beforeError,
         ]);
         this.registerTransportListener();
     }
 
+    private get logger(): LoggerClientLocal {
+        if (this._logger) {
+            return this._logger;
+        }
 
-    private addToQueue(data, src): void {
+        this._logger = loggerClientLocal.getLogger('[http-server]');
+
+        return this._logger;
+    }
+
+
+    private addToQueue(data: IHttpRequestMessage, src: string): void {
         this.queue.push({
             data,
             src
         });
     }
 
-    private async makeRequest({ data, src }: QueueRequest): Promise<any> {
+    private async makeRequest(data, src): Promise<any> {
         let uid;
         try {
             uid = data.uid;
             const request = data.request;
-            loggerClientLocal.verbose(`[http server] Sending http request to ${request.url}`);
+            this.logger.verbose(`Sending http request to ${request.url}`);
 
             this.isBusy = true;
 
-            const requestAfterHook = await this.callHook(HttpServerPlugins.beforeRequest, request);
+            const requestAfterHook = await this.callHook(HttpServerPlugins.beforeRequest, request, data);
             const response = await this.request(requestAfterHook);
 
             if (response.statusCode >= 400) {
                 throw new Error(response.statusMessage);
             }
 
-            loggerClientLocal.verbose('[http server] Successful response');
+            this.logger.verbose(`Successful response form ${request.url}`);
 
-            const responseAfterHook = await this.callHook(HttpServerPlugins.beforeResponse, response);
+            const responseAfterHook = await this.callHook(HttpServerPlugins.beforeResponse, response, data);
 
-            this.send<IHttpResponseMessage>(src, HttpMessageType.response, {
+            await this.send<IHttpResponseMessage>(src, HttpMessageType.response, {
                 uid,
                 response: responseAfterHook
             });
             this.setTimer();
         } catch (error) {
-            this.send<IHttpResponseRejectMessage>(src, HttpMessageType.reject, {
+            const errorAfterHook = await this.callHook(HttpServerPlugins.beforeError, error, data);
+
+            await this.send<IHttpResponseRejectMessage>(src, HttpMessageType.reject, {
                 uid,
-                error
+                error: errorAfterHook
             });
 
-            loggerClientLocal.error(error);
+            this.logger.debug(errorAfterHook);
+            this.setTimer();
         }
     }
 
-    private send<T>(source: string | null, messageType: string, payload: T) {
-        if (source) {
-            this.transportInstance.send<T>(source, messageType, payload)
-                .catch((error) => loggerClientLocal.error(error));
-        } else {
-            this.transportInstance.broadcastLocal<T>(messageType, payload);
+    private async send<T>(source: string | null, messageType: string, payload: T) {
+        try {
+            if (source) {
+                await this.transportInstance.send<T>(source, messageType, payload);
+            } else {
+                this.transportInstance.broadcastLocal<T>(messageType, payload);
+            }
+        } catch (err) {
+            this.logger.debug(err);
         }
     }
 
@@ -92,7 +112,8 @@ export class HttpServer extends PluggableModule {
                 const request = this.queue.shift();
 
                 if (request) {
-                    this.makeRequest(request);
+                    const { data, src } = request;
+                    this.makeRequest(data, src);
                 }
             } else {
                 this.isBusy = false;
@@ -101,7 +122,7 @@ export class HttpServer extends PluggableModule {
     }
 
     private registerTransportListener(): void {
-        loggerClientLocal.debug(`Http server: Register listener for messages [type = ${HttpMessageType.send}]`);
+        this.logger.debug(`Http server: Register listener for messages [type = ${HttpMessageType.send}]`);
 
         this.transportInstance.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
 
@@ -109,7 +130,7 @@ export class HttpServer extends PluggableModule {
             if (this.isBusy) {
                 this.addToQueue(data, src);
             } else {
-                this.makeRequest({ data, src });
+                this.makeRequest(data, src);
             }
         });
     }
