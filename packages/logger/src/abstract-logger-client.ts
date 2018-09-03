@@ -196,13 +196,21 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
     public async step(message: string, callback: () => any, stepType?: LogStepTypes): Promise<void> {
         this.startStep(message, stepType);
 
+        let caughtError;
         const result = callback();
 
-        if (result && result.then && typeof result.then === 'function') {
-            await result;
+        try {
+            if (result && result.then && typeof result.then === 'function') {
+                await result;
+            }
+        } catch (err) {
+            caughtError = err;
         }
 
         this.endStep(message);
+        if (caughtError) {
+            throw caughtError;
+        }
     }
 
     public async stepLog(message: string, callback: () => any): Promise<void> {

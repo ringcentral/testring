@@ -155,6 +155,38 @@ describe('Logger client', () => {
         }
     });
 
+    it('should not be inherited', async () => {
+        const PREFIX = 'savingPrefix';
+        const spy = sinon.spy();
+        const transport = new TransportMock();
+        const loggerClient = new LoggerClient(transport, PREFIX);
+        transport.on(LoggerMessageTypes.REPORT, spy);
+
+        try {
+            await loggerClient.stepLog('log', async () => {
+                await loggerClient.stepInfo('info', async () => {
+                    throw TypeError('Preventing');
+                });
+            });
+        } catch (err) {
+            chai.expect(err).to.be.instanceOf(TypeError);
+            chai.expect(err.message).to.be.equal('Preventing');
+        }
+
+        loggerClient.log(...report);
+
+        chai.expect(spy.callCount).to.be.equal(3);
+
+        chai.expect(spy.getCall(0).args[0].parentStep).to.be.equal(null);
+        chai.expect(spy.getCall(1).args[0].parentStep).to.be.equal(spy.getCall(0).args[0].stepUid);
+        chai.expect(spy.getCall(2).args[0]).to.deep.include({
+            content: report,
+            type: LogTypes.log,
+            parentStep: null,
+        });
+    });
+
+
     it('should close one step by message', async () => {
         const PREFIX = 'savingPrefixWithSteps';
         const spy = sinon.spy();

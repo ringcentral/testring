@@ -6,7 +6,7 @@ import * as chai from 'chai';
 import { TransportMock } from '@testring/test-utils';
 import { LoggerMessageTypes, LogLevel, LogTypes, LoggerPlugins } from '@testring/types';
 import { LOG_ENTITY } from './fixtures/constants';
-import { voidLogger } from './fixtures/voidLogger';
+import { voidLogger } from './fixtures/void-logger';
 import { LoggerServer } from '../src/logger-server';
 
 const PROCESS_ID = 'testId';
