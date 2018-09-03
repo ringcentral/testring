@@ -71,7 +71,7 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
             await this.callHook(LoggerPlugins.onError, error, meta);
 
             if (retry > 0) {
-                this.queue.push({logEntity, meta});
+                this.queue.push({ logEntity, meta });
                 this.runQueue(retry - 1);
             } else if (this.shouldSkip) {
                 this.runQueue();

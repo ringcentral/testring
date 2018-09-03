@@ -102,6 +102,127 @@ describe('Logger client', () => {
         }
     });
 
+    it('should open multiple inherited steps with sync startStep', () => {
+        const PREFIX = 'savingPrefix';
+        const spy = sinon.spy();
+        const transport = new TransportMock();
+        const loggerClient = new LoggerClient(transport, PREFIX);
+        transport.on(LoggerMessageTypes.REPORT, spy);
+
+        loggerClient.startStepLog('log');
+        loggerClient.startStepInfo('info');
+        loggerClient.startStepDebug('debug');
+        loggerClient.startStepSuccess('success');
+        loggerClient.startStepWarning('warning');
+        loggerClient.startStepError('error');
+        loggerClient.log(...report);
+
+        chai.expect(spy.callCount).to.be.equal(7);
+
+        chai.expect(spy.getCall(0).args[0].parentStep).to.be.equal(null);
+        for (let i = 1, len = spy.callCount; i < len; i++) {
+            chai.expect(spy.getCall(i).args[0].parentStep).to.be.equal(spy.getCall(i-1).args[0].stepUid);
+        }
+    });
+
+
+    it('should open multiple inherited steps with async step', async () => {
+        const PREFIX = 'savingPrefix';
+        const spy = sinon.spy();
+        const transport = new TransportMock();
+        const loggerClient = new LoggerClient(transport, PREFIX);
+        transport.on(LoggerMessageTypes.REPORT, spy);
+
+        await loggerClient.stepLog('log', async () => {
+            await loggerClient.stepInfo('info', async () => {
+                await loggerClient.stepDebug('debug', async () => {
+                    await loggerClient.stepSuccess('success', async () => {
+                        await loggerClient.stepWarning('warning', async () => {
+                            await loggerClient.stepError('error', async () => {
+                                loggerClient.log(...report);
+                            });
+                        });
+                    });
+                });
+            });
+        });
+
+        chai.expect(spy.callCount).to.be.equal(7);
+
+        chai.expect(spy.getCall(0).args[0].parentStep).to.be.equal(null);
+        for (let i = 1, len = spy.callCount; i < len; i++) {
+            chai.expect(spy.getCall(i).args[0].parentStep).to.be.equal(spy.getCall(i-1).args[0].stepUid);
+        }
+    });
+
+    it('should close one step by message', async () => {
+        const PREFIX = 'savingPrefixWithSteps';
+        const spy = sinon.spy();
+        const transport = new TransportMock();
+        const loggerClient = new LoggerClient(transport, PREFIX);
+
+        transport.on(LoggerMessageTypes.REPORT, spy);
+
+        loggerClient.startStep('start1');
+        loggerClient.startStep('start2');
+        loggerClient.endStep('start2');
+        loggerClient.log(...report);
+
+        chai.expect(spy.callCount).to.be.equal(3);
+
+        chai.expect(spy.getCall(0).args[0]).to.deep.include({
+            content: ['start1'],
+            type: LogTypes.step,
+            parentStep: null,
+        });
+
+        chai.expect(spy.getCall(1).args[0]).to.deep.include({
+            content: ['start2'],
+            type: LogTypes.step,
+            parentStep: spy.getCall(0).args[0].stepUid,
+        });
+
+        chai.expect(spy.getCall(2).args[0]).to.deep.include({
+            content: report,
+            type: LogTypes.log,
+            parentStep: spy.getCall(0).args[0].stepUid,
+        });
+    });
+
+    it('should close started all steps', async () => {
+        const PREFIX = 'savingPrefixWithSteps';
+        const spy = sinon.spy();
+        const transport = new TransportMock();
+        const loggerClient = new LoggerClient(transport, PREFIX);
+
+        transport.on(LoggerMessageTypes.REPORT, spy);
+
+        loggerClient.startStep('start1');
+        loggerClient.startStep('start2');
+        loggerClient.endStep();
+        loggerClient.log(...report);
+
+        chai.expect(spy.callCount).to.be.equal(3);
+
+        chai.expect(spy.getCall(0).args[0]).to.deep.include({
+            content: ['start1'],
+            type: LogTypes.step,
+            parentStep: null,
+        });
+
+        chai.expect(spy.getCall(1).args[0]).to.deep.include({
+            content: ['start2'],
+            type: LogTypes.step,
+            parentStep: spy.getCall(0).args[0].stepUid,
+        });
+
+        chai.expect(spy.getCall(2).args[0]).to.deep.include({
+            content: report,
+            type: LogTypes.log,
+            parentStep: null,
+        });
+    });
+
     it('should broadcast messages from different instances but with saving levels', async () => {
         const PREFIX = 'savingPrefixWithSteps';
         const spy = sinon.spy();

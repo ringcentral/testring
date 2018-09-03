@@ -1,3 +1,12 @@
+export const enum LogStepTypes {
+    log = 'log',
+    info = 'info',
+    debug = 'debug',
+    warning = 'warning',
+    error = 'error',
+    success = 'success',
+}
+
 export const enum LogTypes {
     log = 'log',
     info = 'info',

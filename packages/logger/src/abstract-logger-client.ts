@@ -6,22 +6,18 @@ import {
     ITransport,
     LoggerMessageTypes,
     LogLevel,
+    LogStepTypes,
     LogTypes,
 } from '@testring/types';
 
 const nanoid = require('nanoid');
 
-const STEP_NAME_SEPARATOR = '| / || / || / |_';
 
-const composeStepName = (message: string): string => {
-    return `${message}${STEP_NAME_SEPARATOR}${nanoid()}`;
+type stepEntity = {
+    stepID: string;
+    message: string;
 };
-
-const decomposeStepName = (stepID: string): string => {
-    return stepID.split(STEP_NAME_SEPARATOR)[0];
-};
-
-type LoggerStack = Stack<string>;
+type LoggerStack = Stack<stepEntity>;
 type AbstractLoggerType = ILoggerClient<ITransport, string | null, LoggerStack>;
 
 export abstract class AbstractLoggerClient implements AbstractLoggerType {
@@ -34,32 +30,53 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
 
     protected abstract broadcast(messageType: string, payload: any): void;
 
-    protected getCurrentStep(): string | null {
+    protected getCurrentStep(): stepEntity | null {
         return this.stepStack.getLastElement();
     }
 
-    protected getPreviousStep(): string | null {
+    protected getPreviousStep(): stepEntity | null {
         return this.stepStack.getLastElement(1);
+    }
+
+    protected generateStepEntity(message: string): stepEntity {
+        return {
+            stepID: nanoid(),
+            message,
+        };
+    }
+
+    protected pushStackStep(step: stepEntity): void {
+        this.stepStack.push(step);
+    }
+
+    protected popStackStep(): stepEntity | null {
+        const step = this.stepStack.pop();
+
+        if (step) {
+            return step;
+        }
+
+        return null;
     }
 
     protected buildEntry(
         logType: LogTypes,
         content: Array<any>,
-        logLevel: LogLevel
+        logLevel: LogLevel,
+        stepGroupType: LogStepTypes,
     ): ILogEntity {
         const time = new Date();
+        const isStepType = logType === LogTypes.step;
         const currentStep = this.getCurrentStep();
         const previousStep = this.getPreviousStep();
 
-        const stepUid = logType === LogTypes.step && currentStep
-            ? currentStep
-            : null;
+        const currentStepID = currentStep ? currentStep.stepID : null;
+        const previousStepID = previousStep ? previousStep.stepID : null;
 
-        const parentStep = logType === LogTypes.step
-            ? previousStep
-            : currentStep;
-
+        const stepUid = isStepType && currentStepID ? currentStepID : null;
+        const parentStep = isStepType  ? previousStepID : currentStepID;
         const prefix = this.prefix || null;
+        const stepType = isStepType ? stepGroupType : null;
 
         return {
             time,
@@ -67,6 +84,7 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
             logLevel,
             content,
             stepUid,
+            stepType,
             parentStep,
             prefix,
         };
@@ -75,9 +93,10 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
     protected createLog(
         type: LogTypes,
         logLevel: LogLevel,
-        content: Array<any>
+        content: Array<any>,
+        stepType: LogStepTypes = LogStepTypes.log,
     ): void {
-        const logEntry = this.buildEntry(type, content, logLevel);
+        const logEntry = this.buildEntry(type, content, logLevel, stepType);
 
         this.broadcast(
             LoggerMessageTypes.REPORT,
@@ -117,40 +136,65 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
         this.createLog(LogTypes.media, LogLevel.info, [filename, content]);
     }
 
-    public startStep(key: string): void {
-        const step = composeStepName(key);
+    public startStep(message: string, stepType?: LogStepTypes): void {
+        const step = this.generateStepEntity(message);
 
-        this.stepStack.push(step);
+        this.pushStackStep(step);
 
         this.createLog(
             LogTypes.step,
             LogLevel.info,
-            [key]
+            [message],
+            stepType,
         );
     }
 
-    public endStep(key?: string, ...messageToLog: Array<any>): void {
+    public startStepLog(message: string): void {
+        this.startStep(message, LogStepTypes.log);
+    }
+
+    public startStepInfo(message: string): void {
+        this.startStep(message, LogStepTypes.info);
+    }
+
+    public startStepDebug(message: string): void {
+        this.startStep(message, LogStepTypes.debug);
+    }
+
+    public startStepSuccess(message: string): void {
+        this.startStep(message, LogStepTypes.success);
+    }
+
+    public startStepWarning(message: string): void {
+        this.startStep(message, LogStepTypes.warning);
+    }
+
+    public startStepError(message: string): void {
+        this.startStep(message, LogStepTypes.error);
+    }
+
+    public endStep(message?: string, ...messageToLog: Array<any>): void {
         if (messageToLog.length) {
             this.info('[step end]', ...messageToLog);
         }
 
-        let stepID = this.stepStack.pop();
+        let step = this.popStackStep();
 
-        if (key) {
-            while (stepID) {
-                const stepMessage = decomposeStepName(stepID);
+        if (step) {
+            while (step) {
+                const stepMessage = step.message;
 
-                if (key === stepMessage) {
+                if (message === stepMessage) {
                     break;
                 } else {
-                    stepID = this.stepStack.pop();
+                    step = this.popStackStep();
                 }
             }
         }
     }
 
-    public async step(message: string, callback: () => any): Promise<void> {
-        this.startStep(message);
+    public async step(message: string, callback: () => any, stepType?: LogStepTypes): Promise<void> {
+        this.startStep(message, stepType);
 
         const result = callback();
 
@@ -159,6 +203,30 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
         }
 
         this.endStep(message);
+    }
+
+    public async stepLog(message: string, callback: () => any): Promise<void> {
+        return this.step(message, callback, LogStepTypes.log);
+    }
+
+    public async stepInfo(message: string, callback: () => any): Promise<void> {
+        return this.step(message, callback, LogStepTypes.info);
+    }
+
+    public async stepDebug(message: string, callback: () => any): Promise<void> {
+        return this.step(message, callback, LogStepTypes.debug);
+    }
+
+    public async stepSuccess(message: string, callback: () => any): Promise<void> {
+        return this.step(message, callback, LogStepTypes.success);
+    }
+
+    public async stepWarning(message: string, callback: () => any): Promise<void> {
+        return this.step(message, callback, LogStepTypes.warning);
+    }
+
+    public async stepError(message: string, callback: () => any): Promise<void> {
+        return this.step(message, callback, LogStepTypes.error);
     }
 
     public getLogger(prefix: string | null = this.prefix, stepStack: LoggerStack = this.stepStack) {
