@@ -10,4 +10,5 @@ export const LOG_ENTITY: ILogEntity = {
     parentStep: null,
     stepUid: null,
     prefix: null,
+    stepType: null,
 };
