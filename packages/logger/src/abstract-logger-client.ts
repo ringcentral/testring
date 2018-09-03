@@ -197,9 +197,9 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
         this.startStep(message, stepType);
 
         let caughtError;
-        const result = callback();
 
         try {
+            const result = callback();
             if (result && result.then && typeof result.then === 'function') {
                 await result;
             }
