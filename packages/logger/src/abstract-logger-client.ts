@@ -199,15 +199,13 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
         let caughtError;
 
         try {
-            const result = callback();
-            if (result && result.then && typeof result.then === 'function') {
-                await result;
-            }
+            await callback();
         } catch (err) {
             caughtError = err;
         }
 
         this.endStep(message);
+
         if (caughtError) {
             throw caughtError;
         }
