@@ -7,7 +7,7 @@ import { TransportMock } from '@testring/test-utils';
 import { LoggerMessageTypes, LogTypes } from '@testring/types';
 
 import { LoggerClient } from '../src/logger-client';
-import { report } from './fixtures/constants';
+import { report, stepsTypes } from './fixtures/constants';
 
 describe('Logger client', () => {
     it('should broadcast messages on log, info, warn, error and debug', () => {
@@ -120,8 +120,11 @@ describe('Logger client', () => {
         chai.expect(spy.callCount).to.be.equal(7);
 
         chai.expect(spy.getCall(0).args[0].parentStep).to.be.equal(null);
+        chai.expect(spy.getCall(0).args[0]).to.deep.include(stepsTypes[0]);
+
         for (let i = 1, len = spy.callCount; i < len; i++) {
             chai.expect(spy.getCall(i).args[0].parentStep).to.be.equal(spy.getCall(i-1).args[0].stepUid);
+            chai.expect(spy.getCall(i).args[0]).to.deep.include(stepsTypes[i]);
         }
     });
 
@@ -150,8 +153,11 @@ describe('Logger client', () => {
         chai.expect(spy.callCount).to.be.equal(7);
 
         chai.expect(spy.getCall(0).args[0].parentStep).to.be.equal(null);
+        chai.expect(spy.getCall(0).args[0]).to.deep.include(stepsTypes[0]);
+
         for (let i = 1, len = spy.callCount; i < len; i++) {
             chai.expect(spy.getCall(i).args[0].parentStep).to.be.equal(spy.getCall(i-1).args[0].stepUid);
+            chai.expect(spy.getCall(i).args[0]).to.deep.include(stepsTypes[i]);
         }
     });
 
