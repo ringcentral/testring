@@ -3,7 +3,7 @@ import { ChildProcess } from 'child_process';
 import { IFile } from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
 import { fork } from '@testring/child-process';
-import { buildDependencyDictionary } from '@testring/dependencies-builder';
+import { DependencyDictionary } from '@testring/dependencies-builder';
 import { FSReader } from '@testring/fs-reader';
 import {
     ITransport,
@@ -100,7 +100,9 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             content: compiledSource
         };
 
-        const dependencies = await buildDependencyDictionary(compiledFile, this.readDependency.bind(this));
+        const dependencyDictionary = new DependencyDictionary(this.readDependency.bind(this));
+
+        const dependencies = await dependencyDictionary.build(compiledFile);
         const relativePath = path.relative(process.cwd(), file.path);
 
         loggerClientLocal.debug(`Sending test for execution: ${relativePath}`);
