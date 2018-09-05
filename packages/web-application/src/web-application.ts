@@ -171,7 +171,7 @@ export class WebApplication extends PluggableModule {
                     logger.startStep(message);
 
                     try {
-                        result = originMethod(...args);
+                        result = originMethod.apply(this, args);
                         if (result && result.then && typeof result.catch === 'function') {
                             result = result.catch((err) => {
                                 logger.endStep(message);
