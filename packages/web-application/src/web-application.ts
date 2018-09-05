@@ -248,6 +248,10 @@ export class WebApplication extends PluggableModule {
         return exists;
     }
 
+    public extendInstance<O>(obj: O): this & O {
+        return Object.assign(this, obj);
+    }
+
     public async waitForNotExists(xpath, timeout: number = this.WAIT_TIMEOUT) {
         let exists = false;
 
