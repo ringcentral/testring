@@ -198,20 +198,7 @@ export class WebApplication extends PluggableModule {
         }
     }
 
-    protected formatXpath(xpath): string {
-        return utils.logXpath(xpath);
-    }
-
-    protected normalizeSelector(selector: string | ElementPath): string {
-        if (!selector) {
-            return 'body';
-        }
-
-        return selector.toString();
-    }
-
     public get client(): WebClient {
-        // TODO (@flops) lazy decorator?
         if (this._client) {
             return this._client;
         }
@@ -230,6 +217,18 @@ export class WebApplication extends PluggableModule {
         this._logger = new LoggerClient(this.transport, '[web-application]');
 
         return this._logger;
+    }
+
+    protected formatXpath(xpath): string {
+        return utils.logXpath(xpath);
+    }
+
+    protected normalizeSelector(selector: string | ElementPath): string {
+        if (!selector) {
+            return 'body';
+        }
+
+        return selector.toString();
     }
 
     public async waitForExist(xpath, timeout: number = this.WAIT_TIMEOUT, skipMoveToObject: boolean = false) {
