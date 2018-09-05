@@ -546,12 +546,13 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    public async makeScreenshot(applicant: string): Promise<Buffer | void> {
+    public async makeScreenshot(applicant: string): Promise<string | void> {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.saveScreenshot());
+            let buffer = await this.wrapWithPromise(client.saveScreenshot());
+            return buffer.toString('base64');
         }
     }
 }
