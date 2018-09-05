@@ -41,6 +41,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     constructor(
         private transport: ITransport,
         private compile: FileCompiler,
+        private beforeCompile: (paths: Array<string>) => Promise<Array<string>>,
         workerConfig: Partial<ITestWorkerConfig> = {}
     ) {
         this.config = {
@@ -91,18 +92,44 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     ) {
         this.worker = await this.getWorker();
 
-        // Calling external hooks to compile source
-        const compiledSource = await this.compileSource(file.content, file.path);
-        // TODO implement code instrumentation here
+        let compiledFile;
 
-        const compiledFile = {
-            path: file.path,
-            content: compiledSource
-        };
+        const initialFilePaths = [ file.path ];
+
+        const filePaths = await this.beforeCompile(initialFilePaths);
+
+        const files = await Promise.all(
+            filePaths.map(async (path) => {
+                if (path && path === file.path) {
+                    return file;
+                }
+
+                return await this.fsReader.readFile(path);
+            })
+        );
+
+        const compactedFiles: Array<IFile> = files.filter((file): file is IFile => !!file);
+
+        const compiledFiles = await Promise.all(
+            compactedFiles.map(async ({ path, content }) => {
+                const compiledContent = await this.compileSource(content, path);
+
+                const result = {
+                    path,
+                    content: compiledContent,
+                };
+
+                if (path === file.path) {
+                    compiledFile = result;
+                }
+
+                return result;
+            }),
+        );
 
         const dependencyDictionary = new DependencyDictionary(this.readDependency.bind(this));
 
-        const dependencies = await dependencyDictionary.build(compiledFile);
+        const dependencies = await dependencyDictionary.build(compiledFiles);
         const relativePath = path.relative(process.cwd(), file.path);
 
         loggerClientLocal.debug(`Sending test for execution: ${relativePath}`);

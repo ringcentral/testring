@@ -38,22 +38,35 @@ export class DependencyDictionary extends PluggableModule implements IDependency
         return nodes;
     }
 
-    public async build(file: IFile) {
+    public async build(file: Array<IFile> | IFile) {
         const dictionary: IDependencyDictionary<IDependencyDictionary<IDependencyDictionaryNode>> = {};
+        const files: Array<IFile> = [];
+        const nodesCache = {};
 
-        const tree: IDependencyTreeNode = createTreeNode(
-            file.path,
-            file.content,
-            null
-        );
+        if (Array.isArray(file)) {
+            files.push(...file);
+        } else {
+            files.push(file);
+        }
 
-        const nodesCache = {
-            [file.path]: tree
-        };
+        files.forEach(file => {
+            if (file) {
+                const { path, content } = file;
 
-        tree.nodes = await buildNodes(file.path, file.content, nodesCache, this.readFile);
+                nodesCache[path] = createTreeNode(
+                    path,
+                    content,
+                    null
+                );
+            }
+        });
 
         for (let key in nodesCache) {
+            const item = nodesCache[key];
+            const { path, content } = item;
+
+            item.nodes = await buildNodes(path, content, nodesCache, this.readFile);
+
             dictionary[key] = this.getNodeDependencies(nodesCache[key]);
         }
 

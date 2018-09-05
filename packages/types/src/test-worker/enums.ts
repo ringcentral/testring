@@ -1,4 +1,5 @@
 export const enum TestWorkerPlugin {
+    beforeCompile = 'beforeCompile',
     compile = 'compile'
 }
 
