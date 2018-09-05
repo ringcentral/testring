@@ -157,6 +157,7 @@ export class WebApplication extends PluggableModule {
     }
 
     protected decorateMethods() {
+        const logger = this.logger;
         const decorators = (this.constructor as any).stepLogMessagesDecorator;
 
         for (let key in decorators) {
@@ -167,18 +168,18 @@ export class WebApplication extends PluggableModule {
                     const message = logFn.apply(this, args);
                     let result;
 
-                    this.logger.startStep(message);
+                    logger.startStep(message);
 
                     try {
                         result = originMethod(...args);
                         if (result && result.then && typeof result.catch === 'function') {
                             result = result.catch((err) => {
-                                this.logger.stopStep(message);
+                                logger.endStep(message);
                                 return Promise.reject(err);
                             });
                         }
                     } catch (err) {
-                        this.logger.stopStep(message);
+                        logger.endStep(message);
                         throw err;
                     }
 
