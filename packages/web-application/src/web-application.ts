@@ -977,11 +977,11 @@ export class WebApplication extends PluggableModule {
         return this.client.getTabIds();
     }
 
-    public async getHTML(xpath) {
-        // TODO what are we waiting for ?
-        await this.waitForExist(xpath, 0);
+    public async getHTML(xpath, timeout = this.WAIT_TIMEOUT) {
+        await this.waitForExist(xpath, timeout);
 
         xpath = this.normalizeSelector(xpath);
+
         return this.client.getHTML(xpath, true);
     }
 
