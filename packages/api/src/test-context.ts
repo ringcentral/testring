@@ -8,7 +8,7 @@ const LOG_PREFIX = '[logged inside test]';
 
 export class TestContext {
 
-    private lastLoggedBusinessEvent: string = '';
+    private lastLoggedBusinessMessage: string | null = null;
 
     private customApplications: Set<WebApplication> = new Set();
 
@@ -17,13 +17,19 @@ export class TestContext {
     public http = new HttpClient(transport);
 
     public async logBusiness(message: string) {
-        if (this.lastLoggedBusinessEvent) {
-            loggerClient.endStep(this.lastLoggedBusinessEvent);
-        }
+        this.stopLogBusiness();
 
-        this.lastLoggedBusinessEvent = message;
+        this.lastLoggedBusinessMessage = message;
 
         loggerClient.startStep(message);
+    }
+
+    public async stopLogBusiness() {
+        if (this.lastLoggedBusinessMessage !== null) {
+            loggerClient.endStep(this.lastLoggedBusinessMessage);
+
+            this.lastLoggedBusinessMessage = null;
+        }
     }
 
     public async log(...message: Array<any>) {
