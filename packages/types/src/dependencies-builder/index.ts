@@ -11,3 +11,7 @@ export interface IDependencyDictionaryNode extends IFile {}
 export interface IDependencyTreeNode extends IDependencyDictionaryNode {
     nodes: IDependencyDictionary<IDependencyTreeNode> | null;
 }
+
+export interface IDependencyBuilder {
+    build(file: IFile): Promise<IDependencyDictionary<IDependencyDictionary<IDependencyDictionaryNode>>>;
+}
