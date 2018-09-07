@@ -1,6 +1,6 @@
 {
   "name": "@testring/child-process",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -8,7 +8,7 @@
     "url": "https://github.com/ringcentral/testring.git"
   },
   "dependencies": {
-    "@testring/utils": "0.4.6"
+    "@testring/utils": "0.4.7"
   },
   "author": "RingCentral",
   "license": "MIT"
