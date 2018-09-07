@@ -44,7 +44,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     constructor(
         private transport: ITransport,
         private compile: FileCompiler,
-        private beforeCompile: (paths: Array<string>, fileContent: string, filePath: string) => Promise<Array<string>>,
+        private beforeCompile: (paths: Array<string>, filePath: string, fileContent: string) => Promise<Array<string>>,
         workerConfig: Partial<ITestWorkerConfig> = {}
     ) {
         this.config = {
@@ -95,7 +95,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     ) {
         this.worker = await this.getWorker();
 
-        const additionalFiles = await this.beforeCompile([], file.content, file.path);
+        const additionalFiles = await this.beforeCompile([], file.path, file.content);
 
         // Calling external hooks to compile source
         const compiledSource = await this.compileSource(file.content, file.path);
