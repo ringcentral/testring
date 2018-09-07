@@ -14,7 +14,7 @@ const nanoid = require('nanoid');
 const testProcessPath = path.resolve(__dirname, './fixtures/test-process.ts');
 
 // TODO add more tests
-describe('WebApplication functional', () => {
+describe('WebApplicationController functional', () => {
     it('should get messages from', (callback) => {
         const processID = nanoid();
 

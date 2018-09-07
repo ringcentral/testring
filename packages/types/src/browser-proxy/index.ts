@@ -101,5 +101,5 @@ export interface IBrowserProxyPlugin {
 
     elementIdSelected(applicant: string, id: string): Promise<any>;
 
-    makeScreenshot(applicant: string): Promise<Buffer | void>;
+    makeScreenshot(applicant: string): Promise<string | void>;
 }

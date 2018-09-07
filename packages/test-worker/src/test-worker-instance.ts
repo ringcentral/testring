@@ -3,7 +3,10 @@ import { ChildProcess } from 'child_process';
 import { IFile } from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
 import { fork } from '@testring/child-process';
-import { DependencyDictionary } from '@testring/dependencies-builder';
+import {
+    buildDependencyDictionary,
+    mergeDependencyDictionaries,
+} from '@testring/dependencies-builder';
 import { FSReader } from '@testring/fs-reader';
 import {
     ITransport,
@@ -41,7 +44,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     constructor(
         private transport: ITransport,
         private compile: FileCompiler,
-        private beforeCompile: (paths: Array<string>) => Promise<Array<string>>,
+        private beforeCompile: (paths: Array<string>, filePath: string, fileContent: string) => Promise<Array<string>>,
         workerConfig: Partial<ITestWorkerConfig> = {}
     ) {
         this.config = {
@@ -92,44 +95,29 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     ) {
         this.worker = await this.getWorker();
 
-        let compiledFile;
+        const additionalFiles = await this.beforeCompile([], file.path, file.content);
 
-        const initialFilePaths = [ file.path ];
+        // Calling external hooks to compile source
+        const compiledSource = await this.compileSource(file.content, file.path);
+        // TODO implement code instrumentation here
 
-        const filePaths = await this.beforeCompile(initialFilePaths);
+        const compiledFile = {
+            path: file.path,
+            content: compiledSource
+        };
 
-        const files = await Promise.all(
-            filePaths.map(async (path) => {
-                if (path && path === file.path) {
-                    return file;
-                }
+        let dependencies = await buildDependencyDictionary(compiledFile, this.readDependency.bind(this));
 
-                return await this.fsReader.readFile(path);
-            })
-        );
+        for (let i = 0, len = additionalFiles.length; i < len; i++) {
+            const file = await this.fsReader.readFile(additionalFiles[i]);
 
-        const compactedFiles: Array<IFile> = files.filter((file): file is IFile => !!file);
+            if (file) {
+                const additionalDependencies = await buildDependencyDictionary(file, this.readDependency.bind(this));
 
-        const compiledFiles = await Promise.all(
-            compactedFiles.map(async ({ path, content }) => {
-                const compiledContent = await this.compileSource(content, path);
+                dependencies = await mergeDependencyDictionaries(dependencies, additionalDependencies);
+            }
+        }
 
-                const result = {
-                    path,
-                    content: compiledContent,
-                };
-
-                if (path === file.path) {
-                    compiledFile = result;
-                }
-
-                return result;
-            }),
-        );
-
-        const dependencyDictionary = new DependencyDictionary(this.readDependency.bind(this));
-
-        const dependencies = await dependencyDictionary.build(compiledFiles);
         const relativePath = path.relative(process.cwd(), file.path);
 
         loggerClientLocal.debug(`Sending test for execution: ${relativePath}`);
@@ -167,7 +155,6 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             parameters,
             envParameters
         });
-        //await this.kill();
     }
 
     private async compileSource(source: string, filename: string): Promise<string> {
