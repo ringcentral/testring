@@ -3,7 +3,10 @@ import { ChildProcess } from 'child_process';
 import { IFile } from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
 import { fork } from '@testring/child-process';
-import { buildDependencyDictionary } from '@testring/dependencies-builder';
+import {
+    buildDependencyDictionary,
+    mergeDependencyDictionaries,
+} from '@testring/dependencies-builder';
 import { FSReader } from '@testring/fs-reader';
 import {
     ITransport,
@@ -41,6 +44,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     constructor(
         private transport: ITransport,
         private compile: FileCompiler,
+        private beforeCompile: (paths: Array<string>, fileContent: string, filePath: string) => Promise<Array<string>>,
         workerConfig: Partial<ITestWorkerConfig> = {}
     ) {
         this.config = {
@@ -91,6 +95,8 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     ) {
         this.worker = await this.getWorker();
 
+        const additionalFiles = await this.beforeCompile([], file.content, file.path);
+
         // Calling external hooks to compile source
         const compiledSource = await this.compileSource(file.content, file.path);
         // TODO implement code instrumentation here
@@ -100,7 +106,18 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             content: compiledSource
         };
 
-        const dependencies = await buildDependencyDictionary(compiledFile, this.readDependency.bind(this));
+        let dependencies = await buildDependencyDictionary(compiledFile, this.readDependency.bind(this));
+
+        for (let i = 0, len = additionalFiles.length; i < len; i++) {
+            const file = await this.fsReader.readFile(additionalFiles[i]);
+
+            if (file) {
+                const additionalDependencies = await buildDependencyDictionary(file, this.readDependency.bind(this));
+
+                dependencies = await mergeDependencyDictionaries(dependencies, additionalDependencies);
+            }
+        }
+
         const relativePath = path.relative(process.cwd(), file.path);
 
         loggerClientLocal.debug(`Sending test for execution: ${relativePath}`);
@@ -138,7 +155,6 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             parameters,
             envParameters
         });
-        //await this.kill();
     }
 
     private async compileSource(source: string, filename: string): Promise<string> {

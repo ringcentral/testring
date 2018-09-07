@@ -10,6 +10,8 @@ import {
 } from '@testring/types';
 import { resolveAbsolutePath } from './absolute-path-resolver';
 
+type DependencyDict = IDependencyDictionary<IDependencyDictionary<IDependencyDictionaryNode>>;
+
 const getDependencies = (absolutePath: string, content: string): Array<string> => {
     const requests: Array<string> = [];
 
@@ -137,7 +139,7 @@ export const buildDependencyGraph = async (
 
 
 export const buildDependencyDictionary = async (file: IFile, readFile: DependencyFileReader) => {
-    const dictionary: IDependencyDictionary<IDependencyDictionary<IDependencyDictionaryNode>> = {};
+    const dictionary: DependencyDict = {};
 
     const tree: IDependencyTreeNode = createTreeNode(
         file.path,
@@ -173,4 +175,12 @@ export const buildDependencyDictionary = async (file: IFile, readFile: Dependenc
     }
 
     return dictionary;
+};
+
+
+export const mergeDependencyDictionaries = async (dict1: DependencyDict, dict2: DependencyDict): Promise<DependencyDict> => {
+    return {
+        ...dict1,
+        ...dict2,
+    };
 };
