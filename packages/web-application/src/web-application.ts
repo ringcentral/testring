@@ -245,12 +245,12 @@ export class WebApplication extends PluggableModule {
         return utils.logXpath(xpath);
     }
 
-    protected normalizeSelector(selector: string | ElementPath): string {
+    protected normalizeSelector(selector: string | ElementPath, allowMultipleNodesInResult = false): string {
         if (!selector) {
             return 'body';
         }
 
-        return selector.toString();
+        return (selector as ElementPath).toString(allowMultipleNodesInResult);
     }
 
     public async waitForExist(xpath, timeout: number = this.WAIT_TIMEOUT, skipMoveToObject: boolean = false) {
@@ -577,7 +577,7 @@ export class WebApplication extends PluggableModule {
 
         await this.waitForExist(xpath, timeout);
 
-        let texts = await this.getTextsInternal(xpath, trim);
+        let texts = await this.getTextsInternal(xpath, trim, true);
 
         this.logger.debug(`Get texts from ${logXpath} returns "${texts.join('\n')}"`);
         return texts;
@@ -1098,8 +1098,8 @@ export class WebApplication extends PluggableModule {
         return this.client.parentFrame();
     }
 
-    private async getTextsInternal(xpath, trim) {
-        xpath = this.normalizeSelector(xpath);
+    private async getTextsInternal(xpath, trim, allowMultipleNodesInResult = false) {
+        xpath = this.normalizeSelector(xpath, allowMultipleNodesInResult);
 
         const elements: any = await this.client.elements(xpath);
         const result: Array<string> = [];
