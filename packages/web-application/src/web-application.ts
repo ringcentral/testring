@@ -1148,6 +1148,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public getTextsAsArray(xpath, trim = true, timeout = this.WAIT_TIMEOUT) {
+        // TODO (flops) deprecated
         return this.getTexts(xpath, trim, timeout);
     }
 
