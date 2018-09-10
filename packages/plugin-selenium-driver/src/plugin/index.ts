@@ -452,7 +452,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    public async getCurrentTableId(applicant: string) {
+    public async getCurrentTabId(applicant: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
 

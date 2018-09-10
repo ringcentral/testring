@@ -81,7 +81,7 @@ export interface IBrowserProxyPlugin {
 
     getHTML(applicant: string, xpath: string, b: any): Promise<any>;
 
-    getCurrentTableId(applicant: string): Promise<any>;
+    getCurrentTabId(applicant: string): Promise<any>;
 
     switchTab(applicant: string, tabId: string): Promise<any>;
 
