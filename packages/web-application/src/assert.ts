@@ -3,10 +3,24 @@ import { loggerClient } from '@testring/logger';
 
 type AssertionAPI = typeof chai['assert'] & { _errorMessages: Array<any> };
 
-export const createAssertion = (isSoft = false) => {
+export const createAssertion = (isSoft = false, webApplication?) => {
     const root: AssertionAPI = Object.assign({}, chai.assert, {
         _errorMessages: []
     });
+
+    const makeScreenshot = async () => {
+        if (webApplication && typeof webApplication.makeScreenshot === 'function') {
+            await webApplication.makeScreenshot();
+        }
+    };
+
+    const getLogger = () => {
+        if (webApplication && webApplication.logger) {
+            return webApplication.logger;
+        }
+
+        return loggerClient;
+    };
 
     return new Proxy<AssertionAPI>(root, {
         get(target, fieldName: string) {
@@ -14,6 +28,7 @@ export const createAssertion = (isSoft = false) => {
                 return target._errorMessages;
             }
 
+            const logger = getLogger();
             const typeOfAssert = isSoft ? 'softAssert' : 'assert';
 
             const originalMethod = chai.assert[fieldName];
@@ -46,20 +61,25 @@ export const createAssertion = (isSoft = false) => {
                     originalMethod(...args);
 
                     if (successMessage) {
-                        await loggerClient.info(successMessage);
-                        //TODO makeScreenShot
-                        await loggerClient.debug(assertMessage);
+                        await logger.stepInfo(successMessage, async () => {
+                            await makeScreenshot();
+                            await logger.debug(assertMessage);
+                        });
                     } else {
-                        await loggerClient.debug(assertMessage);
-                        //TODO makeScreenShot
+                        await logger.stepDebug(assertMessage, async () => {
+                            await makeScreenshot();
+                        });
                     }
                 } catch (error) {
                     if (successMessage) {
-                        await loggerClient.warn(successMessage);
-                        //TODO makeScreenShot
-                        await loggerClient.error(assertMessage);
+                        await logger.stepWarning(successMessage, async () => {
+                            await logger.error(assertMessage);
+                            await makeScreenshot();
+                        });
                     } else {
-                        await loggerClient.warn(assertMessage);
+                        await logger.stepWarning(assertMessage, async () => {
+                            await makeScreenshot();
+                        });
                     }
 
                     if (isSoft) {

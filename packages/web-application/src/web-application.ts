@@ -24,9 +24,9 @@ export class WebApplication extends PluggableModule {
 
     private mainTabID = 1;
 
-    public assert = createAssertion(false);
+    public assert = createAssertion(false, this);
 
-    public softAssert = createAssertion(true);
+    public softAssert = createAssertion(true, this);
 
     public root = createElementPath();
 
