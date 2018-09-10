@@ -14,6 +14,8 @@ const nanoid = require('nanoid');
 type valueType = string | number | null | undefined;
 
 export class WebApplication extends PluggableModule {
+    private isLogOpened: boolean = false;
+
     protected _logger: LoggerClient | null = null;
 
     protected _client: WebClient | null = null;
@@ -160,41 +162,61 @@ export class WebApplication extends PluggableModule {
         const logger = this.logger;
         const decorators = (this.constructor as any).stepLogMessagesDecorator;
 
+        if (this.isLogOpened) {
+            this.isLogOpened = false;
+        }
+
         for (let key in decorators) {
-            if (decorators.hasOwnProperty(key)) {
-                const originMethod = this[key];
-                const logFn = decorators[key];
-                const method = function decoratedMethod(...args) {
-                    const message = logFn.apply(this, args);
-                    let result;
+            ((key) => {
+                if (decorators.hasOwnProperty(key)) {
+                    const originMethod = this[key];
+                    const logFn = decorators[key];
+                    const method = function decoratedMethod(...args) {
+                        const message = logFn.apply(this, args);
+                        const isLogOpened = this.isLogOpened;
+                        let result;
 
-                    logger.startStep(message);
+                        if (isLogOpened) {
+                            logger.debug(message);
+                            result = originMethod.apply(this, args);
+                        } else {
+                            this.isLogOpened = true;
+                            logger.startStep(message);
 
-                    try {
-                        result = originMethod.apply(this, args);
-                        if (result && result.then && typeof result.catch === 'function') {
-                            result = result.catch((err) => {
+                            try {
+                                result = originMethod.apply(this, args);
+                                if (result && result.then && typeof result.catch === 'function') {
+                                    result = result.catch((err) => {
+                                        logger.endStep(message);
+                                        return Promise.reject(err);
+                                    });
+                                }
+                            } catch (err) {
                                 logger.endStep(message);
-                                return Promise.reject(err);
-                            });
+                                this.isLogOpened = false;
+
+                                throw err;
+                            }
                         }
-                    } catch (err) {
-                        logger.endStep(message);
-                        throw err;
-                    }
 
-                    return result;
-                };
+                        return result;
+                    };
 
-                Object.defineProperty(method,'originFunction', {
-                    value: originMethod,
-                    enumerable: false,
-                    writable: false,
-                    configurable: false,
-                });
+                    Object.defineProperty(method,'originFunction', {
+                        value: originMethod,
+                        enumerable: false,
+                        writable: false,
+                        configurable: false,
+                    });
 
-                this[key] = method;
-            }
+                    Object.defineProperty(this, key, {
+                       value: method,
+                       enumerable: false,
+                       writable: true,
+                       configurable: true,
+                    });
+                }
+            })(key);
         }
     }
 
