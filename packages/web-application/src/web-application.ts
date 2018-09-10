@@ -572,7 +572,6 @@ export class WebApplication extends PluggableModule {
     }
 
     public async getTexts(xpath, trim = true, timeout: number = this.WAIT_TIMEOUT) {
-        // TODO (flops) delete the same as getText
         let logXpath = utils.logXpath(xpath);
 
         await this.waitForExist(xpath, timeout);
