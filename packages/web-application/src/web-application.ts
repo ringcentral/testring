@@ -33,6 +33,9 @@ export class WebApplication extends PluggableModule {
     public root = createElementPath();
 
     static stepLogMessagesDecorator = {
+        waitForRoot(timeout) {
+            return `Waiting for root element for ${timeout}`;
+        },
         waitForExist(xpath, timeout: number = this.WAIT_TIMEOUT) {
             return `Waiting ${this.formatXpath(xpath)} for ${timeout}`
         },
@@ -245,9 +248,13 @@ export class WebApplication extends PluggableModule {
         return utils.logXpath(xpath);
     }
 
+    protected getRootSelector(): ElementPath {
+        return this.root;
+    }
+
     protected normalizeSelector(selector: string | ElementPath, allowMultipleNodesInResult = false): string {
         if (!selector) {
-            return 'body';
+            return this.getRootSelector().toString();
         }
 
         return (selector as ElementPath).toString(allowMultipleNodesInResult);
@@ -268,6 +275,10 @@ export class WebApplication extends PluggableModule {
         }
 
         return exists;
+    }
+
+    public async waitForRoot(timeout: number = this.WAIT_TIMEOUT) {
+        return this.client.waitForExist(this.getRootSelector().toString(), timeout);
     }
 
     public extendInstance<O>(obj: O): this & O {
@@ -787,8 +798,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async isVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
-        // TODO (flops) wtf??? it resolves as body. Waiting for document?
-        await this.waitForExist('', timeout);
+        await this.waitForRoot(timeout);
 
         xpath = this.normalizeSelector(xpath);
 
@@ -921,8 +931,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async getElementsCount(xpath, timeout: number = this.WAIT_TIMEOUT) {
-        // TODO Add waitForRoot?
-        await this.waitForExist('', timeout); //root element xpath
+        await this.waitForRoot(timeout);
 
         const elements: any = await this.elements(xpath);
 
