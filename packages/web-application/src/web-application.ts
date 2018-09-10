@@ -24,7 +24,7 @@ export class WebApplication extends PluggableModule {
 
     protected TICK_TIMEOUT: number = 100;
 
-    private mainTabID = 1;
+    private mainTabID: number | null = null;
 
     public assert = createAssertion(false, this);
 
@@ -982,7 +982,8 @@ export class WebApplication extends PluggableModule {
     }
 
     public async closeBrowserWindow(focusToTabId = null) {
-        return this.client.close(focusToTabId || this.mainTabID);
+        const mainTabID = await this.getMainTabId();
+        return this.client.close(focusToTabId || mainTabID);
     }
 
     public async closeCurrentTab(focusToTabId = null) {
@@ -995,7 +996,20 @@ export class WebApplication extends PluggableModule {
     }
 
     public async window(handle) {
+        await this.initMainTabId();
         return this.client.window(handle);
+    }
+
+    protected async initMainTabId() {
+        if (this.mainTabID === null) {
+            this.mainTabID = await this.client.getCurrentTabId();
+        }
+    }
+
+    public async getMainTabId() {
+        await this.initMainTabId();
+
+        return this.mainTabID;
     }
 
     public async getTabIds() {
@@ -1015,6 +1029,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async switchTab(tabId) {
+        await this.initMainTabId();
         return this.client.switchTab(tabId);
     }
 
@@ -1039,8 +1054,9 @@ export class WebApplication extends PluggableModule {
     }
 
     public async switchToFirstSiblingTab() {
+        const mainTabID = await this.getMainTabId();
         const tabIds: Array<number> = await this.getTabIds();
-        const siblingTabs = tabIds.filter(tabId => tabId !== this.mainTabID);
+        const siblingTabs = tabIds.filter(tabId => tabId !== mainTabID);
 
         if (siblingTabs.length === 0) {
             return false;
@@ -1051,8 +1067,9 @@ export class WebApplication extends PluggableModule {
     }
 
     public async switchToMainSiblingTab() {
+        const mainTabID = await this.getMainTabId();
         let tabIds: any = await this.getTabIds();
-        tabIds = tabIds.filter(tabId => tabId === this.mainTabID);
+        tabIds = tabIds.filter(tabId => tabId === mainTabID);
 
         if (tabIds[0]) {
             await this.setActiveTab(tabIds[0]);
