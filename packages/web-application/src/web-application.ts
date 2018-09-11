@@ -22,6 +22,8 @@ export class WebApplication extends PluggableModule {
 
     protected TICK_TIMEOUT: number = 100;
 
+    private screenshotsEnabled: boolean = true;
+
     private mainTabID: number | null = null;
 
     public assert = createAssertion(false, this);
@@ -177,12 +179,14 @@ export class WebApplication extends PluggableModule {
                         try {
                             result = originMethod.apply(this, args);
                             if (result && result.then && typeof result.catch === 'function') {
-                                result = result.catch((err) => {
+                                result = result.catch(async (err) => {
+                                    await this.asyncErrorHandler(err);
                                     logger.endStep(message);
                                     return Promise.reject(err);
                                 });
                             }
                         } catch (err) {
+                            this.errorHandler(err);
                             logger.endStep(message);
 
                             throw err;
@@ -244,6 +248,14 @@ export class WebApplication extends PluggableModule {
         }
 
         return (selector as ElementPath).toString(allowMultipleNodesInResult);
+    }
+
+    protected async asyncErrorHandler(error) {
+        await this.makeScreenshot();
+    }
+
+    protected errorHandler(error) {
+        this.logger.error(error);
     }
 
     public async waitForExist(xpath, timeout: number = this.WAIT_TIMEOUT, skipMoveToObject: boolean = false) {
@@ -1147,15 +1159,27 @@ export class WebApplication extends PluggableModule {
         return this.getTexts(xpath, trim, timeout);
     }
 
-    public async makeScreenshot() {
-        const screenshoot = await this.client.makeScreenshot();
-        const screenDate = new Date();
-        const formattedDate = (`${screenDate.toLocaleTimeString()} ${screenDate.toDateString()}`).replace(/\s+/g, '_');
+    public async disableScreenshots() {
+        this.logger.debug("Screenshots were disabled. DO NOT FORGET to turn them on back!");
+        this.screenshotsEnabled = false;
+    }
 
-        this.logger.media(
-            `${this.testUID}-${formattedDate}-${nanoid(5)}.png`,
-            screenshoot
-        );
+    public async enableScreenshots() {
+        this.logger.debug("Screenshots were enabled");
+        this.screenshotsEnabled = true;
+    }
+
+    public async makeScreenshot(force: boolean = false) {
+        if (this.screenshotsEnabled || force) {
+            const screenshoot = await this.client.makeScreenshot();
+            const screenDate = new Date();
+            const formattedDate = (`${screenDate.toLocaleTimeString()} ${screenDate.toDateString()}`).replace(/\s+/g, '_');
+
+            this.logger.media(
+                `${this.testUID}-${formattedDate}-${nanoid(5)}.png`,
+                screenshoot
+            );
+        }
     }
 
     public uploadFile(fullPath) {
