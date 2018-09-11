@@ -14,8 +14,6 @@ const nanoid = require('nanoid');
 type valueType = string | number | null | undefined;
 
 export class WebApplication extends PluggableModule {
-    private isLogOpened: boolean = false;
-
     protected _logger: LoggerClient | null = null;
 
     protected _client: WebClient | null = null;
@@ -165,10 +163,6 @@ export class WebApplication extends PluggableModule {
         const logger = this.logger;
         const decorators = (this.constructor as any).stepLogMessagesDecorator;
 
-        if (this.isLogOpened) {
-            this.isLogOpened = false;
-        }
-
         for (let key in decorators) {
             ((key) => {
                 if (decorators.hasOwnProperty(key)) {
@@ -176,30 +170,22 @@ export class WebApplication extends PluggableModule {
                     const logFn = decorators[key];
                     const method = function decoratedMethod(...args) {
                         const message = logFn.apply(this, args);
-                        const isLogOpened = this.isLogOpened;
                         let result;
 
-                        if (isLogOpened) {
-                            logger.debug(message);
+                        logger.startStep(message);
+
+                        try {
                             result = originMethod.apply(this, args);
-                        } else {
-                            this.isLogOpened = true;
-                            logger.startStep(message);
-
-                            try {
-                                result = originMethod.apply(this, args);
-                                if (result && result.then && typeof result.catch === 'function') {
-                                    result = result.catch((err) => {
-                                        logger.endStep(message);
-                                        return Promise.reject(err);
-                                    });
-                                }
-                            } catch (err) {
-                                logger.endStep(message);
-                                this.isLogOpened = false;
-
-                                throw err;
+                            if (result && result.then && typeof result.catch === 'function') {
+                                result = result.catch((err) => {
+                                    logger.endStep(message);
+                                    return Promise.reject(err);
+                                });
                             }
+                        } catch (err) {
+                            logger.endStep(message);
+
+                            throw err;
                         }
 
                         return result;
