@@ -184,3 +184,5 @@ export const mergeDependencyDictionaries = async (dict1: DependencyDict, dict2: 
         ...dict2,
     };
 };
+
+export { DependenciesBuilder } from './dependencies-builder';

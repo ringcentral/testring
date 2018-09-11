@@ -4,8 +4,7 @@ import { IFile } from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
 import { fork } from '@testring/child-process';
 import {
-    buildDependencyDictionary,
-    mergeDependencyDictionaries,
+    DependenciesBuilder,
 } from '@testring/dependencies-builder';
 import { FSReader } from '@testring/fs-reader';
 import {
@@ -106,15 +105,15 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             content: compiledSource
         };
 
-        let dependencies = await buildDependencyDictionary(compiledFile, this.readDependency.bind(this));
+        const dependencyBuilder = new DependenciesBuilder(this.readDependency.bind(this));
+
+        await dependencyBuilder.addToDictionary(compiledFile);
 
         for (let i = 0, len = additionalFiles.length; i < len; i++) {
             const file = await this.fsReader.readFile(additionalFiles[i]);
 
             if (file) {
-                const additionalDependencies = await buildDependencyDictionary(file, this.readDependency.bind(this));
-
-                dependencies = await mergeDependencyDictionaries(dependencies, additionalDependencies);
+                await dependencyBuilder.addToDictionary(file);
             }
         }
 
@@ -151,7 +150,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         await this.transport.send<ITestExecutionMessage>(this.workerID, TestWorkerAction.executeTest, {
             ...compiledFile,
-            dependencies,
+            dependencies: dependencyBuilder.getDictionary(),
             parameters,
             envParameters
         });
