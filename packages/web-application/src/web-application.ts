@@ -927,7 +927,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public elements(xpath) {
-        return this.client.elements(this.normalizeSelector(xpath));
+        return this.client.elements(this.normalizeSelector(xpath, true));
     }
 
     public async getElementsCount(xpath, timeout: number = this.WAIT_TIMEOUT) {
