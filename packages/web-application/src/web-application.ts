@@ -24,6 +24,8 @@ export class WebApplication extends PluggableModule {
 
     private screenshotsEnabled: boolean = true;
 
+    private isLogOpened: boolean = false;
+
     private mainTabID: number | null = null;
 
     public assert = createAssertion(false, this);
@@ -165,6 +167,11 @@ export class WebApplication extends PluggableModule {
         const logger = this.logger;
         const decorators = (this.constructor as any).stepLogMessagesDecorator;
 
+        // Reset isLogOpened on init, and bypass tslint
+        if (this.isLogOpened) {
+            this.isLogOpened = false;
+        }
+
         for (let key in decorators) {
             ((key) => {
                 if (decorators.hasOwnProperty(key)) {
@@ -174,22 +181,37 @@ export class WebApplication extends PluggableModule {
                         const message = logFn.apply(this, args);
                         let result;
 
-                        logger.startStep(message);
-
-                        try {
+                        if (this.isLogOpened) {
+                            logger.debug(message);
                             result = originMethod.apply(this, args);
-                            if (result && result.then && typeof result.catch === 'function') {
-                                result = result.catch(async (err) => {
-                                    await this.asyncErrorHandler(err);
-                                    logger.endStep(message);
-                                    return Promise.reject(err);
-                                });
-                            }
-                        } catch (err) {
-                            this.errorHandler(err);
-                            logger.endStep(message);
+                        } else {
+                            logger.startStep(message);
+                            this.isLogOpened = true;
 
-                            throw err;
+                            try {
+                                result = originMethod.apply(this, args);
+                                if (result && result.catch && typeof result.catch === 'function') {
+                                    result = result.catch(async (err) => {
+                                        await this.asyncErrorHandler(err);
+                                        logger.endStep(message);
+                                        this.isLogOpened = false;
+                                        return Promise.reject(err);
+                                    }).then((result) => {
+                                        logger.endStep(message);
+                                        this.isLogOpened = false;
+                                        return result;
+                                    });
+                                } else {
+                                    logger.endStep(message);
+                                    this.isLogOpened = false;
+                                }
+                            } catch (err) {
+                                this.errorHandler(err);
+                                logger.endStep(message);
+                                this.isLogOpened = false;
+
+                                throw err;
+                            }
                         }
 
                         return result;
