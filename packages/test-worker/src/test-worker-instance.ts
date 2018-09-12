@@ -209,6 +209,8 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         });
 
         worker.on('close', (exitCode) => {
+            this.worker = null;
+
             if (this.abortTestExecution !== null) {
                 this.abortTestExecution(
                     exitCode ?
