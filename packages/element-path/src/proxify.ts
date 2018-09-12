@@ -159,9 +159,13 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
             };
         }
 
+        // TODO (flops) @deprecated
         if (key === 'xpathByElement') {
-            return (element: { id: string, xpath: string }) => {
-                return proxify(instance.generateChildByXpath(element), strictMode);
+            return (element: { id: string, locator: string }) => {
+                return proxify(instance.generateChildByXpath({
+                    id: element.id,
+                    xpath: element.locator,
+                }), strictMode);
             };
         }
 

@@ -15,7 +15,7 @@ describe('.xpathByElement()', () => {
     let root = createElementPath({
         strictMode: false
     });
-    let xpathSelectorCall = root.foo.xpathByElement({ id: 'selected', xpath: '//*[@class=\'selected\']' });
+    let xpathSelectorCall = root.foo.xpathByElement({ id: 'selected', locator: '//*[@class=\'selected\']' });
 
     describe('arguments validation', () => {
         it('call without xpath and id', () => {
@@ -29,17 +29,17 @@ describe('.xpathByElement()', () => {
         });
 
         it('call without id', () => {
-            const child = root.foo.xpathByElement({ xpath: '//*[@class=\'selected\']' });
+            const child = root.foo.xpathByElement({ locator: '//*[@class=\'selected\']' });
             expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
 
         it('call with empty string id', () => {
-            const child = root.foo.xpathByElement({ id: '', xpath: '//*[@class=\'selected\']' });
+            const child = root.foo.xpathByElement({ id: '', locator: '//*[@class=\'selected\']' });
             expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
 
         it('call with not string', () => {
-            const child = root.foo.xpathByElement({ id: 0, xpath: '//*[@class=\'selected\']' });
+            const child = root.foo.xpathByElement({ id: 0, locator: '//*[@class=\'selected\']' });
             expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
     });
