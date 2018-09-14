@@ -162,7 +162,7 @@ export class WebClient {
     }
 
     public alertDismiss() {
-        return this.makeRequest(BrowserProxyActions.alertAccept, []);
+        return this.makeRequest(BrowserProxyActions.alertDismiss, []);
     }
 
     public alertText() {

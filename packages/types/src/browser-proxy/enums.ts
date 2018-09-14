@@ -35,6 +35,7 @@ export const enum BrowserProxyActions {
     isEnabled = 'isEnabled',
     scroll = 'scroll',
     alertAccept = 'alertAccept',
+    alertDismiss = 'alertDismiss',
     alertText = 'alertText',
     dragAndDrop = 'dragAndDrop',
     addCommand = 'addCommand',
