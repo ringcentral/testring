@@ -60,6 +60,10 @@ export class TestContext {
         return customApplication;
     }
 
+    public getCustomApplicationsList() {
+        return [...this.customApplications];
+    }
+
     public end(): Promise<any> {
         const requests = [
             this.application.end()
@@ -75,5 +79,12 @@ export class TestContext {
             .catch((error) => {
                 this.logError(error);
             });
+    }
+
+    public cloneInstance<O>(obj: O): TestContext & O {
+        const copy: this & O = Object.assign(Object.create(Object.getPrototypeOf(this)), this, obj);
+        Object.assign(copy.constructor, this.constructor);
+
+        return copy;
     }
 }
