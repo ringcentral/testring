@@ -280,6 +280,10 @@ export class WebApplication extends PluggableModule {
         this.logger.error(error);
     }
 
+    public getSoftAssertionErrors() {
+        return [...this.softAssert._errorMessages];
+    }
+
     public async waitForExist(xpath, timeout: number = this.WAIT_TIMEOUT, skipMoveToObject: boolean = false) {
         const normalizedXPath = this.normalizeSelector(xpath);
         const exists = await this.client.waitForExist(
@@ -301,6 +305,7 @@ export class WebApplication extends PluggableModule {
         return this.client.waitForExist(this.getRootSelector().toString(), timeout);
     }
 
+    // TODO (flops) remove it and make extension via initCustomApp
     public extendInstance<O>(obj: O): this & O {
         return Object.assign(this, obj);
     }
