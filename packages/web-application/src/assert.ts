@@ -72,12 +72,12 @@ export const createAssertion = (isSoft = false, webApplication?) => {
                     }
                 } catch (error) {
                     if (successMessage) {
-                        await logger.stepWarning(successMessage, async () => {
+                        await logger.stepError(successMessage, async () => {
                             await logger.error(assertMessage);
                             await makeScreenshot();
                         });
                     } else {
-                        await logger.stepWarning(assertMessage, async () => {
+                        await logger.stepError(assertMessage, async () => {
                             await makeScreenshot();
                         });
                     }
