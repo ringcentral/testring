@@ -11,3 +11,5 @@ export interface IDependencyDictionaryNode extends IFile {}
 export interface IDependencyTreeNode extends IDependencyDictionaryNode {
     nodes: IDependencyDictionary<IDependencyTreeNode> | null;
 }
+
+export type DependencyDict = IDependencyDictionary<IDependencyDictionary<IDependencyDictionaryNode>>;

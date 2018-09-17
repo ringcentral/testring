@@ -28,6 +28,10 @@ export const requirePackage = (modulePath: string, parentModule?: string): any =
     try {
         return require(fileName);
     } catch (exception) {
-        throw new ReferenceError(`Can't find module "${modulePath}". Is it installed?`);
+        const error = new ReferenceError(`Error, while requiring '${modulePath}': ${exception.message}`);
+
+        error.stack = exception.stack;
+
+        throw error;
     }
 };

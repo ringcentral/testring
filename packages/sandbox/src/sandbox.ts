@@ -1,5 +1,6 @@
 import * as vm from 'vm';
 import * as path from 'path';
+import { DependencyDict } from '@testring/types';
 import { requirePackage } from '@testring/utils';
 import { Script } from './script';
 
@@ -7,11 +8,15 @@ class Sandbox {
 
     private context: any;
 
+    // Special flag for cyclic dependencies,
+    // useful when module has recursive call of itself
+    private isCompiling = false;
+
     private isCompiled = false;
 
     public exports = {};
 
-    constructor(private source: string, private filename: string, private dependencies: any) {
+    constructor(private source: string, private filename: string, private dependencies: DependencyDict) {
         this.context = this.createContext(this.filename, this.dependencies);
     }
 
@@ -20,24 +25,19 @@ class Sandbox {
     }
 
     public execute(): any {
-        if (this.isCompiled) {
+        if (this.isCompiled || this.isCompiling) {
             return this.exports;
         }
 
+        this.isCompiling = true;
+
         const context = vm.createContext(this.context);
-
-        let script;
-
-        if (Sandbox.scriptCache.has(this.source)) {
-            script = Sandbox.scriptCache.get(this.source);
-        } else {
-            script = new Script(this.source, this.filename);
-
-            Sandbox.scriptCache.set(this.source, script);
-        }
+        const script = new Script(this.source, this.filename);
 
         this.runInContext(script, context);
+
         this.isCompiled = true;
+        this.isCompiling = false;
 
         return this.exports;
     }
@@ -55,10 +55,10 @@ class Sandbox {
     }
 
     public static clearCache(): void {
-        Sandbox.scriptCache.clear();
+        Sandbox.modulesCache.clear();
     }
 
-    private static scriptCache: Map<string, Script> = new Map();
+    private static modulesCache: Map<string, Script> = new Map();
 
 
     private require(requestPath) {
@@ -68,11 +68,17 @@ class Sandbox {
             dependencies &&
             dependencies[requestPath]
         ) {
-            const dependencySandbox = new Sandbox(
-                dependencies[requestPath].content,
-                dependencies[requestPath].path,
-                this.dependencies
-            );
+            const { content, path } = dependencies[requestPath];
+
+            let dependencySandbox;
+
+            if (Sandbox.modulesCache.has(path)) {
+                dependencySandbox = Sandbox.modulesCache.get(path);
+            } else {
+                dependencySandbox = new Sandbox(content, path, this.dependencies);
+
+                Sandbox.modulesCache.set(path, dependencySandbox);
+            }
 
             return dependencySandbox.execute();
         }

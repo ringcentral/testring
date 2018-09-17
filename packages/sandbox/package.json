@@ -11,6 +11,8 @@
   "license": "MIT",
   "dependencies": {
     "@testring/api": "0.4.14",
+    "@testring/test-utils": "0.4.14",
+    "@testring/types": "0.4.14",
     "@testring/utils": "0.4.14"
   }
 }
