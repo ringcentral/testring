@@ -351,7 +351,7 @@ export class WebApplication extends PluggableModule {
         xpath = this.normalizeSelector(xpath);
 
         try {
-            await this.client.waitForExist(xpath, timeout);
+            await this.waitForRoot(timeout);
         } catch (error) {
             throw new Error('Wait for not visible is failed, root element is still pending');
         }

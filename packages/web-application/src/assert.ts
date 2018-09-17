@@ -61,23 +61,23 @@ export const createAssertion = (isSoft = false, webApplication?) => {
                     originalMethod(...args);
 
                     if (successMessage) {
-                        await logger.stepInfo(successMessage, async () => {
+                        await logger.stepSuccess(successMessage, async () => {
                             await makeScreenshot();
                             await logger.debug(assertMessage);
                         });
                     } else {
-                        await logger.stepDebug(assertMessage, async () => {
+                        await logger.stepSuccess(assertMessage, async () => {
                             await makeScreenshot();
                         });
                     }
                 } catch (error) {
                     if (successMessage) {
-                        await logger.stepWarning(successMessage, async () => {
+                        await logger.stepError(successMessage, async () => {
                             await logger.error(assertMessage);
                             await makeScreenshot();
                         });
                     } else {
-                        await logger.stepWarning(assertMessage, async () => {
+                        await logger.stepError(assertMessage, async () => {
                             await makeScreenshot();
                         });
                     }

@@ -551,7 +551,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.browserClients.get(applicant);
 
         if (client) {
-            return (await this.wrapWithPromise(client.saveScreenshot())).toString('base64');
+            return this.wrapWithPromise(client.screenshot());
         }
     }
 }
