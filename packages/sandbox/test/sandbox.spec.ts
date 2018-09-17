@@ -1,10 +1,11 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { fileReaderFactory } from './utils';
+import { fileReaderFactory, fileResolverFactory } from '@testring/test-utils';
 import { Sandbox } from '../src/sandbox';
 
 const fixturesFileReader = fileReaderFactory(__dirname, 'fixtures', 'sandbox');
+const fixturesFileResolver = fileResolverFactory(__dirname, 'fixtures', 'sandbox');
 
 const createExportFromGlobal = (key) => {
     return `module.exports = global["${key}"];`;
@@ -157,6 +158,89 @@ describe('Sandbox', () => {
                 return Promise.reject('Code was compiled');
             } catch (error) {
                 chai.expect(error).to.be.instanceof(Error);
+            }
+        });
+
+        it('should resolve circular dependencies', async () => {
+            const testData = {
+                test: true,
+                someData: [1, 2, 3]
+            };
+
+            const sourceName1 = './cyclic-dependency';
+            const sourceName2 = './cyclic-dependency-2';
+
+            const sourceNameFile1 = sourceName1 + '.js';
+            const sourceNameFile2 = sourceName2 + '.js';
+
+            const source1 = await fixturesFileReader(sourceNameFile1);
+            const source2 = `
+                require('${sourceName1}');
+                
+                module.exports = ${JSON.stringify(testData)};
+            `;
+
+            const filePath1 = await fixturesFileResolver(sourceNameFile1);
+            const filePath2 = await fixturesFileResolver(sourceNameFile2);
+
+            const sandbox1 = new Sandbox(source1, filePath1, {
+                [filePath1]: {
+                    [sourceName2]: {
+                        path: filePath2,
+                        content: source2
+                    }
+                },
+                [filePath2]: {
+                    [sourceName1]: {
+                        path: filePath1,
+                        content: source1
+                    }
+                }
+            });
+
+            const result = sandbox1.execute();
+
+            chai.expect(result).to.be.deep.equal(testData);
+        });
+
+        it('should handle error propagation in circular dependency', async () => {
+            const sourceName1 = './cyclic-dependency';
+            const sourceName2 = './cyclic-dependency-2';
+
+            const sourceNameFile1 = sourceName1 + '.js';
+            const sourceNameFile2 = sourceName2 + '.js';
+
+            const source1 = await fixturesFileReader(sourceNameFile1);
+            const source2 = `
+                require('${sourceName1}');
+                
+                throw new Error('test');
+            `;
+
+            const filePath1 = await fixturesFileResolver(sourceNameFile1);
+            const filePath2 = await fixturesFileResolver(sourceNameFile2);
+
+            let error;
+
+            try {
+                const sandbox1 = new Sandbox(source1, filePath1, {
+                    [filePath1]: {
+                        [sourceName2]: {
+                            path: filePath2,
+                            content: source2
+                        }
+                    }
+                });
+
+                sandbox1.execute();
+
+                error = new Error('code executed somehow');
+            } catch {
+                error = null;
+            }
+
+            if (error) {
+                throw error;
             }
         });
     });

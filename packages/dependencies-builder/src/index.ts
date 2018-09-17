@@ -6,11 +6,10 @@ import {
     IDependencyDictionary,
     IDependencyDictionaryNode,
     IDependencyTreeNode,
+    DependencyDict,
     DependencyFileReader
 } from '@testring/types';
 import { resolveAbsolutePath } from './absolute-path-resolver';
-
-type DependencyDict = IDependencyDictionary<IDependencyDictionary<IDependencyDictionaryNode>>;
 
 const getDependencies = (absolutePath: string, content: string): Array<string> => {
     const requests: Array<string> = [];
