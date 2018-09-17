@@ -1,6 +1,6 @@
 {
   "name": "@testring/constants",
-  "version": "0.4.14",
+  "version": "0.4.15",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
