@@ -8,7 +8,6 @@ export const defaultConfiguration: Partial<IConfig> = {
     workerLimit: 10,
     retryCount: 3,
     retryDelay: 2000,
-    testTimeout: 15 * 60 * 1000,
     httpThrottle: 0,
     logLevel: LogLevel.info,
     envParameters: {}

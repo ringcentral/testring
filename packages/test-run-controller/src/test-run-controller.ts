@@ -210,27 +210,12 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
         try {
             await this.callHook(TestRunControllerPlugins.beforeTest, queuedTest, this.getWorkerMeta(worker));
-            const timeout = this.config.testTimeout || 15 * 60 * 1000;
 
-            let timer;
-
-            await Promise.race([
-                (async () => {
-                    await worker.execute(
-                        queuedTest.test,
-                        queuedTest.parameters,
-                        this.config.envParameters
-                    );
-
-                    clearTimeout(timer);
-                })(),
-                new Promise((resolve, reject) => {
-                    timer = setTimeout(() => {
-                        worker.kill('SIGABRT');
-                        reject(new Error(`Test timeout exceeded ${timeout}ms`));
-                    }, timeout);
-                })
-            ]);
+            await worker.execute(
+                queuedTest.test,
+                queuedTest.parameters,
+                this.config.envParameters
+            );
 
             await this.callHook(TestRunControllerPlugins.afterTest, queuedTest, null, this.getWorkerMeta(worker));
         } catch (error) {
