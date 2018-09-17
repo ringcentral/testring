@@ -5,7 +5,7 @@ export interface ITestWorkerInstance {
 
     execute(file: IFile, parameters: any, envParameters: any): Promise<any>;
 
-    kill(): void;
+    kill(signal?: NodeJS.Signals): void;
 }
 
 export interface ITestWorkerCallbackMeta {

@@ -10,6 +10,7 @@ export interface IConfig {
     workerLimit: number;
     retryCount: number;
     retryDelay: number;
+    testTimeout: number;
     tests: string;
     httpThrottle: number;
     logLevel: string;
