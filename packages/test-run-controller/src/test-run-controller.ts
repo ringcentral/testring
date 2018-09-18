@@ -5,6 +5,7 @@ import {
     ITestWorkerCallbackMeta,
     IFile,
     IQueuedTest,
+    IQueuedTestRunData,
     ITestRunController,
     TestRunControllerPlugins,
 } from '@testring/types';
@@ -145,6 +146,26 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         };
     }
 
+    private getRunData(queueItem): IQueuedTestRunData {
+        let screenshotsEnabled = false;
+        let isRetryRun = queueItem.retryCount > 0;
+
+        if (this.config.screenshots === 'enabled') {
+            screenshotsEnabled = true;
+        }
+
+        if (this.config.screenshots === 'afterError') {
+            screenshotsEnabled = isRetryRun;
+        }
+
+        return {
+            debug: this.config.debug || false,
+            logLevel: this.config.logLevel,
+            screenshotsEnabled,
+            isRetryRun,
+        };
+    }
+
     private async prepareTests(testFiles: Array<IFile>): Promise<TestQueue> {
         const testQueue = new Array(testFiles.length);
 
@@ -154,7 +175,15 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
         const modifierQueue = await this.callHook(TestRunControllerPlugins.beforeRun, testQueue);
 
-        return new Queue(modifierQueue);
+        return new Queue((modifierQueue || []).map(item => {
+            return {
+                ...item,
+                parameters: {
+                    ...item.parameters,
+                    runData: this.getRunData(item),
+                },
+            };
+        }));
     }
 
     private async occupyWorker(worker: ITestWorkerInstance, queue: TestQueue): Promise<void> {
@@ -190,9 +219,15 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
             await delay(this.config.retryDelay || 0);
 
-            queue.push(queueItem);
+            queue.push({
+                ...queueItem,
+                parameters: {
+                    ...queueItem.parameters,
+                    runData: this.getRunData(queueItem),
+                }
+            });
 
-            await this.executeWorker(worker, queue);
+            await this.occupyWorker(worker, queue);
         } else {
             this.errors.push(error);
 
