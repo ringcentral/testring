@@ -1204,7 +1204,6 @@ export class WebApplication extends PluggableModule {
 
     public async makeScreenshot(force: boolean = false) {
         if (this.config.screenshotsEnabled && (this.screenshotsEnabled || force)) {
-            debugger;
             const screenshoot = await this.client.makeScreenshot();
             const screenDate = new Date();
             const formattedDate = (`${screenDate.toLocaleTimeString()} ${screenDate.toDateString()}`).replace(/\s+/g, '_');
