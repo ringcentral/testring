@@ -4,6 +4,7 @@ export const enum TestRunControllerPlugins {
     beforeRun = 'beforeRun',
     beforeTest = 'beforeTest',
     afterTest = 'afterTest',
+    beforeTestRetry = 'beforeTestRetry',
     afterRun = 'afterRun',
     shouldRetry = 'shouldRetry',
 }

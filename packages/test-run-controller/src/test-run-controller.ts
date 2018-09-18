@@ -1,17 +1,17 @@
 import {
     IConfig,
-    ITestWorker,
-    ITestWorkerInstance,
-    ITestWorkerCallbackMeta,
     IFile,
     IQueuedTest,
     IQueuedTestRunData,
     ITestRunController,
+    ITestWorker,
+    ITestWorkerCallbackMeta,
+    ITestWorkerInstance,
     TestRunControllerPlugins,
 } from '@testring/types';
-import { loggerClientLocal } from '@testring/logger';
-import { PluggableModule } from '@testring/pluggable-module';
-import { Queue } from '@testring/utils';
+import {loggerClientLocal} from '@testring/logger';
+import {PluggableModule} from '@testring/pluggable-module';
+import {Queue} from '@testring/utils';
 
 type TestQueue = Queue<IQueuedTest>;
 
@@ -37,6 +37,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             TestRunControllerPlugins.beforeRun,
             TestRunControllerPlugins.beforeTest,
             TestRunControllerPlugins.afterTest,
+            TestRunControllerPlugins.beforeTestRetry,
             TestRunControllerPlugins.afterRun,
             TestRunControllerPlugins.shouldRetry
         ]);
@@ -227,6 +228,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 }
             });
 
+            await this.callHook(TestRunControllerPlugins.beforeTestRetry, queueItem, error, this.getWorkerMeta(worker));
             await this.occupyWorker(worker, queue);
         } else {
             this.errors.push(error);
@@ -253,12 +255,11 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             );
 
             await this.callHook(TestRunControllerPlugins.afterTest, queuedTest, null, this.getWorkerMeta(worker));
+            await this.occupyWorker(worker, queue);
         } catch (error) {
             queuedTest.retryErrors.push(error);
 
             await this.onTestFailed(error, worker, queuedTest, queue);
-        } finally {
-            await this.occupyWorker(worker, queue);
         }
     }
 }
