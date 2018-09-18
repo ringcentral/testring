@@ -1,6 +1,6 @@
 {
   "name": "@testring/api",
-  "version": "0.4.15",
+  "version": "0.4.16",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,11 +10,11 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/http-api": "0.4.15",
-    "@testring/logger": "0.4.15",
-    "@testring/transport": "0.4.15",
-    "@testring/types": "0.4.15",
-    "@testring/web-application": "0.4.15",
+    "@testring/http-api": "0.4.16",
+    "@testring/logger": "0.4.16",
+    "@testring/transport": "0.4.16",
+    "@testring/types": "0.4.16",
+    "@testring/web-application": "0.4.16",
     "@types/bytes": "^3.0.0",
     "bytes": "^3.0.0"
   }
