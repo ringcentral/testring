@@ -1,16 +1,17 @@
 import {
     IConfig,
-    ITestWorker,
-    ITestWorkerInstance,
-    ITestWorkerCallbackMeta,
     IFile,
     IQueuedTest,
+    IQueuedTestRunData,
     ITestRunController,
+    ITestWorker,
+    ITestWorkerCallbackMeta,
+    ITestWorkerInstance,
     TestRunControllerPlugins,
 } from '@testring/types';
-import { loggerClientLocal } from '@testring/logger';
-import { PluggableModule } from '@testring/pluggable-module';
-import { Queue } from '@testring/utils';
+import {loggerClientLocal} from '@testring/logger';
+import {PluggableModule} from '@testring/pluggable-module';
+import {Queue} from '@testring/utils';
 
 type TestQueue = Queue<IQueuedTest>;
 
@@ -36,6 +37,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             TestRunControllerPlugins.beforeRun,
             TestRunControllerPlugins.beforeTest,
             TestRunControllerPlugins.afterTest,
+            TestRunControllerPlugins.beforeTestRetry,
             TestRunControllerPlugins.afterRun,
             TestRunControllerPlugins.shouldRetry
         ]);
@@ -145,6 +147,26 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         };
     }
 
+    private getRunData(queueItem): IQueuedTestRunData {
+        let screenshotsEnabled = false;
+        let isRetryRun = queueItem.retryCount > 0;
+
+        if (this.config.screenshots === 'enabled') {
+            screenshotsEnabled = true;
+        }
+
+        if (this.config.screenshots === 'afterError') {
+            screenshotsEnabled = isRetryRun;
+        }
+
+        return {
+            debug: this.config.debug || false,
+            logLevel: this.config.logLevel,
+            screenshotsEnabled,
+            isRetryRun,
+        };
+    }
+
     private async prepareTests(testFiles: Array<IFile>): Promise<TestQueue> {
         const testQueue = new Array(testFiles.length);
 
@@ -154,7 +176,15 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
         const modifierQueue = await this.callHook(TestRunControllerPlugins.beforeRun, testQueue);
 
-        return new Queue(modifierQueue);
+        return new Queue((modifierQueue || []).map(item => {
+            return {
+                ...item,
+                parameters: {
+                    ...item.parameters,
+                    runData: this.getRunData(item),
+                },
+            };
+        }));
     }
 
     private async occupyWorker(worker: ITestWorkerInstance, queue: TestQueue): Promise<void> {
@@ -190,9 +220,16 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
             await delay(this.config.retryDelay || 0);
 
-            queue.push(queueItem);
+            queue.push({
+                ...queueItem,
+                parameters: {
+                    ...queueItem.parameters,
+                    runData: this.getRunData(queueItem),
+                }
+            });
 
-            await this.executeWorker(worker, queue);
+            await this.callHook(TestRunControllerPlugins.beforeTestRetry, queueItem, error, this.getWorkerMeta(worker));
+            await this.occupyWorker(worker, queue);
         } else {
             this.errors.push(error);
 
@@ -233,12 +270,11 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             ]);
 
             await this.callHook(TestRunControllerPlugins.afterTest, queuedTest, null, this.getWorkerMeta(worker));
+            await this.occupyWorker(worker, queue);
         } catch (error) {
             queuedTest.retryErrors.push(error);
 
             await this.onTestFailed(error, worker, queuedTest, queue);
-        } finally {
-            await this.occupyWorker(worker, queue);
         }
     }
 }

@@ -1,6 +1,10 @@
-import { IConfig, LogLevel } from '@testring/types';
+import {
+    IConfig,
+    LogLevel,
+} from '@testring/types';
 
 export const defaultConfiguration: Partial<IConfig> = {
+    screenshots: 'disabled',
     config: '.testringrc',
     debug: false,
     silent: false,

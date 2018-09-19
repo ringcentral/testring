@@ -1,8 +1,11 @@
 import { PluginConfig } from './plugin';
 
+export type ScreenshotsConfig = 'disabled' | 'enabled' | 'afterError';
+
 export type ConfigPluginDescriptor = string | [string, PluginConfig];
 
 export interface IConfig {
+    screenshots: ScreenshotsConfig;
     config: string;
     debug: boolean;
     silent: boolean;

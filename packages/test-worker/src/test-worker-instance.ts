@@ -39,7 +39,10 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private workerID = `worker/${nanoid()}`;
 
-    private config: ITestWorkerConfig = { debug: false };
+    private config: ITestWorkerConfig = {
+        screenshots: 'disabled',
+        debug: false,
+    };
 
     constructor(
         private transport: ITransport,

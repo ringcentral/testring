@@ -158,7 +158,13 @@ export class WebApplication extends PluggableModule {
         },
     };
 
-    constructor(private testUID: string, protected transport: ITransport) {
+    constructor(
+        private testUID: string,
+        protected transport: ITransport,
+        protected config: any = {
+            screenshotsEnabled: false,
+        },
+    ) {
         super();
         this.decorateMethods();
     }
@@ -1197,7 +1203,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async makeScreenshot(force: boolean = false) {
-        if (this.screenshotsEnabled || force) {
+        if (this.config.screenshotsEnabled && (this.screenshotsEnabled || force)) {
             const screenshoot = await this.client.makeScreenshot();
             const screenDate = new Date();
             const formattedDate = (`${screenDate.toLocaleTimeString()} ${screenDate.toDateString()}`).replace(/\s+/g, '_');

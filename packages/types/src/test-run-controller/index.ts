@@ -4,6 +4,7 @@ export const enum TestRunControllerPlugins {
     beforeRun = 'beforeRun',
     beforeTest = 'beforeTest',
     afterTest = 'afterTest',
+    beforeTestRetry = 'beforeTestRetry',
     afterRun = 'afterRun',
     shouldRetry = 'shouldRetry',
 }
@@ -13,6 +14,13 @@ export interface IQueuedTest {
     retryErrors: Array<any>;
     test: IFile;
     parameters: any;
+}
+
+export interface IQueuedTestRunData {
+    debug: boolean;
+    logLevel?: string;
+    screenshotsEnabled: boolean;
+    isRetryRun: boolean;
 }
 
 export interface ITestRunController {

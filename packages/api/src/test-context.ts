@@ -12,9 +12,13 @@ export class TestContext {
 
     private customApplications: Set<WebApplication> = new Set();
 
-    public application = new WebApplication(testAPIController.getTestID(), transport);
-
     public http = new HttpClient(transport);
+
+    public get application() {
+        const runData = this.getRunData();
+
+        return new WebApplication(testAPIController.getTestID(), transport, runData);
+    }
 
     public async logBusiness(message: string) {
         this.stopLogBusiness();
@@ -44,6 +48,10 @@ export class TestContext {
         loggerClient.warn(LOG_PREFIX, ...message);
     }
 
+    protected getRunData(): any {
+        return this.getParameters().runData;
+    }
+
     public getParameters(): any {
         return testAPIController.getTestParameters();
     }
@@ -53,7 +61,8 @@ export class TestContext {
     }
 
     public initCustomApplication<T extends WebApplication = WebApplication>(Ctr: { new(...args: Array<any>): T; }) {
-        const customApplication = new Ctr(testAPIController.getTestID(), transport);
+        const runData = this.getRunData();
+        const customApplication = new Ctr(testAPIController.getTestID(), transport, runData);
 
         this.customApplications.add(customApplication);
 

@@ -1,4 +1,5 @@
 import { IFile } from '../fs-reader';
+import { ScreenshotsConfig } from '../config';
 
 export interface ITestWorkerInstance {
     getWorkerID(): string;
@@ -13,6 +14,7 @@ export interface ITestWorkerCallbackMeta {
 }
 
 export interface ITestWorkerConfig {
+    screenshots: ScreenshotsConfig;
     debug: boolean;
 }
 

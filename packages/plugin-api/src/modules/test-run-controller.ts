@@ -11,6 +11,10 @@ export class TestRunControllerAPI extends AbstractAPI {
         this.registryWritePlugin(TestRunControllerPlugins.beforeTest, handler);
     }
 
+    beforeTestRetry(handler: (params: IQueuedTest) => Promise<void>) {
+        this.registryWritePlugin(TestRunControllerPlugins.beforeTestRetry, handler);
+    }
+
     afterTest(handler: (params: IQueuedTest) => Promise<void>) {
         this.registryWritePlugin(TestRunControllerPlugins.afterTest, handler);
     }
