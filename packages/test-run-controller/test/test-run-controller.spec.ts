@@ -3,24 +3,27 @@ import { TestWorkerMock } from '@testring/test-utils';
 import { TestRunControllerPlugins } from '../../types/src/test-run-controller';
 import { TestRunController } from '../src/test-run-controller';
 
-const generageTestFile = (index: number) => ({
+const DEFAULT_TIMEOUT = 60 * 1000;
+
+const generateTestFile = (index: number) => ({
     path: `qwerty-${index}.js`,
     content: `console.log(${index})`,
     meta: {}
 });
 
-const generatedTestFiles = (count: number) => {
-    return Array.from({ length: count }, (v, i) => generageTestFile(i));
+const generateTestFiles = (count: number) => {
+    return Array.from({ length: count }, (v, i) => generateTestFile(i));
 };
 
 describe('Controller', () => {
     it('should run spawn workers with count from according limit', async () => {
         const workerLimit = 20;
+        const config = { bail: false, workerLimit: workerLimit, timeout: DEFAULT_TIMEOUT } as any;
 
-        const tests = generatedTestFiles(40);
+        const tests = generateTestFiles(40);
 
         const testWorkerMock = new TestWorkerMock();
-        const testRunController = new TestRunController({ bail: false, workerLimit: workerLimit }, testWorkerMock);
+        const testRunController = new TestRunController(config, testWorkerMock);
 
         await testRunController.runQueue(tests);
 
@@ -29,11 +32,12 @@ describe('Controller', () => {
 
     it('should run spawn workers by test count, if limit is higher', async () => {
         const testsCount = 2;
+        const config = { bail: false, workerLimit: 10, timeout: DEFAULT_TIMEOUT } as any;
 
-        const tests = generatedTestFiles(testsCount);
+        const tests = generateTestFiles(testsCount);
 
         const testWorkerMock = new TestWorkerMock();
-        const testRunController = new TestRunController({ bail: false, workerLimit: 10 }, testWorkerMock);
+        const testRunController = new TestRunController(config, testWorkerMock);
 
         await testRunController.runQueue(tests);
 
@@ -41,10 +45,12 @@ describe('Controller', () => {
     });
 
     it('should fail instantly, if bail flag passed', async () => {
-        const tests = generatedTestFiles(2);
+        const config = { bail: true, workerLimit: 2, timeout: DEFAULT_TIMEOUT } as any;
+
+        const tests = generateTestFiles(2);
 
         const testWorkerMock = new TestWorkerMock(true);
-        const testRunController = new TestRunController({ bail: true, workerLimit: 2 }, testWorkerMock);
+        const testRunController = new TestRunController(config, testWorkerMock);
 
         const errors = await testRunController.runQueue(tests);
 
@@ -54,9 +60,9 @@ describe('Controller', () => {
     it('should use retries when test fails', async () => {
         const testsCount = 3;
         const retriesCount = 5;
-        const config = { workerLimit: 2, retryDelay: 0, retryCount: retriesCount };
+        const config = { workerLimit: 2, retryDelay: 0, retryCount: retriesCount, testTimeout: DEFAULT_TIMEOUT } as any;
 
-        const tests = generatedTestFiles(testsCount);
+        const tests = generateTestFiles(testsCount);
 
         const testWorkerMock = new TestWorkerMock(true);
         const testRunController = new TestRunController(config, testWorkerMock);
@@ -73,19 +79,20 @@ describe('Controller', () => {
     });
 
     it('should be matching processID meta', async () => {
-        const tests = generatedTestFiles(2);
+        const config = { bail: true, workerLimit: 2, timeout: DEFAULT_TIMEOUT } as any;
+        const tests = generateTestFiles(2);
 
         const testWorkerMock = new TestWorkerMock();
-        const testRunController = new TestRunController({ bail: true, workerLimit: 2}, testWorkerMock);
+        const testRunController = new TestRunController(config, testWorkerMock);
         const beforeTest = testRunController.getHook(TestRunControllerPlugins.beforeTest);
         const afterTest = testRunController.getHook(TestRunControllerPlugins.afterTest);
 
         if (beforeTest && afterTest) {
-            beforeTest.readHook('testPlugin',  (entry, {processID}) => {
+            beforeTest.readHook('testPlugin', (entry, { processID }) => {
                 chai.expect(processID).to.be.equal(testWorkerMock.$getInstanceName());
             });
 
-            afterTest.writeHook('testPlugin',  (entry, error, {processID}) => {
+            afterTest.writeHook('testPlugin', (entry, error, { processID }) => {
                 chai.expect(processID).to.be.equal(testWorkerMock.$getInstanceName());
             });
         }
@@ -99,20 +106,22 @@ describe('Controller', () => {
 
     it('should throw an error processID meta afterTest hook', async () => {
         const testsCount = 1;
-        const tests = generatedTestFiles(testsCount);
+        const config = { bail: true, workerLimit: testsCount, timeout: DEFAULT_TIMEOUT } as any;
+
+        const tests = generateTestFiles(testsCount);
 
         const testWorkerMock = new TestWorkerMock(true);
-        const testRunController = new TestRunController({ bail: true, workerLimit: testsCount}, testWorkerMock);
+        const testRunController = new TestRunController(config, testWorkerMock);
         const beforeTest = testRunController.getHook(TestRunControllerPlugins.beforeTest);
         const afterTest = testRunController.getHook(TestRunControllerPlugins.afterTest);
 
 
         if (beforeTest && afterTest) {
-            beforeTest.readHook('testPlugin', (entry, {processID}) => {
+            beforeTest.readHook('testPlugin', (entry, { processID }) => {
                 chai.expect(processID).to.be.equal(testWorkerMock.$getInstanceName());
             });
 
-            afterTest.writeHook('testPlugin', (entry, error, {processID}) => {
+            afterTest.writeHook('testPlugin', (entry, error, { processID }) => {
                 chai.expect(processID).to.be.equal(testWorkerMock.$getInstanceName());
                 chai.expect(error).to.be.deep.equal(testWorkerMock.$getErrorInstance());
             });

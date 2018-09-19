@@ -10,7 +10,7 @@ import {
 
 const HAS_EMOJI_SUPPORT: boolean = !!(process.stdout.isTTY && process.platform === 'darwin');
 
-const textTemplate = (logLevel: LogLevel) => `[${logLevel}]`.padEnd(9);
+const textTemplate = (logLevel: LogLevel) => logLevel.padEnd(9);
 
 const emojiTemplate = (logLevel: LogLevel) => {
     switch (logLevel) {
@@ -62,11 +62,16 @@ const formatLogLevel = (logLevel: LogLevel, emojiSupport: boolean): string => {
 
 const formatTime = (time: Date) => chalk.grey(`${time.toLocaleTimeString()}`);
 
+const formatProcessID = (processID?: string) => typeof processID === 'string' ? processID.padEnd(10) : 'main';
+
 export const formatLog = (
     logEntity: ILogEntity,
+    processID?: string,
     emojiSupport: boolean = HAS_EMOJI_SUPPORT,
 ): string => {
-    const formattedPrefix = `${formatTime(logEntity.time)} | ${formatLogLevel(logEntity.logLevel, emojiSupport)}`;
+    const formattedPrefix = (
+        `${formatTime(logEntity.time)} | ${formatLogLevel(logEntity.logLevel, emojiSupport)} | ${formatProcessID(processID)} |`
+    );
     let prefixes = logEntity.prefix ? [logEntity.prefix] : [];
 
     switch (logEntity.type) {

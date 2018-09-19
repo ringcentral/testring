@@ -7,11 +7,11 @@ import {
     ITestWorker,
     ITestWorkerCallbackMeta,
     ITestWorkerInstance,
-    TestRunControllerPlugins,
+    TestRunControllerPlugins
 } from '@testring/types';
-import {loggerClientLocal} from '@testring/logger';
-import {PluggableModule} from '@testring/pluggable-module';
-import {Queue} from '@testring/utils';
+import { loggerClientLocal } from '@testring/logger';
+import { PluggableModule } from '@testring/pluggable-module';
+import { Queue } from '@testring/utils';
 
 type TestQueue = Queue<IQueuedTest>;
 
@@ -30,7 +30,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     private currentRun: Promise<any> | null = null;
 
     constructor(
-        private config: Partial<IConfig>,
+        private config: IConfig,
         private testWorker: ITestWorker
     ) {
         super([
@@ -132,9 +132,19 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         return workers;
     }
 
+    private restartWorker(deadWorker: ITestWorkerInstance) {
+        const newWorker = this.testWorker.spawn();
+
+        deadWorker.kill('SIGABRT');
+
+        this.workers = this.workers.map((worker) => worker === deadWorker ? newWorker : worker);
+
+        return newWorker;
+    }
+
     private getWorkerMeta(worker: ITestWorkerInstance): ITestWorkerCallbackMeta {
         return {
-            processID: worker.getWorkerID(),
+            processID: worker.getWorkerID()
         };
     }
 
@@ -163,7 +173,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             debug: this.config.debug || false,
             logLevel: this.config.logLevel,
             screenshotsEnabled,
-            isRetryRun,
+            isRetryRun
         };
     }
 
@@ -181,8 +191,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 ...item,
                 parameters: {
                     ...item.parameters,
-                    runData: this.getRunData(item),
-                },
+                    runData: this.getRunData(item)
+                }
             };
         }));
     }
@@ -224,7 +234,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 ...queueItem,
                 parameters: {
                     ...queueItem.parameters,
-                    runData: this.getRunData(queueItem),
+                    runData: this.getRunData(queueItem)
                 }
             });
 
@@ -245,25 +255,22 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             return;
         }
 
+        let timer;
+
         try {
             await this.callHook(TestRunControllerPlugins.beforeTest, queuedTest, this.getWorkerMeta(worker));
-            const timeout = this.config.testTimeout || 15 * 60 * 1000;
-
-            let timer;
+            const timeout = this.config.testTimeout;
 
             await Promise.race([
-                (async () => {
-                    await worker.execute(
-                        queuedTest.test,
-                        queuedTest.parameters,
-                        this.config.envParameters
-                    );
-
-                    clearTimeout(timer);
-                })(),
+                worker.execute(
+                    queuedTest.test,
+                    queuedTest.parameters,
+                    this.config.envParameters
+                ),
                 new Promise((resolve, reject) => {
                     timer = setTimeout(() => {
-                        worker.kill('SIGABRT');
+                        worker = this.restartWorker(worker);
+
                         reject(new Error(`Test timeout exceeded ${timeout}ms`));
                     }, timeout);
                 })
@@ -275,6 +282,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             queuedTest.retryErrors.push(error);
 
             await this.onTestFailed(error, worker, queuedTest, queue);
+        } finally {
+            clearTimeout(timer);
         }
     }
 }

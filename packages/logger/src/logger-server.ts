@@ -93,7 +93,7 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
         }
 
         const shouldRun = this.queue.length === 0;
-        const formattedMessage = formatLog(logEntity);
+        const formattedMessage = formatLog(logEntity, processID);
         const meta = processID ? { processID } : {};
 
         this.stdout.write(`${formattedMessage}\n`);
