@@ -16,13 +16,6 @@ export interface IQueuedTest {
     parameters: any;
 }
 
-export interface IQueuedTestRunData {
-    debug: boolean;
-    logLevel?: string;
-    screenshotsEnabled: boolean;
-    isRetryRun: boolean;
-}
-
 export interface ITestRunController {
     runQueue(testSet: Array<IFile>): Promise<Error[] | null>;
 
