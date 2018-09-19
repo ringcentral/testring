@@ -2,7 +2,6 @@ import {
     IConfig,
     IFile,
     IQueuedTest,
-    IQueuedTestRunData,
     ITestRunController,
     ITestWorker,
     ITestWorkerCallbackMeta,
@@ -132,16 +131,6 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         return workers;
     }
 
-    private restartWorker(deadWorker: ITestWorkerInstance) {
-        const newWorker = this.testWorker.spawn();
-
-        deadWorker.kill('SIGABRT');
-
-        this.workers = this.workers.map((worker) => worker === deadWorker ? newWorker : worker);
-
-        return newWorker;
-    }
-
     private getWorkerMeta(worker: ITestWorkerInstance): ITestWorkerCallbackMeta {
         return {
             processID: worker.getWorkerID()
@@ -157,7 +146,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         };
     }
 
-    private getRunData(queueItem): IQueuedTestRunData {
+    private getQueueItemWithRunData(queueItem): IQueuedTest {
         let screenshotsEnabled = false;
         let isRetryRun = queueItem.retryCount > 0;
 
@@ -170,10 +159,16 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         }
 
         return {
-            debug: this.config.debug || false,
-            logLevel: this.config.logLevel,
-            screenshotsEnabled,
-            isRetryRun
+            ...queueItem,
+            parameters: {
+                ...queueItem.parameters,
+                runData: {
+                    debug: this.config.debug || false,
+                    logLevel: this.config.logLevel,
+                    screenshotsEnabled,
+                    isRetryRun,
+                },
+            }
         };
     }
 
@@ -186,15 +181,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
         const modifierQueue = await this.callHook(TestRunControllerPlugins.beforeRun, testQueue);
 
-        return new Queue((modifierQueue || []).map(item => {
-            return {
-                ...item,
-                parameters: {
-                    ...item.parameters,
-                    runData: this.getRunData(item)
-                }
-            };
-        }));
+        return new Queue((modifierQueue || []).map(item => this.getQueueItemWithRunData(item)));
     }
 
     private async occupyWorker(worker: ITestWorkerInstance, queue: TestQueue): Promise<void> {
@@ -226,17 +213,14 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             !!shouldRetry &&
             queueItem.retryCount < (this.config.retryCount || 0)
         ) {
-            queueItem.retryCount++;
-
             await delay(this.config.retryDelay || 0);
 
-            queue.push({
+            let copyQueueItem = this.getQueueItemWithRunData({
                 ...queueItem,
-                parameters: {
-                    ...queueItem.parameters,
-                    runData: this.getRunData(queueItem)
-                }
+                retryCount: queueItem.retryCount + 1,
             });
+
+            queue.push(copyQueueItem);
 
             await this.callHook(TestRunControllerPlugins.beforeTestRetry, queueItem, error, this.getWorkerMeta(worker));
             await this.occupyWorker(worker, queue);
@@ -269,7 +253,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 ),
                 new Promise((resolve, reject) => {
                     timer = setTimeout(() => {
-                        worker = this.restartWorker(worker);
+                        worker.kill('SIGABRT');
 
                         reject(new Error(`Test timeout exceeded ${timeout}ms`));
                     }, timeout);

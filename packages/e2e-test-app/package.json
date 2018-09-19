@@ -1,7 +1,7 @@
 {
   "name": "@testring/e2e-test-app",
   "private": true,
-  "version": "0.4.17",
+  "version": "0.4.18",
   "main": "./dist/index.js",
   "repository": {
     "type": "git",
@@ -17,9 +17,9 @@
     "e2e": "npm run test:simple-run && npm run test:selenium"
   },
   "dependencies": {
-    "@testring/plugin-babel": "0.4.17",
-    "@testring/plugin-selenium-driver": "0.4.17",
+    "@testring/plugin-babel": "0.4.18",
+    "@testring/plugin-selenium-driver": "0.4.18",
     "babel-preset-es2015": "^6.24.1",
-    "testring": "0.4.17"
+    "testring": "0.4.18"
   }
 }

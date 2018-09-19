@@ -22,6 +22,7 @@ if it's exists, CLI arguments overrides everything.
 * [retryDelay](#retrydelay)
 * [testTimeout](#testTimeout)
 * [httpThrottle](#httpthrottle)
+* [screenshots](#screenshots)
 * [envParameters](#envparameters)
 * [plugins](#plugins)
 
@@ -224,6 +225,27 @@ $ testring run --http-throttle 500
 ```json
 {
   "httpThrottle": 500
+}
+```
+
+<br/>
+
+## `screenshots`
+
+###### `disable` <sup>default</sup>
+
+Available values:
+* `disable` - turn off screenshots
+* `enable` - turn on screenshots
+* `afterError` - turn on screenshots only on retry runs
+
+```
+$ testring run --screenshots enable
+```
+
+```json
+{
+  "screenshots": 'enable'
 }
 ```
 
