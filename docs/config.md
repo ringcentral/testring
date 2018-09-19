@@ -1,15 +1,15 @@
 
 # Config API
 
-At first, testring have similar API for config file and arguments in command line, 
+At first, testring have similar API for config file and arguments in command line,
 so this guide will have examples for both CLI and config file.\
-Framework have 3 levels of configuration, sorted by priority: 
+Framework have 3 levels of configuration, sorted by priority:
 
 ```
 CLI arguments -> environment file -> config file
 ```
 
-Config file have lowest priority, it's fields will be overrided by environment config, 
+Config file have lowest priority, it's fields will be overrided by environment config,
 if it's exists, CLI arguments overrides everything.
 
 * [config](#config)
@@ -21,6 +21,7 @@ if it's exists, CLI arguments overrides everything.
 * [retryCount](#retrycount)
 * [retryDelay](#retrydelay)
 * [httpThrottle](#httpthrottle)
+* [screenshots](#screenshots)
 * [envParameters](#envparameters)
 * [plugins](#plugins)
 
@@ -58,7 +59,7 @@ All resolving logic is similar to `--config`. \
 
 ###### required
 
-[Glob](https://github.com/isaacs/node-glob#glob-primer) pattern, relative to project root. 
+[Glob](https://github.com/isaacs/node-glob#glob-primer) pattern, relative to project root.
 All founded file will be added to run queue.
 
 ```
@@ -139,8 +140,8 @@ $ testring run --bail
 
 ###### `10` <sup>default</sup>
 
-Limit of parallel running tests. Increase this number carefully, 
-because a lot of workers won't be so efficient, 
+Limit of parallel running tests. Increase this number carefully,
+because a lot of workers won't be so efficient,
 also your driver plugin may not be able to handle so much connections.
 
 ```
@@ -195,7 +196,7 @@ $ testring run --retry-delay 10000
 
 ###### `0` <sup>default</sup>
 
-Delay between http requests in milliseconds. 
+Delay between http requests in milliseconds.
 Useful if you don't want spam your test environment.
 
 ```
@@ -205,6 +206,27 @@ $ testring run --http-throttle 500
 ```json
 {
   "httpThrottle": 500
+}
+```
+
+<br/>
+
+## `screenshots`
+
+###### `disable` <sup>default</sup>
+
+Available values:
+* `disable` - turn off screenshots
+* `enable` - turn on screenshots
+* `afterError` - turn on screenshots only on retry runs
+
+```
+$ testring run --screenshots enable
+```
+
+```json
+{
+  "screenshots": 'enable'
 }
 ```
 
@@ -231,7 +253,7 @@ You can get it inside test with `api.getEnvironment()` call.
 
 ###### `void` <sup>default</sup>
 
-Plugins are powerful instrument for extending framework functional. 
+Plugins are powerful instrument for extending framework functional.
 More about plugins you can read [here](plugin-handbook.md).
 
 ```
