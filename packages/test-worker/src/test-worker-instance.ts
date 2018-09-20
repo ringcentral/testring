@@ -112,7 +112,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
             loggerClientLocal.debug(`Waiting for queue ${this.workerID}`);
         } else if (this.worker !== null) {
-            this.worker.off('error', this.workerUnexpectedExitHandler);
+            this.worker.removeListener('error', this.workerUnexpectedExitHandler);
             this.worker.kill(signal);
             this.worker = null;
 
