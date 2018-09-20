@@ -1,14 +1,14 @@
 import * as path from 'path';
 import { ChildProcess } from 'child_process';
-import { IFile } from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
+import { FSReader } from '@testring/fs-reader';
 import { fork } from '@testring/child-process';
 import {
     buildDependencyDictionary,
-    mergeDependencyDictionaries,
+    mergeDependencyDictionaries
 } from '@testring/dependencies-builder';
-import { FSReader } from '@testring/fs-reader';
 import {
+    IFile,
     ITransport,
     ITestWorkerConfig,
     ITestWorkerInstance,
@@ -25,11 +25,17 @@ const WORKER_ROOT = require.resolve(
     path.resolve(__dirname, 'worker')
 );
 
+function delay(timeout) {
+    return new Promise<void>((resolve) => setTimeout(() => resolve(), timeout));
+}
+
 export class TestWorkerInstance implements ITestWorkerInstance {
 
     private fsReader = new FSReader();
 
     private compileCache: Map<string, string> = new Map();
+
+    private successTestExecution: Function | null = null;
 
     private abortTestExecution: Function | null = null;
 
@@ -41,7 +47,20 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private config: ITestWorkerConfig = {
         screenshots: 'disabled',
-        debug: false,
+        debug: false
+    };
+
+    private workerUnexpectedExitHandler = (exitCode) => {
+        this.worker = null;
+
+        if (this.abortTestExecution !== null) {
+            this.abortTestExecution(
+                new Error(`[${this.workerID}] unexpected worker shutdown. Exit code: ${exitCode}`)
+            );
+
+            this.successTestExecution = null;
+            this.abortTestExecution = null;
+        }
     };
 
     constructor(
@@ -76,20 +95,34 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         return this.workerID;
     }
 
-    public kill(signal: NodeJS.Signals = 'SIGTERM') {
+    public async kill(signal: NodeJS.Signals = 'SIGTERM') {
         let error = new Error('Debug error');
         loggerClientLocal.debug('============================DEBUG======================');
         loggerClientLocal.debug(error);
         loggerClientLocal.debug('============================DEBUG======================');
 
         if (this.queuedWorker !== null) {
-            this.queuedWorker.then(() => {
-                this.kill(signal);
-            });
+            await this.queuedWorker;
+
+            // Dirty hack for correct handling queued worker resolving.
+            // Adds gap between microtasks chain,
+            // that helps to execute sync code in "makeExecutionRequest" before this
+            await delay(100);
+            await this.kill(signal);
+
             loggerClientLocal.debug(`Waiting for queue ${this.workerID}`);
         } else if (this.worker !== null) {
+            this.worker.off('error', this.workerUnexpectedExitHandler);
             this.worker.kill(signal);
             this.worker = null;
+
+            if (this.successTestExecution !== null) {
+                this.successTestExecution();
+
+                this.successTestExecution = null;
+                this.abortTestExecution = null;
+            }
+
             loggerClientLocal.debug(`Killed child process ${this.workerID}`);
         }
     }
@@ -144,17 +177,19 @@ export class TestWorkerInstance implements ITestWorkerInstance {
                         break;
                 }
 
+                this.successTestExecution = null;
                 this.abortTestExecution = null;
             }
         );
 
+        this.successTestExecution = () => {
+            removeListener();
+            resolve();
+        };
+
         this.abortTestExecution = (error) => {
             removeListener();
-            if (error) {
-                reject(error);
-            } else {
-                resolve();
-            }
+            reject(error);
         };
 
         await this.transport.send<ITestExecutionMessage>(this.workerID, TestWorkerAction.executeTest, {
@@ -193,11 +228,13 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         }
 
         if (this.worker === null) {
-            this.queuedWorker = this.createWorker().then((worker) => {
-                this.worker = worker;
-                this.queuedWorker = null;
-                return Promise.resolve(worker);
-            });
+            this.queuedWorker = this.createWorker()
+                .then((worker) => {
+                    this.worker = worker;
+                    this.queuedWorker = null;
+
+                    return worker;
+                });
 
             return this.queuedWorker;
         }
@@ -216,20 +253,10 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             loggerClientLocal.error(`[${this.workerID}] [error] ${data.toString().trim()}`);
         });
 
-        worker.on('close', (exitCode) => {
-            this.worker = null;
-
-            if (this.abortTestExecution !== null) {
-                this.abortTestExecution(
-                    exitCode ?
-                        new Error(`[${this.workerID}] unexpected worker shutdown.`) :
-                        null
-                );
-                this.abortTestExecution = null;
-            }
-        });
+        worker.on('error', this.workerUnexpectedExitHandler);
 
         this.transport.registerChildProcess(this.workerID, worker);
+
         loggerClientLocal.debug(`Registered child process ${this.workerID}`);
 
         return worker;

@@ -25,7 +25,7 @@ describe('TestWorkerInstance', () => {
             } catch (error) {
                 throw error;
             } finally {
-                instance.kill();
+                await instance.kill();
             }
         });
 
@@ -49,14 +49,11 @@ describe('TestWorkerInstance', () => {
                     callback();
                 })
                 .catch(callback)
-                .then(() => {
-                    instance.kill();
-                });
+                .then(() => instance.kill());
         });
     });
 
-    // TODO invalid logic, fix me
-    it('should success execution, if process was killed', () => {
+    it('should success execution, if process was killed by user during execution', () => {
         const file = {
             content: defaultSyncTestContent,
             path: defaultFilename
@@ -99,6 +96,7 @@ describe('TestWorkerInstance', () => {
             instance.execute(file, {}, null)
                 .catch(() => {
                 });
+
             instance.kill();
         });
 

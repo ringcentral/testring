@@ -73,11 +73,12 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     }
 
     public async kill(): Promise<void> {
-        this.workers.forEach((worker) => {
-            worker.kill();
-        });
+        await Promise.all(
+            this.workers.map((worker) => worker.kill())
+        );
 
         this.workers.length = 0;
+
         if (this.currentQueue) {
             this.currentQueue.clean();
         }
@@ -188,7 +189,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         if (queue.length > 0) {
             return this.executeWorker(worker, queue);
         } else {
-            worker.kill();
+            await worker.kill();
         }
     }
 
@@ -252,8 +253,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                     this.config.envParameters
                 ),
                 new Promise((resolve, reject) => {
-                    timer = setTimeout(() => {
-                        worker.kill('SIGABRT');
+                    timer = setTimeout(async () => {
+                        await worker.kill('SIGABRT');
 
                         reject(new Error(`Test timeout exceeded ${timeout}ms`));
                     }, timeout);

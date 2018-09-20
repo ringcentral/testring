@@ -10,7 +10,8 @@ class TestWorkerMockInstance implements ITestWorkerInstance {
     private executeCalls = 0;
     private workerID = 'worker/test';
 
-    constructor(private shouldFail: boolean) {}
+    constructor(private shouldFail: boolean) {
+    }
 
     getWorkerID() {
         return this.workerID;
@@ -26,7 +27,7 @@ class TestWorkerMockInstance implements ITestWorkerInstance {
         return Promise.resolve();
     }
 
-    kill() {
+    async kill() {
     }
 
     $getExecuteCallsCount() {
