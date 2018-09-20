@@ -77,6 +77,12 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     }
 
     public kill(signal: NodeJS.Signals = 'SIGTERM') {
+        let error = new Error('Debug marker');
+        loggerClientLocal.debug('============================DEBUG=============================');
+        loggerClientLocal.debug(error);
+        loggerClientLocal.debug('============================DEBUG=============================');
+
+
         if (this.queuedWorker !== null) {
             this.queuedWorker.then(() => {
                 this.kill(signal);
