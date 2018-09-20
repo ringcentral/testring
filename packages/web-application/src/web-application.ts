@@ -869,7 +869,7 @@ export class WebApplication extends PluggableModule {
 
         await this.waitForExist(xpath, timeout);
 
-        const readonly: string = (await this.client.getAttribute(xpath, 'readonly')).toString();
+        const readonly: string = await this.client.getAttribute(xpath, 'readonly');
         const str: string = await this.client.getTagName(xpath);
 
         if (
@@ -881,7 +881,7 @@ export class WebApplication extends PluggableModule {
             return true;
         }
 
-        const disabled: string = (await this.client.getAttribute(xpath, 'disabled')).toString();
+        const disabled: string = await this.client.getAttribute(xpath, 'disabled');
 
         return (
             disabled === 'true' ||
