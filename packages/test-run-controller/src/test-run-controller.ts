@@ -261,14 +261,15 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 })
             ]);
 
+            clearTimeout(timer);
+
             await this.callHook(TestRunControllerPlugins.afterTest, queuedTest, null, this.getWorkerMeta(worker));
             await this.occupyWorker(worker, queue);
         } catch (error) {
             queuedTest.retryErrors.push(error);
+            clearTimeout(timer);
 
             await this.onTestFailed(error, worker, queuedTest, queue);
-        } finally {
-            clearTimeout(timer);
         }
     }
 }
