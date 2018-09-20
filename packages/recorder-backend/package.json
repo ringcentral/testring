@@ -1,6 +1,6 @@
 {
   "name": "@testring/recorder-backend",
-  "version": "0.4.21",
+  "version": "0.4.22",
   "main": "./dist/index.js",
   "repository": {
     "type": "git",
@@ -13,12 +13,12 @@
     "start:watch": "nodemon --watch 'src/**/*' -e ts,tsx --exec 'ts-node' ./src/index.ts"
   },
   "dependencies": {
-    "@testring/constants": "0.4.21",
-    "@testring/logger": "0.4.21",
-    "@testring/recorder-extension": "0.4.21",
-    "@testring/recorder-frontend": "0.4.21",
-    "@testring/transport": "0.4.21",
-    "@testring/types": "0.4.21",
+    "@testring/constants": "0.4.22",
+    "@testring/logger": "0.4.22",
+    "@testring/recorder-extension": "0.4.22",
+    "@testring/recorder-frontend": "0.4.22",
+    "@testring/transport": "0.4.22",
+    "@testring/types": "0.4.22",
     "@types/babel-traverse": "^6.25.4",
     "@types/koa": "^2.0.46",
     "@types/koa-static": "^4.0.0",
@@ -34,8 +34,8 @@
     "ws": "^6.0.0"
   },
   "devDependencies": {
-    "@testring/test-utils": "0.4.21",
-    "@testring/utils": "0.4.21",
+    "@testring/test-utils": "0.4.22",
+    "@testring/utils": "0.4.22",
     "nodemon": "^1.17.5",
     "request": "2.87.0",
     "request-promise": "4.2.2",
