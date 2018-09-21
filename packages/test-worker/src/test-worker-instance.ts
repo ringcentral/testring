@@ -105,11 +105,6 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     }
 
     public async kill(signal: NodeJS.Signals = 'SIGTERM') {
-        let error = new Error('Debug error');
-        loggerClientLocal.debug('============================DEBUG======================');
-        loggerClientLocal.debug(error);
-        loggerClientLocal.debug('============================DEBUG======================');
-
         if (this.queuedWorker !== null) {
             await this.queuedWorker;
 
