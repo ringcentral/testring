@@ -97,7 +97,7 @@ export class ElementPath {
             this.searchOptions = this.parseQueryKey(options.searchMask);
             this.searchMask = options.searchMask;
         } else {
-            this.searchOptions = this.parseQueryKey('root');
+            this.searchOptions = this.parseQueryKey(this.getRootSelector());
             this.searchMask = null;
         }
     }
@@ -205,6 +205,10 @@ export class ElementPath {
      */
     protected getAttributeName(): string {
         return this.attributeName;
+    }
+
+    protected getRootSelector(): string {
+        return 'root';
     }
 
     protected getMaskXpathParts(searchOptions: {
@@ -364,9 +368,11 @@ export class ElementPath {
 
     public getElementPathChain(): NodePath[] {
         const isRoot = this.parent === null;
+        const rootSelector = this.getRootSelector();
 
         if (this.parent === null) {
-            if (Object.keys(this.searchOptions).length === 1 && this.searchOptions.exactKey === 'root') {
+            // TODO (@flops) make deep equal with this.parseQuery(rootSelector)
+            if (Object.keys(this.searchOptions).length === 1 && this.searchOptions.exactKey === rootSelector) {
                 return [{
                     isRoot,
                     name: 'root',
@@ -452,18 +458,29 @@ export class ElementPath {
         });
     }
 
+    // @deprecated
+    // TODO remove asap
     public generateChildByLocator(locator: XpathLocator): ElementPath {
         if (typeof locator.xpath !== 'string') {
             throw Error('Invalid options, "xpath" string is required');
         }
 
 
-        if (typeof locator.parent === 'string' && locator.parent !== '') {
+        if (locator.parent === '') {
+            return new ElementPath({
+                flows: this.flows,
+                searchOptions: {
+                    xpath: locator.xpath,
+                    id: locator.id,
+                },
+            });
+        } else if (typeof locator.parent === 'string') {
             const genParent = locator.parent.split('.').reduce((memo: ElementPath, key: string) => {
                 if (memo) {
                     return memo.generateChildElementsPath(key);
                 } else {
                     return new ElementPath({
+                        flows: this.flows,
                         searchOptions: {
                             exactKey: key,
                         },

@@ -161,10 +161,11 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
 
         // TODO (flops) @deprecated
         if (key === 'xpathByElement') {
-            return (element: { id: string, locator: string }) => {
-                return proxify(instance.generateChildByXpath({
+            return (element: XpathLocatorProxified) => {
+                return proxify(instance.generateChildByLocator({
                     id: element.id,
                     xpath: element.locator,
+                    parent: element.parent,
                 }), strictMode);
             };
         }
