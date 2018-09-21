@@ -76,7 +76,7 @@ class DirectTransport {
 
         this.childProcessRegistry.set(processID, childProcess);
 
-        childProcess.on('close', () => this.handleChildProcessClose(processID));
+        childProcess.on('exit', () => this.handleChildProcessClose(processID));
         childProcess.on('message', (message) => this.handleChildProcessMessage(message, processID));
     }
 
