@@ -1,6 +1,6 @@
 {
   "name": "@testring/logger",
-  "version": "0.4.23",
+  "version": "0.4.24",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,10 +10,10 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/pluggable-module": "0.4.23",
-    "@testring/transport": "0.4.23",
-    "@testring/types": "0.4.23",
-    "@testring/utils": "0.4.23",
+    "@testring/pluggable-module": "0.4.24",
+    "@testring/transport": "0.4.24",
+    "@testring/types": "0.4.24",
+    "@testring/utils": "0.4.24",
     "@types/bytes": "^3.0.0",
     "@types/nanoid": "^1.0.0",
     "bytes": "^3.0.0",
@@ -21,6 +21,6 @@
     "nanoid": "^1.1.0"
   },
   "devDependencies": {
-    "@testring/test-utils": "0.4.23"
+    "@testring/test-utils": "0.4.24"
   }
 }
