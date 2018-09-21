@@ -25,11 +25,17 @@ const WORKER_ROOT = require.resolve(
     path.resolve(__dirname, 'worker')
 );
 
-function delay(timeout) {
-    return new Promise<void>((resolve) => setTimeout(() => resolve(), timeout));
-}
+const delay = (timeout: number) => new Promise<void>(resolve => setTimeout(resolve, timeout));
+
+const createConfig = (workerConfig: Partial<ITestWorkerConfig>): ITestWorkerConfig => ({
+    screenshots: 'disabled',
+    debug: false,
+    ...workerConfig
+});
 
 export class TestWorkerInstance implements ITestWorkerInstance {
+
+    private config: ITestWorkerConfig;
 
     private fsReader = new FSReader();
 
@@ -45,12 +51,8 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private workerID = `worker/${nanoid()}`;
 
-    private config: ITestWorkerConfig = {
-        screenshots: 'disabled',
-        debug: false
-    };
-
     private workerExitHandler = (exitCode) => {
+        this.clearWorkerHandlers();
         this.worker = null;
 
         if (this.abortTestExecution !== null) {
@@ -79,10 +81,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         private beforeCompile: (paths: Array<string>, filePath: string, fileContent: string) => Promise<Array<string>>,
         workerConfig: Partial<ITestWorkerConfig> = {}
     ) {
-        this.config = {
-            ...this.config,
-            ...workerConfig
-        };
+        this.config = createConfig(workerConfig);
     }
 
     public async execute(file: IFile, parameters: any, envParameters: any): Promise<any> {
@@ -122,8 +121,8 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
             loggerClientLocal.debug(`Waiting for queue ${this.workerID}`);
         } else if (this.worker !== null) {
-            this.worker.removeListener('error', this.workerErrorHandler);
-            this.worker.removeListener('exit', this.workerExitHandler);
+            this.clearWorkerHandlers();
+
             this.worker.kill(signal);
             this.worker = null;
 
@@ -265,7 +264,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         });
 
         worker.on('error', this.workerErrorHandler);
-        worker.on('exit', this.workerExitHandler);
+        worker.once('exit', this.workerExitHandler);
 
         this.transport.registerChildProcess(this.workerID, worker);
 
@@ -279,5 +278,14 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         const rawContent = rawFile ? rawFile.content : '';
 
         return this.compile(rawContent, dependencyPath);
+    }
+
+    private clearWorkerHandlers() {
+        if (this.worker === null) {
+            return;
+        }
+
+        this.worker.removeListener('error', this.workerErrorHandler);
+        this.worker.removeListener('exit', this.workerExitHandler);
     }
 }
