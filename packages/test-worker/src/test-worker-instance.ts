@@ -50,13 +50,23 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         debug: false
     };
 
-    private workerUnexpectedExitHandler = (exitCode) => {
+    private workerExitHandler = (exitCode) => {
         this.worker = null;
 
         if (this.abortTestExecution !== null) {
             this.abortTestExecution(
-                new Error(`[${this.workerID}] unexpected worker shutdown. Exit code: ${exitCode}`)
+                new Error(`[${this.workerID}] unexpected worker shutdown. Exit Code: ${exitCode}`)
             );
+
+            this.successTestExecution = null;
+            this.abortTestExecution = null;
+        }
+    };
+
+
+    private workerErrorHandler = (error) => {
+        if (this.abortTestExecution !== null) {
+            this.abortTestExecution(error);
 
             this.successTestExecution = null;
             this.abortTestExecution = null;
@@ -112,7 +122,8 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
             loggerClientLocal.debug(`Waiting for queue ${this.workerID}`);
         } else if (this.worker !== null) {
-            this.worker.removeListener('error', this.workerUnexpectedExitHandler);
+            this.worker.removeListener('error', this.workerErrorHandler);
+            this.worker.removeListener('exit', this.workerExitHandler);
             this.worker.kill(signal);
             this.worker = null;
 
@@ -253,7 +264,8 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             loggerClientLocal.error(`[${this.workerID}] [error] ${data.toString().trim()}`);
         });
 
-        worker.on('error', this.workerUnexpectedExitHandler);
+        worker.on('error', this.workerErrorHandler);
+        worker.on('exit', this.workerExitHandler);
 
         this.transport.registerChildProcess(this.workerID, worker);
 
