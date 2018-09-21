@@ -10,7 +10,7 @@ import {
 
 export class WebApplicationController extends EventEmitter {
 
-    private killed = false;
+    private isKilled = false;
 
     private onExecuteRequest = async (message: IWebApplicationExecuteMessage, source: string) => {
         this.emit(WebApplicationControllerEventType.execute, message);
@@ -18,7 +18,7 @@ export class WebApplicationController extends EventEmitter {
         try {
             const response = await this.browserProxyController.execute(message.applicant, message.command);
 
-            if (this.killed) {
+            if (this.isKilled) {
                 return;
             }
 
@@ -32,7 +32,7 @@ export class WebApplicationController extends EventEmitter {
 
             this.emit(WebApplicationControllerEventType.afterResponse, message, response);
         } catch (error) {
-            if (this.killed) {
+            if (this.isKilled) {
                 return;
             }
 
@@ -56,6 +56,6 @@ export class WebApplicationController extends EventEmitter {
     }
 
     public kill() {
-        this.killed = true;
+        this.isKilled = true;
     }
 }

@@ -1,4 +1,4 @@
-import { createHttpServer, HttpClientLocal } from '@testring/http-api';
+import { createHttpServer, HttpClientLocal, HttpServer } from '@testring/http-api';
 import { LoggerServer, loggerClientLocal } from '@testring/logger';
 import { TestRunController } from '@testring/test-run-controller';
 import { applyPlugins } from '@testring/plugin-api';
@@ -35,16 +35,16 @@ class RunCommand implements ICLICommand {
     private webApplicationController: WebApplicationController;
     private browserProxyController: BrowserProxyController;
     private testRunController: TestRunController;
+    private httpServer: HttpServer;
 
     constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {}
 
     async execute() {
-        createHttpServer(this.config, this.transport);
-
         const testWorker = new TestWorker(this.transport, {
             debug: this.config.debug,
         });
 
+        this.httpServer = createHttpServer(this.config, this.transport);
         this.browserProxyController = browserProxyControllerFactory(this.transport);
         this.testRunController = new TestRunController(this.config, testWorker);
         this.webApplicationController = new WebApplicationController(this.browserProxyController, this.transport);
@@ -92,15 +92,18 @@ class RunCommand implements ICLICommand {
     }
 
     async shutdown() {
+        const httpServer = this.httpServer;
         const testRunController = this.testRunController;
         const browserProxyController = this.browserProxyController;
         const webApplicationController = this.webApplicationController;
 
+        this.httpServer = (null as any);
         this.testRunController = (null as any);
         this.browserProxyController = (null as any);
         this.webApplicationController = (null as any);
 
-        webApplicationController && await webApplicationController.kill();
+        httpServer && httpServer.kill();
+        webApplicationController && webApplicationController.kill();
         testRunController && await testRunController.kill();
         browserProxyController && await browserProxyController.kill();
     }

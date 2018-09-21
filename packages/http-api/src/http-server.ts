@@ -25,6 +25,8 @@ export class HttpServer extends PluggableModule {
 
     private isBusy: boolean = false;
 
+    private isKilled = false;
+
     constructor(
         private transportInstance: ITransport,
         private config: IConfig,
@@ -36,6 +38,10 @@ export class HttpServer extends PluggableModule {
             HttpServerPlugins.beforeError,
         ]);
         this.registerTransportListener();
+    }
+
+    public kill() {
+        this.isKilled = true;
     }
 
     private get logger(): LoggerClientLocal {
@@ -56,8 +62,13 @@ export class HttpServer extends PluggableModule {
         });
     }
 
-    private async makeRequest(data, src): Promise<any> {
+    private async makeRequest(data, src): Promise<void> {
+        if (this.isKilled) {
+            return;
+        }
+
         let uid;
+
         try {
             uid = data.uid;
             const request = data.request;
@@ -72,6 +83,10 @@ export class HttpServer extends PluggableModule {
                 throw new Error(response.statusMessage);
             }
 
+            if (this.isKilled) {
+                return;
+            }
+
             this.logger.verbose(`Successful response form ${request.url}`);
 
             const responseAfterHook = await this.callHook(HttpServerPlugins.beforeResponse, response, data);
@@ -80,8 +95,13 @@ export class HttpServer extends PluggableModule {
                 uid,
                 response: responseAfterHook
             });
+
             this.setTimer();
         } catch (error) {
+            if (this.isKilled) {
+                return;
+            }
+
             const errorAfterHook = await this.callHook(HttpServerPlugins.beforeError, error, data);
 
             await this.send<IHttpResponseRejectMessage>(src, HttpMessageType.reject, {
@@ -125,6 +145,9 @@ export class HttpServer extends PluggableModule {
         this.logger.debug(`Http server: Register listener for messages [type = ${HttpMessageType.send}]`);
 
         this.transportInstance.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
+            if (this.isKilled) {
+                return;
+            }
 
             // todo validate data
             if (this.isBusy) {
