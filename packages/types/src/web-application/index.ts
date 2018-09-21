@@ -1,3 +1,4 @@
+import { IBrowserProxyPlugin } from '../browser-proxy';
 import { IBrowserProxyCommand } from '../browser-proxy/structs';
 
 export const enum WebApplicationMessageType {
@@ -23,3 +24,7 @@ export interface IWebApplicationResponseMessage {
     response: any;
     error: Error | null;
 }
+
+export type IWebApplicationClient = {
+    [K in keyof IBrowserProxyPlugin]: (...args: Array<any>) => Promise<any>
+};

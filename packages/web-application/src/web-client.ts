@@ -2,13 +2,14 @@ import {
     ITransport,
     IWebApplicationExecuteMessage,
     IWebApplicationResponseMessage,
+    IWebApplicationClient,
     WebApplicationMessageType,
     BrowserProxyActions
 } from '@testring/types';
 
 const nanoid = require('nanoid');
 
-export class WebClient {
+export class WebClient implements IWebApplicationClient {
 
     constructor(private applicant: string, private transport: ITransport) {
     }
@@ -218,7 +219,7 @@ export class WebClient {
     }
 
     public getTagName(xpath) {
-        return this.makeRequest(BrowserProxyActions.getTagName, [xpath]).toString();
+        return this.makeRequest(BrowserProxyActions.getTagName, [xpath]);
     }
 
     public isSelected(xpath) {
@@ -239,5 +240,9 @@ export class WebClient {
 
     public uploadFile(path) {
         return this.makeRequest(BrowserProxyActions.uploadFile, [path]);
+    }
+
+    public kill() {
+        return this.makeRequest(BrowserProxyActions.kill);
     }
 }

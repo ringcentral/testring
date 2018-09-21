@@ -416,15 +416,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    public async addCommand(applicant: string, str: string, fn: any) {
-        await this.createClient(applicant);
-        const client = this.browserClients.get(applicant);
-
-        if (client) {
-            return this.wrapWithPromise(client.addCommand(str, fn));
-        }
-    }
-
     public async getCookie(applicant: string, cookieName: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);
@@ -552,6 +543,15 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         if (client) {
             return this.wrapWithPromise(client.screenshot());
+        }
+    }
+
+    public async uploadFile(applicant: string, filePath: string): Promise<string | void> {
+        await this.createClient(applicant);
+        const client = this.browserClients.get(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.uploadFile(filePath));
         }
     }
 }

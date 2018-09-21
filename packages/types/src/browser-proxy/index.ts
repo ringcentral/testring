@@ -73,8 +73,6 @@ export interface IBrowserProxyPlugin {
 
     dragAndDrop(applicant: string, xpathSource: string, xpathDestination: string): Promise<any>;
 
-    addCommand(applicant: string, str: string, fn: any): Promise<any>;
-
     getCookie(applicant: string, cookieName: string): Promise<any>;
 
     deleteCookie(applicant: string, cookieName: string): Promise<any>;
@@ -102,4 +100,6 @@ export interface IBrowserProxyPlugin {
     elementIdSelected(applicant: string, id: string): Promise<any>;
 
     makeScreenshot(applicant: string): Promise<string | void>;
+
+    uploadFile(applicant: string, filePath: string): Promise<string | void>;
 }
