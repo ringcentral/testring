@@ -241,6 +241,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         }
 
         let timer;
+        let isRejectedByTimeout = false;
 
         try {
             await this.callHook(TestRunControllerPlugins.beforeTest, queuedTest, this.getWorkerMeta(worker));
@@ -254,8 +255,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 ),
                 new Promise((resolve, reject) => {
                     timer = setTimeout(async () => {
-                        await worker.kill('SIGABRT');
-
+                        isRejectedByTimeout = true;
                         reject(new Error(`Test timeout exceeded ${timeout}ms`));
                     }, timeout);
                 })
@@ -266,6 +266,10 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             await this.callHook(TestRunControllerPlugins.afterTest, queuedTest, null, this.getWorkerMeta(worker));
             await this.occupyWorker(worker, queue);
         } catch (error) {
+            if (isRejectedByTimeout) {
+                await worker.kill('SIGABRT');
+            }
+
             queuedTest.retryErrors.push(error);
             clearTimeout(timer);
 

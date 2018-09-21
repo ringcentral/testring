@@ -118,7 +118,19 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         } else if (this.worker !== null) {
             this.clearWorkerHandlers();
 
+            let waitForKill = new Promise((resolve) => {
+                if (this.worker !== null) {
+                    this.worker.once('exit', () => {
+                        resolve();
+                    });
+                } else {
+                    resolve();
+                }
+            });
+
             this.worker.kill(signal);
+            await waitForKill;
+
             this.worker = null;
 
             if (this.successTestExecution !== null) {
