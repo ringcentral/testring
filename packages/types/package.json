@@ -1,6 +1,6 @@
 {
   "name": "@testring/types",
-  "version": "0.4.22",
+  "version": "0.4.23",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "repository": {
