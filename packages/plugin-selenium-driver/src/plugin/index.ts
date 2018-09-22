@@ -128,7 +128,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         if (client) {
             this.browserClients.delete(applicant);
 
-            await this.wrapWithPromise(waitFor(client));
             await this.wrapWithPromise(client.end());
         }
     }
