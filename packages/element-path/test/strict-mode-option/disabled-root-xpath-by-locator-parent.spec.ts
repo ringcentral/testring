@@ -33,7 +33,7 @@ describe('.xpathByLocator() with parent', () => {
                 locator: '//*[@class=\'selected\']',
                 parent: ''
             });
-            expect(child.toString()).to.be.equal('(//*[@class=\'selected\'])[1]');
+            expect(child.toString()).to.be.equal('(//*[@data-test-automation-id=\'root\']//*[@class=\'selected\'])[1]');
         });
 
         it('call without id', () => {
@@ -55,20 +55,20 @@ describe('.xpathByLocator() with parent', () => {
     describe('basic Object methods', () => {
         it('.toString()', () => {
             expect(xpathSelectorCall.toString()).to.be.equal(
-                '(//*[@data-test-automation-id=\'foo\']//*[@data-test-automation-id=\'bar\']' +
-                '//*[@class=\'selected\'])[1]');
+                '(//*[@data-test-automation-id=\'root\']//*[@data-test-automation-id=\'foo\']' +
+                '//*[@data-test-automation-id=\'bar\']//*[@class=\'selected\'])[1]');
         });
 
         it('to string converting', () => {
             expect(`${xpathSelectorCall}`).to.be.equal(
-                '(//*[@data-test-automation-id=\'foo\']//*[@data-test-automation-id=\'bar\']' +
-                '//*[@class=\'selected\'])[1]');
+                '(//*[@data-test-automation-id=\'root\']//*[@data-test-automation-id=\'foo\']' +
+                '//*[@data-test-automation-id=\'bar\']//*[@class=\'selected\'])[1]');
         });
 
         it('.toString(true)', () => {
             expect(xpathSelectorCall.toString(true)).to.be.equal(
-                '//*[@data-test-automation-id=\'foo\']//*[@data-test-automation-id=\'bar\']' +
-                '//*[@class=\'selected\']'
+                '//*[@data-test-automation-id=\'root\']//*[@data-test-automation-id=\'foo\']' +
+                '//*[@data-test-automation-id=\'bar\']//*[@class=\'selected\']'
             );
         });
 
@@ -85,6 +85,11 @@ describe('.xpathByLocator() with parent', () => {
             object: xpathSelectorCall,
             key: '__path',
             valueDescriptor: getDescriptor([
+                {
+                    'isRoot': true,
+                    'name': 'root',
+                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                },
                 {
                     'isRoot': false,
                     'query': {
@@ -135,6 +140,11 @@ describe('.xpathByLocator() with parent', () => {
             key: '__parentPath',
             valueDescriptor: getPrivateDescriptor([
                 {
+                    'isRoot': true,
+                    'name': 'root',
+                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                },
+                {
                     'isRoot': false,
                     'query': {
                         'exactKey': 'foo'
@@ -155,7 +165,7 @@ describe('.xpathByLocator() with parent', () => {
     describe('.__getReversedChain call', () => {
         it('with root', () => {
             expect(xpathSelectorCall.__getReversedChain()).to.be.equal(
-                '.foo.bar.xpath("selected", "//*[@class=\'selected\']")'
+                'root.foo.bar.xpath("selected", "//*[@class=\'selected\']")'
             );
         });
         it('without root', () => {

@@ -467,14 +467,21 @@ export class ElementPath {
 
 
         if (locator.parent === '') {
-            return new ElementPath({
+            const root = new ElementPath({
                 flows: this.flows,
-                searchOptions: {
-                    xpath: locator.xpath,
-                    id: locator.id,
-                },
+                searchOptions: this.parseQueryKey(this.getRootSelector()),
+            });
+
+            return root.generateChildElementPathByOptions({
+                xpath: locator.xpath,
+                id: locator.id,
             });
         } else if (typeof locator.parent === 'string') {
+            let root = new ElementPath({
+                flows: this.flows,
+                searchOptions: this.parseQueryKey(this.getRootSelector()),
+            });
+
             const genParent = locator.parent.split('.').reduce((memo: ElementPath, key: string) => {
                 if (memo) {
                     return memo.generateChildElementsPath(key);
@@ -486,7 +493,7 @@ export class ElementPath {
                         },
                     });
                 }
-            }, null);
+            }, root);
 
             // Can not be null
             // @ts-ignore

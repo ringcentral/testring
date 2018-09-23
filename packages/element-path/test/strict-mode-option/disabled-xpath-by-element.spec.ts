@@ -18,7 +18,7 @@ describe('.xpathByElement()', () => {
     let xpathSelectorCall = root.xpathByElement({
         id: 'selected',
         locator: '//*[@class=\'selected\']',
-        parent: 'root.foo',
+        parent: 'foo',
     });
 
     describe('arguments validation', () => {

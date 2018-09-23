@@ -35,15 +35,18 @@ describe('.xpathByElement()', () => {
 
     describe('basic Object methods', () => {
         it('.toString()', () => {
-            expect(xpathSelectorCall.toString()).to.be.equal('(//*[@class=\'selected\'])[1]');
+            expect(xpathSelectorCall.toString()).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
+                '//*[@class=\'selected\'])[1]');
         });
 
         it('to string converting', () => {
-            expect(`${xpathSelectorCall}`).to.be.equal('(//*[@class=\'selected\'])[1]');
+            expect(`${xpathSelectorCall}`).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
+                '//*[@class=\'selected\'])[1]');
         });
 
         it('.toString(true)', () => {
-            expect(xpathSelectorCall.toString(true)).to.be.equal('//*[@class=\'selected\']');
+            expect(xpathSelectorCall.toString(true)).to.be.equal('//*[@data-test-automation-id=\'root\']' +
+                '//*[@class=\'selected\']');
         });
 
         checkAccessMethods(xpathSelectorCall);
@@ -59,6 +62,11 @@ describe('.xpathByElement()', () => {
             object: xpathSelectorCall,
             key: '__path',
             valueDescriptor: getDescriptor([
+                {
+                    'isRoot': true,
+                    'name': 'root',
+                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                },
                 {
                     'isRoot': false,
                     'query': {
@@ -93,14 +101,20 @@ describe('.xpathByElement()', () => {
         checkProperty({
             object: xpathSelectorCall,
             key: '__parentPath',
-            valueDescriptor: getPrivateDescriptor(null)
+            valueDescriptor: getPrivateDescriptor([
+                {
+                    'isRoot': true,
+                    'name': 'root',
+                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                },
+            ])
         });
     });
 
     describe('.__getReversedChain call', () => {
         it('with root', () => {
             expect(xpathSelectorCall.__getReversedChain()).to.be.equal(
-                '.xpath("selected", "//*[@class=\'selected\']")'
+                'root.xpath("selected", "//*[@class=\'selected\']")'
             );
         });
         it('without root', () => {
