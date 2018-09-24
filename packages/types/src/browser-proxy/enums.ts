@@ -39,7 +39,7 @@ export const enum BrowserProxyActions {
     alertText = 'alertText',
     dragAndDrop = 'dragAndDrop',
     frame = 'frame',
-    parentFrame = 'parentFrame',
+    frameParent = 'frameParent',
     getCookie = 'getCookie',
     deleteCookie = 'deleteCookie',
     getHTML = 'getHTML',

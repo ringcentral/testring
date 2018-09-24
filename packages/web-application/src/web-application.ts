@@ -1134,7 +1134,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async switchToParentFrame() {
-        return this.client.parentFrame();
+        return this.client.frameParent();
     }
 
     private async getTextsInternal(xpath, trim, allowMultipleNodesInResult = false) {

@@ -35,7 +35,7 @@ export interface IBrowserProxyPlugin {
 
     frame(applicant: string, frameID: any): Promise<any>;
 
-    parentFrame(applicant: string): Promise<any>;
+    frameParent(applicant: string): Promise<any>;
 
     getTitle(applicant: string): Promise<any>;
 

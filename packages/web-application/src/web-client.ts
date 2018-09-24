@@ -1,10 +1,10 @@
 import {
+    BrowserProxyActions,
     ITransport,
+    IWebApplicationClient,
     IWebApplicationExecuteMessage,
     IWebApplicationResponseMessage,
-    IWebApplicationClient,
     WebApplicationMessageType,
-    BrowserProxyActions
 } from '@testring/types';
 
 const nanoid = require('nanoid');
@@ -178,8 +178,8 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.frame, [name]);
     }
 
-    public parentFrame() {
-        return this.makeRequest(BrowserProxyActions.frame);
+    public frameParent() {
+        return this.makeRequest(BrowserProxyActions.frameParent, []);
     }
 
     public getCookie(cookieName) {
