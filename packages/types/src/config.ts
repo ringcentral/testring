@@ -15,7 +15,6 @@ export interface IConfig {
     retryDelay: number;
     testTimeout: number;
     tests: string;
-    httpThrottle: number;
     logLevel: string;
     envConfig?: string;
     envParameters?: any;

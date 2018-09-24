@@ -59,11 +59,6 @@ createField('plugins', {
     type: 'array'
 });
 
-createField('httpThrottle', {
-    describe: 'Time of delay before next http request',
-    type: 'number'
-});
-
 createField('logLevel', {
     describe: 'Flag for filtering log records',
     type: 'string'

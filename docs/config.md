@@ -21,7 +21,6 @@ if it's exists, CLI arguments overrides everything.
 * [retryCount](#retrycount)
 * [retryDelay](#retrydelay)
 * [testTimeout](#testTimeout)
-* [httpThrottle](#httpthrottle)
 * [screenshots](#screenshots)
 * [envParameters](#envparameters)
 * [plugins](#plugins)
@@ -206,25 +205,6 @@ $ testring run --test-timeout 10000
 ```json
 {
   "testTimeout": 10000
-}
-```
-
-<br/>
-
-## `httpThrottle`
-
-###### `0` <sup>default</sup>
-
-Delay between http requests in milliseconds.
-Useful if you don't want spam your test environment.
-
-```
-$ testring run --http-throttle 500
-```
-
-```json
-{
-  "httpThrottle": 500
 }
 ```
 

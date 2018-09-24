@@ -44,7 +44,7 @@ class RunCommand implements ICLICommand {
             debug: this.config.debug,
         });
 
-        this.httpServer = createHttpServer(this.config, this.transport);
+        this.httpServer = createHttpServer(this.transport);
         this.browserProxyController = browserProxyControllerFactory(this.transport);
         this.testRunController = new TestRunController(this.config, testWorker);
         this.webApplicationController = new WebApplicationController(this.browserProxyController, this.transport);

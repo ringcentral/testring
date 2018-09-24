@@ -13,7 +13,7 @@ class RecordCommand implements ICLICommand {
     constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {}
 
     async execute() {
-        createHttpServer(this.config, this.transport);
+        createHttpServer(this.transport);
 
         const loggerServer = new LoggerServer(this.config, this.transport, this.stdout);
         const testWorker = new TestWorker(this.transport, this.config);

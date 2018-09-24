@@ -5,8 +5,6 @@ import { HttpMessageType, IHttpResponse } from '@testring/types';
 import { TransportMock } from '@testring/test-utils';
 import { HttpServer } from '../src/http-server';
 
-const DEFAULT_CONFIG: any = { httpThrottle: 0 };
-
 // TODO (flops) add tests for cookies and hooks
 
 describe('HttpServer', () => {
@@ -21,14 +19,15 @@ describe('HttpServer', () => {
 
         const requestHandler = () => Promise.resolve(responseMock);
         const transport = new TransportMock();
-
-        new HttpServer(transport, DEFAULT_CONFIG, requestHandler);
+        const httpServer = new HttpServer(transport, requestHandler);
 
         transport.on(HttpMessageType.reject, (error) => {
             callback(error);
         });
 
         transport.on(HttpMessageType.response, (response) => {
+            httpServer.kill();
+
             try {
                 chai.expect(response.response).to.be.equal(responseMock);
                 callback();
@@ -47,9 +46,11 @@ describe('HttpServer', () => {
         const rp = () => Promise.resolve();
         const transport = new TransportMock();
 
-        new HttpServer(transport, DEFAULT_CONFIG, rp as any);
+        const httpServer = new HttpServer(transport, rp as any);
 
         transport.on(HttpMessageType.reject, (response) => {
+            httpServer.kill();
+
             try {
                 chai.expect(response.error).to.be.instanceOf(Error);
                 callback();
@@ -73,9 +74,11 @@ describe('HttpServer', () => {
 
         const transport = new TransportMock();
 
-        new HttpServer(transport, DEFAULT_CONFIG, rp as any);
+        const httpServer = new HttpServer(transport, rp as any);
 
         transport.on(HttpMessageType.reject, (response) => {
+            httpServer.kill();
+
             try {
                 chai.expect(response.error).to.be.instanceOf(Error);
                 callback();
@@ -128,28 +131,33 @@ describe('HttpServer', () => {
             });
         };
 
-        let responseId = 0;
+        let responseID = 0;
+
         const spy = (...args) => {
             try {
-                switch (responseId) {
+                switch (responseID) {
                     case 0:
                         chai.expect(args[0].error).to.be.instanceOf(Error);
                         break;
                     case 1:
                         chai.expect(args[0].response).to.be.deep.equal(responseMock);
+
+                        httpServer.kill();
+
                         callback();
                         break;
                     default:
                         throw new Error('Called to many times');
                 }
             } catch (err) {
+                httpServer.kill();
                 callback(err);
             }
 
-            responseId++;
+            responseID++;
         };
 
-        new HttpServer(transport, DEFAULT_CONFIG, rp as any);
+        const httpServer = new HttpServer(transport, rp as any);
 
         transport.on(HttpMessageType.response, spy);
         transport.on(HttpMessageType.reject, spy);
