@@ -22,7 +22,7 @@
     "@types/chrome": "0.0.69",
     "@types/webpack": "4.4.5",
     "mkdirp": "^0.5.1",
-    "nanoid": "^1.0.7",
+    "nanoid": "^1.2.3",
     "ncp": "^2.0.0",
     "nodemon": "^1.18.1",
     "ts-loader": "^4.4.2",

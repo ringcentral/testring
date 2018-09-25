@@ -1,7 +1,7 @@
 module.exports = async () =>  ({
     workerLimit: 5,
     retryCount: 0,
-    tests: 'test/selenium/test/*.spec.js',
+    tests: 'test/proxy-plugins/test/*.spec.js',
     plugins: [
         'selenium-driver',
         ['babel', {

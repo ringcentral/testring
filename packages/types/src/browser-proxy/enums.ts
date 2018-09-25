@@ -13,7 +13,6 @@ export const enum BrowserProxyActions {
     click = 'click',
     execute = 'execute',
     executeAsync = 'executeAsync',
-    gridProxyDetails = 'gridProxyDetails',
     url = 'url',
     waitForExist = 'waitForExist',
     waitForVisible = 'waitForVisible',

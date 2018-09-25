@@ -152,8 +152,8 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
                 }
 
                 return proxify(instance.generateChildByLocator({
-                    xpath: element.locator,
                     id: element.id,
+                    xpath: element.locator,
                     parent: element.parent,
                 }), strictMode);
             };

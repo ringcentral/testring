@@ -62,10 +62,6 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.click, [xpath]);
     }
 
-    public gridProxyDetails() {
-        return this.makeRequest(BrowserProxyActions.gridProxyDetails, []);
-    }
-
     public url(val) {
         return this.makeRequest(BrowserProxyActions.url, [val]);
     }

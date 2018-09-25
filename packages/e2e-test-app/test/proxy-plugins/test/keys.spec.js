@@ -4,7 +4,7 @@ run(async (api) => {
     await api.application.url('https://service.ringcentral.com/');
 
     await api.application.click(
-        api.application.root.credential
+        api.application.root.credential.input
     );
 
     await api.application.keys('testRing');

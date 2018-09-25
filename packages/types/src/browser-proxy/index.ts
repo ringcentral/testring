@@ -17,8 +17,6 @@ export interface IBrowserProxyPlugin {
 
     click(applicant: string, selector: string): Promise<any>;
 
-    gridProxyDetails(applicant: string): Promise<any>;
-
     url(applicant: string, val: string): Promise<any>;
 
     waitForExist(applicant: string, xpath: string, timeout: number): Promise<any>;

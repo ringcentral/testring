@@ -225,7 +225,7 @@ $ testring run --screenshots enable
 
 ```json
 {
-  "screenshots": 'enable'
+  "screenshots": "enable"
 }
 ```
 

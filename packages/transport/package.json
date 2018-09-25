@@ -11,8 +11,8 @@
   "license": "MIT",
   "dependencies": {
     "@testring/types": "0.4.29",
-    "@types/nanoid": "^1.0.0",
-    "nanoid": "^1.1.0"
+    "@types/nanoid": "^1.2.0",
+    "nanoid": "^1.2.3"
   },
   "devDependencies": {
     "@testring/child-process": "0.4.29"

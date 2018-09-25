@@ -20,8 +20,8 @@
     "@testring/transport": "0.4.29",
     "@testring/types": "0.4.29",
     "@testring/utils": "0.4.29",
-    "@types/nanoid": "^1.0.0",
-    "nanoid": "^1.1.0"
+    "@types/nanoid": "^1.2.0",
+    "nanoid": "^1.2.3"
   },
   "devDependencies": {
     "@testring/test-utils": "0.4.29"

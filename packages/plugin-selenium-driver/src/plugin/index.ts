@@ -163,15 +163,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    public async gridProxyDetails(applicant: string) {
-        await this.createClient(applicant);
-        const client = this.browserClients.get(applicant);
-
-        if (client) {
-            return this.wrapWithPromise(client.gridProxyDetails());
-        }
-    }
-
     public async url(applicant: string, val: string) {
         await this.createClient(applicant);
         const client = this.browserClients.get(applicant);

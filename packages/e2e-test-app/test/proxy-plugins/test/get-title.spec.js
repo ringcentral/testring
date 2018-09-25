@@ -1,5 +1,9 @@
 import { run } from 'testring';
 
+function delay(timeout) {
+    return new Promise((resolve) => setTimeout(() => resolve(), timeout));
+}
+
 run(async (api) => {
     await api.application.url('https://www.ringcentral.com/');
 
