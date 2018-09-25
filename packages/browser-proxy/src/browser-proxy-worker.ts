@@ -41,13 +41,19 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
     private registerResponseListener(): void {
         this.transport.on(
             BrowserProxyMessageTypes.response,
-            (response) => this.onCommandResponse(response)
+            (response, source) => {
+                if (this.workerID === source) {
+                    this.onCommandResponse(response);
+                }
+            }
         );
 
-        this.transport.on(BrowserProxyMessageTypes.exception, (error) => {
-            this.kill();
+        this.transport.on(BrowserProxyMessageTypes.exception, (error, source) => {
+            if (this.workerID === source) {
+                this.kill().catch((err) => this.logger.error(err));
 
-            throw error;
+                throw error;
+            }
         });
     }
 
@@ -154,12 +160,12 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
         spawnResolver();
     }
 
-    public async execute(applicant: string, command: IBrowserProxyCommand): Promise<void> {
+    public async execute(applicant: string, command: IBrowserProxyCommand): Promise<any> {
         if (this.worker === null) {
             await this.spawn();
         }
 
-        await new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             const uid = nanoid();
             const item: IBrowserProxyPendingCommand = {
                 uid,

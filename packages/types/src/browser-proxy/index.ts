@@ -3,7 +3,7 @@ import { IBrowserProxyCommand } from './structs';
 export interface IBrowserProxyController {
     init(): Promise<void>;
 
-    execute(applicant: string, command: IBrowserProxyCommand): Promise<number>;
+    execute(applicant: string, command: IBrowserProxyCommand): Promise<any>;
 
     kill(): Promise<void>;
 }
@@ -13,7 +13,7 @@ export interface IBrowserProxyWorker {
 
     spawn(): Promise<void>;
 
-    execute(applicant: string, command: IBrowserProxyCommand): Promise<void>;
+    execute(applicant: string, command: IBrowserProxyCommand): Promise<any>;
 
     kill(): Promise<void>;
 }

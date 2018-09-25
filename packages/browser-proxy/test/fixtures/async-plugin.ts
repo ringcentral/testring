@@ -1,6 +1,6 @@
 class AsyncPlugin {
-    async click() {
-
+    async click(applicant, argument) {
+        return  argument;
     }
 
     async kill() {

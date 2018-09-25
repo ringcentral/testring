@@ -2,7 +2,7 @@ import { BrowserProxyActions } from './enums';
 
 export interface IBrowserProxyCommand {
     action: BrowserProxyActions;
-    args: Array<string>;
+    args: Array<any>;
 }
 
 export interface IBrowserProxyMessage {

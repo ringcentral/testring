@@ -58,7 +58,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
         const { config } = this.externalPlugin;
 
-        if (config && typeof config.workerLimit === 'number') {
+        if (config && typeof config.workerLimit === 'number' && !isNaN(config.workerLimit)) {
             this.workerLimit = config.workerLimit;
         }
     }
@@ -76,7 +76,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
             this.workersPool.add(worker);
             this.lastWorkerIndex = this.workersPool.size - 1;
         } else {
-            this.lastWorkerIndex = (this.lastWorkerIndex + 1 >= this.workersPool.size) ? this.lastWorkerIndex + 1 : 0;
+            this.lastWorkerIndex = (this.lastWorkerIndex + 1 < this.workersPool.size) ? this.lastWorkerIndex + 1 : 0;
             worker = [...this.workersPool.values()][this.lastWorkerIndex];
         }
 
@@ -85,16 +85,14 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
         return worker;
     }
 
-    public async execute(applicant: string, command: IBrowserProxyCommand): Promise<number> {
+    public async execute(applicant: string, command: IBrowserProxyCommand): Promise<any> {
         const worker = this.getWorker(applicant);
 
         if (command.action === BrowserProxyActions.end) {
             this.applicantWorkerMap.delete(applicant);
         }
 
-        await worker.execute(applicant, command);
-
-        return worker.getProcessID() as number;
+        return worker.execute(applicant, command);
     }
 
     private reset() {
