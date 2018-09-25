@@ -48,7 +48,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
         super([ BrowserProxyPlugins.getPlugin ]);
     }
 
-    public async spawn(): Promise<void> {
+    public async init(): Promise<void> {
         if (typeof this.workerCreator !== 'function') {
             this.logger.error(`Unsupported worker type "${typeof this.workerCreator}"`);
             throw new Error(`Unsupported worker type "${typeof this.workerCreator}"`);

@@ -32,7 +32,7 @@ describe('Browser proxy controller functional test', () => {
             });
         }
 
-        controller.spawn().then(() => {
+        controller.init().then(() => {
             return controller.execute('test', {
                 action: BrowserProxyActions.click,
                 args: []
@@ -55,7 +55,7 @@ describe('Browser proxy controller functional test', () => {
             ]);
         });
 
-        await controller.spawn();
+        await controller.init();
 
         await controller.execute('test', {
             action: BrowserProxyActions.click,
@@ -78,7 +78,7 @@ describe('Browser proxy controller functional test', () => {
             ]);
         });
 
-        controller.spawn()
+        controller.init()
             .then(() => {
                 controller.execute('test', {
                     action: BrowserProxyActions.click,
@@ -114,7 +114,7 @@ describe('Browser proxy controller functional test', () => {
             ]);
         });
 
-        controller.spawn()
+        controller.init()
             .then((pid) => {
                 controller.execute('test', {
                     action: 'barrelRoll' as BrowserProxyActions,

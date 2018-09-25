@@ -1,7 +1,7 @@
 import { IBrowserProxyCommand } from './structs';
 
 export interface IBrowserProxyController {
-    spawn(): Promise<void>;
+    init(): Promise<void>;
 
     execute(applicant: string, command: IBrowserProxyCommand): Promise<number>;
 
