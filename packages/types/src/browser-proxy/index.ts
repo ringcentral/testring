@@ -1,7 +1,17 @@
 import { IBrowserProxyCommand } from './structs';
 
 export interface IBrowserProxyController {
-    spawn(): Promise<number>;
+    spawn(): Promise<void>;
+
+    execute(applicant: string, command: IBrowserProxyCommand): Promise<number>;
+
+    kill(): Promise<void>;
+}
+
+export interface IBrowserProxyWorker {
+    getProcessID(): number | null;
+
+    spawn(): Promise<void>;
 
     execute(applicant: string, command: IBrowserProxyCommand): Promise<void>;
 

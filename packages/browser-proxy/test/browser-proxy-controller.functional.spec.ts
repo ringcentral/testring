@@ -33,6 +33,11 @@ describe('Browser proxy controller functional test', () => {
         }
 
         controller.spawn().then(() => {
+            return controller.execute('test', {
+                action: BrowserProxyActions.click,
+                args: []
+            });
+        }).then(() => {
             controller.kill();
         }).catch(() => {
             controller.kill();
@@ -74,21 +79,25 @@ describe('Browser proxy controller functional test', () => {
         });
 
         controller.spawn()
-            .then((pid) => {
+            .then(() => {
                 controller.execute('test', {
                     action: BrowserProxyActions.click,
                     args: []
                 })
-                    .then(() => {
+                    .then((pid) => {
                         controller.kill();
 
                         callback();
+
+                        return pid;
                     })
                     .catch((e) => {
                         callback(e);
                     })
-                    .then(() => {
-                        process.kill(pid);
+                    .then((pid) => {
+                        if (pid) {
+                            process.kill(pid);
+                        }
                     });
             })
             .catch(callback);
@@ -111,16 +120,22 @@ describe('Browser proxy controller functional test', () => {
                     action: 'barrelRoll' as BrowserProxyActions,
                     args: []
                 })
-                    .then(() => {
+                    .then((pid) => {
                         callback(new Error('passed somehow'));
+
+                        return pid;
                     })
                     .catch(() => {
                         controller.kill();
 
                         callback();
+
+                        return pid;
                     })
-                    .then(() => {
-                        process.kill(pid);
+                    .then((pid) => {
+                        if (pid) {
+                            process.kill(pid);
+                        }
                     });
             })
             .catch(callback);

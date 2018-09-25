@@ -1,11 +1,11 @@
 export const enum BrowserProxyMessageTypes {
     execute = 'BrowserProxy/EXEC',
     response = 'BrowserProxy/RESPONSE',
-    exception = 'BrowserProxy/EXCEPTION'
+    exception = 'BrowserProxy/EXCEPTION',
 }
 
 export const enum BrowserProxyPlugins {
-    getPlugin = 'getPlugin'
+    getPlugin = 'getPlugin',
 }
 
 export const enum BrowserProxyActions {
@@ -57,5 +57,5 @@ export const enum BrowserProxyActions {
     makeScreenshot = 'makeScreenshot',
     uploadFile = 'uploadFile',
     end = 'end',
-    kill = 'kill'
+    kill = 'kill',
 }
