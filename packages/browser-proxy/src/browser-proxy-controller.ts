@@ -39,7 +39,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
     private workerLimit: number = 1;
 
-    protected logger = logger;
+    private logger = logger;
 
     constructor(
         private transport: ITransport,
@@ -97,7 +97,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
         return worker.getProcessID() as number;
     }
 
-    protected reset() {
+    private reset() {
         this.workersPool.clear();
 
         this.applicantWorkerMap.clear();

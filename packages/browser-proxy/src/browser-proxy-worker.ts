@@ -28,12 +28,12 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
 
     private workerID: string;
 
-    protected logger = logger;
+    private logger = logger;
 
     constructor(
         private transport: ITransport,
-        protected workerCreator: (onActionPluginPath: string, config: any) => ChildProcess | Promise<ChildProcess>,
-        protected spawnConfig: { plugin: string, config: any },
+        private workerCreator: (onActionPluginPath: string, config: any) => ChildProcess | Promise<ChildProcess>,
+        private spawnConfig: { plugin: string, config: any },
     ) {
         this.registerResponseListener();
     }
@@ -99,7 +99,7 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
         });
     };
 
-    protected async send(item: IBrowserProxyPendingCommand) {
+    private async send(item: IBrowserProxyPendingCommand) {
         const { command, applicant, uid } = item;
 
         this.pendingCommandsPool.set(uid, item);
