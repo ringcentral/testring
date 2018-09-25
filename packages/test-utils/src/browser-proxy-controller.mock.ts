@@ -3,14 +3,14 @@ import { IBrowserProxyController, IBrowserProxyCommand } from '@testring/types';
 export class BrowserProxyControllerMock implements IBrowserProxyController {
     private callStack: Array<IBrowserProxyCommand> = [];
 
-    spawn() {
-        return Promise.resolve(0);
+    init() {
+        return Promise.resolve();
     }
 
     execute(applicant: string, command: IBrowserProxyCommand) {
         this.callStack.push(command);
 
-        return Promise.resolve();
+        return Promise.resolve(1);
     }
 
     kill() {

@@ -31,7 +31,7 @@ class RecordCommand implements ICLICommand {
             httpClientInstance: httpClient
         }, this.config);
 
-        await browserProxyController.spawn();
+        await browserProxyController.init();
         await recorderServer.run();
 
         webApplicationController.init();

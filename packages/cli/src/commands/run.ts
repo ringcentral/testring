@@ -68,7 +68,7 @@ class RunCommand implements ICLICommand {
 
         loggerClientLocal.info(`Found ${tests.length} test(s) to run.`);
 
-        await this.browserProxyController.spawn();
+        await this.browserProxyController.init();
 
         this.webApplicationController.init();
 

@@ -1,6 +1,6 @@
 class SyncPlugin {
-    click() {
-
+    click(applicant, argument) {
+        return  argument;
     }
 
     kill() {
