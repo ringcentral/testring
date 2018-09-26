@@ -1027,7 +1027,8 @@ export class WebApplication extends PluggableModule {
 
     public async closeCurrentTab(focusToTabId = null) {
         await this.client.window(null);
-        await this.setActiveTab(focusToTabId);
+        const mainTabID = await this.getMainTabId();
+        await this.setActiveTab(focusToTabId || mainTabID);
     }
 
     public async windowHandles() {
