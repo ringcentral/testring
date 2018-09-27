@@ -17,9 +17,11 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     constructor(private config: LaunchOptions = {}) {
     }
 
-    private async createClient(applicant: string): Promise<void> {
-        if (this.browserClients.has(applicant)) {
-            return;
+    private async createClient(applicant: string): Promise<BrowserInstance> {
+        const currentBrowserInstance = this.browserClients.get(applicant);
+
+        if (currentBrowserInstance) {
+            return currentBrowserInstance;
         }
 
         const browserInstance = new BrowserInstance({
@@ -30,6 +32,8 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
         this.browserClients.set(applicant, browserInstance);
 
         await browserInstance.waitForInit();
+
+        return browserInstance;
     }
 
     public async end(applicant: string) {
@@ -52,8 +56,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async refresh(applicant: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
@@ -62,8 +65,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async click(applicant: string, selector: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
@@ -72,8 +74,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async url(applicant: string, url: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
@@ -82,8 +83,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async waitForExist(applicant: string, xpath: string, timeout: number) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
@@ -92,8 +92,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async waitForVisible(applicant: string, xpath: string, timeout: number) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
@@ -102,8 +101,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async isVisible(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
@@ -112,8 +110,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async moveToObject(applicant: string, xpath: string, x: number, y: number) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -122,8 +119,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async execute(applicant: string, fn: any, args: Array<any>) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
@@ -132,8 +128,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async executeAsync(applicant: string, fn: any, args: Array<any>) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
@@ -142,8 +137,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async getTitle(applicant: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
@@ -152,8 +146,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async clearElement(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -162,8 +155,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async keys(applicant: string, value: any) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // browserInstance.keys(value);
@@ -171,8 +163,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async elementIdText(applicant: string, elementId: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -181,8 +172,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async elements(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -191,8 +181,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async frame(applicant: string, frameID: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -201,8 +190,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async frameParent(applicant: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -211,8 +199,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async getValue(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
@@ -221,18 +208,23 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async setValue(applicant: string, xpath: string, value: any) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
+
+            const elements = await client.$x(xpath);
+
+            if (elements[0]) {
+                elements[0].type(value);
+            }
+
             return client.type(xpath, value);
         }
     }
 
     public async selectByIndex(applicant: string, xpath: string, value: any) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -241,8 +233,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async selectByValue(applicant: string, xpath: string, value: any) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -251,8 +242,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async selectByVisibleText(applicant: string, xpath: string, str: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -261,8 +251,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async getAttribute(applicant: string, xpath: string, attr: string): Promise<any> {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
@@ -273,8 +262,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async windowHandleMaximize(applicant: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -283,8 +271,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async isEnabled(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -293,8 +280,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async scroll(applicant: string, xpath: string, x: number, y: number) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -303,8 +289,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async alertAccept(applicant: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -313,8 +298,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async alertDismiss(applicant: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -323,8 +307,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async alertText(applicant: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -333,8 +316,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async dragAndDrop(applicant: string, xpathSource: string, xpathDestination: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -343,8 +325,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async getCookie(applicant: string, cookieName: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
@@ -355,8 +336,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async deleteCookie(applicant: string, cookieName: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
@@ -367,8 +347,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async getHTML(applicant: string, xpath: string, b: any) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
@@ -377,8 +356,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async getCurrentTabId(applicant: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             return browserInstance.getCurrentPageID();
@@ -386,8 +364,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async switchTab(applicant: string, pageID: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             return browserInstance.switchPage(pageID);
@@ -395,8 +372,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async close(applicant: string, pageID: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             return browserInstance.closePage(pageID);
@@ -404,8 +380,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async getTabIds(applicant: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             return browserInstance.getPagesIDs();
@@ -413,8 +388,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async window(applicant: string, fn: any) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -423,8 +397,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async windowHandles(applicant: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -434,8 +407,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
 
 
     public async getTagName(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
@@ -444,8 +416,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async isSelected(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -454,8 +425,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async getText(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
@@ -464,8 +434,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async elementIdSelected(applicant: string, id: string) {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
@@ -474,8 +443,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async makeScreenshot(applicant: string): Promise<string | void> {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
@@ -484,8 +452,7 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
     }
 
     public async uploadFile(applicant: string, filePath: string): Promise<string | void> {
-        await this.createClient(applicant);
-        const browserInstance = this.browserClients.get(applicant);
+        const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             // const client = await browserInstance.getCurrentContext();
