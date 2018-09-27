@@ -64,6 +64,7 @@ export class WorkerController {
                     bus.removeAllListeners(TestEvents.finished);
                     bus.removeAllListeners(TestEvents.failed);
 
+                    Sandbox.clearCache();
                     resolve(TestStatus.done);
                 });
 
@@ -71,11 +72,13 @@ export class WorkerController {
                     bus.removeAllListeners(TestEvents.finished);
                     bus.removeAllListeners(TestEvents.failed);
 
+                    Sandbox.clearCache();
                     reject(error);
                 });
             });
         }
 
+        Sandbox.clearCache();
         return TestStatus.done;
     }
 }
