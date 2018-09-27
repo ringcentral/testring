@@ -19,7 +19,7 @@
   "dependencies": {
     "@testring/plugin-babel": "0.4.31",
     "@testring/plugin-selenium-driver": "0.4.31",
-    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-es2015": "6.24.1",
     "testring": "0.4.31"
   }
 }

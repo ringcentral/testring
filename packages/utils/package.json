@@ -11,6 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "@testring/types": "0.4.31",
+    "@types/node": "10.5.6",
     "@types/resolve": "0.0.8",
     "resolve": "1.8.1"
   }
