@@ -94,11 +94,17 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
         try {
             await Promise.all(
-                workers.map(worker => this.executeWorker(worker, testQueue))
+                workers.map(async (worker) => {
+                    while (testQueue.length > 0) {
+                        await this.executeWorker(worker, testQueue);
+                    }
+                    await worker.kill();
+                })
             );
 
-            await this.callHook(TestRunControllerPlugins.afterRun, testQueue);
+            await this.callHook(TestRunControllerPlugins.afterRun, null);
         } catch (error) {
+            await this.callHook(TestRunControllerPlugins.afterRun, error);
             this.errors.push(error);
         }
 
@@ -185,14 +191,6 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         return new Queue((modifierQueue || []).map(item => this.getQueueItemWithRunData(item)));
     }
 
-    private async occupyWorker(worker: ITestWorkerInstance, queue: TestQueue): Promise<void> {
-        if (queue.length > 0) {
-            return this.executeWorker(worker, queue);
-        } else {
-            await worker.kill();
-        }
-    }
-
     private async onTestFailed(
         error: Error,
         worker: ITestWorkerInstance,
@@ -224,12 +222,10 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             queue.push(copyQueueItem);
 
             await this.callHook(TestRunControllerPlugins.beforeTestRetry, queueItem, error, this.getWorkerMeta(worker));
-            await this.occupyWorker(worker, queue);
         } else {
             this.errors.push(error);
 
             await this.callHook(TestRunControllerPlugins.afterTest, queueItem, error, this.getWorkerMeta(worker));
-            await this.occupyWorker(worker, queue);
         }
     }
 
@@ -264,7 +260,6 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             clearTimeout(timer);
 
             await this.callHook(TestRunControllerPlugins.afterTest, queuedTest, null, this.getWorkerMeta(worker));
-            await this.occupyWorker(worker, queue);
         } catch (error) {
             if (isRejectedByTimeout) {
                 await worker.kill('SIGABRT');
