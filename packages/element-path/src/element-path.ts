@@ -405,7 +405,16 @@ export class ElementPath {
     public generateChildElementPathByOptions(searchOptions: SearchObject, withoutParent = false): ElementPath {
         // @TODO move validation into constructor
         if (hasOwn(searchOptions, 'index')) {
-            if (hasOwn(this.searchOptions, 'index')) {
+
+            // If search called with searchMask and index in the same time we are selecting child by index
+            const isCurrentElementSearch = hasOwn(searchOptions, 'anyKey')
+                || hasOwn(searchOptions, 'prefix')
+                || hasOwn(searchOptions, 'containsKey')
+                || hasOwn(searchOptions, 'exactKey')
+                || hasOwn(searchOptions, 'parts');
+
+
+            if (!isCurrentElementSearch && hasOwn(this.searchOptions, 'index')) {
                 throw Error('Can not select index element from already sliced element');
             }
 
@@ -419,7 +428,7 @@ export class ElementPath {
                     ...this.searchOptions,
                     ...searchOptions,
                 },
-                parent: this.parent
+                parent: isCurrentElementSearch ? this : this.parent
             });
         } else if (hasOwn(searchOptions, 'xpath')) {
             if (typeof searchOptions.xpath !== 'string') {
@@ -442,10 +451,7 @@ export class ElementPath {
 
     public generateChildElementsPath(key: string | number): ElementPath {
         if (isInteger(key)) {
-            return this.generateChildElementPathByOptions({
-                ...this.searchOptions,
-                index: +key,
-            });
+            return this.generateChildElementPathByOptions({ index: +key });
         } else {
             return this.generateChildElementPathByOptions(this.parseQueryKey(`${key}`));
         }
@@ -461,6 +467,7 @@ export class ElementPath {
     // @deprecated
     // TODO remove asap
     public generateChildByLocator(locator: XpathLocator): ElementPath {
+        // noinspection SuspiciousTypeOfGuard
         if (typeof locator.xpath !== 'string') {
             throw Error('Invalid options, "xpath" string is required');
         }
