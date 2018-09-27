@@ -1,6 +1,6 @@
 {
   "name": "@testring/utils",
-  "version": "0.4.32",
+  "version": "0.4.33",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,7 +10,7 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/types": "0.4.32",
+    "@testring/types": "0.4.33",
     "@types/node": "10.5.6",
     "@types/resolve": "0.0.8",
     "resolve": "1.8.1"
