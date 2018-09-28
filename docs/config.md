@@ -23,6 +23,7 @@ if it's exists, CLI arguments overrides everything.
 * [testTimeout](#testTimeout)
 * [screenshots](#screenshots)
 * [envParameters](#envparameters)
+* [restartWorker](#restartWorker)
 * [plugins](#plugins)
 
 <br/>
@@ -214,6 +215,8 @@ $ testring run --test-timeout 10000
 
 ###### `disable` <sup>default</sup>
 
+String value for screenshots making policy
+
 Available values:
 * `disable` - turn off screenshots
 * `enable` - turn on screenshots
@@ -225,7 +228,29 @@ $ testring run --screenshots enable
 
 ```json
 {
-  "screenshots": 'enable'
+  "screenshots": "enable"
+}
+```
+
+<br/>
+
+## `restartWorker`
+
+###### `never` <sup>default</sup>
+
+String value for workers restart strategy. If passed always - it will be killed after it ends
+
+Available values:
+* `always` - turn off screenshots
+* `never` - turn on screenshots
+
+```
+$ testring run --restartWorker always
+```
+
+```json
+{
+  "restartWorker": "never"
 }
 ```
 

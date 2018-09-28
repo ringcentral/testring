@@ -4,6 +4,7 @@ import {
 } from '@testring/types';
 
 export const defaultConfiguration: Partial<IConfig> = {
+    restartWorker: 'never',
     screenshots: 'disabled',
     config: '.testringrc',
     debug: false,

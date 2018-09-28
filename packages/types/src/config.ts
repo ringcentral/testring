@@ -2,9 +2,12 @@ import { PluginConfig } from './plugin';
 
 export type ScreenshotsConfig = 'disabled' | 'enabled' | 'afterError';
 
+export type RestartWorkerConfig = 'never' | 'always';
+
 export type ConfigPluginDescriptor = string | [string, PluginConfig];
 
 export interface IConfig {
+    restartWorker: RestartWorkerConfig;
     screenshots: ScreenshotsConfig;
     config: string;
     debug: boolean;

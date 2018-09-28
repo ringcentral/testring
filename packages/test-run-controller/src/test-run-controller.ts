@@ -101,6 +101,10 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                     while (testQueue.length > 0) {
                         await this.executeWorker(worker, testQueue);
                         this.logger.debug('Parent process memory usage after test execution. ', getMemoryReport());
+
+                        if (this.config.restartWorker === 'always') {
+                            await worker.kill();
+                        }
                     }
                     await worker.kill();
                 })
