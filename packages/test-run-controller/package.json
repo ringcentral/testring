@@ -13,8 +13,7 @@
     "@testring/logger": "0.4.34",
     "@testring/pluggable-module": "0.4.34",
     "@testring/types": "0.4.34",
-    "@testring/utils": "0.4.34",
-    "bytes": "3.0.0"
+    "@testring/utils": "0.4.34"
   },
   "devDependencies": {
     "@testring/test-utils": "0.4.34"

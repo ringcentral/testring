@@ -15,7 +15,6 @@
     "@testring/transport": "0.4.34",
     "@testring/types": "0.4.34",
     "@testring/web-application": "0.4.34",
-    "@types/bytes": "3.0.0",
-    "bytes": "3.0.0"
+    "@testring/utils": "0.4.34"
   }
 }

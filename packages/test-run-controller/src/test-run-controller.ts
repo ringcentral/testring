@@ -10,26 +10,13 @@ import {
 } from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
 import { PluggableModule } from '@testring/pluggable-module';
-import { Queue } from '@testring/utils';
-import * as bytes from 'bytes';
+import { Queue, getMemoryReport } from '@testring/utils';
 
 type TestQueue = Queue<IQueuedTest>;
 
 const delay = (milliseconds: number) => new Promise((resolve) => {
     setTimeout(resolve, milliseconds);
 });
-
-const getHeapTotal = () => {
-    const memoryAfter = process.memoryUsage();
-
-    return bytes.format(memoryAfter.heapTotal);
-};
-
-const getHeapUsed = () => {
-    const memoryAfter = process.memoryUsage();
-
-    return bytes.format(memoryAfter.heapUsed);
-};
 
 export class TestRunController extends PluggableModule implements ITestRunController {
 
@@ -40,6 +27,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     private currentQueue: TestQueue | null = null;
 
     private currentRun: Promise<any> | null = null;
+
+    private logger = loggerClientLocal;
 
     constructor(
         private config: IConfig,
@@ -73,7 +62,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     public async runQueue(testSet: Array<IFile>): Promise<Error[] | null> {
         const testQueue = await this.prepareTests(testSet);
 
-        loggerClientLocal.debug('Run controller: tests queue created.');
+        this.logger.debug('Run controller: tests queue created.');
 
         if (Array.isArray(this.currentQueue)) {
             this.currentQueue.push(...testQueue);
@@ -103,13 +92,15 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
         this.workers = workers;
 
-        loggerClientLocal.debug(`Run controller: ${workerLimit} worker(s) created.`);
+        this.logger.debug(`Run controller: ${workerLimit} worker(s) created.`);
+        this.logger.debug('Parent process memory usage before execution. ', getMemoryReport());
 
         try {
             await Promise.all(
                 workers.map(async (worker) => {
                     while (testQueue.length > 0) {
                         await this.executeWorker(worker, testQueue);
+                        this.logger.debug('Parent process memory usage after test execution. ', getMemoryReport());
                     }
                     await worker.kill();
                 })
@@ -250,7 +241,6 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         let timer;
         let isRejectedByTimeout = false;
 
-        loggerClientLocal.debug(`Parent process heap before run. Total: ${getHeapTotal()}. Used: ${getHeapUsed()}`);
         try {
             await this.callHook(TestRunControllerPlugins.beforeTest, queuedTest, this.getWorkerMeta(worker));
             const timeout = this.config.testTimeout;
@@ -284,6 +274,5 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
             await this.onTestFailed(error, worker, queuedTest, queue);
         }
-        loggerClientLocal.debug(`Parent process heap after run. Total: ${getHeapTotal()}. Used: ${getHeapUsed()}`);
     }
 }
