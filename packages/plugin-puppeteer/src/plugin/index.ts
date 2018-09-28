@@ -3,7 +3,7 @@ import { IBrowserProxyPlugin } from '@testring/types';
 import { BrowserInstance } from './browser-instance';
 
 const DEFAULT_CONFIG: LaunchOptions = {
-    headless: false,
+    headless: true,
 };
 
 function delay(timeout) {
@@ -21,6 +21,8 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
         const currentBrowserInstance = this.browserClients.get(applicant);
 
         if (currentBrowserInstance) {
+            await currentBrowserInstance.waitForInit();
+
             return currentBrowserInstance;
         }
 
@@ -69,7 +71,14 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
-            return client.click(selector);
+
+            await client.waitForXPath(selector);
+
+            const elements = await client.$x(selector);
+
+            if (elements.length) {
+                await elements[0].click();
+            }
         }
     }
 
@@ -87,7 +96,8 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
-            return client.waitForXPath(xpath, { timeout });
+
+            return !!client.waitForXPath(xpath, { timeout });
         }
     }
 
@@ -96,7 +106,8 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
-            return client.waitForXPath(xpath, { timeout, visible: true });
+
+            return !!client.waitForXPath(xpath, { timeout, visible: true });
         }
     }
 
@@ -198,28 +209,37 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    public async getValue(applicant: string, xpath: string) {
+    public async getValue(applicant: string, selector: string) {
         const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
-            return client.$eval(xpath, (node: any) => node.value);
+
+            await client.waitForXPath(selector);
+
+            const elements = await client.$x(selector);
+
+            if (elements.length) {
+                return await client.evaluate((node) => node.value, elements[0]);
+            }
+
+            return null;
         }
     }
 
-    public async setValue(applicant: string, xpath: string, value: any) {
+    public async setValue(applicant: string, selector: string, value: any) {
         const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
 
-            const elements = await client.$x(xpath);
+            await client.waitForXPath(selector);
 
-            if (elements[0]) {
-                elements[0].type(value);
+            const elements = await client.$x(selector);
+
+            if (elements.length) {
+                await elements[0].type(value);
             }
-
-            return client.type(xpath, value);
         }
     }
 
@@ -250,14 +270,25 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    public async getAttribute(applicant: string, xpath: string, attr: string): Promise<any> {
+    public async getAttribute(applicant: string, selector: string, attr: string): Promise<any> {
         const browserInstance = await this.createClient(applicant);
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
-            const attributes = await client.$eval(xpath, (node) => node.attributes);
 
-            return attributes[attr];
+            await client.waitForXPath(selector);
+
+            const elements = await client.$x(selector);
+
+            if (elements.length) {
+                return await client.evaluate(
+                    (node, attr) => node.getAttribute(attr),
+                    elements[0],
+                    attr,
+                );
+            }
+
+            return null;
         }
     }
 
@@ -429,7 +460,18 @@ export class PuppeteerPlugin implements IBrowserProxyPlugin {
 
         if (browserInstance) {
             const client = await browserInstance.getCurrentContext();
-            return client.$eval(xpath, (node) => node.textContent);
+
+            await client.waitForXPath(xpath);
+
+            const element = await client.$x(xpath);
+
+            if (element.length) {
+                const textContent = await element[0].getProperty('textContent');
+
+                return await textContent.jsonValue();
+            }
+
+            return '';
         }
     }
 

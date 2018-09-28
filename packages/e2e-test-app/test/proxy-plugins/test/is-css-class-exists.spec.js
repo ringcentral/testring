@@ -5,11 +5,7 @@ run(async (api) => {
 
     await api.logBusiness('redirecting');
 
-    await api.application.click(
-        api.application.root.credential
-    );
-
-    await api.application.keys('1111111111');
+    await api.application.setValue(api.application.root.credential.input, '1111111111');
 
     await api.application.click(
         api.application.root.loginCredentialNext

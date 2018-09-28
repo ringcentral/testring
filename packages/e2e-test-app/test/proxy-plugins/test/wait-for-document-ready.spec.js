@@ -1,5 +1,5 @@
 import { run } from 'testring';
 
 run(async (api) => {
-    await api.application.openPage('https://service.ringcentral.com/');
+    await api.application.url('https://service.ringcentral.com/');
 });

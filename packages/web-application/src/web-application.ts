@@ -13,10 +13,14 @@ const nanoid = require('nanoid');
 
 type valueType = string | number | null | undefined;
 
-export class WebApplication extends PluggableModule {
-    protected _logger: LoggerClient | null = null;
+const DEFAULT_CONFIG = {
+    screenshotsEnabled: false
+};
 
-    protected _client: WebClient | null = null;
+export class WebApplication extends PluggableModule {
+    protected client: WebClient;
+
+    protected _logger: LoggerClient | null = null;
 
     protected WAIT_TIMEOUT: number = 30000;
 
@@ -39,13 +43,13 @@ export class WebApplication extends PluggableModule {
             return `Waiting for root element for ${timeout}`;
         },
         waitForExist(xpath, timeout: number = this.WAIT_TIMEOUT) {
-            return `Waiting ${this.formatXpath(xpath)} for ${timeout}`
+            return `Waiting ${this.formatXpath(xpath)} for ${timeout}`;
         },
         waitForNotExists(xpath, timeout: number = this.WAIT_TIMEOUT) {
             return `Waiting not exists ${this.formatXpath(xpath)} for ${timeout}`;
         },
         waitForNotVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
-            return `Waiting for not visible ${this.formatXpath(xpath)} for ${timeout}`
+            return `Waiting for not visible ${this.formatXpath(xpath)} for ${timeout}`;
         },
         waitForVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
             return `Waiting for visible ${this.formatXpath(xpath)} for ${timeout}`;
@@ -94,7 +98,7 @@ export class WebApplication extends PluggableModule {
             return `Select by name ${this.formatXpath(xpath)} ${value}`;
         },
         selectByValue(xpath, value: string | number) {
-            return `Select by value ${this.formatXpath(xpath)} ${value}`
+            return `Select by value ${this.formatXpath(xpath)} ${value}`;
         },
         selectByVisibleText(xpath, value: string | number) {
             return `Select by visible text ${this.formatXpath(xpath)} ${value}`;
@@ -130,7 +134,7 @@ export class WebApplication extends PluggableModule {
             return `Get attributes 'enabled' from ${this.formatXpath(xpath)}`;
         },
         isCSSClassExists(xpath, ...suitableClasses) {
-            return `Checking classes ${suitableClasses.join(', ')} is\\are exisists in ${this.formatXpath(xpath)}`;
+            return `Checking classes ${suitableClasses.join(', ')} is\\are exists in ${this.formatXpath(xpath)}`;
         },
         moveToObject(xpath, x: number = 1, y: number = 1) {
             return `Move cursor to ${this.formatXpath(xpath)} points (${x}, ${y})`;
@@ -139,7 +143,7 @@ export class WebApplication extends PluggableModule {
             return `Scroll ${this.formatXpath(xpath)} to (${x}, ${y})`;
         },
         dragAndDrop(xpathSource, xpathDestination) {
-            return `dragAndDrop ${this.formatXpath(xpathSource)} to ${this.formatXpath(xpathDestination)}`
+            return `dragAndDrop ${this.formatXpath(xpathSource)} to ${this.formatXpath(xpathDestination)}`;
         },
         elements(xpath) {
             return `elements ${this.formatXpath(xpath)}`;
@@ -155,17 +159,20 @@ export class WebApplication extends PluggableModule {
         },
         clearElement(xpath) {
             return `Clear element ${this.formatXpath(xpath)}`;
-        },
+        }
     };
 
     constructor(
         private testUID: string,
         protected transport: ITransport,
-        protected config: any = {
-            screenshotsEnabled: false,
-        },
+        protected config: any = DEFAULT_CONFIG
     ) {
         super();
+
+        const applicationID = `${this.testUID}-${nanoid()}`;
+
+        this.client = new WebClient(applicationID, this.transport);
+
         this.decorateMethods();
     }
 
@@ -223,33 +230,22 @@ export class WebApplication extends PluggableModule {
                         return result;
                     };
 
-                    Object.defineProperty(method,'originFunction', {
+                    Object.defineProperty(method, 'originFunction', {
                         value: originMethod,
                         enumerable: false,
                         writable: false,
-                        configurable: false,
+                        configurable: false
                     });
 
                     Object.defineProperty(this, key, {
-                       value: method,
-                       enumerable: false,
-                       writable: true,
-                       configurable: true,
+                        value: method,
+                        enumerable: false,
+                        writable: true,
+                        configurable: true
                     });
                 }
             })(key);
         }
-    }
-
-    public get client(): WebClient {
-        if (this._client) {
-            return this._client;
-        }
-
-        const applicationID = `${this.testUID}-${nanoid()}`;
-        this._client = new WebClient(applicationID, this.transport);
-
-        return this._client;
     }
 
     public get logger(): LoggerClient {
@@ -590,11 +586,13 @@ export class WebApplication extends PluggableModule {
     }
 
     public async getText(xpath, trim: boolean = true, timeout: number = this.WAIT_TIMEOUT) {
+        const normalizedXpath = this.normalizeSelector(xpath);
+
         const logXpath = utils.logXpath(xpath);
 
-        await this.waitForExist(xpath, timeout);
+        await this.waitForExist(normalizedXpath, timeout);
 
-        const text = (await this.getTextsInternal(xpath, trim)).join(' ');
+        const text = await this.client.getText(normalizedXpath);
 
         this.logger.debug(`Get text from ${logXpath} returns "${text}"`);
 
@@ -972,7 +970,7 @@ export class WebApplication extends PluggableModule {
     public async notExists(xpath, timeout: number = this.WAIT_TIMEOUT) {
         const elementsCount = await this.getElementsCount(
             this.normalizeSelector(xpath),
-            timeout,
+            timeout
         );
 
         return (elementsCount === 0);
@@ -981,7 +979,7 @@ export class WebApplication extends PluggableModule {
     public async isElementsExist(xpath, timeout: number = this.WAIT_TIMEOUT) {
         const elementsCount = await this.getElementsCount(
             this.normalizeSelector(xpath),
-            timeout,
+            timeout
         );
 
         return (elementsCount > 0);
@@ -1193,12 +1191,12 @@ export class WebApplication extends PluggableModule {
     }
 
     public async disableScreenshots() {
-        this.logger.debug("Screenshots were disabled. DO NOT FORGET to turn them on back!");
+        this.logger.debug('Screenshots were disabled. DO NOT FORGET to turn them on back!');
         this.screenshotsEnabled = false;
     }
 
     public async enableScreenshots() {
-        this.logger.debug("Screenshots were enabled");
+        this.logger.debug('Screenshots were enabled');
         this.screenshotsEnabled = true;
     }
 

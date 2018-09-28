@@ -15,11 +15,7 @@ export class BrowserInstance {
     private pages: Map<PageID, Page> = new Map();
 
     constructor(options: LaunchOptions) {
-        this.initialPromise = new Promise(async (resolve) => {
-            await this.createBrowserAPI(options);
-
-            setTimeout(resolve, 100);
-        });
+        this.initialPromise = this.createBrowserAPI(options);
     }
 
     public waitForInit() {

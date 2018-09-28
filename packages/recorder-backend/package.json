@@ -23,22 +23,22 @@
     "@types/koa": "^2.0.46",
     "@types/koa-static": "^4.0.0",
     "@types/koa-views": "^2.0.3",
-    "@types/ws": "^5.1.2",
+    "@types/ws": "^6.0.1",
     "babel-traverse": "^6.26.0",
     "babel-types": "^6.26.0",
-    "chrome-launcher": "^0.10.2",
-    "koa": "^2.5.2",
+    "chrome-launcher": "^0.10.5",
+    "koa": "^2.5.3",
     "koa-static": "^5.0.0",
     "koa-views": "^6.1.4",
-    "nanoid": "^1.2.3",
+    "nanoid": "^1.2.4",
     "ws": "^6.0.0"
   },
   "devDependencies": {
     "@testring/test-utils": "0.4.29",
     "@testring/utils": "0.4.29",
-    "nodemon": "^1.17.5",
-    "request": "2.87.0",
+    "nodemon": "1.18.4",
+    "request": "2.88.0",
     "request-promise": "4.2.2",
-    "ts-node": "7.0.0"
+    "ts-node": "7.0.1"
   }
 }

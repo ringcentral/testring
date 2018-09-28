@@ -18,7 +18,7 @@
     "@types/nanoid": "^1.2.0",
     "@types/request-promise": "^4.1.42",
     "@types/tough-cookie": "^2.3.3",
-    "nanoid": "^1.2.3",
+    "nanoid": "^1.2.4",
     "request-promise": "^4.2.2",
     "tough-cookie": "^2.4.3"
   }

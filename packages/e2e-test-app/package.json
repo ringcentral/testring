@@ -15,7 +15,7 @@
     "test:simple-run": "testring run --config test/simple/.testringrc --env-parameters.test 10 --rc.tags-list=#P0,#P1",
     "test:run-and-record": "testring record --config test/simple/config.json --tests test/simple/*.spec.js",
     "e2e-simple": "npm run test:simple-run",
-    "e2e": "npm run test:simple-run && npm run test:puppeteer"
+    "e2e": "npm run test:simple-run && npm run test:selenium && npm run test:puppeteer"
   },
   "dependencies": {
     "@testring/plugin-babel": "0.4.29",

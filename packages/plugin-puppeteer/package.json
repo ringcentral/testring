@@ -17,6 +17,6 @@
     "@types/puppeteer": "1.6.4",
     "@types/nanoid": "^1.2.0",
     "puppeteer": "1.8.0",
-    "nanoid": "^1.2.3"
+    "nanoid": "^1.2.4"
   }
 }
