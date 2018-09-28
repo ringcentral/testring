@@ -6,7 +6,13 @@ import { testAPIController } from './test-api-controller';
 
 type TestFunction = (api: TestContext) => void | Promise<any>;
 
-const getMemoryUsage = () => {
+const getHeapTotal = () => {
+    const memoryAfter = process.memoryUsage();
+
+    return bytes.format(memoryAfter.heapTotal);
+};
+
+const getHeapUsed = () => {
     const memoryAfter = process.memoryUsage();
 
     return bytes.format(memoryAfter.heapUsed);
@@ -35,7 +41,7 @@ export const run = async (...tests: Array<TestFunction>) => {
         bus.emit(TestEvents.started);
 
         loggerClient.startStep(testID);
-        loggerClient.debug('Memory usage before run:', getMemoryUsage());
+        loggerClient.debug(`Process heap before run. Total: ${getHeapTotal()}. Used: ${getHeapUsed()}`);
 
         for (let test of tests) {
             await test.call(api, api);
@@ -52,7 +58,7 @@ export const run = async (...tests: Array<TestFunction>) => {
             exitError = error;
         }
 
-        loggerClient.debug('Memory usage after run:', getMemoryUsage());
+        loggerClient.debug(`Process heap after run. Total: ${getHeapTotal()}. Used: ${getHeapUsed()}`);
 
         if (passed) {
             loggerClient.endStep(testID, 'Test passed');

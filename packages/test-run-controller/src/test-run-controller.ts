@@ -11,12 +11,25 @@ import {
 import { loggerClientLocal } from '@testring/logger';
 import { PluggableModule } from '@testring/pluggable-module';
 import { Queue } from '@testring/utils';
+import * as bytes from 'bytes';
 
 type TestQueue = Queue<IQueuedTest>;
 
 const delay = (milliseconds: number) => new Promise((resolve) => {
     setTimeout(resolve, milliseconds);
 });
+
+const getHeapTotal = () => {
+    const memoryAfter = process.memoryUsage();
+
+    return bytes.format(memoryAfter.heapTotal);
+};
+
+const getHeapUsed = () => {
+    const memoryAfter = process.memoryUsage();
+
+    return bytes.format(memoryAfter.heapUsed);
+};
 
 export class TestRunController extends PluggableModule implements ITestRunController {
 
@@ -159,9 +172,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
         if (this.config.screenshots === 'enabled') {
             screenshotsEnabled = true;
-        }
-
-        if (this.config.screenshots === 'afterError') {
+        } else if (this.config.screenshots === 'afterError') {
             screenshotsEnabled = isRetryRun;
         }
 
@@ -239,6 +250,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         let timer;
         let isRejectedByTimeout = false;
 
+        loggerClientLocal.debug(`Parent process heap before run. Total: ${getHeapTotal()}. Used: ${getHeapUsed()}`);
         try {
             await this.callHook(TestRunControllerPlugins.beforeTest, queuedTest, this.getWorkerMeta(worker));
             const timeout = this.config.testTimeout;
@@ -250,13 +262,14 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                     this.config.envParameters
                 ),
                 new Promise((resolve, reject) => {
-                    timer = setTimeout(async () => {
+                    timer = setTimeout(() => {
                         isRejectedByTimeout = true;
                         reject(new Error(`Test timeout exceeded ${timeout}ms`));
                     }, timeout);
                 })
             ]);
 
+            // noinspection JSUnusedAssignment
             clearTimeout(timer);
 
             await this.callHook(TestRunControllerPlugins.afterTest, queuedTest, null, this.getWorkerMeta(worker));
@@ -266,9 +279,11 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             }
 
             queuedTest.retryErrors.push(error);
+            // noinspection JSUnusedAssignment
             clearTimeout(timer);
 
             await this.onTestFailed(error, worker, queuedTest, queue);
         }
+        loggerClientLocal.debug(`Parent process heap after run. Total: ${getHeapTotal()}. Used: ${getHeapUsed()}`);
     }
 }
