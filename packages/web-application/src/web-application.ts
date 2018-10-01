@@ -14,10 +14,6 @@ const nanoid = require('nanoid');
 type valueType = string | number | null | undefined;
 
 export class WebApplication extends PluggableModule {
-    protected _logger: LoggerClient | null = null;
-
-    protected _client: WebClient | null = null;
-
     protected WAIT_TIMEOUT: number = 30000;
 
     protected TICK_TIMEOUT: number = 100;
@@ -242,24 +238,32 @@ export class WebApplication extends PluggableModule {
     }
 
     public get client(): WebClient {
-        if (this._client) {
-            return this._client;
-        }
-
         const applicationID = `${this.testUID}-${nanoid()}`;
-        this._client = new WebClient(applicationID, this.transport);
+        const value = new WebClient(applicationID, this.transport);
 
-        return this._client;
+        Object.defineProperty(this, 'client', {
+            value,
+            enumerable: false,
+            writable: true,
+            configurable: true,
+        });
+
+
+        return value;
     }
 
     public get logger(): LoggerClient {
-        if (this._logger) {
-            return this._logger;
-        }
+        const value = new LoggerClient(this.transport, '[web-application]');
 
-        this._logger = new LoggerClient(this.transport, '[web-application]');
+        Object.defineProperty(this, 'logger', {
+            value,
+            enumerable: false,
+            writable: true,
+            configurable: true,
+        });
 
-        return this._logger;
+
+        return value;
     }
 
     protected formatXpath(xpath): string {
