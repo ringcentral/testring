@@ -168,7 +168,6 @@ export class WebApplication extends PluggableModule {
     }
 
     protected decorateMethods() {
-        const logger = this.logger;
         const decorators = (this.constructor as any).stepLogMessagesDecorator;
 
         // Reset isLogOpened on init, and bypass tslint
@@ -182,6 +181,7 @@ export class WebApplication extends PluggableModule {
                     const originMethod = this[key];
                     const logFn = decorators[key];
                     const method = function decoratedMethod(...args) {
+                        const logger = this.logger;
                         const message = logFn.apply(this, args);
                         let result;
 
