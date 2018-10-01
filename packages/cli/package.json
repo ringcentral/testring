@@ -1,6 +1,6 @@
 {
   "name": "@testring/cli",
-  "version": "0.4.36",
+  "version": "0.4.37",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,18 +10,18 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/browser-proxy": "0.4.36",
-    "@testring/cli-config": "0.4.36",
-    "@testring/fs-reader": "0.4.36",
-    "@testring/http-api": "0.4.36",
-    "@testring/logger": "0.4.36",
-    "@testring/plugin-api": "0.4.36",
-    "@testring/recorder-backend": "0.4.36",
-    "@testring/test-run-controller": "0.4.36",
-    "@testring/test-worker": "0.4.36",
-    "@testring/transport": "0.4.36",
-    "@testring/types": "0.4.36",
-    "@testring/web-application": "0.4.36",
+    "@testring/browser-proxy": "0.4.37",
+    "@testring/cli-config": "0.4.37",
+    "@testring/fs-reader": "0.4.37",
+    "@testring/http-api": "0.4.37",
+    "@testring/logger": "0.4.37",
+    "@testring/plugin-api": "0.4.37",
+    "@testring/recorder-backend": "0.4.37",
+    "@testring/test-run-controller": "0.4.37",
+    "@testring/test-worker": "0.4.37",
+    "@testring/transport": "0.4.37",
+    "@testring/types": "0.4.37",
+    "@testring/web-application": "0.4.37",
     "@types/yargs": "12.0.0",
     "yargs": "12.0.1"
   }
