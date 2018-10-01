@@ -14,6 +14,8 @@ const nanoid = require('nanoid');
 type valueType = string | number | null | undefined;
 
 export class WebApplication extends PluggableModule {
+    protected LOGGER_PREFIX: string = '[web-application]';
+
     protected WAIT_TIMEOUT: number = 30000;
 
     protected TICK_TIMEOUT: number = 100;
@@ -253,7 +255,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public get logger(): LoggerClient {
-        const value = new LoggerClient(this.transport, '[web-application]');
+        const value = new LoggerClient(this.transport, this.LOGGER_PREFIX);
 
         Object.defineProperty(this, 'logger', {
             value,
