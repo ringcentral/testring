@@ -8,6 +8,8 @@ const LOG_PREFIX = '[logged inside test]';
 
 export class TestContext {
 
+    private _application: WebApplication;
+
     private lastLoggedBusinessMessage: string | null = null;
 
     private customApplications: Set<WebApplication> = new Set();
@@ -15,9 +17,15 @@ export class TestContext {
     public http = new HttpClient(transport);
 
     public get application() {
+        if (this._application) {
+            return this._application;
+        }
+
         const runData = this.getRunData();
 
-        return new WebApplication(testAPIController.getTestID(), transport, runData);
+        this._application = new WebApplication(testAPIController.getTestID(), transport, runData);
+
+        return this._application;
     }
 
     public async logBusiness(message: string) {
