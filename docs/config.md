@@ -241,8 +241,8 @@ $ testring run --screenshots enable
 String value for workers restart strategy. If passed always - it will be killed after it ends
 
 Available values:
-* `always` - turn off screenshots
-* `never` - turn on screenshots
+* `always` - always restart worker after test execution finished
+* `never` - disable restart
 
 ```
 $ testring run --restartWorker always
