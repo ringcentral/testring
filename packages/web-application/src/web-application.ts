@@ -2,7 +2,7 @@
 
 import * as url from 'url';
 import { ITransport } from '@testring/types';
-import { LoggerClient } from '@testring/logger';
+import { loggerClient, LoggerClient } from '@testring/logger';
 import { PluggableModule } from '@testring/pluggable-module';
 import { createElementPath, ElementPath } from '@testring/element-path';
 import { createAssertion } from './assert';
@@ -255,7 +255,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public get logger(): LoggerClient {
-        const value = new LoggerClient(this.transport, this.LOGGER_PREFIX);
+        const value = loggerClient.getLogger(this.LOGGER_PREFIX);
 
         Object.defineProperty(this, 'logger', {
             value,
