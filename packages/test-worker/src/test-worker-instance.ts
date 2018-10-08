@@ -28,7 +28,7 @@ const WORKER_ROOT = require.resolve(
 const delay = (timeout: number) => new Promise<void>(resolve => setTimeout(resolve, timeout));
 
 const createConfig = (workerConfig: Partial<ITestWorkerConfig>): ITestWorkerConfig => ({
-    screenshots: 'disabled',
+    screenshots: 'disable',
     debug: false,
     ...workerConfig
 });

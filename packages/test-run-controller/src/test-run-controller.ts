@@ -165,7 +165,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         let screenshotsEnabled = false;
         let isRetryRun = queueItem.retryCount > 0;
 
-        if (this.config.screenshots === 'enabled') {
+        if (this.config.screenshots === 'enable') {
             screenshotsEnabled = true;
         } else if (this.config.screenshots === 'afterError') {
             screenshotsEnabled = isRetryRun;

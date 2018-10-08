@@ -5,7 +5,7 @@ import {
 
 export const defaultConfiguration: Partial<IConfig> = {
     restartWorker: 'never',
-    screenshots: 'disabled',
+    screenshots: 'disable',
     config: '.testringrc',
     debug: false,
     silent: false,

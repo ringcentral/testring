@@ -1,6 +1,6 @@
 import { PluginConfig } from './plugin';
 
-export type ScreenshotsConfig = 'disabled' | 'enabled' | 'afterError';
+export type ScreenshotsConfig = 'disable' | 'enable' | 'afterError';
 
 export type RestartWorkerConfig = 'never' | 'always';
 
