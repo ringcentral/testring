@@ -1,10 +1,10 @@
 import * as path from 'path';
-import { Config } from 'webdriverio';
+import { SeleniumPluginConfig } from './types';
 import { PluginAPI } from '@testring/plugin-api';
 
-export default function(pluginAPI: PluginAPI, userConfig: Config) {
+export default function(pluginAPI: PluginAPI, userConfig: SeleniumPluginConfig) {
     const pluginPath = path.join(__dirname, './plugin');
     const browserProxy = pluginAPI.getBrowserProxy();
 
-    browserProxy.proxyPlugin(pluginPath, userConfig);
+    browserProxy.proxyPlugin(pluginPath, userConfig || {});
 }
