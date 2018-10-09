@@ -124,7 +124,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     private async checkClientsTimeout() {
-        const timeLimit = +(new Date()) - this.config.clientTimeout;
+        const timeLimit = Date.now() - this.config.clientTimeout;
 
         for (let [applicant, clientData] of this.browserClients) {
             if (clientData.initTime < timeLimit) {
@@ -142,7 +142,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         if (clientData) {
             this.browserClients.set(applicant, {
                 ...clientData,
-                initTime: +(new Date()),
+                initTime: Date.now(),
             });
 
             return;
@@ -157,7 +157,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         this.browserClients.set(applicant, {
             client,
-            initTime: +(new Date()),
+            initTime: Date.now(),
         });
         this.logger.debug(`Started session for applicant ${applicant}`);
     }
