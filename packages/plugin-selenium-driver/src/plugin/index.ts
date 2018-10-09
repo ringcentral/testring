@@ -3,15 +3,11 @@ import * as deepmerge from 'deepmerge';
 import { IBrowserProxyPlugin } from '@testring/types';
 import { spawn } from '@testring/child-process';
 import { Config, Client, RawResult, remote } from 'webdriverio';
+import { SeleniumPluginConfig } from '../types';
 import { ChildProcess } from 'child_process';
 import { loggerClient } from '@testring/logger';
 
 const extensionPath = path.dirname(require.resolve('@testring/recorder-extension'));
-
-type SeleniumPluginConfig = Config & {
-    clientCheckInterval: number;
-    clientTimeout: number;
-};
 
 type browserClientItem = {
     client: Client<any>;
