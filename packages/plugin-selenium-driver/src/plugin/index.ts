@@ -194,6 +194,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
+            try {
+                await this.wrapWithPromise(client.alertDismiss());
+            } catch { /* ignore */ }
+
             this.browserClients.delete(applicant);
 
             await this.wrapWithPromise(client.end());
