@@ -23,8 +23,8 @@ const getConfig = async (argv: Array<string> = []): Promise<IConfig> => {
 
     return mergeConfigs(
         defaultConfiguration,
-        fileConfig || {},
         envConfig || {},
+        fileConfig || {},
         args || {},
         { debug: isDebugging() },
     );
