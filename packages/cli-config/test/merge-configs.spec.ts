@@ -60,24 +60,53 @@ describe('getConfig', () => {
             {
                 plugins: [
                     'plugin2',
-                    'plugin1'
-                ]
+                    'plugin1',
+                ],
             },
             {
                 plugins: [
                     ['plugin1', {
-                        debug: true
-                    }]
-                ]
-            }
+                        debug: true,
+                    }],
+                ],
+            },
         );
 
         chai.expect(config).to.be.deep.equals({
             plugins: [
                 'plugin2',
                 ['plugin1', {
-                    debug: true
-                }]
+                    debug: true,
+                }],
+            ],
+        });
+    });
+
+    it('should get config with correct array of plugins (array + undefined value)', () => {
+        const config = mergeConfigs<IConfig>(
+            {
+                plugins: [
+                    ['plugin1', {
+                        debug: true,
+                    }],
+                ],
+            },
+            {
+                plugins: [
+                    'plugin2',
+                    ['plugin1', {
+                        debug: undefined,
+                    }],
+                ],
+            },
+        );
+
+        chai.expect(config).to.be.deep.equals({
+            plugins: [
+                ['plugin1', {
+                    debug: undefined,
+                }],
+                'plugin2',
             ]
         });
     });
