@@ -472,38 +472,21 @@ export class ElementPath {
             throw Error('Invalid options, "xpath" string is required');
         }
 
-
-        if (locator.parent === '') {
-            const root = new ElementPath({
-                flows: this.flows,
-                searchOptions: this.parseQueryKey(this.getRootSelector()),
-            });
-
-            return root.generateChildElementPathByOptions({
+        if (locator.parent === null || locator.parent === undefined) {
+            return this.generateChildElementPathByOptions({
+                xpath: locator.xpath,
+                id: locator.id,
+            }, true);
+        } else if (locator.parent === '') {
+            return this.generateChildElementPathByOptions({
                 xpath: locator.xpath,
                 id: locator.id,
             });
         } else if (typeof locator.parent === 'string') {
-            let root = new ElementPath({
-                flows: this.flows,
-                searchOptions: this.parseQueryKey(this.getRootSelector()),
-            });
-
             const genParent = locator.parent.split('.').reduce((memo: ElementPath, key: string) => {
-                if (memo) {
-                    return memo.generateChildElementsPath(key);
-                } else {
-                    return new ElementPath({
-                        flows: this.flows,
-                        searchOptions: {
-                            exactKey: key,
-                        },
-                    });
-                }
-            }, root);
+                return memo.generateChildElementsPath(key);
+            }, this);
 
-            // Can not be null
-            // @ts-ignore
             return genParent.generateChildElementPathByOptions({
                 xpath: locator.xpath,
                 id: locator.id,
