@@ -247,7 +247,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
         try {
             await this.callHook(TestRunControllerPlugins.beforeTest, queuedTest, this.getWorkerMeta(worker));
-            const timeout = this.config.testTimeout;
+            const timeout = queuedTest.parameters.testTimeout || this.config.testTimeout;
 
             await Promise.race([
                 worker.execute(
