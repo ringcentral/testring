@@ -483,9 +483,14 @@ export class ElementPath {
                 id: locator.id,
             });
         } else if (typeof locator.parent === 'string') {
+            let root = new ElementPath({
+                flows: this.flows,
+                searchOptions: this.parseQueryKey(this.getRootSelector()),
+            });
+
             const genParent = locator.parent.split('.').reduce((memo: ElementPath, key: string) => {
                 return memo.generateChildElementsPath(key);
-            }, this);
+            }, root);
 
             return genParent.generateChildElementPathByOptions({
                 xpath: locator.xpath,
