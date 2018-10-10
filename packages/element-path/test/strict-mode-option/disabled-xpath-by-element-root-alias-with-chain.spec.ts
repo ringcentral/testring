@@ -36,12 +36,14 @@ describe('foo.xpathByElement()', () => {
     describe('basic Object methods', () => {
         it('.toString()', () => {
             expect(xpathSelectorCall.toString()).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
+                '//*[@data-test-automation-id=\'foo\']' +
                 '//*[@data-test-automation-id=\'bar\']' +
                 '//*[@class=\'selected\'])[1]');
         });
 
         it('to string converting', () => {
             expect(`${xpathSelectorCall}`).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
+                '//*[@data-test-automation-id=\'foo\']' +
                 '//*[@data-test-automation-id=\'bar\']' +
                 '//*[@class=\'selected\'])[1]');
         });
@@ -49,6 +51,7 @@ describe('foo.xpathByElement()', () => {
         it('.toString(true)', () => {
             expect(xpathSelectorCall.toString(true)).to.be.equal(
                 '//*[@data-test-automation-id=\'root\']' +
+                '//*[@data-test-automation-id=\'foo\']' +
                 '//*[@data-test-automation-id=\'bar\']//*[@class=\'selected\']'
             );
         });
@@ -70,6 +73,13 @@ describe('foo.xpathByElement()', () => {
                     'isRoot': true,
                     'name': 'root',
                     'xpath': '//*[@data-test-automation-id=\'root\']'
+                },
+                {
+                    'isRoot': false,
+                    'query': {
+                        'exactKey': 'foo'
+                    },
+                    'xpath': '//*[@data-test-automation-id=\'foo\']'
                 },
                 {
                     'isRoot': false,
@@ -121,6 +131,13 @@ describe('foo.xpathByElement()', () => {
                 {
                     'isRoot': false,
                     'query': {
+                        'exactKey': 'foo'
+                    },
+                    'xpath': '//*[@data-test-automation-id=\'foo\']'
+                },
+                {
+                    'isRoot': false,
+                    'query': {
                         'exactKey': 'bar'
                     },
                     'xpath': '//*[@data-test-automation-id=\'bar\']'
@@ -132,12 +149,12 @@ describe('foo.xpathByElement()', () => {
     describe('.__getReversedChain call', () => {
         it('with root', () => {
             expect(xpathSelectorCall.__getReversedChain()).to.be.equal(
-                'root.bar.xpath("selected", "//*[@class=\'selected\']")'
+                'root.foo.bar.xpath("selected", "//*[@class=\'selected\']")'
             );
         });
         it('without root', () => {
             expect(xpathSelectorCall.__getReversedChain(false)).to.be.equal(
-                '.bar.xpath("selected", "//*[@class=\'selected\']")'
+                '.foo.bar.xpath("selected", "//*[@class=\'selected\']")'
             );
         });
     });
