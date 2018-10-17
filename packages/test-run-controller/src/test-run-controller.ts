@@ -253,7 +253,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 worker.execute(
                     queuedTest.test,
                     queuedTest.parameters,
-                    this.config.envParameters
+                    this.config.envParameters,
+                    this.config.httpThrottle
                 ),
                 new Promise((resolve, reject) => {
                     timer = setTimeout(() => {

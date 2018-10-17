@@ -7,6 +7,8 @@ export class TestAPIController {
 
     private testParameters: object = {};
 
+    private httpThrottle: number;
+
     private environmentParameters: object = {};
 
     public getBus() {
@@ -36,6 +38,15 @@ export class TestAPIController {
     public getEnvironmentParameters(): object {
         return this.environmentParameters;
     }
+    
+    public setHttpThrottle(httpThrottle: number): void {
+        this.httpThrottle = httpThrottle;
+    }
+
+    public getHttpThrottle(): number {
+        return this.httpThrottle;
+    }
+
 }
 
 export const testAPIController = new TestAPIController();

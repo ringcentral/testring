@@ -84,13 +84,14 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         this.config = createConfig(workerConfig);
     }
 
-    public async execute(file: IFile, parameters: any, envParameters: any): Promise<any> {
+    public async execute(file: IFile, parameters: any, envParameters: any, httpThrottle: number): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
                 return await this.makeExecutionRequest(
                     file,
                     parameters,
                     envParameters,
+                    httpThrottle,
                     resolve,
                     reject
                 );
@@ -148,6 +149,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         file: IFile,
         parameters: any,
         envParameters: any,
+        httpThrottle: number,
         resolve,
         reject
     ) {
@@ -213,7 +215,8 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             ...compiledFile,
             dependencies,
             parameters,
-            envParameters
+            envParameters,
+            httpThrottle,
         });
     }
 

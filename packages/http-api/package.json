@@ -15,6 +15,7 @@
     "@testring/test-utils": "0.4.41",
     "@testring/transport": "0.4.41",
     "@testring/types": "0.4.41",
+    "@testring/utils": "0.4.41",
     "@types/nanoid": "1.0.0",
     "@types/node": "10.5.6",
     "@types/request-promise": "4.1.42",

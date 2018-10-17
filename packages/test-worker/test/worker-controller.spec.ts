@@ -34,7 +34,8 @@ describe('WorkerController', () => {
             path: 'test.js',
             dependencies: {},
             parameters: {},
-            envParameters: null
+            envParameters: null,
+            httpThrottle: 0,
         });
     });
 
@@ -60,7 +61,8 @@ describe('WorkerController', () => {
             path: 'test.js',
             dependencies: {},
             parameters: {},
-            envParameters: null
+            envParameters: null,
+            httpThrottle: 0,
         });
     });
 

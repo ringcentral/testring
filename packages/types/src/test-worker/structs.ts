@@ -8,6 +8,7 @@ export interface ITestExecutionMessage extends IFile {
     dependencies: any;
     parameters: any;
     envParameters: any;
+    httpThrottle: number;
 }
 
 export interface ITestExecutionCompleteMessage {
