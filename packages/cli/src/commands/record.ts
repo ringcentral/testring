@@ -20,10 +20,9 @@ class RecordCommand implements ICLICommand {
         const testRunController = new TestRunController(this.config, testWorker);
         const browserProxyController = browserProxyControllerFactory(this.transport);
         const webApplicationController = new WebApplicationController(browserProxyController, this.transport);
-        const httpClientParams = {
+        const httpClient = new HttpClientLocal(this.transport, {
             httpThrottle: this.config.httpThrottle,
-        };
-        const httpClient = new HttpClientLocal(this.transport, httpClientParams);
+        });
         const recorderServer = new RecorderServer();
 
         applyPlugins({

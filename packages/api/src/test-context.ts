@@ -15,11 +15,9 @@ export class TestContext {
     public http: HttpClient;
 
     constructor(config: any) {
-        const httpClientParams = {
+        this.http = new HttpClient(transport, {
             httpThrottle: config.httpThrottle,
-        };
-        
-        this.http = new HttpClient(transport, httpClientParams);
+        });
     }
 
     public get application(): WebApplication {

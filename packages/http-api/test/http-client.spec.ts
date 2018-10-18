@@ -126,12 +126,14 @@ describe('HttpClient', () => {
             })
             .catch(callback);
     });
-    it('should return queue requests responses in proper way', async () => {
+
+    it('should return queue requests responses in proper order', async () => {
         const transport = new TransportMock();
         const httpClient = new HttpClient(transport, { httpThrottle: 200 });
         
         const responses = [1, 2, 3];
 
+        // imitate server
         transport.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
             transport.send(src, HttpMessageType.response, {
                 uid: data.uid,
@@ -148,6 +150,7 @@ describe('HttpClient', () => {
             results.push(result);
         };
 
+        // run all requests at the same time
         await Promise.all([
             runRequest(0),
             runRequest(1),
@@ -156,10 +159,11 @@ describe('HttpClient', () => {
 
         chai.expect(results).to.deep.equal(responses);
     });
+
     it('should execute queued requests one by one with exact timeouts', async () => {
         const httpThrottle = 200;
         const responseTime = 100;
-        const fullTime = httpThrottle + responseTime;
+        const fullTime = httpThrottle + responseTime - 1; // -1 is an error correction
 
         const transport = new TransportMock();
         const httpClient = new HttpClient(transport, { httpThrottle });
@@ -191,5 +195,3 @@ describe('HttpClient', () => {
         chai.expect(results[2] - results[1]).to.be.gte(fullTime);
     });
 });
-
-

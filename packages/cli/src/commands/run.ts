@@ -51,10 +51,9 @@ class RunCommand implements ICLICommand {
 
         const loggerServer = new LoggerServer(this.config, this.transport, this.stdout);
         const fsReader = new FSReader();
-        const httpClientParams = {
+        const httpClient = new HttpClientLocal(this.transport, {
             httpThrottle: this.config.httpThrottle,
-        };
-        const httpClient = new HttpClientLocal(this.transport, httpClientParams);
+        });
 
         applyPlugins({
             logger: loggerServer,

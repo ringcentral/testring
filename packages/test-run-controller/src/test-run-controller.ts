@@ -165,7 +165,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         let screenshotsEnabled = false;
         let isRetryRun = queueItem.retryCount > 0;
         const {
-            debug = false,
+            debug,
             logLevel,
             httpThrottle,
         } = this.config;
