@@ -22,7 +22,7 @@ export const run = async (...tests: Array<TestFunction>) => {
     const bus = testAPIController.getBus();
     const testParameters = testAPIController.getTestParameters() as any;
 
-    const api = new TestContext(testParameters.runData.httpThrottle);
+    const api = new TestContext(testParameters.runData);
     let passed = false;
     let catchedError;
 

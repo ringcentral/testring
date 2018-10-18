@@ -8,6 +8,7 @@ import {
     IHttpRequestMessage,
     IHttpResponseRejectMessage,
     IQueue,
+    HttpClientParams,
 } from '@testring/types';
 import { loggerClient } from '@testring/logger';
 import { HttpCookieJar } from './cookie-jar';
@@ -22,7 +23,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
     private queue: IQueue<Function>;
     private queueRunning = false;
 
-    constructor(protected transportInstance: ITransport, private httpThrottle: number) {
+    constructor(protected transportInstance: ITransport, private params: HttpClientParams) {
         this.queue = new Queue();
     }
 
@@ -67,7 +68,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
             const item = this.queue.shift();
             if (item) {
                 await item();
-                await new Promise(resolve => setTimeout(resolve, this.httpThrottle));
+                await new Promise(resolve => setTimeout(resolve, this.params.httpThrottle));
             }
         }
         this.queueRunning = false;

@@ -10,7 +10,9 @@ const DEFAULT_RESPONSE = {
     body: {}
 };
 
-const httpThrottleMock = 0;
+const httpClientParams = {
+    httpThrottle: 0,
+};
 
 const imitateServer = (transport: TransportMock, response) => {
     transport.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
@@ -33,7 +35,7 @@ const imitateFailedServer = (transport: TransportMock, error: Error) => {
 describe('HttpClient', () => {
     it('should get an error if request is null', (callback) => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, httpThrottleMock);
+        const httpClient = new HttpClient(transport, httpClientParams);
 
         httpClient.post(null as any)
             .then(() => {
@@ -48,7 +50,7 @@ describe('HttpClient', () => {
 
     it('should get response from server (GET)', async () => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, httpThrottleMock);
+        const httpClient = new HttpClient(transport, httpClientParams);
 
         imitateServer(transport, DEFAULT_RESPONSE);
 
@@ -59,7 +61,7 @@ describe('HttpClient', () => {
 
     it('should get response from server (POST)', async () => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, httpThrottleMock);
+        const httpClient = new HttpClient(transport, httpClientParams);
 
         imitateServer(transport, DEFAULT_RESPONSE);
 
@@ -70,7 +72,7 @@ describe('HttpClient', () => {
 
     it('should get response from server (PUT)', async () => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, httpThrottleMock);
+        const httpClient = new HttpClient(transport, httpClientParams);
 
         imitateServer(transport, DEFAULT_RESPONSE);
 
@@ -81,7 +83,7 @@ describe('HttpClient', () => {
 
     it('should get response from server (DELETE)', async () => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, httpThrottleMock);
+        const httpClient = new HttpClient(transport, httpClientParams);
 
         imitateServer(transport, DEFAULT_RESPONSE);
 
@@ -92,7 +94,7 @@ describe('HttpClient', () => {
 
     it('should fail correctly, if server returns error', async () => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, httpThrottleMock);
+        const httpClient = new HttpClient(transport, httpClientParams);
 
         imitateFailedServer(transport, new Error('test'));
 
@@ -105,7 +107,7 @@ describe('HttpClient', () => {
 
     it('should get an error if response has no uid', (callback) => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, httpThrottleMock);
+        const httpClient = new HttpClient(transport, httpClientParams);
 
         //imitate a server
         transport.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
@@ -126,7 +128,7 @@ describe('HttpClient', () => {
     });
     it('should return queue requests responses in proper way', async () => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, 500);
+        const httpClient = new HttpClient(transport, { httpThrottle: 200 });
         
         const responses = [1, 2, 3];
 
@@ -155,12 +157,12 @@ describe('HttpClient', () => {
         chai.expect(results).to.deep.equal(responses);
     });
     it('should execute queued requests one by one with exact timeouts', async () => {
-        const throttleTimeout = 200;
+        const httpThrottle = 200;
         const responseTime = 100;
-        const fullTime = throttleTimeout + responseTime;
+        const fullTime = httpThrottle + responseTime;
 
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, throttleTimeout);
+        const httpClient = new HttpClient(transport, { httpThrottle });
         
         transport.on(HttpMessageType.send, async (data: IHttpRequestMessage, src: string) => {
             await new Promise(resolve => setTimeout(resolve, responseTime));
