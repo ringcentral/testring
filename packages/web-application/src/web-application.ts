@@ -16,6 +16,8 @@ type valueType = string | number | null | undefined;
 export class WebApplication extends PluggableModule {
     protected LOGGER_PREFIX: string = '[web-application]';
 
+    protected WAIT_PAGE_LOAD_TIMEOUT: number = 3 * 60000;
+
     protected WAIT_TIMEOUT: number = 30000;
 
     protected TICK_TIMEOUT: number = 100;
@@ -416,22 +418,39 @@ export class WebApplication extends PluggableModule {
         });
     }
 
-    public async openPage(uri: ((arg: this) => any) | string): Promise<any> {
-        if (typeof uri === 'string') {
-            const prevUrl: any = await this.url();
+    private async openPageFromURI(uri) {
+        const prevUrl: any = await this.url();
 
-            if (url.parse(prevUrl).path === url.parse(uri).path) {
-                await this.url(uri);
-                await this.refresh();
-                await this.logNavigatorVersion();
-                return this.documentReadyWait();
-            } else {
-                await this.url(uri);
-                await this.logNavigatorVersion();
-                return this.documentReadyWait();
-            }
-        } else if (typeof uri === 'function') {
-            return uri(this);
+        if (url.parse(prevUrl).path === url.parse(uri).path) {
+            await this.url(uri);
+            await this.refresh();
+            await this.logNavigatorVersion();
+            return this.documentReadyWait();
+        } else {
+            await this.url(uri);
+            await this.logNavigatorVersion();
+            return this.documentReadyWait();
+        }
+    }
+
+    public async openPage(page: ((arg: this) => any) | string, timeout: number = this.WAIT_PAGE_LOAD_TIMEOUT): Promise<any> {
+        if (typeof page === 'string') {
+            let timer;
+
+            let result = await Promise.race([
+                this.openPageFromURI(page),
+                new Promise((resolve, reject) => {
+                    timer = setTimeout(
+                        () => reject(new Error('Page open timeout')),
+                        timeout,
+                    );
+                }),
+            ]);
+            clearTimeout(timer);
+            return result;
+
+        } else if (typeof page === 'function') {
+            return page(this);
         } else {
             throw new Error('Unsupported path type for openPage');
         }
