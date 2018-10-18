@@ -68,6 +68,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
 
         while (this.requestQueue.length) {
             const item = this.requestQueue.shift();
+            
             if (item) {
                 await item();
                 await new Promise(resolve => setTimeout(resolve, this.params.httpThrottle));
