@@ -46,7 +46,6 @@ export class WorkerController {
 
         let isAsync = false;
 
-        this.testAPI.setHttpThrottle(message.httpThrottle);
         this.testAPI.setEnvironmentParameters(message.envParameters);
         this.testAPI.setTestParameters(message.parameters);
         this.testAPI.setTestID(testID);

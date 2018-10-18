@@ -35,7 +35,6 @@ describe('WorkerController', () => {
             dependencies: {},
             parameters: {},
             envParameters: null,
-            httpThrottle: 0,
         });
     });
 
@@ -62,7 +61,6 @@ describe('WorkerController', () => {
             dependencies: {},
             parameters: {},
             envParameters: null,
-            httpThrottle: 0,
         });
     });
 

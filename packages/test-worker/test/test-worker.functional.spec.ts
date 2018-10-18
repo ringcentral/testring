@@ -21,7 +21,7 @@ describe('TestWorkerInstance', () => {
             const instance = testWorker.spawn();
 
             try {
-                await instance.execute(file, {}, null, 0);
+                await instance.execute(file, {}, null);
             } catch (error) {
                 throw error;
             } finally {
@@ -39,7 +39,7 @@ describe('TestWorkerInstance', () => {
             const testWorker = new TestWorker(transport, { debug: false });
             const instance = testWorker.spawn();
 
-            instance.execute(file, {}, null, 0)
+            instance.execute(file, {}, null)
                 .then(() => {
                     callback('Test was completed somehow');
                 })
@@ -63,7 +63,7 @@ describe('TestWorkerInstance', () => {
         const testWorker = new TestWorker(transport, { debug: false });
         const instance = testWorker.spawn();
 
-        const execution = instance.execute(file, {}, null, 0);
+        const execution = instance.execute(file, {}, null);
 
         instance.kill();
 
@@ -93,7 +93,7 @@ describe('TestWorkerInstance', () => {
                 });
             }
 
-            instance.execute(file, {}, null, 0)
+            instance.execute(file, {}, null)
                 .catch(() => {
                 });
 
@@ -120,7 +120,7 @@ describe('TestWorkerInstance', () => {
                 });
             }
 
-            instance.execute(file, {}, null, 0)
+            instance.execute(file, {}, null)
                 .then(() => {
                     callback('Test was compiled somehow');
                 })

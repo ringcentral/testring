@@ -4,7 +4,7 @@ import { ScreenshotsConfig } from '../config';
 export interface ITestWorkerInstance {
     getWorkerID(): string;
 
-    execute(file: IFile, parameters: any, envParameters: any, httpThrottle: number): Promise<any>;
+    execute(file: IFile, parameters: any, envParameters: any): Promise<any>;
 
     kill(signal?: NodeJS.Signals): Promise<void>;
 }

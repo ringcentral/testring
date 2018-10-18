@@ -20,9 +20,9 @@ const getValidCopyVmError = (error) => {
 export const run = async (...tests: Array<TestFunction>) => {
     const testID = testAPIController.getTestID();
     const bus = testAPIController.getBus();
-    const httpThrottle = testAPIController.getHttpThrottle();
+    const testParameters = testAPIController.getTestParameters() as any;
 
-    const api = new TestContext(httpThrottle);
+    const api = new TestContext(testParameters.runData.httpThrottle);
     let passed = false;
     let catchedError;
 

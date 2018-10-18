@@ -16,7 +16,7 @@ import {
     ITestExecutionMessage,
     TestWorkerAction,
     FileCompiler,
-    TestStatus
+    TestStatus,
 } from '@testring/types';
 
 const nanoid = require('nanoid');
@@ -84,14 +84,13 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         this.config = createConfig(workerConfig);
     }
 
-    public async execute(file: IFile, parameters: any, envParameters: any, httpThrottle: number): Promise<any> {
+    public async execute(file: IFile, parameters: any, envParameters: any): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
                 return await this.makeExecutionRequest(
                     file,
                     parameters,
                     envParameters,
-                    httpThrottle,
                     resolve,
                     reject
                 );
@@ -149,7 +148,6 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         file: IFile,
         parameters: any,
         envParameters: any,
-        httpThrottle: number,
         resolve,
         reject
     ) {
@@ -216,7 +214,6 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             dependencies,
             parameters,
             envParameters,
-            httpThrottle,
         });
     }
 
