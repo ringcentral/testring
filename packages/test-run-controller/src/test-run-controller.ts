@@ -6,7 +6,7 @@ import {
     ITestWorker,
     ITestWorkerCallbackMeta,
     ITestWorkerInstance,
-    TestRunControllerPlugins
+    TestRunControllerPlugins,
 } from '@testring/types';
 import { loggerClientLocal } from '@testring/logger';
 import { PluggableModule } from '@testring/pluggable-module';
@@ -164,6 +164,11 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     private getQueueItemWithRunData(queueItem): IQueuedTest {
         let screenshotsEnabled = false;
         let isRetryRun = queueItem.retryCount > 0;
+        const {
+            debug,
+            logLevel,
+            httpThrottle,
+        } = this.config;
 
         if (this.config.screenshots === 'enable') {
             screenshotsEnabled = true;
@@ -176,8 +181,9 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             parameters: {
                 ...queueItem.parameters,
                 runData: {
-                    debug: this.config.debug || false,
-                    logLevel: this.config.logLevel,
+                    debug,
+                    logLevel,
+                    httpThrottle,
                     screenshotsEnabled,
                     isRetryRun,
                 },

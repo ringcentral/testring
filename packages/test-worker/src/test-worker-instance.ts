@@ -16,7 +16,7 @@ import {
     ITestExecutionMessage,
     TestWorkerAction,
     FileCompiler,
-    TestStatus
+    TestStatus,
 } from '@testring/types';
 
 const nanoid = require('nanoid');
@@ -213,7 +213,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             ...compiledFile,
             dependencies,
             parameters,
-            envParameters
+            envParameters,
         });
     }
 

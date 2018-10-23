@@ -22,4 +22,5 @@ export interface IConfig {
     envConfig?: string;
     envParameters?: any;
     plugins?: Array<ConfigPluginDescriptor>;
+    httpThrottle: number;
 }

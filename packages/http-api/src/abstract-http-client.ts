@@ -6,9 +6,12 @@ import {
     IHttpRequest,
     IHttpResponseMessage,
     IHttpRequestMessage,
-    IHttpResponseRejectMessage
+    IHttpResponseRejectMessage,
+    IQueue,
+    HttpClientParams,
 } from '@testring/types';
 import { loggerClient } from '@testring/logger';
+import { Queue } from '@testring/utils';
 import { HttpCookieJar } from './cookie-jar';
 
 const nanoid = require('nanoid');
@@ -17,28 +20,31 @@ const toString = c => c.toString();
 
 export abstract class AbstractHttpClient implements IHttpClient {
     protected abstract broadcast(options: IHttpRequestMessage): void;
+    private requestQueue: IQueue<Function>;
+    private queueRunning = false;
 
-    constructor(protected transportInstance: ITransport) {
+    constructor(protected transportInstance: ITransport, private params: HttpClientParams) {
+        this.requestQueue = new Queue();
     }
 
     public post(options: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any> {
-        return this.sendRequest({ ...options, method: 'POST' }, cookieJar);
+        return this.pushToQueue({ ...options, method: 'POST' }, cookieJar);
     }
 
     public get(options: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any> {
-        return this.sendRequest({ ...options, method: 'GET' }, cookieJar);
+        return this.pushToQueue({ ...options, method: 'GET' }, cookieJar);
     }
 
     public delete(options: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any> {
-        return this.sendRequest({ ...options, method: 'DELETE' }, cookieJar);
+        return this.pushToQueue({ ...options, method: 'DELETE' }, cookieJar);
     }
 
     public put(options: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any> {
-        return this.sendRequest({ ...options, method: 'PUT' }, cookieJar);
+        return this.pushToQueue({ ...options, method: 'PUT' }, cookieJar);
     }
 
     public send(options: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any> {
-        return this.sendRequest({ ...options }, cookieJar);
+        return this.pushToQueue({ ...options }, cookieJar);
     }
 
     public createCookieJar() {
@@ -51,6 +57,33 @@ export abstract class AbstractHttpClient implements IHttpClient {
 
     private isValidRequest(request: IHttpRequest): boolean {
         return (this.isValidData(request) && request.hasOwnProperty('url'));
+    }
+
+    private async runQueue(): Promise<void> {
+        if (this.queueRunning) {
+            return;
+        }
+
+        this.queueRunning = true;
+
+        while (this.requestQueue.length) {
+            const item = this.requestQueue.shift();
+            
+            if (item) {
+                await item();
+                await new Promise(resolve => setTimeout(resolve, this.params.httpThrottle));
+            }
+        }
+        
+        this.queueRunning = false;
+    }
+
+    private pushToQueue(requestParameters: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any> {
+        return new Promise(async (resolve, reject) => {
+            const sendRequest = () => this.sendRequest(requestParameters, cookieJar).then(resolve, reject);
+            this.requestQueue.push(sendRequest);
+            this.runQueue();
+        });
     }
 
     private async sendRequest(requestParameters: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any> {

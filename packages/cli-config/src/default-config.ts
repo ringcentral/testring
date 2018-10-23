@@ -15,5 +15,6 @@ export const defaultConfiguration: Partial<IConfig> = {
     retryDelay: 2000,
     testTimeout: 15 * 60 * 1000,
     logLevel: LogLevel.info,
-    envParameters: {}
+    envParameters: {},
+    httpThrottle: 0,
 };

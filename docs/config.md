@@ -273,6 +273,25 @@ You can get it inside test with `api.getEnvironment()` call.
 
 <br/>
 
+## `httpThrottle`
+
+###### `0` <sup>default</sup>
+
+Delay between http requests in milliseconds.
+Useful if you don't want spam your test environment.
+
+```	
+$ testring run --http-throttle 500	
+```	
+
+ ```json	
+{	
+  "httpThrottle": 500	
+}	
+```
+
+<br/>
+
 ## `plugins`
 
 ###### `void` <sup>default</sup>

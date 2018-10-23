@@ -12,7 +12,13 @@ export class TestContext {
 
     private customApplications: Set<WebApplication> = new Set();
 
-    public http = new HttpClient(transport);
+    public http: HttpClient;
+
+    constructor(config: any) {
+        this.http = new HttpClient(transport, {
+            httpThrottle: config.httpThrottle,
+        });
+    }
 
     public get application(): WebApplication {
         const runData = this.getRunData();

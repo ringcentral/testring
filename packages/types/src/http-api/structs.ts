@@ -40,3 +40,7 @@ export interface IHttpResponseRejectMessage {
     uid: string;
     error: IHttpResponse;
 }
+
+export type HttpClientParams = {
+    httpThrottle: number;
+}
