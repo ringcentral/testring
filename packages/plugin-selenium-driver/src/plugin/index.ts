@@ -69,7 +69,15 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         process.on('exit', () => {
             clearInterval(this.clientCheckInterval);
+            this.stopAllSessions();
         });
+    }
+
+    private stopAllSessions() {
+        for (let [applicant, item] of this.browserClients) {
+            this.logger.debug(`Stopping sessions for applicant ${applicant}.`);
+            item.client.endAll();
+        }
     }
 
     private getChromeDriverArgs() {
@@ -191,6 +199,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
             this.browserClients.delete(applicant);
 
+            this.logger.debug(`Stopping sessions for applicant ${applicant}.`);
             await this.wrapWithPromise(client.end());
         }
     }
