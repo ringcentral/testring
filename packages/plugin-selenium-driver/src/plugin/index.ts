@@ -158,7 +158,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             client,
             initTime: Date.now(),
         });
-        this.logger.debug(`Started session for applicant ${applicant}`);
+        this.logger.debug(`Started session for applicant ${applicant}. Session id ${client.sessionId}`);
     }
 
     private wrapWithPromise<T>(item: Client<RawResult<T> | T>): Promise<T> {
@@ -199,7 +199,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
             this.browserClients.delete(applicant);
 
-            this.logger.debug(`Stopping sessions for applicant ${applicant}.`);
+            this.logger.debug(`Stopping sessions for applicant ${applicant}. Session id ${client.sessionId}`);
             await this.wrapWithPromise(client.end());
         }
     }
