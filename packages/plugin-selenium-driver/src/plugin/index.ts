@@ -1,4 +1,3 @@
-import * as path from 'path';
 import * as deepmerge from 'deepmerge';
 import { IBrowserProxyPlugin } from '@testring/types';
 import { spawn } from '@testring/child-process';
@@ -6,8 +5,6 @@ import { Config, Client, RawResult, remote } from 'webdriverio';
 import { SeleniumPluginConfig } from '../types';
 import { ChildProcess } from 'child_process';
 import { loggerClient } from '@testring/logger';
-
-const extensionPath = path.dirname(require.resolve('@testring/recorder-extension'));
 
 type browserClientItem = {
     client: Client<any>;
@@ -21,9 +18,7 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
     desiredCapabilities: {
         browserName: 'chrome',
         chromeOptions: {
-            args: [
-                `load-extension=${extensionPath}`
-            ]
+            args: []
         }
     }
 };
@@ -74,7 +69,15 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         process.on('exit', () => {
             clearInterval(this.clientCheckInterval);
+            this.stopAllSessions();
         });
+    }
+
+    private stopAllSessions() {
+        for (let [applicant, item] of this.browserClients) {
+            this.logger.debug(`Stopping sessions for applicant ${applicant}.`);
+            item.client.endAll();
+        }
     }
 
     private getChromeDriverArgs() {
@@ -196,6 +199,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
             this.browserClients.delete(applicant);
 
+            this.logger.debug(`Stopping sessions for applicant ${applicant}.`);
             await this.wrapWithPromise(client.end());
         }
     }
