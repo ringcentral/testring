@@ -8,6 +8,7 @@ import { loggerClient } from '@testring/logger';
 
 type browserClientItem = {
     client: Client<any>;
+    sessionId: string;
     initTime: number;
 };
 
@@ -69,15 +70,23 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         process.on('exit', () => {
             clearInterval(this.clientCheckInterval);
-            this.stopAllSessions();
+            this.stopAllSessions().catch((err) => {
+                this.logger.error(err);
+            });
         });
     }
 
     private stopAllSessions() {
-        for (let [applicant, item] of this.browserClients) {
-            this.logger.debug(`Stopping sessions for applicant ${applicant}.`);
-            item.client.endAll();
+        let clientsRequests: Promise<any>[] = [];
+
+        for (let [applicant] of this.browserClients) {
+            this.logger.debug(`Stopping sessions before process exit for applicant ${applicant}.`);
+            clientsRequests.push(this.end(applicant).catch((err) => {
+                this.logger.error(`Session stop before process exit error for applicant ${applicant}: \n`, err);
+            }));
         }
+
+        return Promise.all(clientsRequests);
     }
 
     private getChromeDriverArgs() {
@@ -111,6 +120,14 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             });
         } catch (err) {
             this.logger.error('Local selenium server init failed', err);
+        }
+    }
+
+    private getApplicantSessionId(applicant): string | undefined {
+        let item = this.browserClients.get(applicant);
+
+        if (item) {
+            return item.sessionId;
         }
     }
 
@@ -152,13 +169,18 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
 
         const client = remote(this.config);
-        await client.init();
+        const { sessionId = null } = (await client.init() || {});
+
+        if (sessionId === null) {
+            throw Error('Session can not be null');
+        }
 
         this.browserClients.set(applicant, {
             client,
+            sessionId,
             initTime: Date.now(),
         });
-        this.logger.debug(`Started session for applicant ${applicant}. Session id ${client.sessionId}`);
+        this.logger.debug(`Started session for applicant: ${applicant}. Session id: ${sessionId}`);
     }
 
     private wrapWithPromise<T>(item: Client<RawResult<T> | T>): Promise<T> {
@@ -197,9 +219,22 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 await this.wrapWithPromise(client.alertDismiss());
             } catch { /* ignore */ }
 
-            this.browserClients.delete(applicant);
+            const startingSessionID = this.getApplicantSessionId(applicant);
+            const sessionID = ((client as any).requestHandler || {}).sessionID;
 
-            this.logger.debug(`Stopping sessions for applicant ${applicant}. Session id ${client.sessionId}`);
+            if (startingSessionID === sessionID) {
+                this.logger.debug(`Stopping sessions for applicant ${applicant}. Session id:`, sessionID);
+            } else {
+                this.logger.warn(`Stopping sessions for applicant warning ${applicant}.`,
+                    `Session ids are not equal, starting with - ${startingSessionID}, ending with - ${sessionID}`);
+                try {
+                    await this.wrapWithPromise(client.session('DELETE', startingSessionID));
+                } catch (err) {
+                    this.logger.error(`Old session ${startingSessionID} delete error`, err);
+                }
+            }
+
+            this.browserClients.delete(applicant);
             await this.wrapWithPromise(client.end());
         }
     }
