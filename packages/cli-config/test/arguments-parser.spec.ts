@@ -20,7 +20,9 @@ describe('argument parser', () => {
         const customConfigPath = './customConfig.json';
         const customTestsPath = './tests/**/*.test.js';
         const pluginsSet = ['plugin1', 'plugin2', 'plugin3'];
-        const customFieldSet = ['#P0', '#P1', '#P2'];
+        const customFieldSet = '#P0,#P1,#P2';
+        const customField = '#P0';
+
         const argv = [
             '',
             // boolean
@@ -34,11 +36,11 @@ describe('argument parser', () => {
             '--tests',
             customTestsPath,
             '--custom-field',
-            `${customFieldSet[0]},${customFieldSet[1]},${customFieldSet[2]}`,
+            customFieldSet,
             '--my-namespaced.custom-field',
-            `${customFieldSet[0]},${customFieldSet[1]},${customFieldSet[2]}`,
+            customFieldSet,
             '--my-namespaced.second-custom-field',
-            `${customFieldSet[0]}`
+            customField
         ];
 
         const args = getArguments(argv);
@@ -49,10 +51,10 @@ describe('argument parser', () => {
             plugins: pluginsSet,
             customField: customFieldSet,
             myNamespacedCustomField: customFieldSet,
-            myNamespacedSecondCustomField: customFieldSet[0],
+            myNamespacedSecondCustomField: customField,
             myNamespaced: {
                 customField: customFieldSet,
-                secondCustomField: customFieldSet[0]
+                secondCustomField: customField,
             }
         };
 

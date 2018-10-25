@@ -3,7 +3,6 @@ import { IConfig } from '@testring/types';
 
 const RESTRICTED_FIELDS = ['_', '$0', 'version', 'help'];
 
-const trimString = (string: string): string => string.trim();
 const firstLetterToUpperCase = (matches) => matches[1].toUpperCase();
 const toCamelCase = (string: string): string => string.replace(
     /(-\w)/g,
@@ -15,13 +14,6 @@ const normalizeArg = (arg: any): any => {
         case 'object':
             if (!Array.isArray(arg) && arg !== null) {
                 return normalize(arg, false);
-            } else {
-                return arg;
-            }
-
-        case 'string':
-            if (arg.includes(',')) {
-                return arg.split(',').map(trimString);
             } else {
                 return arg;
             }
