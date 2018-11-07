@@ -15,7 +15,7 @@ export const enum BrowserProxyActions {
     executeAsync = 'executeAsync',
     gridProxyDetails = 'gridProxyDetails',
     url = 'url',
-    openWindow = 'openWindow',
+    newWindow = 'newWindow',
     waitForExist = 'waitForExist',
     waitForVisible = 'waitForVisible',
     isVisible = 'isVisible',
