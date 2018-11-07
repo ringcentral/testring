@@ -288,6 +288,15 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
+    public async newWindow(applicant: string, val: string, windowName: string, windowFeatures: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.newWindow(val, windowName, windowFeatures));
+        }
+    }
+
     public async waitForExist(applicant: string, xpath: string, timeout: number) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
