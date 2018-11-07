@@ -31,7 +31,7 @@ export interface IBrowserProxyPlugin {
 
     url(applicant: string, val: string): Promise<any>;
 
-    newWindow(applicant: string, val: string, windowName: string, windowFeatures: string): Promise<any>;
+    openWindow(applicant: string, val: string, windowName: string, windowFeatures: string): Promise<any>;
 
     waitForExist(applicant: string, xpath: string, timeout: number): Promise<any>;
 
