@@ -32,6 +32,12 @@ function delay(timeout) {
     return new Promise<void>((resolve) => setTimeout(() => resolve(), timeout));
 }
 
+function stringifyWindowFeatures(windowFeatures) {
+    return Object.keys(windowFeatures)
+        .map((key) => `${key}=${windowFeatures[key]}`)
+        .join(',');
+}
+
 export class SeleniumPlugin implements IBrowserProxyPlugin {
     private logger = loggerClient.getLogger('[selenium-browser-process]');
 
@@ -291,7 +297,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     public async newWindow(applicant: string, val: string, windowName: string, windowFeatures: object) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
-        let args = JSON.stringify(windowFeatures);
+        let args = stringifyWindowFeatures(windowFeatures);
 
         if (client) {
             return this.wrapWithPromise(client.newWindow(val, windowName, args));
