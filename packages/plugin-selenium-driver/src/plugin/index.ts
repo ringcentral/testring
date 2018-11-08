@@ -32,10 +32,16 @@ function delay(timeout) {
     return new Promise<void>((resolve) => setTimeout(() => resolve(), timeout));
 }
 
-function stringifyWindowFeatures(windowFeatures) {
-    return Object.keys(windowFeatures)
-        .map((key) => `${key}=${windowFeatures[key]}`)
-        .join(',');
+function stringifyWindowFeatures(windowFeatures: WindowFeaturesConfig) {
+    let result;
+    if (typeof windowFeatures === "string") {
+        result = windowFeatures;
+    } else {
+        result = Object.keys(windowFeatures)
+            .map((key) => `${key}=${windowFeatures[key]}`)
+            .join(',');
+    }
+    return result;
 }
 
 export class SeleniumPlugin implements IBrowserProxyPlugin {
