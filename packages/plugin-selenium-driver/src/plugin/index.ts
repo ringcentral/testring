@@ -2,7 +2,7 @@ import * as deepmerge from 'deepmerge';
 import { IBrowserProxyPlugin } from '@testring/types';
 import { spawn } from '@testring/child-process';
 import { Config, Client, RawResult, remote } from 'webdriverio';
-import { SeleniumPluginConfig } from '../types';
+import { SeleniumPluginConfig, WindowFeaturesConfig} from '../types';
 import { ChildProcess } from 'child_process';
 import { loggerClient } from '@testring/logger';
 
@@ -294,10 +294,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    public async newWindow(applicant: string, val: string, windowName: string, windowFeatures: object) {
+    public async newWindow(applicant: string, val: string, windowName: string, windowFeatures: WindowFeaturesConfig) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
-        let args = stringifyWindowFeatures(windowFeatures);
+        const args = stringifyWindowFeatures(windowFeatures);
 
         if (client) {
             return this.wrapWithPromise(client.newWindow(val, windowName, args));
