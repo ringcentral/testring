@@ -1,8 +1,8 @@
 import * as deepmerge from 'deepmerge';
-import { IBrowserProxyPlugin } from '@testring/types';
+import { IBrowserProxyPlugin, WindowFeaturesConfig } from '@testring/types';
 import { spawn } from '@testring/child-process';
 import { Config, Client, RawResult, remote } from 'webdriverio';
-import { SeleniumPluginConfig, WindowFeaturesConfig} from '../types';
+import { SeleniumPluginConfig } from '../types';
 import { ChildProcess } from 'child_process';
 import { loggerClient } from '@testring/logger';
 

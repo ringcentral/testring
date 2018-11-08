@@ -1,4 +1,5 @@
 import { IBrowserProxyCommand } from './structs';
+import {WindowFeaturesConfig} from "../web-application";
 
 export interface IBrowserProxyController {
     init(): Promise<void>;
@@ -31,7 +32,7 @@ export interface IBrowserProxyPlugin {
 
     url(applicant: string, val: string): Promise<any>;
 
-    newWindow(applicant: string, val: string, windowName: string, windowFeatures: object): Promise<any>;
+    newWindow(applicant: string, val: string, windowName: string, windowFeatures: WindowFeaturesConfig): Promise<any>;
 
     waitForExist(applicant: string, xpath: string, timeout: number): Promise<any>;
 
