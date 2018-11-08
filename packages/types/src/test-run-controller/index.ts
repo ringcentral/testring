@@ -14,6 +14,7 @@ export interface IQueuedTest {
     retryErrors: Array<any>;
     test: IFile;
     parameters: any;
+    envParameters: any;
 }
 
 export interface ITestRunController {

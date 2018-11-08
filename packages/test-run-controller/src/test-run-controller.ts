@@ -157,7 +157,10 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             retryCount: 0,
             retryErrors: [],
             test: testFile,
-            parameters: {}
+            parameters: {},
+            envParameters: {
+                ...this.config.envParameters,
+            },
         };
     }
 
@@ -187,7 +190,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                     screenshotsEnabled,
                     isRetryRun,
                 },
-            }
+            },
         };
     }
 
@@ -259,7 +262,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 worker.execute(
                     queuedTest.test,
                     queuedTest.parameters,
-                    this.config.envParameters
+                    queuedTest.envParameters
                 ),
                 new Promise((resolve, reject) => {
                     timer = setTimeout(() => {
