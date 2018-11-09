@@ -1,5 +1,5 @@
 import * as deepmerge from 'deepmerge';
-import { IBrowserProxyPlugin } from '@testring/types';
+import { IBrowserProxyPlugin, WindowFeaturesConfig } from '@testring/types';
 import { spawn } from '@testring/child-process';
 import { Config, Client, RawResult, remote } from 'webdriverio';
 import { SeleniumPluginConfig } from '../types';
@@ -30,6 +30,18 @@ function waitFor(client: Client<any>) {
 
 function delay(timeout) {
     return new Promise<void>((resolve) => setTimeout(() => resolve(), timeout));
+}
+
+function stringifyWindowFeatures(windowFeatures: WindowFeaturesConfig) {
+    let result;
+    if (typeof windowFeatures === "string") {
+        result = windowFeatures;
+    } else {
+        result = Object.keys(windowFeatures)
+            .map((key) => `${key}=${windowFeatures[key]}`)
+            .join(',');
+    }
+    return result;
 }
 
 export class SeleniumPlugin implements IBrowserProxyPlugin {
@@ -285,6 +297,16 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         if (client) {
             return this.wrapWithPromise(client.url(val));
+        }
+    }
+
+    public async newWindow(applicant: string, val: string, windowName: string, windowFeatures: WindowFeaturesConfig) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+        const args = stringifyWindowFeatures(windowFeatures);
+
+        if (client) {
+            return this.wrapWithPromise(client.newWindow(val, windowName, args));
         }
     }
 

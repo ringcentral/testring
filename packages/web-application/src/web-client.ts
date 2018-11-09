@@ -70,6 +70,10 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.url, [val]);
     }
 
+    public newWindow(val, windowName, windowFeatures) {
+        return this.makeRequest(BrowserProxyActions.newWindow, [val, windowName, windowFeatures]);
+    }
+
     public waitForExist(xpath, timeout) {
         return this.makeRequest(BrowserProxyActions.waitForExist, [xpath, timeout]);
     }
