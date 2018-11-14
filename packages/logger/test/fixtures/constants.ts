@@ -16,6 +16,7 @@ export const LOG_ENTITY: ILogEntity = {
     stepUid: null,
     prefix: null,
     stepType: null,
+    marker: null,
 };
 
 export const stepsTypes: Array<Partial<ILogEntity>> = [

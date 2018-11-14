@@ -14,7 +14,7 @@ type MakeRequest = (request: IHttpRequest) => Promise<IHttpResponse>;
 
 export class HttpServer extends PluggableModule {
     private unsubscribeTransport: Function;
-    
+
     private loggerInstance: LoggerClientLocal | null = null;
 
     private isKilled = false;
@@ -51,7 +51,7 @@ export class HttpServer extends PluggableModule {
             return this.loggerInstance;
         }
 
-        this.loggerInstance = loggerClientLocal.getLogger('[http-server]');
+        this.loggerInstance = loggerClientLocal.withPrefix('[http-server]');
 
         return this.loggerInstance;
     }

@@ -13,7 +13,7 @@ import { loggerClientLocal } from '@testring/logger';
 
 const nanoid = require('nanoid');
 
-const logger = loggerClientLocal.getLogger('[browser-proxy-worker]');
+const logger = loggerClientLocal.withPrefix('[browser-proxy-worker]');
 
 export class BrowserProxyWorker implements IBrowserProxyWorker {
     private pendingCommandsQueue: Set<IBrowserProxyPendingCommand> = new Set();

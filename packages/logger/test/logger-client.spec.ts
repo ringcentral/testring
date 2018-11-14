@@ -61,7 +61,7 @@ describe('Logger client', () => {
         const spy = sinon.spy();
         const transport = new TransportMock();
         const loggerParent = new LoggerClient(transport);
-        const loggerClient = loggerParent.getLogger(PREFIX);
+        const loggerClient = loggerParent.withPrefix(PREFIX);
 
         transport.on(LoggerMessageTypes.REPORT, spy);
         loggerClient.log(...report);
@@ -293,7 +293,7 @@ describe('Logger client', () => {
         const spy = sinon.spy();
         const transport = new TransportMock();
         const loggerParent = new LoggerClient(transport, PREFIX);
-        const loggerClient = loggerParent.getLogger();
+        const loggerClient = loggerParent.withPrefix(PREFIX);
 
         transport.on(LoggerMessageTypes.REPORT, spy);
 
@@ -358,5 +358,64 @@ describe('Logger client', () => {
             type: LogTypes.debug,
             parentStep: spy.getCall(5).args[0].stepUid,
         });
+    });
+
+    it('should broadcast messages with marker', async () => {
+        const MARKER = 1;
+        const spy = sinon.spy();
+        const transport = new TransportMock();
+        const loggerParent = new LoggerClient(transport);
+        const loggerClient = loggerParent.withMarker(MARKER);
+
+        transport.on(LoggerMessageTypes.REPORT, spy);
+        loggerClient.log(...report);
+        loggerClient.info(...report);
+        loggerClient.warn(...report);
+        loggerClient.error(...report);
+        loggerClient.debug(...report);
+        loggerClient.success(...report);
+        loggerClient.verbose(...report);
+
+        chai.expect(spy.callCount).to.be.equal(7);
+
+        for (let i = 0, len = spy.callCount; i < len; i++) {
+            chai.expect(spy.getCall(i).args[0].marker).to.be.equal(MARKER);
+        }
+    });
+
+    it('should broadcast messages with marker override marker', async () => {
+        const MARKER = 1;
+        const spy = sinon.spy();
+        const transport = new TransportMock();
+        const loggerParent = new LoggerClient(transport, null, MARKER);
+        const loggerClient = loggerParent.withMarker(null);
+
+        transport.on(LoggerMessageTypes.REPORT, spy);
+
+        loggerParent.log(...report);
+        loggerParent.info(...report);
+        loggerParent.warn(...report);
+        loggerParent.error(...report);
+        loggerParent.debug(...report);
+        loggerParent.success(...report);
+        loggerParent.verbose(...report);
+
+        loggerClient.log(...report);
+        loggerClient.info(...report);
+        loggerClient.warn(...report);
+        loggerClient.error(...report);
+        loggerClient.debug(...report);
+        loggerClient.success(...report);
+        loggerClient.verbose(...report);
+
+        chai.expect(spy.callCount).to.be.equal(14);
+
+        for (let i = 0, len = spy.callCount / 2; i < len; i++) {
+            chai.expect(spy.getCall(i).args[0].marker).to.be.equal(MARKER);
+        }
+
+        for (let i = spy.callCount / 2, len = spy.callCount; i < len; i++) {
+            chai.expect(spy.getCall(i).args[0].marker).to.be.equal(null);
+        }
     });
 });

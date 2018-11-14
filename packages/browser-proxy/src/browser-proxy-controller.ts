@@ -20,7 +20,7 @@ type BrowserProxyWorkerConfig = {
 };
 
 
-const logger = loggerClientLocal.getLogger('[browser-proxy-controller]');
+const logger = loggerClientLocal.withPrefix('[browser-proxy-controller]');
 
 
 export class BrowserProxyController extends PluggableModule implements IBrowserProxyController {

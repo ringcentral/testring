@@ -5,15 +5,22 @@ import {
     LogStepTypes,
 } from './enums';
 
+export type LogEntityStepUidType = string | null;
+
+export type LogEntityPrefixType = string | null;
+
+export type LogEntityMarkerType = string | number | null;
+
 export interface ILogEntity {
     time: Date;
     type: LogTypes;
     logLevel: LogLevel;
     content: Array<any>;
-    stepUid: string | null;
+    stepUid: LogEntityStepUidType;
     stepType: LogStepTypes | null;
-    parentStep: string | null;
-    prefix: string | null;
+    parentStep: LogEntityStepUidType;
+    prefix: LogEntityPrefixType;
+    marker: LogEntityMarkerType;
 }
 
 export interface ILogMeta {
@@ -29,7 +36,7 @@ export interface ILoggerServer {
     getQueueStatus(): LogQueueStatus;
 }
 
-export interface ILoggerClient<Transport, Prefix, Stack> {
+export interface ILoggerClient<Transport, Prefix, Marker, Stack> {
     log(...args): void;
     info(...args): void;
     warn(...args): void;
@@ -38,25 +45,29 @@ export interface ILoggerClient<Transport, Prefix, Stack> {
     verbose(...args): void;
     success(...args): void;
 
-    startStep(message: string, stepType?: LogStepTypes): void;
+    startStep(message: any, stepType?: LogStepTypes): void;
 
-    startStepLog(message: string): void;
-    startStepInfo(message: string): void;
-    startStepDebug(message: string): void;
-    startStepSuccess(message: string): void;
-    startStepWarning(message: string): void;
-    startStepError(message: string): void;
+    startStepLog(message: any): void;
+    startStepInfo(message: any): void;
+    startStepDebug(message: any): void;
+    startStepSuccess(message: any): void;
+    startStepWarning(message: any): void;
+    startStepError(message: any): void;
 
-    endStep(): void;
+    endStep(stepUid: string): void;
+    endAllSteps(): void;
 
     step(message: string, callback: () => Promise<any> | any, stepType?: LogStepTypes): Promise<any>;
 
-    stepLog(message: string, callback: () => Promise<any> | any): Promise<any>;
-    stepInfo(message: string, callback: () => Promise<any> | any): Promise<any>;
-    stepDebug(message: string, callback: () => Promise<any> | any): Promise<any>;
-    stepSuccess(message: string, callback: () => Promise<any> | any): Promise<any>;
-    stepWarning(message: string, callback: () => Promise<any> | any): Promise<any>;
-    stepError(message: string, callback: () => Promise<any> | any): Promise<any>;
+    stepLog(message: any, callback: () => Promise<any> | any): Promise<any>;
+    stepInfo(message: any, callback: () => Promise<any> | any): Promise<any>;
+    stepDebug(message: any, callback: () => Promise<any> | any): Promise<any>;
+    stepSuccess(message: any, callback: () => Promise<any> | any): Promise<any>;
+    stepWarning(message: any, callback: () => Promise<any> | any): Promise<any>;
+    stepError(message: any, callback: () => Promise<any> | any): Promise<any>;
 
-    getLogger(prefix?: Prefix, stepStack?: Stack): ILoggerClient<Transport, Prefix, Stack>;
+    withPrefix(prefix: Prefix): ILoggerClient<Transport, Prefix, Marker, Stack>;
+    withMarker(marker: Marker): ILoggerClient<Transport, Prefix, Marker, Stack>;
+
+    getLogger(prefix: Prefix, mark: Marker, stepStack: Stack): ILoggerClient<Transport, Prefix, Marker, Stack>;
 }
