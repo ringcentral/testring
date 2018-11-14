@@ -24,5 +24,5 @@ Documentation:
 Let's start by installing testring inside your project:
 
 ```
-$ npm install testring -g
+$ npm install testring
 ```
