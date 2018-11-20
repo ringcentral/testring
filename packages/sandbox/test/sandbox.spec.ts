@@ -83,7 +83,8 @@ describe('Sandbox', () => {
                 weakMap,
                 weakSet,
                 promise,
-                buffer
+                buffer,
+                error,
             } = sandbox.execute();
 
             chai.expect(array instanceof Array).to.be.equal(true);
@@ -93,6 +94,7 @@ describe('Sandbox', () => {
             chai.expect(weakSet instanceof WeakSet).to.be.equal(true);
             chai.expect(promise instanceof Promise).to.be.equal(true);
             chai.expect(buffer instanceof Buffer).to.be.equal(true);
+            chai.expect(error instanceof Error).to.be.equal(true);
         });
 
         it('should set global variables into own context', async () => {

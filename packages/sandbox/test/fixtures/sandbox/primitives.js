@@ -16,6 +16,7 @@ const weakMap = new WeakMap();
 const weakSet = new WeakSet();
 const promise = Promise.resolve();
 const buffer = Buffer.from([1, 0]);
+const error = new Error();
 
 const reflect = Reflect.has(map, '1');
 
@@ -26,5 +27,6 @@ module.exports = {
     weakMap,
     weakSet,
     promise,
-    buffer
+    buffer,
+    error,
 };
