@@ -6,6 +6,7 @@ export * from './pluggable-module';
 
 export * from './recorder-backend';
 
+export * from './child-process';
 export * from './fs-reader';
 
 export * from './browser-proxy/structs';

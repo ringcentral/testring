@@ -25,11 +25,16 @@ const WORKER_ROOT = require.resolve(
     path.resolve(__dirname, 'worker')
 );
 
+const WORKER_DEFAULT_CONFIG: ITestWorkerConfig = {
+    screenshots: 'disable',
+    local: false,
+    debug: false,
+};
+
 const delay = (timeout: number) => new Promise<void>(resolve => setTimeout(resolve, timeout));
 
 const createConfig = (workerConfig: Partial<ITestWorkerConfig>): ITestWorkerConfig => ({
-    screenshots: 'disable',
-    debug: false,
+    ...WORKER_DEFAULT_CONFIG,
     ...workerConfig
 });
 
@@ -50,6 +55,8 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     private queuedWorker: Promise<ChildProcess> | null = null;
 
     private workerID = `worker/${nanoid()}`;
+
+    private logger = loggerClientLocal;
 
     private workerExitHandler = (exitCode) => {
         this.clearWorkerHandlers();
@@ -114,7 +121,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             await delay(100);
             await this.kill(signal);
 
-            loggerClientLocal.debug(`Waiting for queue ${this.workerID}`);
+            this.logger.debug(`Waiting for queue ${this.workerID}`);
         } else if (this.worker !== null) {
             this.clearWorkerHandlers();
 
@@ -140,7 +147,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
                 this.abortTestExecution = null;
             }
 
-            loggerClientLocal.debug(`Killed child process ${this.workerID}`);
+            this.logger.debug(`Killed child process ${this.workerID}`);
         }
     }
 
@@ -178,7 +185,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         const relativePath = path.relative(process.cwd(), file.path);
 
-        loggerClientLocal.debug(`Sending test for execution: ${relativePath}`);
+        this.logger.debug(`Sending test for execution: ${relativePath}`);
 
         const removeListener = this.transport.onceFrom<ITestExecutionCompleteMessage>(
             this.workerID,
@@ -225,7 +232,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         }
 
         try {
-            loggerClientLocal.debug(`Compile source file ${filename}`);
+            this.logger.debug(`Compile source file ${filename}`);
 
             const compiledSource = await this.compile(source, filename);
 
@@ -233,7 +240,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
             return compiledSource;
         } catch (error) {
-            loggerClientLocal.error(`Compilation ${filename} failed`);
+            this.logger.error(`Compilation ${filename} failed`);
 
             throw error;
         }
@@ -260,14 +267,16 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     }
 
     private async createWorker(): Promise<ChildProcess> {
-        const worker = await fork(WORKER_ROOT, [], this.config.debug);
+        const worker = await fork(WORKER_ROOT, [], {
+            debug: this.config.debug,
+        });
 
         worker.stdout.on('data', (data) => {
-            loggerClientLocal.log(`[${this.workerID}] [logged] ${data.toString().trim()}`);
+            this.logger.log(`[${this.workerID}] [logged] ${data.toString().trim()}`);
         });
 
         worker.stderr.on('data', (data) => {
-            loggerClientLocal.error(`[${this.workerID}] [error] ${data.toString().trim()}`);
+            this.logger.error(`[${this.workerID}] [error] ${data.toString().trim()}`);
         });
 
         worker.on('error', this.workerErrorHandler);
@@ -275,7 +284,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         this.transport.registerChildProcess(this.workerID, worker);
 
-        loggerClientLocal.debug(`Registered child process ${this.workerID}`);
+        this.logger.debug(`Registered child process ${this.workerID}`);
 
         return worker;
     }
