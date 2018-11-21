@@ -10,6 +10,7 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
+    "@testring/child-process": "0.4.46",
     "@testring/logger": "0.4.46",
     "@testring/pluggable-module": "0.4.46",
     "@testring/test-utils": "0.4.46",
