@@ -1,6 +1,6 @@
 import { RecorderServerMessageTypes, ICLICommand, IConfig, ITransport } from '@testring/types';
 import { browserProxyControllerFactory } from '@testring/browser-proxy';
-import { createHttpServer, HttpClientLocal } from '@testring/http-api';
+import { createHttpServer, HttpClient } from '@testring/http-api';
 import { WebApplicationController } from '@testring/web-application';
 import { LoggerServer, loggerClient } from '@testring/logger';
 import { TestRunController } from '@testring/test-run-controller';
@@ -16,11 +16,14 @@ class RecordCommand implements ICLICommand {
         createHttpServer(this.transport);
 
         const loggerServer = new LoggerServer(this.config, this.transport, this.stdout);
-        const testWorker = new TestWorker(this.transport, this.config);
+        const testWorker = new TestWorker(this.transport, {
+            debug: this.config.debug,
+            localWorker: this.config.localWorker,
+        });
         const testRunController = new TestRunController(this.config, testWorker);
         const browserProxyController = browserProxyControllerFactory(this.transport);
         const webApplicationController = new WebApplicationController(browserProxyController, this.transport);
-        const httpClient = new HttpClientLocal(this.transport, {
+        const httpClient = new HttpClient(this.transport, {
             httpThrottle: this.config.httpThrottle,
         });
         const recorderServer = new RecorderServer();

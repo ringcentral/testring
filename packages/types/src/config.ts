@@ -11,6 +11,7 @@ export interface IConfig {
     screenshots: ScreenshotsConfig;
     config: string;
     debug: boolean;
+    localWorker: boolean;
     silent: boolean;
     bail: boolean;
     workerLimit: number;

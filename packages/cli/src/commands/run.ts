@@ -1,4 +1,4 @@
-import { createHttpServer, HttpClientLocal, HttpServer } from '@testring/http-api';
+import { createHttpServer, HttpClient, HttpServer } from '@testring/http-api';
 import { LoggerServer, loggerClient } from '@testring/logger';
 import { TestRunController } from '@testring/test-run-controller';
 import { applyPlugins } from '@testring/plugin-api';
@@ -42,6 +42,7 @@ class RunCommand implements ICLICommand {
     async execute() {
         const testWorker = new TestWorker(this.transport, {
             debug: this.config.debug,
+            localWorker: this.config.localWorker,
         });
 
         this.httpServer = createHttpServer(this.transport);
@@ -51,7 +52,7 @@ class RunCommand implements ICLICommand {
 
         const loggerServer = new LoggerServer(this.config, this.transport, this.stdout);
         const fsReader = new FSReader();
-        const httpClient = new HttpClientLocal(this.transport, {
+        const httpClient = new HttpClient(this.transport, {
             httpThrottle: this.config.httpThrottle,
         });
 

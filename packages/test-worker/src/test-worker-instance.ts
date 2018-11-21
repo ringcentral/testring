@@ -1,5 +1,4 @@
 import * as path from 'path';
-import { ChildProcess } from 'child_process';
 import { loggerClient } from '@testring/logger';
 import { FSReader } from '@testring/fs-reader';
 import { fork } from '@testring/child-process';
@@ -14,6 +13,7 @@ import {
     ITestWorkerInstance,
     ITestExecutionCompleteMessage,
     ITestExecutionMessage,
+    IChildProcess,
     TestWorkerAction,
     FileCompiler,
     TestStatus,
@@ -27,7 +27,7 @@ const WORKER_ROOT = require.resolve(
 
 const WORKER_DEFAULT_CONFIG: ITestWorkerConfig = {
     screenshots: 'disable',
-    local: false,
+    localWorker: false,
     debug: false,
 };
 
@@ -50,9 +50,9 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private abortTestExecution: Function | null = null;
 
-    private worker: ChildProcess | null = null;
+    private worker: IChildProcess | null = null;
 
-    private queuedWorker: Promise<ChildProcess> | null = null;
+    private queuedWorker: Promise<IChildProcess> | null = null;
 
     private workerID = `worker/${nanoid()}`;
 
@@ -246,7 +246,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         }
     }
 
-    private async getWorker(): Promise<ChildProcess> {
+    private async getWorker(): Promise<IChildProcess> {
         if (this.queuedWorker) {
             return this.queuedWorker;
         }
@@ -266,7 +266,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         return this.worker;
     }
 
-    private async createWorker(): Promise<ChildProcess> {
+    private async createWorker(): Promise<IChildProcess> {
         const worker = await fork(WORKER_ROOT, [], {
             debug: this.config.debug,
         });
