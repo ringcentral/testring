@@ -2,7 +2,7 @@ import { RecorderServerMessageTypes, ICLICommand, IConfig, ITransport } from '@t
 import { browserProxyControllerFactory } from '@testring/browser-proxy';
 import { createHttpServer, HttpClientLocal } from '@testring/http-api';
 import { WebApplicationController } from '@testring/web-application';
-import { LoggerServer, loggerClientLocal } from '@testring/logger';
+import { LoggerServer, loggerClient } from '@testring/logger';
 import { TestRunController } from '@testring/test-run-controller';
 import { RecorderServer } from '@testring/recorder-backend';
 import { applyPlugins } from '@testring/plugin-api';
@@ -38,7 +38,7 @@ class RecordCommand implements ICLICommand {
 
         webApplicationController.init();
 
-        loggerClientLocal.info('Recorder Server started');
+        loggerClient.info('Recorder Server started');
 
         this.transport.on(RecorderServerMessageTypes.MESSAGE, async (message) => {
             const testStr = message.payload;
@@ -46,9 +46,9 @@ class RecordCommand implements ICLICommand {
             try {
                 const testResult = await testRunController.pushTestIntoQueue(testStr);
 
-                loggerClientLocal.info(`Test executed with result: ${testResult}`);
+                loggerClient.info(`Test executed with result: ${testResult}`);
             } catch (e) {
-                loggerClientLocal.info(`Test executed failed with error: ${e}`);
+                loggerClient.info(`Test executed failed with error: ${e}`);
             }
         });
 

@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as WebSocket from 'ws';
 import { launch, LaunchedChrome } from 'chrome-launcher';
-import { loggerClientLocal } from '@testring/logger';
+import { loggerClient } from '@testring/logger';
 import { transport } from '@testring/transport';
 import {
     RecorderServerEvents,
@@ -90,7 +90,7 @@ export class RecorderServer implements IRecorderServer {
                     throw new Error('event type not specified');
                 }
             } catch (e) {
-                loggerClientLocal.warn(`[WS Server] ${e}`);
+                loggerClient.warn(`[WS Server] ${e}`);
             }
         });
 
@@ -131,7 +131,7 @@ export class RecorderServer implements IRecorderServer {
 
             connection.close();
         } catch (e) {
-            loggerClientLocal.warn(e);
+            loggerClient.warn(e);
         }
     }
 

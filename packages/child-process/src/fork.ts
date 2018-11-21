@@ -79,6 +79,7 @@ export async function fork(
     options: Partial<IChildProcessForkOptions> = {},
 ): Promise<IChildProcess> {
     const mergedOptions = getForkOptions(options);
+    const childArg = `--testring-parent-pid=${process.pid}`;
 
     let processArgs: Array<string> = [];
     let debugPort: number | null = null;
@@ -86,24 +87,24 @@ export async function fork(
     if (mergedOptions.debug) {
         debugPort = await getAvailablePort(mergedOptions.debugPortRange);
 
-        processArgs = [`--inspect-brk=${debugPort}`];
+        processArgs.push(`--inspect-brk=${debugPort}`);
     }
 
-    let process;
+    let childProcess;
     if (IS_WIN) {
-        process = spawn(
+        childProcess = spawn(
             'node',
-            [...processArgs, ...getAdditionalParameters(filePath), filePath, ...args]
+            [...processArgs, ...getAdditionalParameters(filePath), filePath, childArg, ...args]
         );
     } else {
-        process = spawn(
+        childProcess = spawn(
             getExecutor(filePath),
-            [...processArgs, filePath, ...args]
+            [...processArgs, filePath, childArg, ...args]
         );
     }
 
-    process.debugPort = debugPort;
+    childProcess.debugPort = debugPort;
 
-    return process;
+    return childProcess;
 }
 

@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { ChildProcess } from 'child_process';
-import { loggerClientLocal } from '@testring/logger';
+import { loggerClient } from '@testring/logger';
 import { FSReader } from '@testring/fs-reader';
 import { fork } from '@testring/child-process';
 import {
@@ -56,7 +56,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private workerID = `worker/${nanoid()}`;
 
-    private logger = loggerClientLocal;
+    private logger = loggerClient;
 
     private workerExitHandler = (exitCode) => {
         this.clearWorkerHandlers();

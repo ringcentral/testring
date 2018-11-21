@@ -8,7 +8,7 @@ import {
     ITestWorkerInstance,
     TestRunControllerPlugins,
 } from '@testring/types';
-import { loggerClientLocal } from '@testring/logger';
+import { loggerClient } from '@testring/logger';
 import { PluggableModule } from '@testring/pluggable-module';
 import { Queue, getMemoryReport } from '@testring/utils';
 
@@ -28,7 +28,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
     private currentRun: Promise<any> | null = null;
 
-    private logger = loggerClientLocal;
+    private logger = loggerClient;
 
     constructor(
         private config: IConfig,

@@ -1,5 +1,5 @@
 import { createHttpServer, HttpClientLocal, HttpServer } from '@testring/http-api';
-import { LoggerServer, loggerClientLocal } from '@testring/logger';
+import { LoggerServer, loggerClient } from '@testring/logger';
 import { TestRunController } from '@testring/test-run-controller';
 import { applyPlugins } from '@testring/plugin-api';
 import { FSReader } from '@testring/fs-reader';
@@ -64,32 +64,32 @@ class RunCommand implements ICLICommand {
             httpClientInstance: httpClient
         }, this.config);
 
-        loggerClientLocal.info('User config:\n', formatJSON(this.config));
+        loggerClient.info('User config:\n', formatJSON(this.config));
 
         const tests = await fsReader.find(this.config.tests);
 
-        loggerClientLocal.info(`Found ${tests.length} test(s) to run.`);
+        loggerClient.info(`Found ${tests.length} test(s) to run.`);
 
         await this.browserProxyController.init();
 
         this.webApplicationController.init();
 
-        loggerClientLocal.info('Executing...');
+        loggerClient.info('Executing...');
 
         const testRunResult = await this.testRunController.runQueue(tests);
 
         await this.shutdown();
 
         if (testRunResult) {
-            loggerClientLocal.error('Founded errors:');
+            loggerClient.error('Founded errors:');
 
             testRunResult.forEach((error) => {
-                loggerClientLocal.error(error);
+                loggerClient.error(error);
             });
 
             throw `Failed ${testRunResult.length}/${tests.length} tests.`;
         } else {
-            loggerClientLocal.info(`Tests done: ${tests.length}/${tests.length}.`);
+            loggerClient.info(`Tests done: ${tests.length}/${tests.length}.`);
         }
     }
 
