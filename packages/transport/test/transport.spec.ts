@@ -15,7 +15,7 @@ describe('Transport', () => {
             const childProcess = new ChildProcessMock();
             const transport = new Transport();
 
-            transport.registerChildProcess('test', childProcess as any);
+            transport.registerChild('test', childProcess as any);
 
             await transport.send('test', MESSAGE_TYPE, []);
         });
@@ -40,7 +40,7 @@ describe('Transport', () => {
             const childProcessMock = new ChildProcessMock(true);
             const transport = new Transport();
 
-            transport.registerChildProcess('test', childProcessMock as any);
+            transport.registerChild('test', childProcessMock as any);
             transport.send('unexpectedName', MESSAGE_TYPE, [])
                 .then(() => {
                     callback('Message was sended to failed process somehow');
@@ -95,7 +95,7 @@ describe('Transport', () => {
 
             const transport = new Transport();
 
-            transport.registerChildProcess('test', childProcessMock as any);
+            transport.registerChild('test', childProcessMock as any);
 
             const removeListener = transport.on(messageType, (payload) => {
                 removeListener();

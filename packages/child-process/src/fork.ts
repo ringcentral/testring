@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as process from 'process';
 import { getAvailablePort } from '@testring/utils';
-import { IChildProcessForkOptions, IChildProcess } from '@testring/types';
+import { IChildProcessForkOptions, IChildProcessFork } from '@testring/types';
 import { resolveBinary } from './resolve-binary';
 import { spawn } from './spawn';
 
@@ -77,7 +77,7 @@ export async function fork(
     filePath: string,
     args: Array<string> = [],
     options: Partial<IChildProcessForkOptions> = {},
-): Promise<IChildProcess> {
+): Promise<IChildProcessFork> {
     const mergedOptions = getForkOptions(options);
     const childArg = `--testring-parent-pid=${process.pid}`;
 

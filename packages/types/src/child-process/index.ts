@@ -6,6 +6,6 @@ export interface IChildProcessForkOptions {
 }
 
 
-export interface IChildProcess extends ChildProcess {
+export interface IChildProcessFork extends ChildProcess {
     debugPort: number | null;
 }

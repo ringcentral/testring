@@ -1,12 +1,11 @@
 import { EventEmitter } from 'events';
-import { ITransport } from '@testring/types';
-import { ChildProcess } from 'child_process';
+import { ITransport, ITransportChild } from '@testring/types';
 
 
 export class TransportMock extends EventEmitter implements ITransport {
 
 
-    private processes: Map<string, ChildProcess> = new Map();
+    private processes: Map<string, ITransportChild> = new Map();
 
     public getProcessStdioConfig() {
         return [];
@@ -59,7 +58,7 @@ export class TransportMock extends EventEmitter implements ITransport {
         return () => this.removeListener(messageType, handler);
     }
 
-    public registerChildProcess(processID: string, process: ChildProcess) {
+    public registerChild(processID: string, process: ITransportChild) {
         this.processes.set(processID, process);
     }
 }

@@ -1,6 +1,10 @@
 import * as process from 'process';
-import { ChildProcess } from 'child_process';
-import { ITransport, TransportMessageHandler, ITransportDirectMessage } from '@testring/types';
+import {
+    ITransport,
+    ITransportChild,
+    TransportMessageHandler,
+    ITransportDirectMessage,
+} from '@testring/types';
 import { DirectTransport } from './direct-transport';
 import { BroadcastTransport } from './broadcast-transport';
 import { EventEmitter } from 'events';
@@ -37,8 +41,8 @@ export class Transport implements ITransport {
         this.broadcastTransport.broadcastLocal(messageType, payload);
     }
 
-    public registerChildProcess(processID: string, childProcess: ChildProcess) {
-        this.directTransport.registerChildProcess(processID, childProcess);
+    public registerChild(processID: string, child: ITransportChild) {
+        this.directTransport.registerChild(processID, child);
     }
 
     public on<T = any>(messageType: string, callback: TransportMessageHandler<T>) {

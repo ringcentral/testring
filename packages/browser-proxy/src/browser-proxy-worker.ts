@@ -150,7 +150,7 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
             this.logger.log(`[logged] ${message.toString()}`);
         });
 
-        this.transport.registerChildProcess(this.workerID, this.worker);
+        this.transport.registerChild(this.workerID, this.worker);
 
         this.onProxyConnect();
 

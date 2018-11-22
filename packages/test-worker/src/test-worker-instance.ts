@@ -2,6 +2,7 @@ import * as path from 'path';
 import { loggerClient } from '@testring/logger';
 import { FSReader } from '@testring/fs-reader';
 import { fork } from '@testring/child-process';
+import { TestWorkerLocal } from './test-worker-local';
 import {
     buildDependencyDictionary,
     mergeDependencyDictionaries
@@ -13,10 +14,10 @@ import {
     ITestWorkerInstance,
     ITestExecutionCompleteMessage,
     ITestExecutionMessage,
-    IChildProcess,
     TestWorkerAction,
     FileCompiler,
     TestStatus,
+    ITransportChild,
 } from '@testring/types';
 
 const nanoid = require('nanoid');
@@ -50,9 +51,9 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private abortTestExecution: Function | null = null;
 
-    private worker: IChildProcess | null = null;
+    private worker: ITransportChild | null = null;
 
-    private queuedWorker: Promise<IChildProcess> | null = null;
+    private queuedWorker: Promise<ITransportChild> | null = null;
 
     private workerID = `worker/${nanoid()}`;
 
@@ -158,7 +159,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         resolve,
         reject
     ) {
-        this.worker = await this.getWorker();
+        await this.initWorker();
 
         const additionalFiles = await this.beforeCompile([], file.path, file.content);
 
@@ -187,23 +188,25 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         this.logger.debug(`Sending test for execution: ${relativePath}`);
 
+        const completeHandler = (message) => {
+            switch (message.status) {
+                case TestStatus.done:
+                    resolve();
+                    break;
+
+                case TestStatus.failed:
+                    reject(message.error);
+                    break;
+            }
+
+            this.successTestExecution = null;
+            this.abortTestExecution = null;
+        };
+
         const removeListener = this.transport.onceFrom<ITestExecutionCompleteMessage>(
             this.workerID,
             TestWorkerAction.executionComplete,
-            (message) => {
-                switch (message.status) {
-                    case TestStatus.done:
-                        resolve();
-                        break;
-
-                    case TestStatus.failed:
-                        reject(message.error);
-                        break;
-                }
-
-                this.successTestExecution = null;
-                this.abortTestExecution = null;
-            }
+            completeHandler
         );
 
         this.successTestExecution = () => {
@@ -216,12 +219,14 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             reject(error);
         };
 
-        await this.transport.send<ITestExecutionMessage>(this.workerID, TestWorkerAction.executeTest, {
+        const payload = {
             ...compiledFile,
             dependencies,
             parameters,
             envParameters,
-        });
+        };
+
+        await this.transport.send<ITestExecutionMessage>(this.workerID, TestWorkerAction.executeTest, payload);
     }
 
     private async compileSource(source: string, filename: string): Promise<string> {
@@ -246,12 +251,20 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         }
     }
 
-    private async getWorker(): Promise<IChildProcess> {
+    private async initWorker(): Promise<ITransportChild> {
         if (this.queuedWorker) {
             return this.queuedWorker;
-        }
+        } else if (this.config.localWorker) {
+            this.queuedWorker = this.createLocalWorker()
+                .then((worker) => {
+                    this.worker = worker;
+                    this.queuedWorker = null;
 
-        if (this.worker === null) {
+                    return worker;
+                });
+
+            return this.queuedWorker;
+        } else if (this.worker === null) {
             this.queuedWorker = this.createWorker()
                 .then((worker) => {
                     this.worker = worker;
@@ -266,7 +279,17 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         return this.worker;
     }
 
-    private async createWorker(): Promise<IChildProcess> {
+    private async createLocalWorker(): Promise<ITransportChild> {
+        const worker = new TestWorkerLocal(this.transport);
+
+        this.transport.registerChild(this.workerID, worker);
+
+        this.logger.debug(`Registered local worker ${this.workerID}`);
+
+        return worker;
+    }
+
+    private async createWorker(): Promise<ITransportChild> {
         const worker = await fork(WORKER_ROOT, [], {
             debug: this.config.debug,
         });
@@ -282,7 +305,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         worker.on('error', this.workerErrorHandler);
         worker.once('exit', this.workerExitHandler);
 
-        this.transport.registerChildProcess(this.workerID, worker);
+        this.transport.registerChild(this.workerID, worker);
 
         this.logger.debug(`Registered child process ${this.workerID}`);
 

@@ -9,10 +9,12 @@ const isDebugging = () => !!inspector.url();
 
 const getConfig = async (argv: Array<string> = []): Promise<IConfig> => {
     const args = getArguments(argv);
+    const debugProperty =  { debug: isDebugging() };
 
     const temporaryConfig = mergeConfigs(
         defaultConfiguration,
         args || {},
+        debugProperty,
     );
 
     const fileConfig = await getFileConfig(temporaryConfig.config, temporaryConfig);
@@ -23,7 +25,7 @@ const getConfig = async (argv: Array<string> = []): Promise<IConfig> => {
         envConfig || {},
         fileConfig || {},
         args || {},
-        { debug: isDebugging() },
+        debugProperty,
     );
 };
 

@@ -1,5 +1,5 @@
-import { ChildProcess } from 'child_process';
 import {
+    ITransportChild,
     TransportInternalMessageType,
     TransportMessageHandler,
     ITransportDirectMessage,
@@ -19,7 +19,7 @@ class DirectTransport {
         return messageUID.startsWith(processID);
     }
 
-    private childProcessRegistry: Map<string, ChildProcess> = new Map();
+    private childRegistry: Map<string, ITransportChild> = new Map();
 
     private responseHandlers: Map<string, Function> = new Map();
 
@@ -27,7 +27,7 @@ class DirectTransport {
     }
 
     public getProcessesList(): Array<string> {
-        return Array.from(this.childProcessRegistry.keys());
+        return Array.from(this.childRegistry.keys());
     }
 
     /**
@@ -36,9 +36,9 @@ class DirectTransport {
      */
     public send(processID: string, type: string, payload: any): Promise<void> {
         return new Promise((resolve, reject) => {
-            const childProcess = this.childProcessRegistry.get(processID);
+            const child = this.childRegistry.get(processID);
 
-            if (childProcess === undefined) {
+            if (child === undefined) {
                 return reject(
                     new ReferenceError(`Process ${processID} doesn't found.`)
                 );
@@ -56,7 +56,7 @@ class DirectTransport {
                 resolve();
             });
 
-            childProcess.send(message, (error) => {
+            child.send(message, (error) => {
                 if (error) {
                     this.responseHandlers.delete(uid);
 
@@ -67,21 +67,21 @@ class DirectTransport {
 
     }
 
-    public registerChildProcess(processID: string, childProcess: ChildProcess) {
-        if (this.childProcessRegistry.has(processID)) {
+    public registerChild(processID: string, child: ITransportChild) {
+        if (this.childRegistry.has(processID)) {
             throw new ReferenceError(
                 `Process ${processID} already exists in transport registry`
             );
         }
 
-        this.childProcessRegistry.set(processID, childProcess);
+        this.childRegistry.set(processID, child);
 
-        childProcess.on('exit', () => this.handleChildProcessClose(processID));
-        childProcess.on('message', (message) => this.handleChildProcessMessage(message, processID));
+        child.on('exit', () => this.handleChildClose(processID));
+        child.on('message', (message) => this.handleChildMessage(message, processID));
     }
 
-    private handleChildProcessClose(processID) {
-        this.childProcessRegistry.delete(processID);
+    private handleChildClose(processID) {
+        this.childRegistry.delete(processID);
 
         // Removing unfired handlers to avoid memory leak
         const responseHandlers = Array.from(this.responseHandlers);
@@ -95,7 +95,7 @@ class DirectTransport {
         }
     }
 
-    private handleChildProcessMessage(message: ITransportDirectMessage, processID: string) {
+    private handleChildMessage(message: ITransportDirectMessage, processID: string) {
         // incorrect message filtering
         if (!message || typeof message.type !== 'string') {
             return;
