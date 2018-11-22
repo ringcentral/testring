@@ -6,6 +6,7 @@ import {
     IWebApplicationResponseMessage,
     WebApplicationMessageType,
 } from '@testring/types';
+import { isChildProcess } from '@testring/child-process';
 
 const nanoid = require('nanoid');
 
@@ -46,7 +47,11 @@ export class WebClient implements IWebApplicationClient {
                 }
             );
 
-            transport.broadcast(WebApplicationMessageType.execute, request);
+            if (isChildProcess()) {
+                transport.broadcast(WebApplicationMessageType.execute, request);
+            } else {
+                transport.broadcastLocal(WebApplicationMessageType.execute, request);
+            }
         });
     }
 

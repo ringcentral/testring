@@ -23,24 +23,42 @@ export class WebApplicationController extends EventEmitter {
             }
 
             this.emit(WebApplicationControllerEventType.response, response);
-
-            await this.transport.send<IWebApplicationResponseMessage>(source, WebApplicationMessageType.response, {
+            const payload = {
                 uid: message.uid,
                 response: response,
                 error: null
-            });
+            };
+
+            if (source) {
+                await this.transport.send<IWebApplicationResponseMessage>(
+                    source,
+                    WebApplicationMessageType.response,
+                    payload
+                );
+            } else {
+                await this.transport.broadcastLocal(WebApplicationMessageType.response, payload);
+            }
 
             this.emit(WebApplicationControllerEventType.afterResponse, message, response);
         } catch (error) {
             if (this.isKilled) {
                 return;
             }
-
-            await this.transport.send<IWebApplicationResponseMessage>(source, WebApplicationMessageType.response, {
+            const payload = {
                 uid: message.uid,
                 response: null,
                 error: error
-            });
+            };
+
+            if (source) {
+                await this.transport.send<IWebApplicationResponseMessage>(
+                    source,
+                    WebApplicationMessageType.response,
+                    payload
+                );
+            } else {
+                await this.transport.broadcastLocal(WebApplicationMessageType.response, payload);
+            }
         }
     };
 

@@ -24,7 +24,7 @@ describe('WebApplicationController functional', () => {
 
         fork(testProcessPath).then((testProcess) => {
             controller.init();
-            transport.registerChildProcess(processID, testProcess);
+            transport.registerChild(processID, testProcess);
 
             controller.on(WebApplicationControllerEventType.afterResponse, (message) => {
                 try {
