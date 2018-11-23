@@ -9,7 +9,7 @@ const browserProxyControllerFactory = (transport: ITransport) => {
     return new BrowserProxyController(transport, (pluginName, config = {}) => {
         let forkOptions: Partial<IChildProcessForkOptions> = {};
 
-        if (config.debug) {
+        if (config && config.debug) {
             forkOptions.debug = true;
         }
 
