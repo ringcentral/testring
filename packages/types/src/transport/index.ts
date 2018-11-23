@@ -62,6 +62,10 @@ export interface ITransport {
 
     broadcastLocal<T = any>(messageType: string, payload: T): void;
 
+    broadcastUniversally<T = any>(messageType: string, payload: T): void;
+
+    isChildProcess(): boolean;
+
     registerChild(processID: string, child: ITransportChild): void;
 
     on<T = any>(messageType: string, callback: TransportMessageHandler<T>): RemoveHandlerFunction;

@@ -27,6 +27,14 @@ export class TransportMock extends EventEmitter implements ITransport {
         this.emit(messageType, payload);
     }
 
+    public broadcastUniversally<T = any>(messageType: string, payload: T) {
+        this.broadcast(messageType, payload);
+    }
+
+    public isChildProcess(): boolean {
+        return true;
+    }
+
     public send<T = any>(src: string, messageType: string, payload: T): Promise<void> {
         this.emit(messageType, payload);
 

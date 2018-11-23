@@ -1,4 +1,6 @@
 import * as process from 'process';
+
+import { isChildProcess } from '@testring/child-process';
 import {
     ITransport,
     ITransportChild,
@@ -9,6 +11,8 @@ import { DirectTransport } from './direct-transport';
 import { BroadcastTransport } from './broadcast-transport';
 import { EventEmitter } from 'events';
 
+const IS_CHILD_PROCESS = isChildProcess();
+
 export class Transport implements ITransport {
 
     private emitter: EventEmitter = new EventEmitter();
@@ -17,7 +21,10 @@ export class Transport implements ITransport {
 
     private broadcastTransport: BroadcastTransport;
 
-    constructor(rootProcess: NodeJS.Process = process) {
+    constructor(
+        rootProcess: NodeJS.Process = process,
+        private broadcastToLocal: boolean = IS_CHILD_PROCESS,
+    ) {
         const handler = this.triggerListeners.bind(this);
 
         this.directTransport = new DirectTransport(handler);
@@ -39,6 +46,18 @@ export class Transport implements ITransport {
 
     public broadcastLocal<T = any>(messageType: string, payload: T): void {
         this.broadcastTransport.broadcastLocal(messageType, payload);
+    }
+
+    public broadcastUniversally<T = any>(messageType: string, payload: T): void {
+        if (this.isChildProcess()) {
+            this.broadcast(messageType, payload);
+        } else {
+            this.broadcastLocal(messageType, payload);
+        }
+    }
+
+    public isChildProcess() {
+        return this.broadcastToLocal;
     }
 
     public registerChild(processID: string, child: ITransportChild) {
