@@ -11,10 +11,9 @@ export interface IConfig {
     screenshots: ScreenshotsConfig;
     config: string;
     debug: boolean;
-    localWorker: boolean;
     silent: boolean;
     bail: boolean;
-    workerLimit: number;
+    workerLimit: number | 'local';
     retryCount: number;
     retryDelay: number;
     testTimeout: number;

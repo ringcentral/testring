@@ -8,7 +8,6 @@ export const defaultConfiguration: Partial<IConfig> = {
     screenshots: 'disable',
     config: '.testringrc',
     debug: false,
-    localWorker: false,
     silent: false,
     bail: false,
     workerLimit: 10,

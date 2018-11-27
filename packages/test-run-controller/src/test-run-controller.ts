@@ -87,20 +87,62 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     }
 
     private async executeQueue(testQueue: TestQueue): Promise<Error[] | null> {
-        const workerLimit = this.getWorkerLimit(testQueue);
-        const workers = this.createWorkers(workerLimit);
+        try {
+            const configWorkerLimit = this.config.workerLimit;
 
-        this.workers = workers;
+            if (configWorkerLimit === 'local') {
+                await this.runLocalWorker(testQueue);
+            } else if (typeof configWorkerLimit === 'number') {
+                const workerLimit = configWorkerLimit < testQueue.length ? configWorkerLimit : testQueue.length;
+                await this.runChildWorkers(testQueue, workerLimit);
+            } else {
+                throw new Error(`Invalid workerLimit argument value ${configWorkerLimit}`);
+            }
 
-        this.logger.debug(`Run controller: ${workerLimit} worker(s) created.`);
-        this.logger.debug('Parent process memory usage before execution. ', getMemoryReport());
+            await this.callHook(TestRunControllerPlugins.afterRun, null);
+        } catch (error) {
+            await this.callHook(TestRunControllerPlugins.afterRun, error);
+            this.errors.push(error);
+        }
+
+
+        if (this.errors.length > 0) {
+            return this.errors;
+        }
+
+        return null;
+    }
+
+    private async runLocalWorker(testQueue: TestQueue): Promise<void> {
+        this.logger.debug('Run controller: Local worker is using.');
 
         try {
+            this.workers = this.createWorkers(1);
+            const worker = this.workers[0];
+
+            while (testQueue.length > 0) {
+                await this.executeWorker(worker, testQueue);
+            }
+            this.logger.debug(`Parent process memory usage after test execution. ${getMemoryReport()}`);
+        } catch (error) {
+            throw error;
+        } finally {
+            this.workers = [];
+        }
+    }
+
+    private async runChildWorkers(testQueue: TestQueue, workerLimit: number): Promise<void> {
+        this.logger.debug(`Run controller: ${workerLimit} worker(s) created.`);
+        this.logger.debug(`Parent process memory usage before execution. ${getMemoryReport()}`);
+
+        try {
+            this.workers = this.createWorkers(workerLimit);
+
             await Promise.all(
-                workers.map(async (worker) => {
+                this.workers.map(async (worker) => {
                     while (testQueue.length > 0) {
                         await this.executeWorker(worker, testQueue);
-                        this.logger.debug('Parent process memory usage after test execution. ', getMemoryReport());
+                        this.logger.debug(`Parent process memory usage after test execution. ${getMemoryReport()}`);
 
                         if (this.config.restartWorker === 'always') {
                             await worker.kill();
@@ -110,30 +152,12 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 })
             );
 
-            await this.callHook(TestRunControllerPlugins.afterRun, null);
         } catch (error) {
-            await this.callHook(TestRunControllerPlugins.afterRun, error);
-            this.errors.push(error);
+            throw error;
+        } finally {
+            this.workers = [];
+            this.currentQueue = null;
         }
-
-        this.workers = [];
-        this.currentQueue = null;
-
-        if (this.errors.length) {
-            return this.errors;
-        }
-
-        return null;
-    }
-
-    private getWorkerLimit(testQueue: TestQueue) {
-        const configWorkerLimit = this.config.workerLimit || 0;
-
-        if (configWorkerLimit < testQueue.length) {
-            return configWorkerLimit;
-        }
-
-        return testQueue.length;
     }
 
     private createWorkers(limit: number): Array<ITestWorkerInstance> {
@@ -148,7 +172,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
     private getWorkerMeta(worker: ITestWorkerInstance): ITestWorkerCallbackMeta {
         return {
-            processID: worker.getWorkerID()
+            processID: worker.getWorkerID(),
+            isLocal: this.config.workerLimit === 'local',
         };
     }
 
@@ -258,19 +283,26 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             await this.callHook(TestRunControllerPlugins.beforeTest, queuedTest, this.getWorkerMeta(worker));
             const timeout = queuedTest.parameters.testTimeout || this.config.testTimeout;
 
-            await Promise.race([
+            let raceQueue = [
                 worker.execute(
                     queuedTest.test,
                     queuedTest.parameters,
                     queuedTest.envParameters
                 ),
-                new Promise((resolve, reject) => {
-                    timer = setTimeout(() => {
-                        isRejectedByTimeout = true;
-                        reject(new Error(`Test timeout exceeded ${timeout}ms`));
-                    }, timeout);
-                })
-            ]);
+            ];
+
+            if (timeout > 0) {
+                raceQueue.push(
+                    new Promise((resolve, reject) => {
+                        timer = setTimeout(() => {
+                            isRejectedByTimeout = true;
+                            reject(new Error(`Test timeout exceeded ${timeout}ms`));
+                        }, timeout);
+                    })
+                );
+            }
+
+            await Promise.race(raceQueue);
 
             // noinspection JSUnusedAssignment
             clearTimeout(timer);

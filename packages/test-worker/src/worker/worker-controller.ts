@@ -24,15 +24,21 @@ export class WorkerController {
             try {
                 const testResult = await this.executeTest(message);
 
-                this.transportInstance.broadcast<ITestExecutionCompleteMessage>(TestWorkerAction.executionComplete, {
-                    status: testResult,
-                    error: null
-                });
+                this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
+                    TestWorkerAction.executionComplete,
+                    {
+                        status: testResult,
+                        error: null
+                    }
+                );
             } catch (error) {
-                this.transportInstance.broadcast<ITestExecutionCompleteMessage>(TestWorkerAction.executionComplete, {
-                    status: TestStatus.failed,
-                    error
-                });
+                this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
+                    TestWorkerAction.executionComplete,
+                    {
+                        status: TestStatus.failed,
+                        error
+                    }
+                );
             }
         });
     }

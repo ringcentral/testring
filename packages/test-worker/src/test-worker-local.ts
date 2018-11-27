@@ -3,7 +3,6 @@ import * as path from 'path';
 import { EventEmitter } from 'events';
 import { Sandbox } from '@testring/sandbox';
 import { testAPIController } from '@testring/api';
-import { deserialize } from '@testring/transport';
 import {
     ITransport,
     ITestExecutionMessage,
@@ -31,9 +30,9 @@ export class TestWorkerLocal extends EventEmitter implements ITransportChild {
         const { payload, type } = message;
 
         if (type === TestWorkerAction.executeTest) {
-            this.executeTest(deserialize(payload) as ITestExecutionMessage)
+            this.executeTest(payload as ITestExecutionMessage)
                 .then((testResult) => {
-                    this.transportInstance.broadcastLocal<ITestExecutionCompleteMessage>(
+                    this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
                         TestWorkerAction.executionComplete,
                         {
                             status: testResult,
@@ -42,7 +41,7 @@ export class TestWorkerLocal extends EventEmitter implements ITransportChild {
                     );
                 })
                 .catch((error) => {
-                    this.transportInstance.broadcastLocal<ITestExecutionCompleteMessage>(
+                    this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
                         TestWorkerAction.executionComplete,
                         {
                             status: TestStatus.failed,

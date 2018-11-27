@@ -18,7 +18,7 @@ class RecordCommand implements ICLICommand {
         const loggerServer = new LoggerServer(this.config, this.transport, this.stdout);
         const testWorker = new TestWorker(this.transport, {
             debug: this.config.debug,
-            localWorker: this.config.localWorker,
+            localWorker: this.config.workerLimit === 'local',
         });
         const testRunController = new TestRunController(this.config, testWorker);
         const browserProxyController = browserProxyControllerFactory(this.transport);

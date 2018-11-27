@@ -95,13 +95,23 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     public async execute(file: IFile, parameters: any, envParameters: any): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
-                return await this.makeExecutionRequest(
-                    file,
-                    parameters,
-                    envParameters,
-                    resolve,
-                    reject
-                );
+                if (this.config.localWorker) {
+                    return await this.makeExecutionLocal(
+                        file,
+                        parameters,
+                        envParameters,
+                        resolve,
+                        reject
+                    );
+                } else {
+                    return await this.makeExecutionRequest(
+                        file,
+                        parameters,
+                        envParameters,
+                        resolve,
+                        reject
+                    );
+                }
             } catch (error) {
                 reject(error);
             }
@@ -152,15 +162,11 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         }
     }
 
-    private async makeExecutionRequest(
+    private async getExecutionPayload(
         file: IFile,
         parameters: any,
         envParameters: any,
-        resolve,
-        reject
     ) {
-        await this.initWorker();
-
         const additionalFiles = await this.beforeCompile([], file.path, file.content);
 
         // Calling external hooks to compile source
@@ -184,8 +190,71 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             }
         }
 
-        const relativePath = path.relative(process.cwd(), file.path);
+        return {
+            ...compiledFile,
+            dependencies,
+            parameters,
+            envParameters,
+        };
+    }
 
+    private async makeExecutionLocal(
+        file: IFile,
+        parameters: any,
+        envParameters: any,
+        resolve,
+        reject
+    ) {
+        const worker = await this.initWorker();
+
+        const relativePath = path.relative(process.cwd(), file.path);
+        this.logger.debug(`Sending test for execution: ${relativePath}`);
+
+        const completeHandler = (message) => {
+            switch (message.status) {
+                case TestStatus.done:
+                    resolve();
+                    break;
+
+                case TestStatus.failed:
+                    reject(message.error);
+                    break;
+            }
+
+            this.successTestExecution = null;
+            this.abortTestExecution = null;
+        };
+
+        const removeListener = this.transport.once<ITestExecutionCompleteMessage>(
+            TestWorkerAction.executionComplete,
+            completeHandler
+        );
+
+        this.successTestExecution = () => {
+            removeListener();
+            resolve();
+        };
+
+        this.abortTestExecution = (error) => {
+            removeListener();
+            reject(error);
+        };
+
+        const payload = await this.getExecutionPayload(file, parameters, envParameters);
+
+        await worker.send({ type: TestWorkerAction.executeTest, payload });
+    }
+
+    private async makeExecutionRequest(
+        file: IFile,
+        parameters: any,
+        envParameters: any,
+        resolve,
+        reject
+    ) {
+        await this.initWorker();
+
+        const relativePath = path.relative(process.cwd(), file.path);
         this.logger.debug(`Sending test for execution: ${relativePath}`);
 
         const completeHandler = (message) => {
@@ -219,12 +288,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             reject(error);
         };
 
-        const payload = {
-            ...compiledFile,
-            dependencies,
-            parameters,
-            envParameters,
-        };
+        const payload = await this.getExecutionPayload(file, parameters, envParameters);
 
         await this.transport.send<ITestExecutionMessage>(this.workerID, TestWorkerAction.executeTest, payload);
     }
@@ -282,9 +346,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     private async createLocalWorker(): Promise<ITransportChild> {
         const worker = new TestWorkerLocal(this.transport);
 
-        this.transport.registerChild(this.workerID, worker);
-
-        this.logger.debug(`Registered local worker ${this.workerID}`);
+        this.logger.debug('Created local worker');
 
         return worker;
     }
