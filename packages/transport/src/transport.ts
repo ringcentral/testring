@@ -3,7 +3,7 @@ import * as process from 'process';
 import { isChildProcess } from '@testring/child-process';
 import {
     ITransport,
-    ITransportChild,
+    IWorkerEmitter,
     TransportMessageHandler,
     ITransportDirectMessage,
 } from '@testring/types';
@@ -60,7 +60,7 @@ export class Transport implements ITransport {
         return this.broadcastToLocal;
     }
 
-    public registerChild(processID: string, child: ITransportChild) {
+    public registerChild(processID: string, child: IWorkerEmitter) {
         this.directTransport.registerChild(processID, child);
     }
 

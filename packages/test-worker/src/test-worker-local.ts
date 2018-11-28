@@ -10,11 +10,11 @@ import {
     TestWorkerAction,
     TestStatus,
     TestEvents,
-    ITransportChild,
+    IWorkerEmitter,
     ITransportDirectMessage,
 } from '@testring/types';
 
-export class TestWorkerLocal extends EventEmitter implements ITransportChild {
+export class TestWorkerLocal extends EventEmitter implements IWorkerEmitter {
 
     constructor(
         private transportInstance: ITransport,

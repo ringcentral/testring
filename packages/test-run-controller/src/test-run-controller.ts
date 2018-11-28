@@ -94,6 +94,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 await this.runLocalWorker(testQueue);
             } else if (typeof configWorkerLimit === 'number') {
                 const workerLimit = configWorkerLimit < testQueue.length ? configWorkerLimit : testQueue.length;
+
                 await this.runChildWorkers(testQueue, workerLimit);
             } else {
                 throw new Error(`Invalid workerLimit argument value ${configWorkerLimit}`);
@@ -280,10 +281,11 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         let isRejectedByTimeout = false;
 
         try {
-            await this.callHook(TestRunControllerPlugins.beforeTest, queuedTest, this.getWorkerMeta(worker));
             const timeout = queuedTest.parameters.testTimeout || this.config.testTimeout;
 
-            let raceQueue = [
+            await this.callHook(TestRunControllerPlugins.beforeTest, queuedTest, this.getWorkerMeta(worker));
+
+            const raceQueue = [
                 worker.execute(
                     queuedTest.test,
                     queuedTest.parameters,

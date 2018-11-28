@@ -1,5 +1,5 @@
 import {
-    ITransportChild,
+    IWorkerEmitter,
     TransportInternalMessageType,
     TransportMessageHandler,
     ITransportDirectMessage,
@@ -19,7 +19,7 @@ class DirectTransport {
         return messageUID.startsWith(processID);
     }
 
-    private childRegistry: Map<string, ITransportChild> = new Map();
+    private childRegistry: Map<string, IWorkerEmitter> = new Map();
 
     private responseHandlers: Map<string, Function> = new Map();
 
@@ -67,7 +67,7 @@ class DirectTransport {
 
     }
 
-    public registerChild(processID: string, child: ITransportChild) {
+    public registerChild(processID: string, child: IWorkerEmitter) {
         if (this.childRegistry.has(processID)) {
             throw new ReferenceError(
                 `Process ${processID} already exists in transport registry`

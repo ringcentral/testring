@@ -17,7 +17,7 @@ import {
     TestWorkerAction,
     FileCompiler,
     TestStatus,
-    ITransportChild,
+    IWorkerEmitter,
 } from '@testring/types';
 
 const nanoid = require('nanoid');
@@ -51,9 +51,9 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private abortTestExecution: Function | null = null;
 
-    private worker: ITransportChild | null = null;
+    private worker: IWorkerEmitter | null = null;
 
-    private queuedWorker: Promise<ITransportChild> | null = null;
+    private queuedWorker: Promise<IWorkerEmitter> | null = null;
 
     private workerID = `worker/${nanoid()}`;
 
@@ -315,7 +315,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         }
     }
 
-    private async initWorker(): Promise<ITransportChild> {
+    private async initWorker(): Promise<IWorkerEmitter> {
         if (this.queuedWorker) {
             return this.queuedWorker;
         } else if (this.config.localWorker) {
@@ -343,7 +343,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         return this.worker;
     }
 
-    private async createLocalWorker(): Promise<ITransportChild> {
+    private async createLocalWorker(): Promise<IWorkerEmitter> {
         const worker = new TestWorkerLocal(this.transport);
 
         this.logger.debug('Created local worker');
@@ -351,7 +351,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         return worker;
     }
 
-    private async createWorker(): Promise<ITransportChild> {
+    private async createWorker(): Promise<IWorkerEmitter> {
         const worker = await fork(WORKER_ROOT, [], {
             debug: this.config.debug,
         });
