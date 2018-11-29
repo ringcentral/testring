@@ -115,7 +115,12 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     }
 
     private async runLocalWorker(testQueue: TestQueue): Promise<void> {
-        this.logger.debug('Run controller: Local worker is using.');
+        this.logger.debug('Run controller: Local worker is used.');
+        this.logger.debug(`Parent process memory usage before execution. ${getMemoryReport()}`);
+
+        if (this.config.restartWorker === 'always') {
+            this.logger.warn('Workers won`t be restarted on every test end.');
+        }
 
         try {
             this.workers = this.createWorkers(1);
@@ -124,6 +129,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             while (testQueue.length > 0) {
                 await this.executeWorker(worker, testQueue);
             }
+
             this.logger.debug(`Parent process memory usage after test execution. ${getMemoryReport()}`);
         } catch (error) {
             throw error;

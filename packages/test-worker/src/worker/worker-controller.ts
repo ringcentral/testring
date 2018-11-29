@@ -43,7 +43,7 @@ export class WorkerController {
         });
     }
 
-    private async executeTest(message: ITestExecutionMessage): Promise<TestStatus> {
+    public async executeTest(message: ITestExecutionMessage): Promise<TestStatus> {
         // TODO pass message.parameters somewhere inside web application
         const testID = path.relative(process.cwd(), message.path);
 

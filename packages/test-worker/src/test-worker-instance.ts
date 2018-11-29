@@ -65,7 +65,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         if (this.abortTestExecution !== null) {
             this.abortTestExecution(
-                new Error(`[${this.workerID}] unexpected worker shutdown. Exit Code: ${exitCode}`)
+                new Error(`[${this.getWorkerID()}] unexpected worker shutdown. Exit Code: ${exitCode}`)
             );
 
             this.successTestExecution = null;
@@ -95,23 +95,13 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     public async execute(file: IFile, parameters: any, envParameters: any): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
-                if (this.config.localWorker) {
-                    return await this.makeExecutionLocal(
-                        file,
-                        parameters,
-                        envParameters,
-                        resolve,
-                        reject
-                    );
-                } else {
-                    return await this.makeExecutionRequest(
-                        file,
-                        parameters,
-                        envParameters,
-                        resolve,
-                        reject
-                    );
-                }
+                return await this.makeExecutionRequest(
+                    file,
+                    parameters,
+                    envParameters,
+                    resolve,
+                    reject
+                );
             } catch (error) {
                 reject(error);
             }
@@ -132,7 +122,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             await delay(100);
             await this.kill(signal);
 
-            this.logger.debug(`Waiting for queue ${this.workerID}`);
+            this.logger.debug(`Waiting for queue ${this.getWorkerID()}`);
         } else if (this.worker !== null) {
             this.clearWorkerHandlers();
 
@@ -158,7 +148,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
                 this.abortTestExecution = null;
             }
 
-            this.logger.debug(`Killed child process ${this.workerID}`);
+            this.logger.debug(`Killed child process ${this.getWorkerID()}`);
         }
     }
 
@@ -198,7 +188,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         };
     }
 
-    private async makeExecutionLocal(
+    private async makeExecutionRequest(
         file: IFile,
         parameters: any,
         envParameters: any,
@@ -208,6 +198,8 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         const worker = await this.initWorker();
 
         const relativePath = path.relative(process.cwd(), file.path);
+        const payload = await this.getExecutionPayload(file, parameters, envParameters);
+
         this.logger.debug(`Sending test for execution: ${relativePath}`);
 
         const completeHandler = (message) => {
@@ -225,10 +217,19 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             this.abortTestExecution = null;
         };
 
-        const removeListener = this.transport.once<ITestExecutionCompleteMessage>(
-            TestWorkerAction.executionComplete,
-            completeHandler
-        );
+        let removeListener;
+        if (this.config.localWorker) {
+            removeListener = this.transport.once<ITestExecutionCompleteMessage>(
+                TestWorkerAction.executionComplete,
+                completeHandler
+            );
+        } else {
+            removeListener = this.transport.onceFrom<ITestExecutionCompleteMessage>(
+                this.getWorkerID(),
+                TestWorkerAction.executionComplete,
+                completeHandler
+            );
+        }
 
         this.successTestExecution = () => {
             removeListener();
@@ -240,57 +241,11 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             reject(error);
         };
 
-        const payload = await this.getExecutionPayload(file, parameters, envParameters);
-
-        await worker.send({ type: TestWorkerAction.executeTest, payload });
-    }
-
-    private async makeExecutionRequest(
-        file: IFile,
-        parameters: any,
-        envParameters: any,
-        resolve,
-        reject
-    ) {
-        await this.initWorker();
-
-        const relativePath = path.relative(process.cwd(), file.path);
-        this.logger.debug(`Sending test for execution: ${relativePath}`);
-
-        const completeHandler = (message) => {
-            switch (message.status) {
-                case TestStatus.done:
-                    resolve();
-                    break;
-
-                case TestStatus.failed:
-                    reject(message.error);
-                    break;
-            }
-
-            this.successTestExecution = null;
-            this.abortTestExecution = null;
-        };
-
-        const removeListener = this.transport.onceFrom<ITestExecutionCompleteMessage>(
-            this.workerID,
-            TestWorkerAction.executionComplete,
-            completeHandler
-        );
-
-        this.successTestExecution = () => {
-            removeListener();
-            resolve();
-        };
-
-        this.abortTestExecution = (error) => {
-            removeListener();
-            reject(error);
-        };
-
-        const payload = await this.getExecutionPayload(file, parameters, envParameters);
-
-        await this.transport.send<ITestExecutionMessage>(this.workerID, TestWorkerAction.executeTest, payload);
+        if (this.config.localWorker) {
+            await worker.send({ type: TestWorkerAction.executeTest, payload });
+        } else {
+            await this.transport.send<ITestExecutionMessage>(this.getWorkerID(), TestWorkerAction.executeTest, payload);
+        }
     }
 
     private async compileSource(source: string, filename: string): Promise<string> {
@@ -357,19 +312,19 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         });
 
         worker.stdout.on('data', (data) => {
-            this.logger.log(`[${this.workerID}] [logged] ${data.toString().trim()}`);
+            this.logger.log(`[${this.getWorkerID()}] [logged] ${data.toString().trim()}`);
         });
 
         worker.stderr.on('data', (data) => {
-            this.logger.error(`[${this.workerID}] [error] ${data.toString().trim()}`);
+            this.logger.error(`[${this.getWorkerID()}] [error] ${data.toString().trim()}`);
         });
 
         worker.on('error', this.workerErrorHandler);
         worker.once('exit', this.workerExitHandler);
 
-        this.transport.registerChild(this.workerID, worker);
+        this.transport.registerChild(this.getWorkerID(), worker);
 
-        this.logger.debug(`Registered child process ${this.workerID}`);
+        this.logger.debug(`Registered child process ${this.getWorkerID()}`);
 
         return worker;
     }
