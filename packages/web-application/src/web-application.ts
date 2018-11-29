@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 import * as url from 'url';
-import { ITransport } from '@testring/types';
+import { IAssertionErrorMeta, IAssertionSuccessMeta, ITransport } from '@testring/types';
 import { loggerClient, LoggerClient } from '@testring/logger';
 import { PluggableModule } from '@testring/pluggable-module';
 import { createElementPath, ElementPath } from '@testring/element-path';
@@ -28,9 +28,16 @@ export class WebApplication extends PluggableModule {
 
     private mainTabID: number | null = null;
 
-    public assert = createAssertion(false, this);
+    public assert = createAssertion({
+        onSuccess: (meta) => this.successAssertionHandler(meta),
+        onError: (meta) => this.errorAssertionHandler(meta),
+    });
 
-    public softAssert = createAssertion(true, this);
+    public softAssert = createAssertion({
+        isSoft: true,
+        onSuccess: (meta) => this.successAssertionHandler(meta),
+        onError: (meta) => this.errorAssertionHandler(meta),
+    });
 
     public root = createElementPath();
 
@@ -238,6 +245,38 @@ export class WebApplication extends PluggableModule {
                     });
                 }
             })(key);
+        }
+    }
+
+    protected async successAssertionHandler(meta: IAssertionSuccessMeta) {
+        const { successMessage, assertMessage } = meta;
+        const logger = this.logger;
+
+        if (successMessage) {
+            await logger.stepSuccess(successMessage, async () => {
+                await this.makeScreenshot();
+                await logger.debug(assertMessage);
+            });
+        } else {
+            await logger.stepSuccess(assertMessage, async () => {
+                await this.makeScreenshot();
+            });
+        }
+    }
+
+    protected async errorAssertionHandler(meta: IAssertionErrorMeta) {
+        const { successMessage, assertMessage } = meta;
+        const logger = this.logger;
+
+        if (successMessage) {
+            await logger.stepError(successMessage, async () => {
+                await logger.error(assertMessage);
+                await this.makeScreenshot();
+            });
+        } else {
+            await logger.stepError(assertMessage, async () => {
+                await this.makeScreenshot();
+            });
         }
     }
 

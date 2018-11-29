@@ -1,26 +1,13 @@
 import * as chai from 'chai';
-import { loggerClient } from '@testring/logger';
+import { IAssertionOptions } from '@testring/types';
 
 type AssertionAPI = typeof chai['assert'] & { _errorMessages: Array<any> };
 
-export const createAssertion = (isSoft = false, webApplication?) => {
+export const createAssertion = (options: IAssertionOptions = {}) => {
     const root: AssertionAPI = Object.assign({}, chai.assert, {
         _errorMessages: []
     });
-
-    const makeScreenshot = async () => {
-        if (webApplication && typeof webApplication.makeScreenshot === 'function') {
-            await webApplication.makeScreenshot();
-        }
-    };
-
-    const getLogger = () => {
-        if (webApplication && webApplication.logger) {
-            return webApplication.logger;
-        }
-
-        return loggerClient;
-    };
+    const isSoft = options.isSoft === true;
 
     return new Proxy<AssertionAPI>(root, {
         get(target, fieldName: string) {
@@ -28,7 +15,6 @@ export const createAssertion = (isSoft = false, webApplication?) => {
                 return target._errorMessages;
             }
 
-            const logger = getLogger();
             const typeOfAssert = isSoft ? 'softAssert' : 'assert';
 
             const originalMethod = chai.assert[fieldName];
@@ -60,33 +46,31 @@ export const createAssertion = (isSoft = false, webApplication?) => {
                 try {
                     originalMethod(...args);
 
-                    if (successMessage) {
-                        await logger.stepSuccess(successMessage, async () => {
-                            await makeScreenshot();
-                            await logger.debug(assertMessage);
-                        });
-                    } else {
-                        await logger.stepSuccess(assertMessage, async () => {
-                            await makeScreenshot();
+                    if (options.onSuccess) {
+                        await options.onSuccess({
+                            isSoft,
+                            successMessage,
+                            assertMessage,
                         });
                     }
+
                 } catch (error) {
-                    if (successMessage) {
-                        await logger.stepError(successMessage, async () => {
-                            await logger.error(assertMessage);
-                            await makeScreenshot();
-                        });
-                    } else {
-                        await logger.stepError(assertMessage, async () => {
-                            await makeScreenshot();
+                    const errorMessage = error.message;
+                    error.message = (successMessage || assertMessage || errorMessage);
+
+                    if (options.onError) {
+                        await options.onError({
+                            isSoft,
+                            successMessage,
+                            assertMessage,
+                            errorMessage,
+                            error,
                         });
                     }
 
                     if (isSoft) {
-                        target._errorMessages.push(successMessage || assertMessage || error.message);
+                        target._errorMessages.push(error.message);
                     } else {
-                        error.message = (successMessage || assertMessage || error.message);
-
                         throw error;
                     }
                 }

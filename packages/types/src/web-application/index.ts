@@ -25,6 +25,23 @@ export interface IWebApplicationResponseMessage {
     error: Error | null;
 }
 
+export interface IAssertionSuccessMeta {
+    isSoft: boolean;
+    successMessage?: string;
+    assertMessage?: string;
+}
+
+export interface IAssertionErrorMeta extends IAssertionSuccessMeta {
+    errorMessage?: string;
+    error?: Error;
+}
+
+export interface IAssertionOptions {
+    isSoft?: boolean;
+    onSuccess?: (IAssertionSuccessMeta) => void | Promise<void>;
+    onError?: (IAssertionErrorMeta) => void | Promise<void>;
+}
+
 export type IWebApplicationClient = {
     [K in keyof IBrowserProxyPlugin]: (...args: Array<any>) => Promise<any>
 };
