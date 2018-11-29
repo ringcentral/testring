@@ -1,21 +1,20 @@
-import { execArgv } from 'process';
+import * as inspector  from 'inspector';
 import { IConfig } from '@testring/types';
 import { getArguments } from './arguments-parser';
 import { getFileConfig } from './config-file-reader';
 import { defaultConfiguration } from './default-config';
 import { mergeConfigs } from './merge-configs';
 
-const isDebugging = () => {
-    const argv = execArgv.join();
-    return argv.includes('inspect') || argv.includes('debug');
-};
+const isDebugging = () => !!inspector.url();
 
 const getConfig = async (argv: Array<string> = []): Promise<IConfig> => {
     const args = getArguments(argv);
+    const debugProperty =  { debug: isDebugging() };
 
     const temporaryConfig = mergeConfigs(
         defaultConfiguration,
-        args || {}
+        args || {},
+        debugProperty,
     );
 
     const fileConfig = await getFileConfig(temporaryConfig.config, temporaryConfig);
@@ -26,7 +25,7 @@ const getConfig = async (argv: Array<string> = []): Promise<IConfig> => {
         envConfig || {},
         fileConfig || {},
         args || {},
-        { debug: isDebugging() },
+        debugProperty,
     );
 };
 

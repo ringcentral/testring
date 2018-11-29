@@ -13,7 +13,7 @@ export interface IConfig {
     debug: boolean;
     silent: boolean;
     bail: boolean;
-    workerLimit: number;
+    workerLimit: number | 'local';
     retryCount: number;
     retryDelay: number;
     testTimeout: number;

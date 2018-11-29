@@ -1,9 +1,17 @@
 import * as process from 'process';
-import { ChildProcess } from 'child_process';
-import { ITransport, TransportMessageHandler, ITransportDirectMessage } from '@testring/types';
+
+import { isChildProcess } from '@testring/child-process';
+import {
+    ITransport,
+    IWorkerEmitter,
+    TransportMessageHandler,
+    ITransportDirectMessage,
+} from '@testring/types';
 import { DirectTransport } from './direct-transport';
 import { BroadcastTransport } from './broadcast-transport';
 import { EventEmitter } from 'events';
+
+const IS_CHILD_PROCESS = isChildProcess();
 
 export class Transport implements ITransport {
 
@@ -13,7 +21,10 @@ export class Transport implements ITransport {
 
     private broadcastTransport: BroadcastTransport;
 
-    constructor(rootProcess: NodeJS.Process = process) {
+    constructor(
+        rootProcess: NodeJS.Process = process,
+        private broadcastToLocal: boolean = IS_CHILD_PROCESS,
+    ) {
         const handler = this.triggerListeners.bind(this);
 
         this.directTransport = new DirectTransport(handler);
@@ -37,8 +48,20 @@ export class Transport implements ITransport {
         this.broadcastTransport.broadcastLocal(messageType, payload);
     }
 
-    public registerChildProcess(processID: string, childProcess: ChildProcess) {
-        this.directTransport.registerChildProcess(processID, childProcess);
+    public broadcastUniversally<T = any>(messageType: string, payload: T): void {
+            if (this.isChildProcess()) {
+            this.broadcast(messageType, payload);
+        } else {
+            this.broadcastLocal(messageType, payload);
+        }
+    }
+
+    public isChildProcess() {
+        return this.broadcastToLocal;
+    }
+
+    public registerChild(processID: string, child: IWorkerEmitter) {
+        this.directTransport.registerChild(processID, child);
     }
 
     public on<T = any>(messageType: string, callback: TransportMessageHandler<T>) {

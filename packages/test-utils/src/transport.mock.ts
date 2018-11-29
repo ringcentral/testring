@@ -1,12 +1,11 @@
 import { EventEmitter } from 'events';
-import { ITransport } from '@testring/types';
-import { ChildProcess } from 'child_process';
+import { ITransport, IWorkerEmitter } from '@testring/types';
 
 
 export class TransportMock extends EventEmitter implements ITransport {
 
 
-    private processes: Map<string, ChildProcess> = new Map();
+    private processes: Map<string, IWorkerEmitter> = new Map();
 
     public getProcessStdioConfig() {
         return [];
@@ -26,6 +25,14 @@ export class TransportMock extends EventEmitter implements ITransport {
 
     public broadcastLocal<T = any>(messageType: string, payload: T) {
         this.emit(messageType, payload);
+    }
+
+    public broadcastUniversally<T = any>(messageType: string, payload: T) {
+        this.broadcast(messageType, payload);
+    }
+
+    public isChildProcess(): boolean {
+        return true;
     }
 
     public send<T = any>(src: string, messageType: string, payload: T): Promise<void> {
@@ -59,7 +66,7 @@ export class TransportMock extends EventEmitter implements ITransport {
         return () => this.removeListener(messageType, handler);
     }
 
-    public registerChildProcess(processID: string, process: ChildProcess) {
+    public registerChild(processID: string, process: IWorkerEmitter) {
         this.processes.set(processID, process);
     }
 }

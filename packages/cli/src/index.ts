@@ -1,6 +1,6 @@
 import * as process from 'process';
 import * as yargs from 'yargs';
-import { loggerClientLocal, LoggerServer } from '@testring/logger';
+import { loggerClient, LoggerServer } from '@testring/logger';
 import { getConfig } from '@testring/cli-config';
 import { transport } from '@testring/transport';
 import { ICLICommand, IConfig } from '@testring/types';
@@ -128,7 +128,7 @@ export const runCLI = async (argv: Array<string>) => {
 
         new LoggerServer(config, transport, process.stdout);
 
-        loggerClientLocal.error(exception);
+        loggerClient.error(exception);
 
         await commandExecution.shutdown();
 

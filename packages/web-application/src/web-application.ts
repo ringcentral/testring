@@ -257,7 +257,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public get logger(): LoggerClient {
-        const value = loggerClient.getLogger(this.LOGGER_PREFIX);
+        const value = loggerClient.withPrefix(this.LOGGER_PREFIX);
 
         Object.defineProperty(this, 'logger', {
             value,
@@ -950,7 +950,7 @@ export class WebApplication extends PluggableModule {
             await this.client.windowHandleMaximize();
             return true;
         } catch (e) {
-            this.logger.error(`failed to maxmize window, ${e}`);
+            this.logger.warn(`failed to maximize window, ${e}`);
             return false;
         }
     }

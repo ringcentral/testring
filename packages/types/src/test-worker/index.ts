@@ -11,10 +11,12 @@ export interface ITestWorkerInstance {
 
 export interface ITestWorkerCallbackMeta {
     processID: string;
+    isLocal: boolean;
 }
 
 export interface ITestWorkerConfig {
     screenshots: ScreenshotsConfig;
+    localWorker: boolean;
     debug: boolean;
 }
 

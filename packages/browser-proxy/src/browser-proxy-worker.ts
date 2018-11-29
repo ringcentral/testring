@@ -9,11 +9,11 @@ import {
     ITransport,
 } from '@testring/types';
 
-import { loggerClientLocal } from '@testring/logger';
+import { loggerClient } from '@testring/logger';
 
 const nanoid = require('nanoid');
 
-const logger = loggerClientLocal.getLogger('[browser-proxy-worker]');
+const logger = loggerClient.withPrefix('[browser-proxy-worker]');
 
 export class BrowserProxyWorker implements IBrowserProxyWorker {
     private pendingCommandsQueue: Set<IBrowserProxyPendingCommand> = new Set();
@@ -150,7 +150,7 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
             this.logger.log(`[logged] ${message.toString()}`);
         });
 
-        this.transport.registerChildProcess(this.workerID, this.worker);
+        this.transport.registerChild(this.workerID, this.worker);
 
         this.onProxyConnect();
 

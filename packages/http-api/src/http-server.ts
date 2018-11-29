@@ -1,6 +1,6 @@
 import { IHttpRequest, IHttpResponse } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
-import { LoggerClientLocal, loggerClientLocal } from '@testring/logger';
+import { LoggerClient, loggerClient } from '@testring/logger';
 import {
     ITransport,
     IHttpRequestMessage,
@@ -14,8 +14,8 @@ type MakeRequest = (request: IHttpRequest) => Promise<IHttpResponse>;
 
 export class HttpServer extends PluggableModule {
     private unsubscribeTransport: Function;
-    
-    private loggerInstance: LoggerClientLocal | null = null;
+
+    private loggerInstance: LoggerClient | null = null;
 
     private isKilled = false;
 
@@ -46,12 +46,12 @@ export class HttpServer extends PluggableModule {
         this.unsubscribeTransport();
     }
 
-    private get logger(): LoggerClientLocal {
+    private get logger(): LoggerClient {
         if (this.loggerInstance) {
             return this.loggerInstance;
         }
 
-        this.loggerInstance = loggerClientLocal.getLogger('[http-server]');
+        this.loggerInstance = loggerClient.withPrefix('[http-server]');
 
         return this.loggerInstance;
     }

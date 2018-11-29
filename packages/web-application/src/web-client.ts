@@ -46,7 +46,7 @@ export class WebClient implements IWebApplicationClient {
                 }
             );
 
-            transport.broadcast(WebApplicationMessageType.execute, request);
+            transport.broadcastUniversally(WebApplicationMessageType.execute, request);
         });
     }
 

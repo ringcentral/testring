@@ -1,8 +1,8 @@
 import * as path from 'path';
-import { ChildProcess } from 'child_process';
-import { loggerClientLocal } from '@testring/logger';
+import { loggerClient } from '@testring/logger';
 import { FSReader } from '@testring/fs-reader';
 import { fork } from '@testring/child-process';
+import { TestWorkerLocal } from './test-worker-local';
 import {
     buildDependencyDictionary,
     mergeDependencyDictionaries
@@ -17,6 +17,7 @@ import {
     TestWorkerAction,
     FileCompiler,
     TestStatus,
+    IWorkerEmitter,
 } from '@testring/types';
 
 const nanoid = require('nanoid');
@@ -25,11 +26,16 @@ const WORKER_ROOT = require.resolve(
     path.resolve(__dirname, 'worker')
 );
 
+const WORKER_DEFAULT_CONFIG: ITestWorkerConfig = {
+    screenshots: 'disable',
+    localWorker: false,
+    debug: false,
+};
+
 const delay = (timeout: number) => new Promise<void>(resolve => setTimeout(resolve, timeout));
 
 const createConfig = (workerConfig: Partial<ITestWorkerConfig>): ITestWorkerConfig => ({
-    screenshots: 'disable',
-    debug: false,
+    ...WORKER_DEFAULT_CONFIG,
     ...workerConfig
 });
 
@@ -45,11 +51,13 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private abortTestExecution: Function | null = null;
 
-    private worker: ChildProcess | null = null;
+    private worker: IWorkerEmitter | null = null;
 
-    private queuedWorker: Promise<ChildProcess> | null = null;
+    private queuedWorker: Promise<IWorkerEmitter> | null = null;
 
     private workerID = `worker/${nanoid()}`;
+
+    private logger = loggerClient;
 
     private workerExitHandler = (exitCode) => {
         this.clearWorkerHandlers();
@@ -57,7 +65,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         if (this.abortTestExecution !== null) {
             this.abortTestExecution(
-                new Error(`[${this.workerID}] unexpected worker shutdown. Exit Code: ${exitCode}`)
+                new Error(`[${this.getWorkerID()}] unexpected worker shutdown. Exit Code: ${exitCode}`)
             );
 
             this.successTestExecution = null;
@@ -114,7 +122,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             await delay(100);
             await this.kill(signal);
 
-            loggerClientLocal.debug(`Waiting for queue ${this.workerID}`);
+            this.logger.debug(`Waiting for queue ${this.getWorkerID()}`);
         } else if (this.worker !== null) {
             this.clearWorkerHandlers();
 
@@ -140,19 +148,15 @@ export class TestWorkerInstance implements ITestWorkerInstance {
                 this.abortTestExecution = null;
             }
 
-            loggerClientLocal.debug(`Killed child process ${this.workerID}`);
+            this.logger.debug(`Killed child process ${this.getWorkerID()}`);
         }
     }
 
-    private async makeExecutionRequest(
+    private async getExecutionPayload(
         file: IFile,
         parameters: any,
         envParameters: any,
-        resolve,
-        reject
     ) {
-        this.worker = await this.getWorker();
-
         const additionalFiles = await this.beforeCompile([], file.path, file.content);
 
         // Calling external hooks to compile source
@@ -176,28 +180,56 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             }
         }
 
+        return {
+            ...compiledFile,
+            dependencies,
+            parameters,
+            envParameters,
+        };
+    }
+
+    private async makeExecutionRequest(
+        file: IFile,
+        parameters: any,
+        envParameters: any,
+        resolve,
+        reject
+    ) {
+        const worker = await this.initWorker();
+
         const relativePath = path.relative(process.cwd(), file.path);
+        const payload = await this.getExecutionPayload(file, parameters, envParameters);
 
-        loggerClientLocal.debug(`Sending test for execution: ${relativePath}`);
+        this.logger.debug(`Sending test for execution: ${relativePath}`);
 
-        const removeListener = this.transport.onceFrom<ITestExecutionCompleteMessage>(
-            this.workerID,
-            TestWorkerAction.executionComplete,
-            (message) => {
-                switch (message.status) {
-                    case TestStatus.done:
-                        resolve();
-                        break;
+        const completeHandler = (message) => {
+            switch (message.status) {
+                case TestStatus.done:
+                    resolve();
+                    break;
 
-                    case TestStatus.failed:
-                        reject(message.error);
-                        break;
-                }
-
-                this.successTestExecution = null;
-                this.abortTestExecution = null;
+                case TestStatus.failed:
+                    reject(message.error);
+                    break;
             }
-        );
+
+            this.successTestExecution = null;
+            this.abortTestExecution = null;
+        };
+
+        let removeListener;
+        if (this.config.localWorker) {
+            removeListener = this.transport.once<ITestExecutionCompleteMessage>(
+                TestWorkerAction.executionComplete,
+                completeHandler
+            );
+        } else {
+            removeListener = this.transport.onceFrom<ITestExecutionCompleteMessage>(
+                this.getWorkerID(),
+                TestWorkerAction.executionComplete,
+                completeHandler
+            );
+        }
 
         this.successTestExecution = () => {
             removeListener();
@@ -209,12 +241,11 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             reject(error);
         };
 
-        await this.transport.send<ITestExecutionMessage>(this.workerID, TestWorkerAction.executeTest, {
-            ...compiledFile,
-            dependencies,
-            parameters,
-            envParameters,
-        });
+        if (this.config.localWorker) {
+            await worker.send({ type: TestWorkerAction.executeTest, payload });
+        } else {
+            await this.transport.send<ITestExecutionMessage>(this.getWorkerID(), TestWorkerAction.executeTest, payload);
+        }
     }
 
     private async compileSource(source: string, filename: string): Promise<string> {
@@ -225,7 +256,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         }
 
         try {
-            loggerClientLocal.debug(`Compile source file ${filename}`);
+            this.logger.debug(`Compile source file ${filename}`);
 
             const compiledSource = await this.compile(source, filename);
 
@@ -233,18 +264,26 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
             return compiledSource;
         } catch (error) {
-            loggerClientLocal.error(`Compilation ${filename} failed`);
+            this.logger.error(`Compilation ${filename} failed`);
 
             throw error;
         }
     }
 
-    private async getWorker(): Promise<ChildProcess> {
+    private async initWorker(): Promise<IWorkerEmitter> {
         if (this.queuedWorker) {
             return this.queuedWorker;
-        }
+        } else if (this.config.localWorker) {
+            this.queuedWorker = this.createLocalWorker()
+                .then((worker) => {
+                    this.worker = worker;
+                    this.queuedWorker = null;
 
-        if (this.worker === null) {
+                    return worker;
+                });
+
+            return this.queuedWorker;
+        } else if (this.worker === null) {
             this.queuedWorker = this.createWorker()
                 .then((worker) => {
                     this.worker = worker;
@@ -259,23 +298,33 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         return this.worker;
     }
 
-    private async createWorker(): Promise<ChildProcess> {
-        const worker = await fork(WORKER_ROOT, [], this.config.debug);
+    private async createLocalWorker(): Promise<IWorkerEmitter> {
+        const worker = new TestWorkerLocal(this.transport);
+
+        this.logger.debug('Created local worker');
+
+        return worker;
+    }
+
+    private async createWorker(): Promise<IWorkerEmitter> {
+        const worker = await fork(WORKER_ROOT, [], {
+            debug: this.config.debug,
+        });
 
         worker.stdout.on('data', (data) => {
-            loggerClientLocal.log(`[${this.workerID}] [logged] ${data.toString().trim()}`);
+            this.logger.log(`[${this.getWorkerID()}] [logged] ${data.toString().trim()}`);
         });
 
         worker.stderr.on('data', (data) => {
-            loggerClientLocal.error(`[${this.workerID}] [error] ${data.toString().trim()}`);
+            this.logger.error(`[${this.getWorkerID()}] [error] ${data.toString().trim()}`);
         });
 
         worker.on('error', this.workerErrorHandler);
         worker.once('exit', this.workerExitHandler);
 
-        this.transport.registerChildProcess(this.workerID, worker);
+        this.transport.registerChild(this.getWorkerID(), worker);
 
-        loggerClientLocal.debug(`Registered child process ${this.workerID}`);
+        this.logger.debug(`Registered child process ${this.getWorkerID()}`);
 
         return worker;
     }

@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
-import { loggerClientLocal } from '@testring/logger';
+import { loggerClient } from '@testring/logger';
 import { requirePackage } from '@testring/utils';
 import { IConfig } from '@testring/types';
 
@@ -69,7 +69,7 @@ const readConfig = async (
 
     const extension = path.extname(configPath);
 
-    loggerClientLocal.debug(`Read config file: ${configPath}`);
+    loggerClient.debug(`Read config file: ${configPath}`);
 
     switch (extension) {
         case '.js':

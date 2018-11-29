@@ -18,7 +18,7 @@ describe('Transport functional test', () => {
                 callback(error.toString());
             });
 
-            transport.registerChildProcess(CHILD_PROCESS_NAME, childProcess);
+            transport.registerChild(CHILD_PROCESS_NAME, childProcess);
 
             const removeCallback = transport.on(RESPONSE_NAME, (payload) => {
                 childProcess.kill();
@@ -46,7 +46,7 @@ describe('Transport functional test', () => {
         fork(childEntryPath).then((childProcess) => {
             const transport = new Transport(process);
 
-            transport.registerChildProcess(CHILD_PROCESS_NAME, childProcess);
+            transport.registerChild(CHILD_PROCESS_NAME, childProcess);
 
             chai.expect(transport.getProcessesList()).to.have.length(1);
 

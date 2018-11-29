@@ -34,7 +34,7 @@ function delay(timeout) {
 
 function stringifyWindowFeatures(windowFeatures: WindowFeaturesConfig) {
     let result;
-    if (typeof windowFeatures === "string") {
+    if (typeof windowFeatures === 'string') {
         result = windowFeatures;
     } else {
         result = Object.keys(windowFeatures)
@@ -45,7 +45,7 @@ function stringifyWindowFeatures(windowFeatures: WindowFeaturesConfig) {
 }
 
 export class SeleniumPlugin implements IBrowserProxyPlugin {
-    private logger = loggerClient.getLogger('[selenium-browser-process]');
+    private logger = loggerClient.withPrefix('[selenium-browser-process]');
 
     private clientCheckInterval: NodeJS.Timer;
 

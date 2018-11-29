@@ -9,7 +9,7 @@ import {
     ITransport
 } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
-import { loggerClientLocal } from '@testring/logger';
+import { loggerClient } from '@testring/logger';
 
 import { BrowserProxyWorker } from './browser-proxy-worker';
 
@@ -20,7 +20,7 @@ type BrowserProxyWorkerConfig = {
 };
 
 
-const logger = loggerClientLocal.getLogger('[browser-proxy-controller]');
+const logger = loggerClient.withPrefix('[browser-proxy-controller]');
 
 
 export class BrowserProxyController extends PluggableModule implements IBrowserProxyController {

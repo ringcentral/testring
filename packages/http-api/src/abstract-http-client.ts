@@ -10,7 +10,7 @@ import {
     IQueue,
     HttpClientParams,
 } from '@testring/types';
-import { loggerClient } from '@testring/logger';
+import { LoggerClient, loggerClient } from '@testring/logger';
 import { Queue } from '@testring/utils';
 import { HttpCookieJar } from './cookie-jar';
 
@@ -20,7 +20,11 @@ const toString = c => c.toString();
 
 export abstract class AbstractHttpClient implements IHttpClient {
     protected abstract broadcast(options: IHttpRequestMessage): void;
+
+    protected loggerClient: LoggerClient = loggerClient.withPrefix('[http client]');
+
     private requestQueue: IQueue<Function>;
+
     private queueRunning = false;
 
     constructor(protected transportInstance: ITransport, private params: HttpClientParams) {
@@ -68,13 +72,13 @@ export abstract class AbstractHttpClient implements IHttpClient {
 
         while (this.requestQueue.length) {
             const item = this.requestQueue.shift();
-            
+
             if (item) {
                 await item();
                 await new Promise(resolve => setTimeout(resolve, this.params.httpThrottle));
             }
         }
-        
+
         this.queueRunning = false;
     }
 
@@ -95,7 +99,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
         }
 
         if (!this.isValidRequest(requestParameters)) {
-            loggerClient.error(`Http Client: ${requestParameters} request is not valid`);
+            this.loggerClient.error(`${requestParameters} request is not valid`);
 
             throw new Error('request is not valid');
         }
@@ -107,7 +111,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
                 HttpMessageType.response,
                 (response: IHttpResponseMessage) => {
                     if (!response.uid) {
-                        loggerClient.error('Http Client: no response uid');
+                        this.loggerClient.error('no response uid');
                         throw new Error('no uid');
                     }
 
@@ -132,7 +136,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
                 HttpMessageType.reject,
                 (response: IHttpResponseRejectMessage) => {
                     if (!response.uid) {
-                        loggerClient.error('Http Client: no response uid');
+                        this.loggerClient.error('no response uid');
                         throw new Error('no uid');
                     }
 

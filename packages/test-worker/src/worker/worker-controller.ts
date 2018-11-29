@@ -24,20 +24,26 @@ export class WorkerController {
             try {
                 const testResult = await this.executeTest(message);
 
-                this.transportInstance.broadcast<ITestExecutionCompleteMessage>(TestWorkerAction.executionComplete, {
-                    status: testResult,
-                    error: null
-                });
+                this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
+                    TestWorkerAction.executionComplete,
+                    {
+                        status: testResult,
+                        error: null
+                    }
+                );
             } catch (error) {
-                this.transportInstance.broadcast<ITestExecutionCompleteMessage>(TestWorkerAction.executionComplete, {
-                    status: TestStatus.failed,
-                    error
-                });
+                this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
+                    TestWorkerAction.executionComplete,
+                    {
+                        status: TestStatus.failed,
+                        error
+                    }
+                );
             }
         });
     }
 
-    private async executeTest(message: ITestExecutionMessage): Promise<TestStatus> {
+    public async executeTest(message: ITestExecutionMessage): Promise<TestStatus> {
         // TODO pass message.parameters somewhere inside web application
         const testID = path.relative(process.cwd(), message.path);
 
