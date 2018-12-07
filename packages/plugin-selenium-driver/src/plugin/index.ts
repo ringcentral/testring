@@ -13,6 +13,7 @@ type browserClientItem = {
 };
 
 const DEFAULT_CONFIG: SeleniumPluginConfig = {
+    deprecationWarnings: false,
     clientCheckInterval: 5 * 1000,
     clientTimeout: 15 * 60 * 1000,
     port: 4444,

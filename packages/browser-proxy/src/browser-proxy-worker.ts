@@ -150,6 +150,10 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
             this.logger.log(`[logged] ${message.toString()}`);
         });
 
+        this.worker.stderr.on('data', (message) => {
+            this.logger.warn(`[logged] ${message.toString()}`);
+        });
+
         this.transport.registerChild(this.workerID, this.worker);
 
         this.onProxyConnect();
@@ -157,7 +161,7 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
         this.logger.debug(`Browser Proxy controller: register child process [id = ${this.workerID}]`);
 
         this.spawnPromise = null;
-        spawnResolver();
+        spawnResolver && spawnResolver();
     }
 
     public async execute(applicant: string, command: IBrowserProxyCommand): Promise<any> {
