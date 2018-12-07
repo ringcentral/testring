@@ -1,6 +1,6 @@
 {
   "name": "@testring/test-worker",
-  "version": "0.4.47",
+  "version": "0.4.48",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,21 +10,21 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/api": "0.4.47",
-    "@testring/child-process": "0.4.47",
-    "@testring/dependencies-builder": "0.4.47",
-    "@testring/fs-reader": "0.4.47",
-    "@testring/logger": "0.4.47",
-    "@testring/pluggable-module": "0.4.47",
-    "@testring/sandbox": "0.4.47",
-    "@testring/transport": "0.4.47",
-    "@testring/types": "0.4.47",
-    "@testring/utils": "0.4.47",
+    "@testring/api": "0.4.48",
+    "@testring/child-process": "0.4.48",
+    "@testring/dependencies-builder": "0.4.48",
+    "@testring/fs-reader": "0.4.48",
+    "@testring/logger": "0.4.48",
+    "@testring/pluggable-module": "0.4.48",
+    "@testring/sandbox": "0.4.48",
+    "@testring/transport": "0.4.48",
+    "@testring/types": "0.4.48",
+    "@testring/utils": "0.4.48",
     "@types/nanoid": "1.0.0",
     "@types/node": "10.5.6",
     "nanoid": "1.1.0"
   },
   "devDependencies": {
-    "@testring/test-utils": "0.4.47"
+    "@testring/test-utils": "0.4.48"
   }
 }

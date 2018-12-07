@@ -1,6 +1,6 @@
 {
   "name": "@testring/client-ws-transport",
-  "version": "0.4.47",
+  "version": "0.4.48",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "repository": {
@@ -10,8 +10,8 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/constants": "0.4.47",
-    "@testring/types": "0.4.47",
-    "@testring/utils": "0.4.47"
+    "@testring/constants": "0.4.48",
+    "@testring/types": "0.4.48",
+    "@testring/utils": "0.4.48"
   }
 }
