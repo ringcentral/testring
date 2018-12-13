@@ -124,7 +124,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 this.localSelenium.stderr.on('data', (data) => {
                     const message = data.toString();
 
-                    this.logger.verbose('[selenium server]', message);
+                    this.logger.verbose(message);
 
                     if (message.includes('SeleniumServer.boot')) {
                         delay(500).then(resolve);
