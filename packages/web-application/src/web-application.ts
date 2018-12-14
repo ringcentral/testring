@@ -27,7 +27,7 @@ export class WebApplication extends PluggableModule {
 
     protected TICK_TIMEOUT: number = 100;
 
-    private screenshotsEnabled: boolean = true;
+    private screenshotsEnabledManually: boolean = true;
 
     private isLogOpened: boolean = false;
 
@@ -115,7 +115,7 @@ export class WebApplication extends PluggableModule {
             return `Get selected text ${this.formatXpath(xpath)}`;
         },
         isChecked(xpath) {
-            return `Is checked/selected ${this.formatXpath(xpath)}`;
+            return `Is checked ${this.formatXpath(xpath)}`;
         },
         setChecked(xpath, checked: boolean = true) {
             return `Set checked ${this.formatXpath(xpath)} ${!!checked}`;
@@ -379,7 +379,7 @@ export class WebApplication extends PluggableModule {
         }
 
         if (exists) {
-            throw new Error(`Wait for not exists failed, element ${utils.logXpath(xpath)} is exists`);
+            throw new Error(`Wait for not exists failed, element ${this.formatXpath(xpath)} is exists`);
         }
 
         return !exists;
@@ -403,7 +403,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async waitForNotVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
-        const path = utils.logXpath(xpath);
+        const path = this.formatXpath(xpath);
         const expires = Date.now() + timeout;
 
         xpath = this.normalizeSelector(xpath);
@@ -530,23 +530,6 @@ export class WebApplication extends PluggableModule {
         }
     }
 
-    public async waitElementByLocator(xpath, timeout: number = this.WAIT_TIMEOUT) {
-        // TODO (flops) delete?
-        const waitUntil = Date.now() + timeout;
-
-        xpath = this.normalizeSelector(xpath);
-
-        let isElementVisible = false;
-
-        while (!isElementVisible && Date.now() < waitUntil) {
-            isElementVisible = await this.client.isVisible(xpath);
-
-            await this.pause(this.TICK_TIMEOUT);
-        }
-
-        return isElementVisible;
-    }
-
     public async click(xpath, timeout: number = this.WAIT_TIMEOUT) {
         const normalizedSelector = this.normalizeSelector(xpath);
 
@@ -554,45 +537,6 @@ export class WebApplication extends PluggableModule {
         await this.makeScreenshot();
 
         return this.client.click(normalizedSelector);
-    }
-
-    public async clickHiddenElement(xpath, timeout: number = this.WAIT_TIMEOUT) {
-        await this.waitForExist(xpath, timeout);
-        xpath = this.normalizeSelector(xpath);
-
-        let result = await this.client.executeAsync(function(xpath, done) {
-
-            function getElementByXPath(xpath) {
-                var element = document.evaluate(xpath, document, null,
-                    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                if (element.snapshotLength > 0) {
-                    return element.snapshotItem(0) as any;
-                }
-                return null;
-            }
-
-            try {
-                let element = getElementByXPath(xpath);
-                if (element) {
-                    element.className = element.className.replace(/invisible/gi, '');
-                    element.focus();
-                    element.click();
-                    done(null);
-                } else {
-                    done(`Element not found ${xpath}`);
-                }
-            } catch (e) {
-                done(`${e.message} ${xpath}`);
-            }
-        }, xpath);
-
-        if (result) {
-            throw new Error(result);
-        } else {
-            this.logger.debug(`Element ${utils.logXpath(xpath)} was made visible and clicked`);
-        }
-
-        await this.makeScreenshot();
     }
 
     public async getValue(xpath, timeout: number = this.WAIT_TIMEOUT) {
@@ -642,7 +586,7 @@ export class WebApplication extends PluggableModule {
             if (result) {
                 throw new Error(result);
             } else {
-                this.logger.debug(`Value ${value} was entered into ${utils.logXpath(xpath)} using JS emulation`);
+                this.logger.debug(`Value ${value} was entered into ${this.formatXpath(xpath)} using JS emulation`);
             }
         } else {
             if (value === '' || value === null || value === undefined) {
@@ -652,44 +596,37 @@ export class WebApplication extends PluggableModule {
                 await this.client.setValue(xpath, value);
             }
 
-            this.logger.debug(`Value ${value} was entered into ${utils.logXpath(xpath)} using Selenium`);
+            this.logger.debug(`Value ${value} was entered into ${this.formatXpath(xpath)} using Selenium`);
         }
 
         await this.makeScreenshot();
     }
 
     public async getText(xpath, trim: boolean = true, timeout: number = this.WAIT_TIMEOUT) {
-        const logXpath = utils.logXpath(xpath);
-
         await this.waitForExist(xpath, timeout);
 
         const text = (await this.getTextsInternal(xpath, trim)).join(' ');
 
-        this.logger.debug(`Get text from ${logXpath} returns "${text}"`);
+        this.logger.debug(`Get text from ${this.formatXpath(xpath)} returns "${text}"`);
 
         return text;
     }
 
-    public async getTooltipText(xpath, timeout: number = this.WAIT_TIMEOUT) {
-        // TODO (flops) delete the same as getText
-        let logXpath = utils.logXpath(xpath);
-
+    public async getTextWithoutFocus(xpath, timeout: number = this.WAIT_TIMEOUT) {
         await this.waitForExist(xpath, timeout, true);
 
         let text = (await this.getTextsInternal(xpath, true)).join(' ');
 
-        this.logger.debug(`Get tooltip text from ${logXpath} returns "${text}"`);
+        this.logger.debug(`Get tooltip text from ${this.formatXpath(xpath)} returns "${text}"`);
         return text;
     }
 
     public async getTexts(xpath, trim = true, timeout: number = this.WAIT_TIMEOUT) {
-        let logXpath = utils.logXpath(xpath);
-
         await this.waitForExist(xpath, timeout);
 
         let texts = await this.getTextsInternal(xpath, trim, true);
 
-        this.logger.debug(`Get texts from ${logXpath} returns "${texts.join('\n')}"`);
+        this.logger.debug(`Get texts from ${this.formatXpath(xpath)} returns "${texts.join('\n')}"`);
         return texts;
     }
 
@@ -796,8 +733,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async selectByValue(xpath, value: string | number, timeout: number = this.WAIT_TIMEOUT) {
-        const logXpath = utils.logXpath(xpath);
-        const errorMessage = `Could not select by value "${value}": ${logXpath}`;
+        const errorMessage = `Could not select by value "${value}": ${this.formatXpath(xpath)}`;
 
         xpath = this.normalizeSelector(xpath);
 
@@ -835,7 +771,7 @@ export class WebApplication extends PluggableModule {
         let value = await this.client.getValue(xpath);
 
         if (typeof value === 'string' || typeof value === 'number') {
-            // TODO refactor this for supporting custom selectors
+            // TODO rework this for supporting custom selectors
             xpath += `//option[@value='${value}']`;
             try {
                 let options = await this.client.getText(xpath);
@@ -880,11 +816,6 @@ export class WebApplication extends PluggableModule {
         return !!isSelected;
     }
 
-    public async isSelected(xpath, timeout: number = this.WAIT_TIMEOUT) {
-        // TODO (flops) deprecated
-        return this.isChecked(xpath, timeout);
-    }
-
     public async setChecked(xpath, checked: boolean = true, timeout: number = this.WAIT_TIMEOUT) {
         xpath = this.normalizeSelector(xpath);
 
@@ -903,20 +834,6 @@ export class WebApplication extends PluggableModule {
         xpath = this.normalizeSelector(xpath);
 
         return this.client.isVisible(xpath);
-    }
-
-    public async rootlessIsVisible(xpath) {
-        // TODO (flops) deprecated, when isVisible waitForExist will be resolved, remove it as duplicate
-        xpath = this.normalizeSelector(xpath);
-
-        return this.client.isVisible(xpath);
-    }
-
-    public async rootlessWaitForVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
-        // TODO (flops) check maybe simplify waitForVisible
-        xpath = this.normalizeSelector(xpath);
-
-        return this.client.waitForVisible(xpath, timeout);
     }
 
     public async getAttribute(xpath, attr: string, timeout: number = this.WAIT_TIMEOUT) {
@@ -958,34 +875,16 @@ export class WebApplication extends PluggableModule {
         );
     }
 
-    public async isDisabled(xpath, timeout: number = this.WAIT_TIMEOUT) {
-        xpath = this.normalizeSelector(xpath);
-
-        await this.waitForExist(xpath, timeout);
-
-        // TODO (flops) rewrite check to hasAttribute
-        const disabled = await this.client.getAttribute(xpath, 'disabled');
-
-        return (
-            disabled === true ||
-            disabled === 'true' ||
-            disabled === 'disabled'
-        );
-    }
-
     public async isEnabled(xpath, timeout: number = this.WAIT_TIMEOUT) {
         await this.waitForExist(xpath, timeout);
 
         xpath = this.normalizeSelector(xpath);
+
         return this.client.isEnabled(xpath);
     }
 
-    public async isCSSClassExists(xpath, ...suitableClasses) {
-        // TODO (flops) make suitableClasses as array and add timeout as third argument
-        const elemClasses: any = await this.getAttribute(xpath, 'class');
-        const elemClassesArr = elemClasses.trim().toLowerCase().split(/\s+/g);
-
-        return suitableClasses.some((suitableClass) => elemClassesArr.includes(suitableClass.toLowerCase()));
+    public async isDisabled(xpath, timeout: number = this.WAIT_TIMEOUT) {
+        return !(await this.isEnabled(xpath, timeout));
     }
 
     public async maximizeWindow() {
@@ -1261,23 +1160,18 @@ export class WebApplication extends PluggableModule {
         return this.client.refresh();
     }
 
-    public getTextsAsArray(xpath, trim = true, timeout = this.WAIT_TIMEOUT) {
-        // TODO (flops) deprecated
-        return this.getTexts(xpath, trim, timeout);
-    }
-
     public async disableScreenshots() {
         this.logger.debug("Screenshots were disabled. DO NOT FORGET to turn them on back!");
-        this.screenshotsEnabled = false;
+        this.screenshotsEnabledManually = false;
     }
 
     public async enableScreenshots() {
         this.logger.debug("Screenshots were enabled");
-        this.screenshotsEnabled = true;
+        this.screenshotsEnabledManually = true;
     }
 
     public async makeScreenshot(force: boolean = false) {
-        if (this.config.screenshotsEnabled && (this.screenshotsEnabled || force)) {
+        if (this.config.screenshotsEnabled && (this.screenshotsEnabledManually || force)) {
             const screenshoot = await this.client.makeScreenshot();
             const screenDate = new Date();
             const formattedDate = (`${screenDate.toLocaleTimeString()} ${screenDate.toDateString()}`).replace(/\s+/g, '_');

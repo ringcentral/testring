@@ -3,7 +3,7 @@ function logXpath(xpath) {
 
     if (xpath === undefined) {
         throw [
-            'Path is incorrect, please check that your web test id map is correctly used in your test.',
+            'Path is empty, please check that your web test id map is correctly used in your test.',
             'Check the path that is used AFTER the upper mentioned path.'
         ].join('\n');
     } else {
