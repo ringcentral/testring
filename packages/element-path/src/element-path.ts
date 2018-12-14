@@ -436,13 +436,13 @@ export class ElementPath {
             }
 
             return new ElementPath({
-                searchOptions: {...searchOptions},
+                searchOptions: { ...searchOptions },
                 flows: this.flows,
                 parent: withoutParent ? undefined : this
             });
         } else {
             return new ElementPath({
-                searchOptions: {...searchOptions},
+                searchOptions: { ...searchOptions },
                 flows: this.flows,
                 parent: this
             });

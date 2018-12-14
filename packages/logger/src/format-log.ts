@@ -70,6 +70,7 @@ export const formatLog = (
     emojiSupport: boolean = HAS_EMOJI_SUPPORT,
 ): string => {
     const formattedPrefix = (
+        // eslint-disable-next-line max-len
         `${formatTime(logEntity.time)} | ${formatLogLevel(logEntity.logLevel, emojiSupport)} | ${formatProcessID(processID)} |`
     );
     let prefixes = logEntity.prefix ? [logEntity.prefix] : [];

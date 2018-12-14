@@ -177,7 +177,10 @@ export const buildDependencyDictionary = async (file: IFile, readFile: Dependenc
 };
 
 
-export const mergeDependencyDictionaries = async (dict1: DependencyDict, dict2: DependencyDict): Promise<DependencyDict> => {
+export const mergeDependencyDictionaries = async (
+    dict1: DependencyDict,
+    dict2: DependencyDict
+): Promise<DependencyDict> => {
     return {
         ...dict1,
         ...dict2,

@@ -25,12 +25,12 @@ describe('Logger Server', () => {
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (beforeLog && onLog) {
-            beforeLog.writeHook('testPlugin',  (entry, {processID}) => {
+            beforeLog.writeHook('testPlugin',  (entry, { processID }) => {
                 chai.expect(processID).to.be.equal(PROCESS_ID);
                 return entry;
             });
 
-            onLog.readHook('testPlugin', (entry, {processID}) => {
+            onLog.readHook('testPlugin', (entry, { processID }) => {
                 chai.expect(processID).to.be.equal(PROCESS_ID);
 
                 callback();
@@ -97,7 +97,7 @@ describe('Logger Server', () => {
         const onError = loggerServer.getHook(LoggerPlugins.onError);
 
         if (onLog && onError) {
-            onLog.readHook('testPlugin', (entry, {processID}) => {
+            onLog.readHook('testPlugin', (entry, { processID }) => {
                 try {
                     chai.expect(processID).to.be.equal(PROCESS_ID);
                 } catch (e) {
@@ -106,7 +106,7 @@ describe('Logger Server', () => {
                 throw new Error('WHOOPS!');
             });
 
-            onError.readHook('testPlugin', (error, {processID}) => {
+            onError.readHook('testPlugin', (error, { processID }) => {
                 try {
                     chai.expect(processID).to.be.equal(PROCESS_ID);
                     callback();

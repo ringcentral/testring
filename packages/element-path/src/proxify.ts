@@ -2,7 +2,7 @@ import {
     hasOwn,
     isGenKeyType,
 } from './utils';
-import {ElementPath} from './element-path';
+import { ElementPath } from './element-path';
 
 type KeyType = string | number | symbol;
 
@@ -172,7 +172,7 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
 
         if (key === 'xpath') {
             return (id: string, xpath: string) => {
-                return proxify(instance.generateChildByXpath({id, xpath}), strictMode);
+                return proxify(instance.generateChildByXpath({ id, xpath }), strictMode);
             };
         }
 

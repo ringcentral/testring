@@ -30,7 +30,7 @@ export class RecorderHttpServer implements IServer {
 
         koa.use(views(
             this.templatesPath,
-            { extension: 'hbs', map: {hbs: 'handlebars' } },
+            { extension: 'hbs', map: { hbs: 'handlebars' } },
         ));
 
         koa.use(async (ctx) => {
