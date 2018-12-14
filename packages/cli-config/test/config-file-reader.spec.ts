@@ -14,7 +14,7 @@ describe('config-file-reader', () => {
         const config = await getFileConfig(filePath, {} as any);
 
         chai.expect(config).to.be.deep.equal({
-            debug: true
+            debug: true,
         });
     });
 
@@ -23,7 +23,7 @@ describe('config-file-reader', () => {
         const config = await getFileConfig(filePath, {} as any);
 
         chai.expect(config).to.be.deep.equal({
-            debug: true
+            debug: true,
         });
     });
 
@@ -49,7 +49,7 @@ describe('config-file-reader', () => {
         const config = await getFileConfig(filePath, {} as any);
 
         chai.expect(config).to.be.deep.equal({
-            debug: true
+            debug: true,
         });
     });
 

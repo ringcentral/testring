@@ -36,7 +36,7 @@ export class PluginController {
         if (typeof importedPlugin !== 'function') {
             throw new SyntaxError([
                 `Plugin ${pluginName} has incorrect format, it should be function!`,
-                'Please, follow plugin handbook in testring docs to get more info about API.'
+                'Please, follow plugin handbook in testring docs to get more info about API.',
             ].join('\n'));
         }
 

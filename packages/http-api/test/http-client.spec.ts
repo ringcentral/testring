@@ -7,7 +7,7 @@ import { HttpClient } from '../src/http-client';
 
 const DEFAULT_URL = 'test.com/invalid/test/url';
 const DEFAULT_RESPONSE = {
-    body: {}
+    body: {},
 };
 
 const httpClientParams = {
@@ -18,7 +18,7 @@ const imitateServer = (transport: TransportMock, response) => {
     transport.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
         transport.send(src, HttpMessageType.response, {
             uid: data.uid,
-            response
+            response,
         });
     });
 };
@@ -27,7 +27,7 @@ const imitateFailedServer = (transport: TransportMock, error: Error) => {
     transport.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
         transport.send(src, HttpMessageType.reject, {
             uid: data.uid,
-            error
+            error,
         });
     });
 };
@@ -115,7 +115,7 @@ describe('HttpClient', () => {
         });
 
         httpClient.post({
-            url: DEFAULT_URL
+            url: DEFAULT_URL,
         })
             .then(() => {
                 callback('Request resolved somehow');
@@ -138,8 +138,8 @@ describe('HttpClient', () => {
             transport.send(src, HttpMessageType.response, {
                 uid: data.uid,
                 response: {
-                    body: responses[data.request.body.requestId]
-                }
+                    body: responses[data.request.body.requestId],
+                },
             });
         });
 
@@ -172,7 +172,7 @@ describe('HttpClient', () => {
             await new Promise(resolve => setTimeout(resolve, responseTime));
             transport.send(src, HttpMessageType.response, {
                 uid: data.uid,
-                response: DEFAULT_RESPONSE
+                response: DEFAULT_RESPONSE,
             });
         });
 

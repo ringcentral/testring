@@ -13,7 +13,7 @@ const PROCESS_ID = 'testId';
 const DEFAULT_CONFIG: any = {};
 const DEFAULT_WRITABLE_CONFIG = {
     write: () => {
-    }
+    },
 };
 
 describe('Logger Server', () => {
@@ -49,7 +49,7 @@ describe('Logger Server', () => {
 
         const alteredEntry = {
             ...LOG_ENTITY,
-            type: LogTypes.error
+            type: LogTypes.error,
         };
 
         if (beforeLog && onLog) {
@@ -150,7 +150,7 @@ describe('Logger Server', () => {
 
         const successEntry = {
             ...LOG_ENTITY,
-            type: LogTypes.error
+            type: LogTypes.error,
         };
 
         const errorSpy = sinon.spy();
@@ -176,7 +176,7 @@ describe('Logger Server', () => {
     it('should not call onLog hook if config.silent is true', (callback) => {
         const config = {
             ...DEFAULT_CONFIG,
-            silent: true
+            silent: true,
         };
         const transport = new TransportMock();
         const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
@@ -199,7 +199,7 @@ describe('Logger Server', () => {
     it('should not call onLog hook if config.loggerLevel is greater than entry.logLevel', (callback) => {
         const config = {
             ...DEFAULT_CONFIG,
-            logLevel: LogLevel.debug
+            logLevel: LogLevel.debug,
         };
         const transport = new TransportMock();
         const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
@@ -216,7 +216,7 @@ describe('Logger Server', () => {
             LoggerMessageTypes.REPORT,
             {
                 ...LOG_ENTITY,
-                logLevel: LogLevel.verbose
+                logLevel: LogLevel.verbose,
             }
         );
 

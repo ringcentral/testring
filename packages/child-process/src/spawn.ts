@@ -5,6 +5,6 @@ export const spawn = (command: string, args: Array<string> = []): childProcess.C
     return childProcess.spawn(command, args, {
         stdio: [null, null, null, 'ipc'],
         cwd: process.cwd(),
-        detached: true
+        detached: true,
     });
 };

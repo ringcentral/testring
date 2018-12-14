@@ -9,7 +9,7 @@ import { runTests } from '../src/commands/run';
 const fixturesPath = path.resolve(__dirname, './fixtures');
 const stdout = new Writable({
     write: () => {
-    }
+    },
 });
 
 describe('testring CLI', () => {
@@ -19,7 +19,7 @@ describe('testring CLI', () => {
             '',
             `--tests=${path.join(fixturesPath, './tests/positive/*.spec.js')}`,
             '--retryDelay=10',
-            '--silent'
+            '--silent',
         ]);
 
         const command = runTests(config, transport, stdout);
@@ -33,7 +33,7 @@ describe('testring CLI', () => {
             '',
             `--tests=${path.join(fixturesPath, './tests/negative/*.spec.js')}`,
             '--retryDelay=10',
-            '--silent'
+            '--silent',
         ]);
 
         let passed: boolean;

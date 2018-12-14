@@ -8,15 +8,15 @@ describe('getConfig', () => {
     it('should get config with correct array of plugins (strings)', () => {
         const config = mergeConfigs(
             {
-                plugins: ['plugin1', 'plugin2']
+                plugins: ['plugin1', 'plugin2'],
             },
             {
-                plugins: ['plugin2', 'plugin3']
+                plugins: ['plugin2', 'plugin3'],
             }
         );
 
         chai.expect(config).to.be.deep.equals({
-            plugins: ['plugin1', 'plugin2', 'plugin3']
+            plugins: ['plugin1', 'plugin2', 'plugin3'],
         });
     });
 
@@ -26,32 +26,32 @@ describe('getConfig', () => {
                 plugins: [
                     'plugin2',
                     ['plugin1', {
-                        cache: false
-                    }]
-                ]
+                        cache: false,
+                    }],
+                ],
             },
             {
                 plugins: [
                     ['plugin1', {
-                        debug: true
+                        debug: true,
                     }],
                     ['plugin2', {
-                        test: 1
-                    }]
-                ]
+                        test: 1,
+                    }],
+                ],
             }
         );
 
         chai.expect(config).to.be.deep.equals({
             plugins: [
                 ['plugin2', {
-                    test: 1
+                    test: 1,
                 }],
                 ['plugin1', {
                     cache: false,
-                    debug: true
-                }]
-            ]
+                    debug: true,
+                }],
+            ],
         });
     });
 
@@ -107,7 +107,7 @@ describe('getConfig', () => {
                     debug: undefined,
                 }],
                 'plugin2',
-            ]
+            ],
         });
     });
 });

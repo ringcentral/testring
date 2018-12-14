@@ -10,7 +10,7 @@ import { LOG_ENTITY } from './fixtures/constants';
 const DEFAULT_CONFIG: any = {};
 const DEFAULT_WRITABLE_CONFIG = {
     write: () => {
-    }
+    },
 };
 
 describe('Logger', () => {

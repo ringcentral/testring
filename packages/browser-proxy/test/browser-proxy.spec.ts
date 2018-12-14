@@ -6,7 +6,7 @@ import {
     BrowserProxyMessageTypes,
     BrowserProxyActions,
     IBrowserProxyCommandResponse,
-    IBrowserProxyCommand
+    IBrowserProxyCommand,
 } from '@testring/types';
 import { TransportMock } from '@testring/test-utils';
 import { BrowserProxy } from '../src/browser-proxy/browser-proxy';
@@ -17,7 +17,7 @@ const pluginPath = path.resolve(__dirname, './fixtures/sync-plugin.ts');
 const pluginConfig = {};
 const commandMock: IBrowserProxyCommand = {
     action: BrowserProxyActions.click,
-    args: ['foo', 'bar']
+    args: ['foo', 'bar'],
 };
 
 describe('Browser proxy', () => {
@@ -39,7 +39,7 @@ describe('Browser proxy', () => {
             {
                 uid,
                 applicant: 'test',
-                command: commandMock
+                command: commandMock,
             }
         );
     });
@@ -60,7 +60,7 @@ describe('Browser proxy', () => {
             BrowserProxyMessageTypes.execute,
             {
                 uid,
-                command: commandMock
+                command: commandMock,
             }
         );
     });
@@ -86,8 +86,8 @@ describe('Browser proxy', () => {
                 uid,
                 command: {
                     action: 'barrelRoll' as BrowserProxyActions,
-                    arguments: ['foo', 'bar']
-                }
+                    arguments: ['foo', 'bar'],
+                },
             }
         );
     });

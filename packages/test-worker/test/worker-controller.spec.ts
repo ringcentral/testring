@@ -7,7 +7,7 @@ import {
     TestWorkerAction,
     TestStatus,
     ITestExecutionMessage,
-    ITestExecutionCompleteMessage
+    ITestExecutionCompleteMessage,
 } from '@testring/types';
 import { WorkerController } from '../src/worker/worker-controller';
 

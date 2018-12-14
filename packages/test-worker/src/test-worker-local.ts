@@ -44,7 +44,7 @@ export class TestWorkerLocal extends EventEmitter implements IWorkerEmitter {
                     TestWorkerAction.executionComplete,
                     {
                         status: testResult,
-                        error: null
+                        error: null,
                     }
                 );
             })
@@ -53,7 +53,7 @@ export class TestWorkerLocal extends EventEmitter implements IWorkerEmitter {
                     TestWorkerAction.executionComplete,
                     {
                         status: TestStatus.failed,
-                        error
+                        error,
                     }
                 );
             });

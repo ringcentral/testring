@@ -6,7 +6,7 @@ import {
     IBrowserProxyCommand,
     IBrowserProxyController,
     IBrowserProxyWorker,
-    ITransport
+    ITransport,
 } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { loggerClient } from '@testring/logger';

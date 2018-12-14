@@ -6,7 +6,7 @@ import { IServer } from '@testring/types';
 import {
     DEFAULT_RECORDER_HOST,
     DEFAULT_RECORDER_HTTP_PORT,
-    DEFAULT_RECORDER_WS_PORT
+    DEFAULT_RECORDER_WS_PORT,
 } from '@testring/constants';
 
 export class RecorderHttpServer implements IServer {

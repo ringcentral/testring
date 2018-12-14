@@ -9,7 +9,7 @@ class TestModule extends PluggableModule {
 
     constructor() {
         super([
-            TestModule.hookName
+            TestModule.hookName,
         ]);
     }
 
@@ -43,7 +43,7 @@ describe('PluggableModule', () => {
             hook.writeHook('testPlugin', async (data) => {
                 return {
                     ...data,
-                    additional: 1
+                    additional: 1,
                 };
             });
 
@@ -51,7 +51,7 @@ describe('PluggableModule', () => {
 
             chai.expect(result).to.be.deep.equal({
                 main: 1,
-                additional: 1
+                additional: 1,
             });
         }
     });

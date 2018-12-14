@@ -11,13 +11,13 @@ import { resolveFiles } from '../src/file-resolver';
 const testPaths = [
     path.resolve(__dirname, './fixtures/testfiles/foo.test.js'),
     path.resolve(__dirname, './fixtures/testfiles/bar.test.js'),
-    path.resolve(__dirname, './fixtures/testfiles/sub/baz.test.js')
+    path.resolve(__dirname, './fixtures/testfiles/sub/baz.test.js'),
 ];
 
 const falsePaths = [
     path.resolve(__dirname, './fixtures/testfiles/_FOO.test.js'),
     path.resolve(__dirname, './fixtures/testfiles/_BAR.test.js'),
-    path.resolve(__dirname, './fixtures/testfiles/_BAZ.test.js')
+    path.resolve(__dirname, './fixtures/testfiles/_BAZ.test.js'),
 ];
 
 describe('resolve tests', () => {

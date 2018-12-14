@@ -5,7 +5,7 @@ import { fork } from '@testring/child-process';
 import { TestWorkerLocal } from './test-worker-local';
 import {
     buildDependencyDictionary,
-    mergeDependencyDictionaries
+    mergeDependencyDictionaries,
 } from '@testring/dependencies-builder';
 import {
     IFile,
@@ -36,7 +36,7 @@ const delay = (timeout: number) => new Promise<void>(resolve => setTimeout(resol
 
 const createConfig = (workerConfig: Partial<ITestWorkerConfig>): ITestWorkerConfig => ({
     ...WORKER_DEFAULT_CONFIG,
-    ...workerConfig
+    ...workerConfig,
 });
 
 export class TestWorkerInstance implements ITestWorkerInstance {
@@ -165,7 +165,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         const compiledFile = {
             path: file.path,
-            content: compiledSource
+            content: compiledSource,
         };
 
         let dependencies = await buildDependencyDictionary(compiledFile, this.readDependency.bind(this));

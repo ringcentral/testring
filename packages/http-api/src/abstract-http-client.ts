@@ -94,7 +94,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
         if (cookieJar) {
             requestParameters = {
                 ...requestParameters,
-                cookies: cookieJar.getCookies(requestParameters.url).map(toString)
+                cookies: cookieJar.getCookies(requestParameters.url).map(toString),
             };
         }
 
@@ -150,7 +150,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
 
             this.broadcast({
                 uid: requestUID,
-                request: requestParameters
+                request: requestParameters,
             });
         });
     }

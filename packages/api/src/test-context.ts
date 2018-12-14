@@ -90,7 +90,7 @@ export class TestContext {
 
     public end(): Promise<any> {
         const requests = [
-            this.application.end()
+            this.application.end(),
         ];
 
         for (const customApplication of this.customApplications) {

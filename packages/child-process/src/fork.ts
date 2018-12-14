@@ -24,7 +24,7 @@ const REQUIRE_TS_NODE = ['-r', 'ts-node/register'];
 
 const DEFAULT_FORK_OPTIONS: IChildProcessForkOptions = {
     debug: false,
-    debugPortRange: PREFERRED_DEBUG_PORTS
+    debugPortRange: PREFERRED_DEBUG_PORTS,
 };
 
 

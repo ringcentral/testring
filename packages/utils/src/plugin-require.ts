@@ -2,7 +2,7 @@ import { requirePackage, resolvePackage } from './package-require';
 
 const PREFIXES = [
     '@testring/plugin-',
-    'testring-plugin-'
+    'testring-plugin-',
 ];
 
 const normalizeExport = (module) => {

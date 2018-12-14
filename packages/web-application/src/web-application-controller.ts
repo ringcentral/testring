@@ -5,7 +5,7 @@ import {
     IWebApplicationExecuteMessage,
     IWebApplicationResponseMessage,
     WebApplicationMessageType,
-    WebApplicationControllerEventType
+    WebApplicationControllerEventType,
 } from '@testring/types';
 
 export class WebApplicationController extends EventEmitter {
@@ -26,7 +26,7 @@ export class WebApplicationController extends EventEmitter {
             const payload = {
                 uid: message.uid,
                 response: response,
-                error: null
+                error: null,
             };
 
             if (source) {
@@ -47,7 +47,7 @@ export class WebApplicationController extends EventEmitter {
             const payload = {
                 uid: message.uid,
                 response: null,
-                error: error
+                error: error,
             };
 
             if (source) {

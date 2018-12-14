@@ -40,7 +40,7 @@ describe('argument parser', () => {
             '--my-namespaced.custom-field',
             customFieldSet,
             '--my-namespaced.second-custom-field',
-            customField
+            customField,
         ];
 
         const args = getArguments(argv);
@@ -55,7 +55,7 @@ describe('argument parser', () => {
             myNamespaced: {
                 customField: customFieldSet,
                 secondCustomField: customField,
-            }
+            },
         };
 
         chai.expect(args).to.be.deep.equal(expected);

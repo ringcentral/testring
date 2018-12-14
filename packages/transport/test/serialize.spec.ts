@@ -12,8 +12,8 @@ describe('serialize', () => {
             undefined,
             NaN,
             {
-                array: [null, 'another string', 2]
-            }
+                array: [null, 'another string', 2],
+            },
         ];
         const serializedData = serialize(data);
         const deserializedData = deserialize(serializedData);
@@ -159,8 +159,8 @@ describe('serialize', () => {
             a: '(Circular)',
             b: {
                 a: '(Circular)',
-                b: '(Circular)'
-            }
+                b: '(Circular)',
+            },
         });
     });
 });

@@ -5,7 +5,7 @@ import { default as chalk } from 'chalk';
 import {
     ILogEntity,
     LogLevel,
-    LogTypes
+    LogTypes,
 } from '@testring/types';
 
 const HAS_EMOJI_SUPPORT: boolean = !!(process.stdout.isTTY && process.platform === 'darwin');

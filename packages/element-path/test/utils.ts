@@ -7,7 +7,7 @@ export function getDescriptor(value) {
         'configurable': true,
         'enumerable': true,
         'value': value,
-        'writable': false
+        'writable': false,
     };
 }
 
@@ -16,7 +16,7 @@ export function getPrivateDescriptor(value) {
         'configurable': true,
         'enumerable': false,
         'value': value,
-        'writable': false
+        'writable': false,
     };
 }
 

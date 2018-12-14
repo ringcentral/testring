@@ -8,7 +8,7 @@ import {
     ILoggerServer,
     LoggerMessageTypes,
     LogQueueStatus,
-    LoggerPlugins
+    LoggerPlugins,
 } from '@testring/types';
 import { formatLog } from './format-log';
 
@@ -37,7 +37,7 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
         super([
             LoggerPlugins.beforeLog,
             LoggerPlugins.onLog,
-            LoggerPlugins.onError
+            LoggerPlugins.onError,
         ]);
 
         this.registerTransportListeners();

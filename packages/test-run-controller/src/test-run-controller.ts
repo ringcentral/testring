@@ -40,14 +40,14 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             TestRunControllerPlugins.afterTest,
             TestRunControllerPlugins.beforeTestRetry,
             TestRunControllerPlugins.afterRun,
-            TestRunControllerPlugins.shouldRetry
+            TestRunControllerPlugins.shouldRetry,
         ]);
     }
 
     public async pushTestIntoQueue(testString: string) {
         const testQueueItem = this.prepareTest({
             path: '',
-            content: testString
+            content: testString,
         });
         if (Array.isArray(this.currentQueue)) {
             this.currentQueue.push(testQueueItem);

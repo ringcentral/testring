@@ -10,7 +10,7 @@ const createHttpServer = (transport: ITransport) => {
 export {
     createHttpServer,
     HttpServer,
-    HttpClient
+    HttpClient,
 };
 
 

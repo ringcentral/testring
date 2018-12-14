@@ -14,6 +14,7 @@
     "node": true
   },
   "rules": {
+    "comma-dangle": [2, "always-multiline"],
     "object-curly-spacing": [2, "always"],
     "typescript/member-delimiter-style": 2,
     "typescript/no-unused-vars": 2,

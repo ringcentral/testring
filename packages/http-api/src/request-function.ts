@@ -29,7 +29,7 @@ const mapResponse = (response: Response, cookies) => ({
     statusMessage: response.statusMessage,
     headers: response.headers,
     body: response.body,
-    cookies: cookies
+    cookies: cookies,
 });
 
 export const requestFunction = async (request: IHttpRequest): Promise<IHttpResponse> => {
@@ -44,7 +44,7 @@ export const requestFunction = async (request: IHttpRequest): Promise<IHttpRespo
         headers: request.headers,
         json: request.json,
         jar: cookieJar,
-        resolveWithFullResponse: true
+        resolveWithFullResponse: true,
     };
 
     const normalizedRequest = Object.keys(rawRequest).reduce(filterRequestField(rawRequest), {});

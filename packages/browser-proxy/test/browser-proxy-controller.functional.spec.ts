@@ -28,7 +28,7 @@ describe('Browser proxy controller functional test', () => {
             onAction.writeHook('testPlugin', async () => {
                 return {
                     plugin: syncPlugin,
-                    config: null
+                    config: null,
                 };
             });
         }
@@ -36,7 +36,7 @@ describe('Browser proxy controller functional test', () => {
         controller.init().then(() => {
             return controller.execute('test', {
                 action: BrowserProxyActions.click,
-                args: []
+                args: [],
             });
         }).then(() => {
             controller.kill();
@@ -52,7 +52,7 @@ describe('Browser proxy controller functional test', () => {
                 '--name',
                 syncPlugin,
                 '--config',
-                JSON.stringify(null)
+                JSON.stringify(null),
             ]);
         });
 
@@ -60,7 +60,7 @@ describe('Browser proxy controller functional test', () => {
 
         await controller.execute('test', {
             action: BrowserProxyActions.click,
-            args: []
+            args: [],
         });
 
         setImmediate(() => {
@@ -75,7 +75,7 @@ describe('Browser proxy controller functional test', () => {
                 '--name',
                 syncPlugin,
                 '--config',
-                JSON.stringify(null)
+                JSON.stringify(null),
             ]);
         });
 
@@ -83,7 +83,7 @@ describe('Browser proxy controller functional test', () => {
             .then(() => {
                 controller.execute('test', {
                     action: BrowserProxyActions.click,
-                    args: []
+                    args: [],
                 })
                     .then(() => {
                         controller.kill();
@@ -104,7 +104,7 @@ describe('Browser proxy controller functional test', () => {
                 '--name',
                 syncPlugin,
                 '--config',
-                JSON.stringify(null)
+                JSON.stringify(null),
             ]);
         });
 
@@ -112,7 +112,7 @@ describe('Browser proxy controller functional test', () => {
             .then(() => {
                 controller.execute('test', {
                     action: 'barrelRoll' as BrowserProxyActions,
-                    args: []
+                    args: [],
                 })
                     .then(() => {
                         callback(new Error('passed somehow'));
@@ -133,7 +133,7 @@ describe('Browser proxy controller functional test', () => {
                 '--name',
                 onActionPluginPath,
                 '--config',
-                JSON.stringify(config)
+                JSON.stringify(config),
             ]);
         });
         const hooks = controller.getHook(BrowserProxyPlugins.getPlugin);
@@ -153,7 +153,7 @@ describe('Browser proxy controller functional test', () => {
 
         const testResult1 = await controller.execute('test1', {
             action: BrowserProxyActions.click,
-            args: ['testResult']
+            args: ['testResult'],
         });
         chai.expect(testResult1).to.be.equal(testResult1);
 
@@ -169,7 +169,7 @@ describe('Browser proxy controller functional test', () => {
 
         const testResult3 = await controller.execute('test3', {
             action: BrowserProxyActions.click,
-            args: [[1,2,3]]
+            args: [[1,2,3]],
         });
         chai.expect(testResult3).to.be.deep.equal([1,2,3]);
 
@@ -185,7 +185,7 @@ describe('Browser proxy controller functional test', () => {
                 '--name',
                 onActionPluginPath,
                 '--config',
-                JSON.stringify(config)
+                JSON.stringify(config),
             ]);
         });
         const hooks = controller.getHook(BrowserProxyPlugins.getPlugin);

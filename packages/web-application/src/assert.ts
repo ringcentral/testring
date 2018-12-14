@@ -5,7 +5,7 @@ type AssertionAPI = typeof chai['assert'] & { _errorMessages: Array<any> };
 
 export const createAssertion = (options: IAssertionOptions = {}) => {
     const root: AssertionAPI = Object.assign({}, chai.assert, {
-        _errorMessages: []
+        _errorMessages: [],
     });
     const isSoft = options.isSoft === true;
 
@@ -75,6 +75,6 @@ export const createAssertion = (options: IAssertionOptions = {}) => {
                     }
                 }
             };
-        }
+        },
     });
 };

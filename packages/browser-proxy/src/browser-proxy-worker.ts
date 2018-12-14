@@ -117,7 +117,7 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
             {
                 uid,
                 command,
-                applicant
+                applicant,
             }
         ).catch((err) => {
             this.logger.error(err);
@@ -168,7 +168,7 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
                 resolve,
                 reject,
                 command,
-                applicant
+                applicant,
             };
 
             if (this.worker) {

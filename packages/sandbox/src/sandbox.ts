@@ -89,7 +89,7 @@ class Sandbox {
     private createContext(filename: string, dependencies) {
         const moduleObject = {
             filename: filename,
-            id: filename
+            id: filename,
         };
 
         const module = new Proxy(moduleObject, {
@@ -115,14 +115,14 @@ class Sandbox {
                         return target[key] = value;
                     }
                 }
-            }
+            },
         });
 
         const ownContext = {
             __dirname: path.dirname(filename),
             __filename: filename,
             require: this.require.bind(this),
-            module: module
+            module: module,
         };
 
         const contextProxy = new Proxy(ownContext, {
@@ -162,7 +162,7 @@ class Sandbox {
 
             has: (target: any, key: string): boolean => {
                 return (key in target) || (key in global);
-            }
+            },
         });
 
         return contextProxy;

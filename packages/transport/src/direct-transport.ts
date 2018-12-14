@@ -3,7 +3,7 @@ import {
     TransportInternalMessageType,
     TransportMessageHandler,
     ITransportDirectMessage,
-    ITransportMessage
+    ITransportMessage,
 } from '@testring/types';
 import { serialize, deserialize } from './serialize';
 
@@ -48,7 +48,7 @@ class DirectTransport {
             const message: ITransportDirectMessage = {
                 type,
                 payload: serialize(payload),
-                uid
+                uid,
             };
 
             this.responseHandlers.set(uid, () => {
@@ -106,7 +106,7 @@ class DirectTransport {
         if (message.payload && typeof message.payload.$key === 'string') {
             normalizedMessage = {
                 ...message,
-                payload: deserialize(message.payload)
+                payload: deserialize(message.payload),
             };
         }
 

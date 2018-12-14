@@ -10,7 +10,7 @@ export class FSReader extends PluggableModule implements IFSReader {
     constructor() {
         super([
             FSReaderPlugins.beforeResolve,
-            FSReaderPlugins.afterResolve
+            FSReaderPlugins.afterResolve,
         ]);
     }
 

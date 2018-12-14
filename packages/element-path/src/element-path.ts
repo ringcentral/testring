@@ -112,7 +112,7 @@ export class ElementPath {
 
         if (mask === '*' || mask === '' || mask === undefined) { // * || empty
             return {
-                anyKey: true
+                anyKey: true,
             };
         }
 
@@ -152,11 +152,11 @@ export class ElementPath {
 
         if (textMask[0] === '{') {
             return {
-                containsText: textMask.slice(1, -1)
+                containsText: textMask.slice(1, -1),
             };
         } else if (textMask.indexOf('={') === 0) {
             return {
-                equalsText: textMask.slice(2, -1)
+                equalsText: textMask.slice(2, -1),
             };
         }
 
@@ -178,7 +178,7 @@ export class ElementPath {
                 {},
                 this.parseMask(mask),
                 textSearch === undefined ? undefined : this.parseText(textSearch)
-            )
+            ),
         };
     }
 
@@ -278,7 +278,7 @@ export class ElementPath {
             const { subQuery } = searchOptions;
             const subChildConditions: string[] = [
                 ...this.getMaskXpathParts(subQuery),
-                ...this.getTextXpathParts(subQuery)
+                ...this.getTextXpathParts(subQuery),
             ];
 
             conditions.push(`descendant::*[${subChildConditions.join(' and ')}]`);
@@ -376,20 +376,20 @@ export class ElementPath {
                 return [{
                     isRoot,
                     name: 'root',
-                    xpath: this.getSearchQueryXpath()
+                    xpath: this.getSearchQueryXpath(),
                 }];
             } else {
                 return [{
                     isRoot: false,
                     query: this.searchOptions,
-                    xpath: this.getSearchQueryXpath()
+                    xpath: this.getSearchQueryXpath(),
                 }];
             }
         } else {
             return (this.getParentElementPathChain() || []).concat([{
                 isRoot,
                 query: this.searchOptions,
-                xpath: this.getSearchQueryXpath()
+                xpath: this.getSearchQueryXpath(),
             }]);
         }
     }
@@ -428,7 +428,7 @@ export class ElementPath {
                     ...this.searchOptions,
                     ...searchOptions,
                 },
-                parent: isCurrentElementSearch ? this : this.parent
+                parent: isCurrentElementSearch ? this : this.parent,
             });
         } else if (hasOwn(searchOptions, 'xpath')) {
             if (typeof searchOptions.xpath !== 'string') {
@@ -438,13 +438,13 @@ export class ElementPath {
             return new ElementPath({
                 searchOptions: { ...searchOptions },
                 flows: this.flows,
-                parent: withoutParent ? undefined : this
+                parent: withoutParent ? undefined : this,
             });
         } else {
             return new ElementPath({
                 searchOptions: { ...searchOptions },
                 flows: this.flows,
-                parent: this
+                parent: this,
             });
         }
     }

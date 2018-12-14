@@ -14,7 +14,7 @@ describe('buildDependencyDictionary', () => {
 
         const file = {
             content: indexContent,
-            path: indexPath
+            path: indexPath,
         };
 
         const dictionary = await buildDependencyDictionary(file, (filePath) => fixtureReader(filePath));

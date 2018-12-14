@@ -17,7 +17,7 @@ class ChildProcessMock extends EventEmitter {
         // sending response back
         super.emit('message', {
             type: TransportInternalMessageType.messageResponse,
-            payload: message.uid
+            payload: message.uid,
         });
 
         callback(null);

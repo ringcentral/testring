@@ -28,7 +28,7 @@ export class Hook {
             try {
                 dataArguments = [
                     await hook(...dataArguments),
-                    ...dataArguments.slice(1)
+                    ...dataArguments.slice(1),
                 ];
             } catch (error) {
                 throw this.generateError(key, error);

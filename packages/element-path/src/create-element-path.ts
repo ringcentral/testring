@@ -12,7 +12,7 @@ export type createElementPathOptions = {
 export function createElementPath(options: createElementPathOptions = {}) {
     const {
         strictMode,
-        flows
+        flows,
     } = options;
 
     let obj = new ElementPath({ flows });

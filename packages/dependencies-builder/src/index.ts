@@ -7,7 +7,7 @@ import {
     IDependencyDictionaryNode,
     IDependencyTreeNode,
     DependencyDict,
-    DependencyFileReader
+    DependencyFileReader,
 } from '@testring/types';
 import { resolveAbsolutePath } from './absolute-path-resolver';
 
@@ -18,8 +18,8 @@ const getDependencies = (absolutePath: string, content: string): Array<string> =
         sourceType: 'module',
         sourceFilename: content,
         plugins: [
-            'estree'
-        ]
+            'estree',
+        ],
     });
 
     traverse(sourceAST, {
@@ -39,7 +39,7 @@ const getDependencies = (absolutePath: string, content: string): Array<string> =
             requests.push(
                 dependencyPath.node
             );
-        }
+        },
     });
 
     return requests;
@@ -52,13 +52,13 @@ const createTreeNode = (
 ): IDependencyTreeNode => ({
     content,
     path,
-    nodes
+    nodes,
 });
 
 
 const createDictionaryNode = (path: string, content: string): IDependencyDictionaryNode => ({
     content,
-    path
+    path,
 });
 
 const buildNodes = async (
@@ -128,7 +128,7 @@ export const buildDependencyGraph = async (
     );
 
     const nodesCache = {
-        [file.path]: tree
+        [file.path]: tree,
     };
 
     tree.nodes = await buildNodes(file.path, file.content, nodesCache, readFile);
@@ -147,7 +147,7 @@ export const buildDependencyDictionary = async (file: IFile, readFile: Dependenc
     );
 
     const nodesCache = {
-        [file.path]: tree
+        [file.path]: tree,
     };
 
     tree.nodes = await buildNodes(file.path, file.content, nodesCache, readFile);

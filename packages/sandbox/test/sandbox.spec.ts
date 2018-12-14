@@ -166,7 +166,7 @@ describe('Sandbox', () => {
         it('should resolve circular dependencies', async () => {
             const testData = {
                 test: true,
-                someData: [1, 2, 3]
+                someData: [1, 2, 3],
             };
 
             const sourceName1 = './cyclic-dependency';
@@ -189,15 +189,15 @@ describe('Sandbox', () => {
                 [filePath1]: {
                     [sourceName2]: {
                         path: filePath2,
-                        content: source2
-                    }
+                        content: source2,
+                    },
                 },
                 [filePath2]: {
                     [sourceName1]: {
                         path: filePath1,
-                        content: source1
-                    }
-                }
+                        content: source1,
+                    },
+                },
             });
 
             const result = sandbox1.execute();
@@ -229,9 +229,9 @@ describe('Sandbox', () => {
                     [filePath1]: {
                         [sourceName2]: {
                             path: filePath2,
-                            content: source2
-                        }
-                    }
+                            content: source2,
+                        },
+                    },
                 });
 
                 sandbox1.execute();

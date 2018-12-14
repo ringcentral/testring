@@ -13,7 +13,7 @@ describe('TestWorkerInstance', () => {
         it('should run sync test', async () => {
             const file = {
                 content: defaultSyncTestContent,
-                path: defaultFilename
+                path: defaultFilename,
             };
 
             const transport = new Transport();
@@ -32,7 +32,7 @@ describe('TestWorkerInstance', () => {
         it('should fail sync test correctly', (callback) => {
             const file = {
                 content: 'throw new Error("Something happened")',
-                path: defaultFilename
+                path: defaultFilename,
             };
 
             const transport = new Transport();
@@ -56,7 +56,7 @@ describe('TestWorkerInstance', () => {
     it('should success execution, if process was killed by user during execution', () => {
         const file = {
             content: defaultSyncTestContent,
-            path: defaultFilename
+            path: defaultFilename,
         };
 
         const transport = new Transport();
@@ -74,7 +74,7 @@ describe('TestWorkerInstance', () => {
         it('should compile source without errors', (callback) => {
             const file = {
                 content: defaultSyncTestContent,
-                path: defaultFilename
+                path: defaultFilename,
             };
 
             const transport = new Transport();
@@ -103,7 +103,7 @@ describe('TestWorkerInstance', () => {
         it('should handle compilation exception', (callback) => {
             const file = {
                 content: defaultSyncTestContent,
-                path: defaultFilename
+                path: defaultFilename,
             };
 
             const transport = new Transport();

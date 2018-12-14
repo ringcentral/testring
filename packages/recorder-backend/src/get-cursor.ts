@@ -29,7 +29,7 @@ export function getCursor(code: string, currentPosition: CursorPosition): Cursor
             if (isCursorHere(path.node.loc, currentPosition)) {
                 wasCursorFound = path;
             }
-        }
+        },
     });
 
     if (wasCursorFound) {

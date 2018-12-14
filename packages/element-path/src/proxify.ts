@@ -39,7 +39,7 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
         setPrototypeOf: setPrototypeOfTrap,
 
         isExtensible: isExtensibleTrap,
-        preventExtensions: preventExtensionsTrap
+        preventExtensions: preventExtensionsTrap,
     });
 
     const proxy = revocable.proxy;
@@ -61,7 +61,7 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
                     } else {
                         return Reflect.get(ctx, key).apply(thisArg, argumentsList);
                     }
-                }
+                },
             });
         } else {
             return Reflect.get(instance, key);
@@ -217,26 +217,26 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
         let defaultDescriptor = {
             enumerable: false,
             writable: false,
-            configurable: true
+            configurable: true,
         };
 
         if (typeof key === 'string' && PROXY_PROPS.includes(key)) {
             return Object.assign(defaultDescriptor, {
                 enumerable: !isPrivateProperty(key),
-                value: getTrap(target, key)
+                value: getTrap(target, key),
             });
         }
 
         if (typeof key !== 'symbol' && instance.hasFlow(key)) {
             return Object.assign(defaultDescriptor, {
                 enumerable: true,
-                value: instance.getFlow(key)
+                value: instance.getFlow(key),
             });
         }
 
         if (isGenKeyType(key)) {
             return Object.assign(defaultDescriptor, {
-                value: getTrap(target, key)
+                value: getTrap(target, key),
             });
         }
 

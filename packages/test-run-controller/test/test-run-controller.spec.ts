@@ -8,7 +8,7 @@ const DEFAULT_TIMEOUT = 60 * 1000;
 const generateTestFile = (index: number) => ({
     path: `qwerty-${index}.js`,
     content: `console.log(${index})`,
-    meta: {}
+    meta: {},
 });
 
 const generateTestFiles = (count: number) => {

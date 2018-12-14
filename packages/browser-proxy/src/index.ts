@@ -17,12 +17,12 @@ const browserProxyControllerFactory = (transport: ITransport) => {
             '--name',
             pluginName,
             '--config',
-            JSON.stringify(config)
+            JSON.stringify(config),
         ], forkOptions);
     });
 };
 
 export {
     BrowserProxyController,
-    browserProxyControllerFactory
+    browserProxyControllerFactory,
 };

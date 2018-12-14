@@ -7,7 +7,7 @@ import {
     IHttpResponseMessage,
     IHttpResponseRejectMessage,
     HttpMessageType,
-    HttpServerPlugins
+    HttpServerPlugins,
 } from '@testring/types';
 
 type MakeRequest = (request: IHttpRequest) => Promise<IHttpResponse>;
@@ -26,7 +26,7 @@ export class HttpServer extends PluggableModule {
         super([
             HttpServerPlugins.beforeResponse,
             HttpServerPlugins.beforeRequest,
-            HttpServerPlugins.beforeError
+            HttpServerPlugins.beforeError,
         ]);
 
         this.unsubscribeTransport = this.transportInstance.on(
@@ -88,7 +88,7 @@ export class HttpServer extends PluggableModule {
 
                 await this.sendResponse<IHttpResponseMessage>(src, HttpMessageType.response, {
                     uid,
-                    response: responseAfterHook
+                    response: responseAfterHook,
                 });
             } catch (error) {
                 if (this.isKilled) {
@@ -99,7 +99,7 @@ export class HttpServer extends PluggableModule {
 
                 await this.sendResponse<IHttpResponseRejectMessage>(src, HttpMessageType.reject, {
                     uid,
-                    error: errorAfterHook
+                    error: errorAfterHook,
                 });
 
                 this.logger.debug(errorAfterHook);

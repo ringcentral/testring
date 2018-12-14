@@ -84,7 +84,7 @@ describe('Transport', () => {
 
             rootProcessMock.$triggerListener<ITransportMessage>({
                 type: messageType,
-                payload: expectedPayload
+                payload: expectedPayload,
             });
         });
 
@@ -107,7 +107,7 @@ describe('Transport', () => {
 
             childProcessMock.$triggerListener<ITransportMessage>({
                 type: messageType,
-                payload: expectedPayload
+                payload: expectedPayload,
             });
         });
     });

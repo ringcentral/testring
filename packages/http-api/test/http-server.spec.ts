@@ -14,7 +14,7 @@ describe('HttpServer', () => {
             statusMessage: '',
             body: null,
             headers: {},
-            cookies: []
+            cookies: [],
         };
 
         const requestHandler = () => Promise.resolve(responseMock);
@@ -38,7 +38,7 @@ describe('HttpServer', () => {
 
         transport.broadcast(HttpMessageType.send, {
             uid: 'test',
-            request: {}
+            request: {},
         });
     });
 
@@ -65,7 +65,7 @@ describe('HttpServer', () => {
 
         transport.broadcast(HttpMessageType.send, {
             uid: 'test',
-            request: null
+            request: null,
         });
     });
 
@@ -99,7 +99,7 @@ describe('HttpServer', () => {
 
         transport.broadcast(HttpMessageType.send, {
             uid: 'test',
-            request: {}
+            request: {},
         });
     });
 });

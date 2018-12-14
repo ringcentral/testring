@@ -18,7 +18,7 @@ export const readFile = (file: string): Promise<IFile | null> => {
 
                 return resolve({
                     path: filePath,
-                    content: data.toString()
+                    content: data.toString(),
                 });
             });
         } else {

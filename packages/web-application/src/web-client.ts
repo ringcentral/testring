@@ -26,8 +26,8 @@ export class WebClient implements IWebApplicationClient {
                 applicant: this.applicant,
                 command: {
                     action: action,
-                    args: args
-                }
+                    args: args,
+                },
             };
 
             const removeListener = transport.on<IWebApplicationResponseMessage>(

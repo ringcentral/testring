@@ -2,7 +2,7 @@ import {
     TransportInternalMessageType,
     TransportMessageHandler,
     ITransportBroadcastMessage,
-    ITransportDirectMessage
+    ITransportDirectMessage,
 } from '@testring/types';
 import { deserialize, serialize } from './serialize';
 
@@ -20,14 +20,14 @@ class BroadcastTransport {
     public broadcast(type: string, payload: any): void {
         this.sendMessage({
             type,
-            payload: serialize(payload)
+            payload: serialize(payload),
         });
     }
 
     public broadcastLocal(type: string, payload: any) {
         this.triggerListeners({
             type,
-            payload
+            payload,
         });
     }
 
@@ -46,7 +46,7 @@ class BroadcastTransport {
         if (message.payload && typeof message.payload.$key === 'string') {
             normalizedMessage = {
                 ...message,
-                payload: deserialize(message.payload)
+                payload: deserialize(message.payload),
             };
         }
 
@@ -54,7 +54,7 @@ class BroadcastTransport {
 
         this.sendMessage({
             type: TransportInternalMessageType.messageResponse,
-            payload: normalizedMessage.uid
+            payload: normalizedMessage.uid,
         });
     }
 

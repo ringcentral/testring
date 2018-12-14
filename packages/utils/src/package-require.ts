@@ -17,7 +17,7 @@ export const resolvePackage = (modulePath: string, parentModule?: string): strin
         return require.resolve(modulePath);
     } catch {
         return resolve.sync(modulePath, {
-            basedir: process.cwd()
+            basedir: process.cwd(),
         });
     }
 };

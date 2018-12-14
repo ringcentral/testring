@@ -26,47 +26,47 @@ yargs.help();
 
 createField('bail', {
     describe: 'Shut down app after test fail',
-    type: 'boolean'
+    type: 'boolean',
 });
 
 createField('workerLimit', {
     describe: 'Maximum amount of parallel child_process',
-    type: 'number'
+    type: 'number',
 });
 
 createField('retryCount', {
     describe: 'Number of retry attempts',
-    type: 'number'
+    type: 'number',
 });
 
 createField('retryDelay', {
     describe: 'Time of delay before retry',
-    type: 'number'
+    type: 'number',
 });
 
 createField('config', {
     describe: 'Custom path to config file',
-    type: 'string'
+    type: 'string',
 });
 
 createField('tests', {
     describe: 'Search path for test files (glob pattern)',
-    type: 'string'
+    type: 'string',
 });
 
 createField('plugins', {
     describe: 'Set of plugins (list). API: --plugins=plugin1 --plugins=plugin2 ...',
-    type: 'array'
+    type: 'array',
 });
 
 createField('logLevel', {
     describe: 'Flag for filtering log records',
-    type: 'string'
+    type: 'string',
 });
 
 createField('envConfig', {
     describe: 'Path to environment config which overrides main config',
-    type: 'string'
+    type: 'string',
 });
 
 // CLI entry point, it makes all initialization job and
