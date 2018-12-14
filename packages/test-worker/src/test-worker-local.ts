@@ -24,7 +24,7 @@ export class TestWorkerLocal extends EventEmitter implements IWorkerEmitter {
     }
 
     public kill() {
-        throw Error('This is an emulation worker, it could not be killed');
+        this.emit('exit');
     }
 
     public send(message: ITransportDirectMessage, callback: (error: Error) => void): boolean {

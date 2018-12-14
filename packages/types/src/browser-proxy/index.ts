@@ -1,5 +1,5 @@
 import { IBrowserProxyCommand } from './structs';
-import {WindowFeaturesConfig} from "../web-application";
+import { WindowFeaturesConfig } from '../web-application';
 
 export interface IBrowserProxyController {
     init(): Promise<void>;
@@ -10,8 +10,6 @@ export interface IBrowserProxyController {
 }
 
 export interface IBrowserProxyWorker {
-    getProcessID(): number | null;
-
     spawn(): Promise<void>;
 
     execute(applicant: string, command: IBrowserProxyCommand): Promise<any>;
