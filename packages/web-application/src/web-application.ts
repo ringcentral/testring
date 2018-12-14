@@ -1,7 +1,12 @@
 /* eslint-disable */
 
 import * as url from 'url';
-import { IAssertionErrorMeta, IAssertionSuccessMeta, ITransport } from '@testring/types';
+import {
+    IAssertionErrorMeta,
+    IAssertionSuccessMeta,
+    ITransport,
+    WindowFeaturesConfig
+} from '@testring/types';
 import { loggerClient, LoggerClient } from '@testring/logger';
 import { PluggableModule } from '@testring/pluggable-module';
 import { createElementPath, ElementPath } from '@testring/element-path';
@@ -1102,6 +1107,10 @@ export class WebApplication extends PluggableModule {
     public async window(handle) {
         await this.initMainTabId();
         return this.client.window(handle);
+    }
+
+    public async newWindow(url: string, windowName: string, windowFeatures: WindowFeaturesConfig) {
+        return this.client.newWindow(url, windowName, windowFeatures);
     }
 
     protected async initMainTabId() {
