@@ -257,9 +257,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             await this.end(applicant);
         }
 
-        // safe buffer if clients are still active
-        await delay(2000);
-
         if (this.localSelenium) {
             this.localSelenium.kill();
         }

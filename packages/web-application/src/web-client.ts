@@ -5,6 +5,7 @@ import {
     IWebApplicationExecuteMessage,
     IWebApplicationResponseMessage,
     WebApplicationMessageType,
+    WindowFeaturesConfig,
 } from '@testring/types';
 
 const nanoid = require('nanoid');
@@ -70,8 +71,8 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.url, [val]);
     }
 
-    public newWindow(val, windowName, windowFeatures) {
-        return this.makeRequest(BrowserProxyActions.newWindow, [val, windowName, windowFeatures]);
+    public newWindow(url: string, windowName: string, windowFeatures: WindowFeaturesConfig) {
+        return this.makeRequest(BrowserProxyActions.newWindow, [url, windowName, windowFeatures]);
     }
 
     public waitForExist(xpath, timeout) {

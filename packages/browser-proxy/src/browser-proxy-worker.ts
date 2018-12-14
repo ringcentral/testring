@@ -13,8 +13,6 @@ import { loggerClient } from '@testring/logger';
 
 const nanoid = require('nanoid');
 
-const logger = loggerClient.withPrefix('[browser-proxy-worker]');
-
 export class BrowserProxyWorker implements IBrowserProxyWorker {
     private pendingCommandsQueue: Set<IBrowserProxyPendingCommand> = new Set();
 
@@ -22,13 +20,11 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
 
     private spawnPromise: Promise<void> | null = null;
 
-    private workerPID: number | null = null;
-
     private worker: ChildProcess | null = null;
 
-    private workerID: string;
+    private workerID: string | null = null;
 
-    private logger = logger;
+    private logger = loggerClient.withPrefix('[browser-proxy-worker]');
 
     constructor(
         private transport: ITransport,
@@ -89,8 +85,13 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
         this.pendingCommandsPool.clear();
     }
 
+    private cleanWorkerMeta(): void {
+        this.workerID = null;
+        this.worker = null;
+    }
+
     private onExit = (code, error): void => {
-        delete this.workerID;
+        this.cleanWorkerMeta();
 
         this.logger.debug(
             'Browser Proxy controller: miss connection with child process',
@@ -111,7 +112,7 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
         this.pendingCommandsPool.set(uid, item);
 
         this.transport.send(
-            this.workerID,
+            this.workerID as string,
             BrowserProxyMessageTypes.execute,
             {
                 uid,
@@ -121,14 +122,6 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
         ).catch((err) => {
             this.logger.error(err);
         });
-    }
-
-    public getProcessID(): number | null {
-        if (typeof this.workerPID === 'number') {
-            return this.workerPID;
-        }
-
-        return null;
     }
 
     public async spawn(): Promise<void> {
@@ -141,7 +134,6 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
         this.spawnPromise = new Promise<void>((resolve) => spawnResolver = resolve);
 
         this.worker = await this.workerCreator(plugin, config);
-        this.workerPID = this.worker.pid;
         this.workerID = `proxy-${this.worker.pid}`;
 
         this.worker.on('exit', this.onExit);
@@ -191,13 +183,15 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
         await this.spawnPromise;
 
         if (this.worker) {
+            this.worker.removeListener('exit', this.onExit);
+
             await this.execute('root', {
                 action: BrowserProxyActions.kill,
                 args: [],
             });
 
-            this.worker.removeListener('exit', this.onExit);
             this.worker.kill();
+            this.cleanWorkerMeta();
         }
     }
 }

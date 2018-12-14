@@ -9,7 +9,7 @@ run(async (api) => {
         api.application.root.loginCredentialNext
     );
 
-    await api.application.waitElementByLocator(
+    await api.application.waitForExist(
         api.application.root.password
     );
 });
