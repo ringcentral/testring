@@ -836,6 +836,13 @@ export class WebApplication extends PluggableModule {
         return this.client.isVisible(xpath);
     }
 
+    public async isCSSClassExists(xpath, ...suitableClasses) {
+        const elemClasses: any = await this.getAttribute(xpath, 'class');
+        const elemClassesArr = elemClasses.trim().toLowerCase().split(/\s+/g);
+
+        return suitableClasses.some((suitableClass) => elemClassesArr.includes(suitableClass.toLowerCase()));
+    }
+
     public async getAttribute(xpath, attr: string, timeout: number = this.WAIT_TIMEOUT) {
         xpath = this.normalizeSelector(xpath);
 
