@@ -4,7 +4,7 @@ import { IFile } from '@testring/types';
 
 const ERR_NO_FILES = new Error('No test files found');
 
-const isNotEmpty = (x: IFile | null): x is IFile => !!x;
+const isNotEmpty = (x: IFile | null): x is IFile => x !== null;
 
 export const readFile = (file: string): Promise<IFile | null> => {
     return new Promise<IFile>((resolve, reject) => {
@@ -32,7 +32,7 @@ export const resolveFiles = async (files: Array<string>): Promise<IFile[]> => {
         throw ERR_NO_FILES;
     }
 
-    const readFilePromises = files.map(readFile);
+    const readFilePromises = files.map(file => readFile(file).catch(() => null));
     const filesContent = await Promise.all(readFilePromises);
     const compacted = filesContent.filter(isNotEmpty);
 
