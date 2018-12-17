@@ -9,9 +9,9 @@ describe('flows option function context behavior', () => {
     let root = createElementPath({
         flows: {
             foo: {
-                getContext
-            }
-        }
+                getContext,
+            },
+        },
     });
     let childFoo = root.foo;
 

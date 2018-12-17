@@ -7,7 +7,7 @@ const {
 
     checkAccessMethods,
     checkPreventExtensions,
-    checkProperty
+    checkProperty,
 } = require('../utils');
 
 
@@ -16,9 +16,9 @@ describe('flows option default behavior', () => {
     let root = createElementPath({
         flows: {
             foo: {
-                runFlow
-            }
-        }
+                runFlow,
+            },
+        },
     });
     let childFoo = root.foo;
 
@@ -39,7 +39,7 @@ describe('flows option default behavior', () => {
         });
 
         checkAccessMethods(childFoo, {
-            keys: ['__flows', '__path', 'runFlow']
+            keys: ['__flows', '__path', 'runFlow'],
         });
     });
 
@@ -56,16 +56,16 @@ describe('flows option default behavior', () => {
                 {
                     'isRoot': true,
                     'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']'
+                    'xpath': '//*[@data-test-automation-id=\'root\']',
                 },
                 {
                     'isRoot': false,
                     'query': {
-                        'exactKey': 'foo'
+                        'exactKey': 'foo',
                     },
-                    'xpath': '//*[@data-test-automation-id=\'foo\']'
-                }
-            ])
+                    'xpath': '//*[@data-test-automation-id=\'foo\']',
+                },
+            ]),
         });
     });
     describe('.__flows property traps', () => {
@@ -73,8 +73,8 @@ describe('flows option default behavior', () => {
             object: childFoo,
             key: '__flows',
             valueDescriptor: getDescriptor({
-                runFlow
-            })
+                runFlow,
+            }),
         });
     });
 
@@ -84,8 +84,8 @@ describe('flows option default behavior', () => {
             object: childFoo,
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
-                'exactKey': 'foo'
-            })
+                'exactKey': 'foo',
+            }),
         });
     });
     describe('.__parentPath property traps', () => {
@@ -96,9 +96,9 @@ describe('flows option default behavior', () => {
                 {
                     'isRoot': true,
                     'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']'
-                }
-            ])
+                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                },
+            ]),
         });
     });
 
@@ -107,7 +107,7 @@ describe('flows option default behavior', () => {
         checkProperty({
             object: childFoo,
             key: 'runFlow',
-            valueDescriptor: getDescriptor(runFlow)
+            valueDescriptor: getDescriptor(runFlow),
         });
 
         it('function call', async () => {

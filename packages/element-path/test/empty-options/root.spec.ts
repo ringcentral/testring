@@ -6,7 +6,7 @@ import {
 
     checkAccessMethods,
     checkPreventExtensions,
-    checkProperty
+    checkProperty,
 } from '../utils';
 
 
@@ -43,16 +43,16 @@ describe('empty options ElementPath root', () => {
                 {
                     'isRoot': true,
                     'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']'
-                }
-            ])
+                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                },
+            ]),
         });
     });
     describe('.__flows property traps', () => {
         checkProperty({
             object: empty,
             key: '__flows',
-            valueDescriptor: getDescriptor({})
+            valueDescriptor: getDescriptor({}),
         });
     });
 
@@ -62,15 +62,15 @@ describe('empty options ElementPath root', () => {
             object: empty,
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
-                exactKey: 'root'
-            })
+                exactKey: 'root',
+            }),
         });
     });
     describe('.__parentPath property traps', () => {
         checkProperty({
             object: empty,
             key: '__parentPath',
-            valueDescriptor: getPrivateDescriptor(null)
+            valueDescriptor: getPrivateDescriptor(null),
         });
     });
 

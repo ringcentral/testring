@@ -20,9 +20,9 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
     desiredCapabilities: {
         browserName: 'chrome',
         chromeOptions: {
-            args: []
-        }
-    }
+            args: [],
+        },
+    },
 };
 
 function waitFor(client: Client<any>) {
@@ -117,7 +117,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             this.localSelenium = spawn('java', [
                 ...this.getChromeDriverArgs(),
                 '-jar', seleniumJarPath,
-                '-port', this.config.port
+                '-port', this.config.port,
             ]);
 
             this.waitForReadyState = new Promise((resolve) => {

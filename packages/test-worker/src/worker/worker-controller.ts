@@ -8,7 +8,7 @@ import {
     ITestExecutionCompleteMessage,
     TestWorkerAction,
     TestStatus,
-    TestEvents
+    TestEvents,
 } from '@testring/types';
 
 export class WorkerController {
@@ -28,7 +28,7 @@ export class WorkerController {
                     TestWorkerAction.executionComplete,
                     {
                         status: testResult,
-                        error: null
+                        error: null,
                     }
                 );
             } catch (error) {
@@ -36,7 +36,7 @@ export class WorkerController {
                     TestWorkerAction.executionComplete,
                     {
                         status: TestStatus.failed,
-                        error
+                        error,
                     }
                 );
             }

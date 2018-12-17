@@ -4,7 +4,7 @@ import { createElementPath } from '../../src';
 const {
     getDescriptor,
 
-    checkProperty
+    checkProperty,
 } = require('../utils');
 
 
@@ -15,9 +15,9 @@ describe('flows option on deep child', () => {
         flows: {
             deepChild: {
                 foo: foo,
-                bar: bar
-            }
-        }
+                bar: bar,
+            },
+        },
     });
     let deepChildFoo = root.foo.bar.baz[1].let[0].it[0].be[0].let[1].it[1].be[1].deepChild;
 
@@ -27,8 +27,8 @@ describe('flows option on deep child', () => {
             key: '__flows',
             valueDescriptor: getDescriptor({
                 foo: foo,
-                bar: bar
-            })
+                bar: bar,
+            }),
         });
     });
 
@@ -37,7 +37,7 @@ describe('flows option on deep child', () => {
         checkProperty({
             object: deepChildFoo,
             key: 'foo',
-            valueDescriptor: getDescriptor(foo)
+            valueDescriptor: getDescriptor(foo),
         });
 
         it('function call', async () => {
@@ -48,7 +48,7 @@ describe('flows option on deep child', () => {
         checkProperty({
             object: deepChildFoo,
             key: 'bar',
-            valueDescriptor: getDescriptor(bar)
+            valueDescriptor: getDescriptor(bar),
         });
 
         it('function call', () => {

@@ -10,7 +10,7 @@ export const DATE_KEY = 'Date';
 export const serializeDate = (date: Date): ISerializedDate => {
     return {
         $key: DATE_KEY,
-        data: date.getTime()
+        data: date.getTime(),
     };
 };
 

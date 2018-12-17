@@ -13,9 +13,9 @@ describe('invalid keys', () => {
                 __flows: dummy,
                 __parentPath: dummy,
                 __searchOptions: dummy,
-                __proxy: dummy
-            }
-        }
+                __proxy: dummy,
+            },
+        },
     });
     let childFoo = root.foo;
 

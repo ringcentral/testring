@@ -62,7 +62,7 @@ class RunCommand implements ICLICommand {
             testWorker: testWorker,
             browserProxy: this.browserProxyController,
             testRunController: this.testRunController,
-            httpClientInstance: httpClient
+            httpClientInstance: httpClient,
         }, this.config);
 
         loggerClient.info('User config:\n', formatJSON(this.config));

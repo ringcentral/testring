@@ -10,7 +10,7 @@ export const BUFFER_KEY = 'Buffer';
 export const serializeBuffer = (buffer: Buffer): ISerializedBuffer => {
     return {
         $key: BUFFER_KEY,
-        data: buffer.toString()
+        data: buffer.toString(),
     };
 };
 

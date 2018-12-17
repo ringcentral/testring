@@ -7,13 +7,13 @@ import {
 
     checkAccessMethods,
     checkPreventExtensions,
-    checkProperty
+    checkProperty,
 } from '../utils';
 
 
 describe('.xpath()', () => {
     let root = createElementPath({
-        strictMode: false
+        strictMode: false,
     });
     let xpathSelectorCall = root.foo.xpath('selected', '//*[@class=\'selected\']');
 
@@ -77,31 +77,31 @@ describe('.xpath()', () => {
                 {
                     'isRoot': true,
                     'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']'
+                    'xpath': '//*[@data-test-automation-id=\'root\']',
                 },
                 {
                     'isRoot': false,
                     'query': {
-                        'exactKey': 'foo'
+                        'exactKey': 'foo',
                     },
-                    'xpath': '//*[@data-test-automation-id=\'foo\']'
+                    'xpath': '//*[@data-test-automation-id=\'foo\']',
                 },
                 {
                     'isRoot': false,
                     'query': {
                         'id': 'selected',
-                        'xpath': '//*[@class=\'selected\']'
+                        'xpath': '//*[@class=\'selected\']',
                     },
-                    'xpath': '//*[@class=\'selected\']'
-                }
-            ])
+                    'xpath': '//*[@class=\'selected\']',
+                },
+            ]),
         });
     });
     describe('.__flows property traps', () => {
         checkProperty({
             object: xpathSelectorCall,
             key: '__flows',
-            valueDescriptor: getDescriptor({})
+            valueDescriptor: getDescriptor({}),
         });
     });
 
@@ -112,8 +112,8 @@ describe('.xpath()', () => {
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
                 'id': 'selected',
-                'xpath': '//*[@class=\'selected\']'
-            })
+                'xpath': '//*[@class=\'selected\']',
+            }),
         });
     });
     describe('.__parentPath property traps', () => {
@@ -124,16 +124,16 @@ describe('.xpath()', () => {
                 {
                     'isRoot': true,
                     'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']'
+                    'xpath': '//*[@data-test-automation-id=\'root\']',
                 },
                 {
                     'isRoot': false,
                     'query': {
-                        'exactKey': 'foo'
+                        'exactKey': 'foo',
                     },
-                    'xpath': '//*[@data-test-automation-id=\'foo\']'
-                }
-            ])
+                    'xpath': '//*[@data-test-automation-id=\'foo\']',
+                },
+            ]),
         });
     });
 

@@ -10,7 +10,7 @@ export const ARRAY_KEY = 'Array';
 export const serializeArray = (array: Array<any>, serialize: TransportSerializer): ISerializedArray => {
     return {
         $key: ARRAY_KEY,
-        values: array.map((value) => serialize(value))
+        values: array.map((value) => serialize(value)),
     };
 };
 

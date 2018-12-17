@@ -33,7 +33,7 @@ class RecordCommand implements ICLICommand {
             testWorker: testWorker,
             browserProxy: browserProxyController,
             testRunController: testRunController,
-            httpClientInstance: httpClient
+            httpClientInstance: httpClient,
         }, this.config);
 
         await browserProxyController.init();

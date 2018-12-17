@@ -18,7 +18,7 @@ export const serializeObject = (object: object, serialize: TransportSerializer):
 
     return {
         $key: OBJECT_KEY,
-        dictionary
+        dictionary,
     };
 };
 

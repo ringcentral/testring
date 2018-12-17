@@ -19,7 +19,7 @@ export class BrowserProxyAPI extends AbstractAPI {
         if (hook) {
             hook.writeHook(this.pluginName, async () => ({
                 plugin: pluginPath,
-                config: config
+                config: config,
             }));
         }
     }

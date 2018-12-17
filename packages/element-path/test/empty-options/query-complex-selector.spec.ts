@@ -21,7 +21,7 @@ describe('Heavy selectors', () => {
             subQuery: {
                 exactKey: 'pin',
                 containsText: '101',
-            }
+            },
         });
 
         expect(findChildren.toString()).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
@@ -39,7 +39,7 @@ describe('Heavy selectors', () => {
             subQuery: {
                 exactKey: 'pin',
                 containsText: '101',
-            }
+            },
         });
 
         expect(findChildren.toString()).to.be.equal('(//*[@data-test-automation-id=\'root\']' +

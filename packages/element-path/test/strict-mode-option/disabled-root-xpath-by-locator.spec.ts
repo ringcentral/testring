@@ -7,13 +7,13 @@ import {
 
     checkAccessMethods,
     checkPreventExtensions,
-    checkProperty
+    checkProperty,
 } from '../utils';
 
 
 describe('.xpathByLocator() from root', () => {
     let root = createElementPath({
-        strictMode: false
+        strictMode: false,
     });
     let xpathSelectorCall = root.xpathByLocator({
         locator: '//*[@class=\'selected\']',
@@ -72,18 +72,18 @@ describe('.xpathByLocator() from root', () => {
                     'isRoot': false,
                     'query': {
                         'id': 'selected',
-                        'xpath': '//*[@class=\'selected\']'
+                        'xpath': '//*[@class=\'selected\']',
                     },
-                    'xpath': '//*[@class=\'selected\']'
-                }
-            ])
+                    'xpath': '//*[@class=\'selected\']',
+                },
+            ]),
         });
     });
     describe('.__flows property traps', () => {
         checkProperty({
             object: xpathSelectorCall,
             key: '__flows',
-            valueDescriptor: getDescriptor({})
+            valueDescriptor: getDescriptor({}),
         });
     });
 
@@ -94,15 +94,15 @@ describe('.xpathByLocator() from root', () => {
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
                 'id': 'selected',
-                'xpath': '//*[@class=\'selected\']'
-            })
+                'xpath': '//*[@class=\'selected\']',
+            }),
         });
     });
     describe('.__parentPath property traps', () => {
         checkProperty({
             object: xpathSelectorCall,
             key: '__parentPath',
-            valueDescriptor: getPrivateDescriptor(null)
+            valueDescriptor: getPrivateDescriptor(null),
         });
     });
 

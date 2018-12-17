@@ -6,7 +6,7 @@ import {
 
     checkAccessMethods,
     checkPreventExtensions,
-    checkProperty
+    checkProperty,
 } from '../utils';
 
 
@@ -55,29 +55,29 @@ describe('empty options ElementPath root[\'*foo*\']', () => {
                 {
                     'isRoot': true,
                     'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']'
+                    'xpath': '//*[@data-test-automation-id=\'root\']',
                 },
                 {
                     'isRoot': false,
                     'query': {
                         'parts': [
                             'foo',
-                            'bar'
-                        ]
+                            'bar',
+                        ],
                     },
                     'xpath': '/descendant::*[substring(@data-test-automation-id, ' +
                     'string-length(@data-test-automation-id) - string-length(\'bar\') + 1) = \'bar\' ' +
                     'and starts-with(@data-test-automation-id, \'foo\') ' +
-                    'and string-length(@data-test-automation-id) > 6]'
-                }
-            ])
+                    'and string-length(@data-test-automation-id) > 6]',
+                },
+            ]),
         });
     });
     describe('.__flows property traps', () => {
         checkProperty({
             object: childFoo,
             key: '__flows',
-            valueDescriptor: getDescriptor({})
+            valueDescriptor: getDescriptor({}),
         });
     });
 
@@ -89,9 +89,9 @@ describe('empty options ElementPath root[\'*foo*\']', () => {
             valueDescriptor: getPrivateDescriptor({
                 'parts': [
                     'foo',
-                    'bar'
-                ]
-            })
+                    'bar',
+                ],
+            }),
         });
     });
     describe('.__parentPath property traps', () => {
@@ -102,9 +102,9 @@ describe('empty options ElementPath root[\'*foo*\']', () => {
                 {
                     'isRoot': true,
                     'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']'
-                }
-            ])
+                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                },
+            ]),
         });
     });
 

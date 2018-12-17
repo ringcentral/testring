@@ -7,13 +7,13 @@ import {
 
     checkAccessMethods,
     checkPreventExtensions,
-    checkProperty
+    checkProperty,
 } from '../utils';
 
 
 describe('foo.xpathByElement()', () => {
     let root = createElementPath({
-        strictMode: false
+        strictMode: false,
     });
     let xpathSelectorCall = root.foo.xpathByElement({
         id: 'selected',
@@ -28,7 +28,7 @@ describe('foo.xpathByElement()', () => {
         });
 
         it('call without xpath', () => {
-            const error = () => root.foo.xpathByElement({id: 'selected'});
+            const error = () => root.foo.xpathByElement({ id: 'selected' });
             expect(error).to.throw('Invalid options, "xpath" string is required');
         });
     });
@@ -72,38 +72,38 @@ describe('foo.xpathByElement()', () => {
                 {
                     'isRoot': true,
                     'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']'
+                    'xpath': '//*[@data-test-automation-id=\'root\']',
                 },
                 {
                     'isRoot': false,
                     'query': {
-                        'exactKey': 'foo'
+                        'exactKey': 'foo',
                     },
-                    'xpath': '//*[@data-test-automation-id=\'foo\']'
+                    'xpath': '//*[@data-test-automation-id=\'foo\']',
                 },
                 {
                     'isRoot': false,
                     'query': {
-                        'exactKey': 'bar'
+                        'exactKey': 'bar',
                     },
-                    'xpath': '//*[@data-test-automation-id=\'bar\']'
+                    'xpath': '//*[@data-test-automation-id=\'bar\']',
                 },
                 {
                     'isRoot': false,
                     'query': {
                         'id': 'selected',
-                        'xpath': '//*[@class=\'selected\']'
+                        'xpath': '//*[@class=\'selected\']',
                     },
-                    'xpath': '//*[@class=\'selected\']'
-                }
-            ])
+                    'xpath': '//*[@class=\'selected\']',
+                },
+            ]),
         });
     });
     describe('.__flows property traps', () => {
         checkProperty({
             object: xpathSelectorCall,
             key: '__flows',
-            valueDescriptor: getDescriptor({})
+            valueDescriptor: getDescriptor({}),
         });
     });
 
@@ -114,8 +114,8 @@ describe('foo.xpathByElement()', () => {
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
                 'id': 'selected',
-                'xpath': '//*[@class=\'selected\']'
-            })
+                'xpath': '//*[@class=\'selected\']',
+            }),
         });
     });
     describe('.__parentPath property traps', () => {
@@ -126,23 +126,23 @@ describe('foo.xpathByElement()', () => {
                 {
                     'isRoot': true,
                     'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']'
+                    'xpath': '//*[@data-test-automation-id=\'root\']',
                 },
                 {
                     'isRoot': false,
                     'query': {
-                        'exactKey': 'foo'
+                        'exactKey': 'foo',
                     },
-                    'xpath': '//*[@data-test-automation-id=\'foo\']'
+                    'xpath': '//*[@data-test-automation-id=\'foo\']',
                 },
                 {
                     'isRoot': false,
                     'query': {
-                        'exactKey': 'bar'
+                        'exactKey': 'bar',
                     },
-                    'xpath': '//*[@data-test-automation-id=\'bar\']'
+                    'xpath': '//*[@data-test-automation-id=\'bar\']',
                 },
-            ])
+            ]),
         });
     });
 

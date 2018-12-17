@@ -4,7 +4,7 @@ import {
     IBrowserProxyCommandResponse,
     IBrowserProxyMessage,
     IBrowserProxyPlugin,
-    ITransport
+    ITransport,
 } from '@testring/types';
 import { requirePlugin } from '@testring/utils';
 import { loggerClient } from '@testring/logger';
@@ -100,7 +100,7 @@ export class BrowserProxy {
                 {
                     uid,
                     response,
-                    error: null
+                    error: null,
                 }
             );
         } catch (error) {
@@ -109,7 +109,7 @@ export class BrowserProxy {
                 {
                     uid,
                     error,
-                    response: null
+                    response: null,
                 }
             );
         }

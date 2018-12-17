@@ -14,7 +14,7 @@ export const serializeError = (error: Error | EvalError): ISerializedError => {
         $key: ERROR_KEY,
         type: error.name,
         message: error.message,
-        stack: error.stack
+        stack: error.stack,
     };
 };
 

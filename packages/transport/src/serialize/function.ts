@@ -54,7 +54,7 @@ export const serializeFunction = (func: Function): ISerializedFunction => {
     return {
         $key: FUNCTION_KEY,
         body: body,
-        arguments: args
+        arguments: args,
     };
 };
 

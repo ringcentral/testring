@@ -90,17 +90,17 @@ describe('find children method', () => {
         let root = createElementPath();
 
         it('query from root', () => {
-            let error = () => root.__findChildren({index: 1});
+            let error = () => root.__findChildren({ index: 1 });
             expect(error).to.throw('Root Element is not enumerable');
         });
 
         it('query from already index', () => {
-            let error = () => root.foo[0].__findChildren({index: 1});
+            let error = () => root.foo[0].__findChildren({ index: 1 });
             expect(error).to.throw('Can not select index element from already sliced element');
         });
 
         it('query from already index', () => {
-            expect(root.foo.__findChildren({index: 1}).__getReversedChain()).to.be.equal('root.foo[1]');
+            expect(root.foo.__findChildren({ index: 1 }).__getReversedChain()).to.be.equal('root.foo[1]');
         });
     });
 
@@ -149,7 +149,7 @@ describe('find children method', () => {
             let child = createElementPath().__findChildren({
                 subQuery: {
                     containsKey: 'foo',
-                }
+                },
             });
 
             expect(child.__getReversedChain()).to.be.equal('root["(*foo*)"]');
@@ -159,7 +159,7 @@ describe('find children method', () => {
             let child = createElementPath().__findChildren({
                 subQuery: {
                     parts: ['foo', 'bar'],
-                }
+                },
             });
 
             expect(child.__getReversedChain()).to.be.equal('root["(foo*bar)"]');
@@ -169,7 +169,7 @@ describe('find children method', () => {
             let child = createElementPath().__findChildren({
                 subQuery: {
                     containsText: 'text',
-                }
+                },
             });
 
             expect(child.__getReversedChain()).to.be.equal('root["({text})"]');
@@ -180,7 +180,7 @@ describe('find children method', () => {
                 subQuery: {
                     exactKey: 'foo',
                     containsText: 'text',
-                }
+                },
             });
 
             expect(child.__getReversedChain()).to.be.equal('root["(foo{text})"]');
@@ -190,7 +190,7 @@ describe('find children method', () => {
             let child = createElementPath().__findChildren({
                 subQuery: {
                     equalsText: 'text',
-                }
+                },
             });
 
             expect(child.__getReversedChain()).to.be.equal('root["(={text})"]');
@@ -201,7 +201,7 @@ describe('find children method', () => {
                 subQuery: {
                     exactKey: 'foo',
                     equalsText: 'text',
-                }
+                },
             });
 
             expect(child.__getReversedChain()).to.be.equal('root["(foo={text})"]');

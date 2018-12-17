@@ -7,23 +7,23 @@ import {
 
     checkAccessMethods,
     checkPreventExtensions,
-    checkProperty
+    checkProperty,
 } from '../utils';
 
 
 describe('.xpathByLocator() with parent', () => {
     let root = createElementPath({
-        strictMode: false
+        strictMode: false,
     });
     let xpathSelectorCall = root.xpathByLocator({
         locator: '//*[@class=\'selected\']',
         id: 'selected',
-        parent: 'foo.bar'
+        parent: 'foo.bar',
     });
 
     describe('arguments validation', () => {
         it('call without xpath', () => {
-            const error = () => root.xpathByLocator({ parent: 'foo.bar'});
+            const error = () => root.xpathByLocator({ parent: 'foo.bar' });
             expect(error).to.throw('Invalid options, "locator" string is required');
         });
 
@@ -31,7 +31,7 @@ describe('.xpathByLocator() with parent', () => {
             const child = root.xpathByLocator({
                 id: 'selected',
                 locator: '//*[@class=\'selected\']',
-                parent: ''
+                parent: '',
             });
             expect(child.toString()).to.be.equal('(//*[@data-test-automation-id=\'root\']//*[@class=\'selected\'])[1]');
         });
@@ -93,33 +93,33 @@ describe('.xpathByLocator() with parent', () => {
                 {
                     'isRoot': false,
                     'query': {
-                        'exactKey': 'foo'
+                        'exactKey': 'foo',
                     },
-                    'xpath': '//*[@data-test-automation-id=\'foo\']'
+                    'xpath': '//*[@data-test-automation-id=\'foo\']',
                 },
                 {
                     'isRoot': false,
                     'query': {
-                        'exactKey': 'bar'
+                        'exactKey': 'bar',
                     },
-                    'xpath': '//*[@data-test-automation-id=\'bar\']'
+                    'xpath': '//*[@data-test-automation-id=\'bar\']',
                 },
                 {
                     'isRoot': false,
                     'query': {
                         'id': 'selected',
-                        'xpath': '//*[@class=\'selected\']'
+                        'xpath': '//*[@class=\'selected\']',
                     },
-                    'xpath': '//*[@class=\'selected\']'
-                }
-            ])
+                    'xpath': '//*[@class=\'selected\']',
+                },
+            ]),
         });
     });
     describe('.__flows property traps', () => {
         checkProperty({
             object: xpathSelectorCall,
             key: '__flows',
-            valueDescriptor: getDescriptor({})
+            valueDescriptor: getDescriptor({}),
         });
     });
 
@@ -130,8 +130,8 @@ describe('.xpathByLocator() with parent', () => {
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
                 'id': 'selected',
-                'xpath': '//*[@class=\'selected\']'
-            })
+                'xpath': '//*[@class=\'selected\']',
+            }),
         });
     });
     describe('.__parentPath property traps', () => {
@@ -147,18 +147,18 @@ describe('.xpathByLocator() with parent', () => {
                 {
                     'isRoot': false,
                     'query': {
-                        'exactKey': 'foo'
+                        'exactKey': 'foo',
                     },
-                    'xpath': '//*[@data-test-automation-id=\'foo\']'
+                    'xpath': '//*[@data-test-automation-id=\'foo\']',
                 },
                 {
                     'isRoot': false,
                     'query': {
-                        'exactKey': 'bar'
+                        'exactKey': 'bar',
                     },
-                    'xpath': '//*[@data-test-automation-id=\'bar\']'
-                }
-            ])
+                    'xpath': '//*[@data-test-automation-id=\'bar\']',
+                },
+            ]),
         });
     });
 
