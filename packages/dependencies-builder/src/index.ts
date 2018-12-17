@@ -82,6 +82,11 @@ const buildNodes = async (
 
         const dependencyAbsolutePath = resolveAbsolutePath(dependency, parentPath);
 
+        // Ignoring node modules
+        if (require.resolve.paths(dependencyAbsolutePath) === null) {
+            continue;
+        }
+
         // Making link for already existing node
         if (nodesCache[dependencyAbsolutePath]) {
             resultNodes[dependency] = nodesCache[dependencyAbsolutePath];

@@ -4,10 +4,10 @@ import { IFile } from '@testring/types';
 
 const ERR_NO_FILES = new Error('No test files found');
 
-const isNotEmpty = (x: IFile | null): x is IFile => !!x;
+const isNotEmpty = (x: IFile | null): x is IFile => x !== null;
 
 export const readFile = (file: string): Promise<IFile | null> => {
-    const readPromise = new Promise<IFile>((resolve, reject) => {
+    return new Promise<IFile>((resolve, reject) => {
         const filePath: string = path.resolve(file);
 
         if (fs.existsSync(filePath)) {
@@ -25,8 +25,6 @@ export const readFile = (file: string): Promise<IFile | null> => {
             reject(new Error(`File doesn't exist: ${filePath}`));
         }
     });
-
-    return readPromise.catch((error) => null);
 };
 
 export const resolveFiles = async (files: Array<string>): Promise<IFile[]> => {
@@ -34,7 +32,7 @@ export const resolveFiles = async (files: Array<string>): Promise<IFile[]> => {
         throw ERR_NO_FILES;
     }
 
-    const readFilePromises = files.map(readFile);
+    const readFilePromises = files.map(file => readFile(file).catch(() => null));
     const filesContent = await Promise.all(readFilePromises);
     const compacted = filesContent.filter(isNotEmpty);
 
