@@ -1,6 +1,6 @@
 {
   "name": "@testring/web-application",
-  "version": "0.4.48",
+  "version": "0.4.49",
   "main": "./dist/index.js",
   "typings": "./src/index.ts",
   "repository": {
@@ -10,18 +10,18 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/element-path": "0.4.48",
-    "@testring/logger": "0.4.48",
-    "@testring/pluggable-module": "0.4.48",
-    "@testring/transport": "0.4.48",
-    "@testring/types": "0.4.48",
+    "@testring/element-path": "0.4.49",
+    "@testring/logger": "0.4.49",
+    "@testring/pluggable-module": "0.4.49",
+    "@testring/transport": "0.4.49",
+    "@testring/types": "0.4.49",
     "@types/nanoid": "1.0.0",
     "@types/node": "10.5.6",
     "chai": "4.1.2",
     "nanoid": "1.1.0"
   },
   "devDependencies": {
-    "@testring/child-process": "0.4.48",
-    "@testring/test-utils": "0.4.48"
+    "@testring/child-process": "0.4.49",
+    "@testring/test-utils": "0.4.49"
   }
 }
