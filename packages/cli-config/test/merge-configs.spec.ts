@@ -110,4 +110,81 @@ describe('getConfig', () => {
             ],
         });
     });
+
+    it('should get config with correct array of plugins with array of objects config property', () => {
+        const config = mergeConfigs<IConfig>(
+            {
+                plugins: [
+                    ['plugin1', {
+                        property: [{
+                            foo: 'bar',
+                        }],
+                    }],
+                ],
+            },
+            {
+                plugins: [
+                    'plugin2',
+                    ['plugin1', {
+                        property: [{
+                            test: 'bar',
+                        }],
+                    }],
+                ],
+            },
+        );
+
+        chai.expect(config).to.be.deep.equals({
+            plugins: [
+                ['plugin1', {
+                    property: [{
+                        foo: 'bar',
+                    }, {
+                        test: 'bar',
+                    }],
+                }],
+                'plugin2',
+            ],
+        });
+    });
+
+    it('should get config with correct test array property with array of objects in correct order', () => {
+        const config = mergeConfigs<IConfig>(
+            {
+                test: [
+                    ['plugin1', {
+                        property: [{
+                            foo: 'bar',
+                        }],
+                    }],
+                ],
+            },
+            {
+                test: [
+                    'plugin2',
+                    ['plugin1', {
+                        property: [{
+                            test: 'bar',
+                        }],
+                    }],
+                ],
+            },
+        );
+
+        chai.expect(config).to.be.deep.equals({
+            test: [
+                ['plugin1', {
+                    property: [{
+                        foo: 'bar',
+                    }],
+                }],
+                'plugin2',
+                ['plugin1', {
+                    property: [{
+                        test: 'bar',
+                    }],
+                }],
+            ],
+        });
+    });
 });

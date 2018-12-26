@@ -58,7 +58,7 @@ All resolving logic is similar to `--config`. \
 
 ## `tests`
 
-###### required
+###### `./tests/**/*.js` <sup>default</sup>
 
 [Glob](https://github.com/isaacs/node-glob#glob-primer) pattern, relative to project root.
 All founded file will be added to run queue.

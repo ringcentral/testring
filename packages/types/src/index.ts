@@ -1,4 +1,5 @@
 export * from './cli';
+export * from './cli-config';
 
 export * from './test-run-controller';
 
