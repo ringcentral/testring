@@ -6,8 +6,8 @@ module.exports = async () =>  ({
         'selenium-driver',
         ['babel', {
             presets: [
-                'es2015'
-            ]
-        }]
-    ]
+                'es2015',
+            ],
+        }],
+    ],
 });

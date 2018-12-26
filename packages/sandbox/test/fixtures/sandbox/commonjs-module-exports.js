@@ -1,5 +1,5 @@
 module.exports = {
-    data: []
+    data: [],
 };
 
 module.exports.equals = module.exports.data === exports.data;
