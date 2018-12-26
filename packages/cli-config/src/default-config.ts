@@ -10,7 +10,7 @@ export const defaultConfiguration: Partial<IConfig> = {
     debug: false,
     silent: false,
     bail: false,
-    workerLimit: 10,
+    workerLimit: 1,
     retryCount: 3,
     retryDelay: 2000,
     testTimeout: 15 * 60 * 1000,

@@ -20,10 +20,10 @@ if it's exists, CLI arguments overrides everything.
 * [workerLimit](#workerlimit)
 * [retryCount](#retrycount)
 * [retryDelay](#retrydelay)
-* [testTimeout](#testTimeout)
+* [testTimeout](#testtimeout)
 * [screenshots](#screenshots)
 * [envParameters](#envparameters)
-* [restartWorker](#restartWorker)
+* [restartWorker](#restartworker)
 * [plugins](#plugins)
 
 <br/>
@@ -139,11 +139,12 @@ $ testring run --bail
 
 ## `workerLimit`
 
-###### `10` <sup>default</sup>
+###### `1` <sup>default</sup>
 
 Limit of parallel running tests. Increase this number carefully,
 because a lot of workers won't be so efficient,
 also your driver plugin may not be able to handle so much connections.
+Can be passed as `local` value to run test in same process with runner.
 
 ```
 $ testring run --worker-limit 20
