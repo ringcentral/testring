@@ -39,23 +39,22 @@ function mergePlugins(target: Array<any>, source: Array<any>, options) {
     });
 }
 
-function deepMergePlugins(configs: any[], options) {
+function deepMergePlugins(pluginsList: any[], options) {
     let plugins: any[] = [];
 
-    for (let config of configs) {
-        if (typeof config === 'object' && Array.isArray(config.plugins)) {
-            plugins = mergePlugins(plugins, config.plugins, options);
-        }
+    for (let additionalPlugin of pluginsList) {
+        plugins = mergePlugins(plugins, additionalPlugin, options);
     }
 
     return plugins;
 }
 
 export function mergeConfigs<T>(defaults: T, ...extensions: Partial<T>[]): T {
+    const list = [defaults, ...extensions];
     const options = {};
 
-    const plugins = deepMergePlugins([{}, defaults, ...extensions], options);
-    const source = deepmerge.all([{}, defaults, ...extensions], options);
+    const plugins = deepMergePlugins((list as any[]).map((obj) => obj && obj.plugins ? obj.plugins : []), options);
+    const source = deepmerge.all(list, options);
 
     if (plugins.length > 0) {
         (source as any).plugins = plugins;
