@@ -1,5 +1,4 @@
 import * as deepmerge from 'deepmerge';
-import { IMergeConfigs } from '@testring/types';
 
 const emptyTarget = value => Array.isArray(value) ? [] : {};
 const clone = (value, options) => deepmerge(emptyTarget(value), value, options);
@@ -52,15 +51,15 @@ function deepMergePlugins(configs: any[], options) {
     return plugins;
 }
 
-export const mergeConfigs: IMergeConfigs = function mergeConfigs(...configs) {
+export function mergeConfigs<T>(defaults: T, ...extensions: Partial<T>[]): T {
     const options = {};
 
-    const plugins = deepMergePlugins([{}, ...configs], options);
-    const source = deepmerge.all([{}, ...configs], options);
+    const plugins = deepMergePlugins([{}, defaults, ...extensions], options);
+    const source = deepmerge.all([{}, defaults, ...extensions], options);
 
     if (plugins.length > 0) {
         (source as any).plugins = plugins;
     }
 
     return source;
-};
+}
