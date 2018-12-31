@@ -5,8 +5,32 @@ import { IConfig } from '@testring/types';
 import { mergeConfigs } from '../src/merge-configs';
 
 describe('getConfig', () => {
+    it('should not be object link', () => {
+        const source = {
+            plugins: ['plugin1', 'plugin2'],
+        };
+        const config = mergeConfigs<Partial<IConfig>>(source, {
+            plugins: ['plugin3'],
+        });
+
+        chai.expect(source).to.not.equal(config);
+    });
+
+    it('should not mutate the source object', () => {
+        const source = {
+            plugins: ['plugin1', 'plugin2'],
+        };
+        mergeConfigs<Partial<IConfig>>(source, {
+            plugins: ['plugin3'],
+        });
+
+        chai.expect(source).to.be.deep.equal({
+            plugins: ['plugin1', 'plugin2'],
+        });
+    });
+
     it('should get config with correct array of plugins (strings)', () => {
-        const config = mergeConfigs(
+        const config = mergeConfigs<Partial<IConfig>>(
             {
                 plugins: ['plugin1', 'plugin2'],
             },
@@ -21,7 +45,7 @@ describe('getConfig', () => {
     });
 
     it('should get config with correct array of plugins (arrays)', () => {
-        const config = mergeConfigs<IConfig>(
+        const config = mergeConfigs<Partial<IConfig>>(
             {
                 plugins: [
                     'plugin2',
@@ -56,7 +80,7 @@ describe('getConfig', () => {
     });
 
     it('should get config with correct array of plugins (string + array)', () => {
-        const config = mergeConfigs<IConfig>(
+        const config = mergeConfigs<Partial<IConfig>>(
             {
                 plugins: [
                     'plugin2',
@@ -83,7 +107,7 @@ describe('getConfig', () => {
     });
 
     it('should get config with correct array of plugins (array + undefined value)', () => {
-        const config = mergeConfigs<IConfig>(
+        const config = mergeConfigs<Partial<IConfig>>(
             {
                 plugins: [
                     ['plugin1', {
@@ -112,7 +136,7 @@ describe('getConfig', () => {
     });
 
     it('should get config with correct array of plugins with array of objects config property', () => {
-        const config = mergeConfigs<IConfig>(
+        const config = mergeConfigs<Partial<IConfig>>(
             {
                 plugins: [
                     ['plugin1', {
@@ -149,7 +173,7 @@ describe('getConfig', () => {
     });
 
     it('should get config with correct test array property with array of objects in correct order', () => {
-        const config = mergeConfigs<IConfig>(
+        const config = mergeConfigs<{ test: any[] }>(
             {
                 test: [
                     ['plugin1', {

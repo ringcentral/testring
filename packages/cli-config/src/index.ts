@@ -17,8 +17,8 @@ const getConfig = async (argv: Array<string> = []): Promise<IConfig> => {
         debugProperty,
     );
 
-    const fileConfig = await getFileConfig(temporaryConfig.config, temporaryConfig);
     const envConfig = await getFileConfig(temporaryConfig.envConfig, temporaryConfig);
+    const fileConfig = await getFileConfig(temporaryConfig.config, temporaryConfig);
 
     return mergeConfigs(
         defaultConfiguration,
