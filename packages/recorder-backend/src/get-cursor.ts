@@ -19,6 +19,22 @@ interface NodeLocation {
     };
 }
 
+function isCursorHere(nodeLocation: NodeLocation, cursorLocation: CursorPosition) {
+
+    const isThatLine = (
+        nodeLocation.start.line <= cursorLocation.line &&
+        nodeLocation.end.line >= cursorLocation.line
+    );
+
+
+    const isThatColumn = (
+        nodeLocation.start.column <= cursorLocation.column &&
+        nodeLocation.end.column >= cursorLocation.column
+    );
+
+    return isThatLine && isThatColumn;
+}
+
 export function getCursor(code: string, currentPosition: CursorPosition): CursorPosition | null {
 
     const ast = babylon.parse(code);
@@ -47,21 +63,4 @@ export function getCursor(code: string, currentPosition: CursorPosition): Cursor
     }
 
     return null;
-
-}
-
-function isCursorHere(nodeLocation: NodeLocation, cursorLocation: CursorPosition) {
-
-    const isThatLine = (
-        nodeLocation.start.line <= cursorLocation.line &&
-        nodeLocation.end.line >= cursorLocation.line
-    );
-
-
-    const isThatColumn = (
-        nodeLocation.start.column <= cursorLocation.column &&
-        nodeLocation.end.column >= cursorLocation.column
-    );
-
-    return isThatLine && isThatColumn;
 }

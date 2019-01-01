@@ -14,6 +14,11 @@
     "node": true
   },
   "rules": {
+    "no-use-before-define": ["error", {
+      "functions": true,
+      "classes": true,
+      "variables": true
+    }],
     "func-style": [2, "declaration", {
       "allowArrowFunctions": true
     }],

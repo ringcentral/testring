@@ -117,6 +117,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
 
                     if (response.uid === requestUID) {
                         removeResponseHandler();
+                        // eslint-disable-next-line no-use-before-define
                         removeRejectHandler();
 
                         if (cookieJar) {
