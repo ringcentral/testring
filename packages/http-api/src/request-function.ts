@@ -4,7 +4,7 @@ import * as requestPromise from 'request-promise';
 
 const toString = c => c.toString();
 
-const createCookieStore = (cookies: Array<string> | void, url: string) => {
+function createCookieStore(cookies: Array<string> | void, url: string) {
     const cookieJar = jar();
 
     if (Array.isArray(cookies)) {
@@ -14,7 +14,7 @@ const createCookieStore = (cookies: Array<string> | void, url: string) => {
     }
 
     return cookieJar;
-};
+}
 
 const filterRequestField = (rawRequest) => (request, key) => {
     if (typeof rawRequest[key] !== 'undefined') {
@@ -32,7 +32,7 @@ const mapResponse = (response: Response, cookies) => ({
     cookies: cookies,
 });
 
-export const requestFunction = async (request: IHttpRequest): Promise<IHttpResponse> => {
+export async function requestFunction(request: IHttpRequest): Promise<IHttpResponse> {
     const cookieJar = createCookieStore(request.cookies, request.url);
 
     const rawRequest: any = {
@@ -52,4 +52,4 @@ export const requestFunction = async (request: IHttpRequest): Promise<IHttpRespo
     const cookies = cookieJar.getCookies(request.url).map(toString);
 
     return mapResponse(response, cookies);
-};
+}

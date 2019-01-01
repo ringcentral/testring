@@ -3,13 +3,11 @@ import { IConfig } from '@testring/types';
 
 const RESTRICTED_FIELDS = ['_', '$0', 'version', 'help'];
 
-const firstLetterToUpperCase = (matches) => matches[1].toUpperCase();
-const toCamelCase = (string: string): string => string.replace(
-    /(-\w)/g,
-    firstLetterToUpperCase
-);
+const firstLetterToUpperCase = (matches): string => matches[1].toUpperCase();
+const toCamelCase = (string: string): string => string.replace(/(-\w)/g, firstLetterToUpperCase);
 
-const normalizeArg = (arg: any): any => {
+
+function normalizeArg(arg: any): any {
     switch (typeof arg) {
         case 'object':
             if (!Array.isArray(arg) && arg !== null) {
@@ -21,9 +19,10 @@ const normalizeArg = (arg: any): any => {
         default:
             return arg;
     }
-};
+}
 
-const normalize = (args: yargs.Arguments, isRoot: boolean): Partial<IConfig> => {
+
+function normalize(args: yargs.Arguments, isRoot: boolean): Partial<IConfig> {
     const normalizedArgs = {};
 
     let arg;
@@ -54,9 +53,10 @@ const normalize = (args: yargs.Arguments, isRoot: boolean): Partial<IConfig> => 
     }
 
     return normalizedArgs;
-};
+}
 
-export const getArguments = (argv: Array<string>): Partial<IConfig> | null => {
+
+export function getArguments(argv: Array<string>): Partial<IConfig> | null {
     if (!argv) {
         return null;
     }
@@ -64,4 +64,4 @@ export const getArguments = (argv: Array<string>): Partial<IConfig> | null => {
     const args = yargs.parse(argv);
 
     return normalize(args, true);
-};
+}

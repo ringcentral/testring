@@ -12,7 +12,7 @@ const HAS_EMOJI_SUPPORT: boolean = !!(process.stdout.isTTY && process.platform =
 
 const textTemplate = (logLevel: LogLevel) => logLevel.padEnd(9);
 
-const emojiTemplate = (logLevel: LogLevel) => {
+function emojiTemplate(logLevel: LogLevel) {
     switch (logLevel) {
         case LogLevel.info:
             return 'ℹ';
@@ -32,9 +32,9 @@ const emojiTemplate = (logLevel: LogLevel) => {
         case LogLevel.silent:
             return '';
     }
-};
+}
 
-const formatLogLevel = (logLevel: LogLevel, emojiSupport: boolean): string => {
+function formatLogLevel(logLevel: LogLevel, emojiSupport: boolean): string {
     const template = emojiSupport
         ? emojiTemplate(logLevel)
         : textTemplate(logLevel);
@@ -58,17 +58,17 @@ const formatLogLevel = (logLevel: LogLevel, emojiSupport: boolean): string => {
         case LogLevel.silent:
             return chalk.white(template);
     }
-};
+}
 
 const formatTime = (time: Date) => chalk.grey(`${time.toLocaleTimeString()}`);
 
 const formatProcessID = (processID?: string) => typeof processID === 'string' ? processID.padEnd(10) : 'main';
 
-export const formatLog = (
+export function formatLog(
     logEntity: ILogEntity,
     processID?: string,
     emojiSupport: boolean = HAS_EMOJI_SUPPORT,
-): string => {
+): string {
     const formattedPrefix = (
         // eslint-disable-next-line max-len
         `${formatTime(logEntity.time)} | ${formatLogLevel(logEntity.logLevel, emojiSupport)} | ${formatProcessID(processID)} |`
@@ -96,4 +96,4 @@ export const formatLog = (
         default:
             return util.format(formattedPrefix, ...prefixes, ...logEntity.content);
     }
-};
+}

@@ -7,13 +7,13 @@ export interface ISerializedDate extends ITransportSerializedStruct {
 
 export const DATE_KEY = 'Date';
 
-export const serializeDate = (date: Date): ISerializedDate => {
+export function serializeDate(date: Date): ISerializedDate {
     return {
         $key: DATE_KEY,
         data: date.getTime(),
     };
-};
+}
 
-export const deserializeDate = (serializedDate: ISerializedDate): Date => {
+export function deserializeDate(serializedDate: ISerializedDate): Date {
     return new Date(serializedDate.data);
-};
+}

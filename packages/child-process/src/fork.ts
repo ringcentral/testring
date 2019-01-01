@@ -5,11 +5,11 @@ import { IChildProcessForkOptions, IChildProcessFork } from '@testring/types';
 import { resolveBinary } from './resolve-binary';
 import { spawn } from './spawn';
 
-const getNumberRange = (start: number, end: number): Array<number> => {
+function getNumberRange(start: number, end: number): Array<number> {
     const length = start - end;
 
     return Array.from({ length }, (x, i) => i + start);
-};
+}
 
 const PREFERRED_DEBUG_PORTS: Array<number> = [
     /* Default debug ports */
@@ -28,7 +28,7 @@ const DEFAULT_FORK_OPTIONS: IChildProcessForkOptions = {
 };
 
 
-const getAdditionalParameters = (filePath: string): Array<string> => {
+function getAdditionalParameters(filePath: string): Array<string> {
     const extension = path.extname(filePath);
 
     switch (extension) {
@@ -46,9 +46,9 @@ const getAdditionalParameters = (filePath: string): Array<string> => {
         default:
             return EMPTY_PARAMETERS;
     }
-};
+}
 
-const getExecutor = (filePath: string): string => {
+function getExecutor(filePath: string): string {
     const extension = path.extname(filePath);
 
     switch (extension) {
@@ -66,7 +66,8 @@ const getExecutor = (filePath: string): string => {
         default:
             return 'node';
     }
-};
+}
+
 
 const getForkOptions = (options: Partial<IChildProcessForkOptions>): IChildProcessForkOptions => ({
     ...DEFAULT_FORK_OPTIONS,

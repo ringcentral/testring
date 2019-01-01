@@ -3,7 +3,7 @@ import { IAssertionOptions } from '@testring/types';
 
 type AssertionAPI = typeof chai['assert'] & { _errorMessages: Array<any> };
 
-export const createAssertion = (options: IAssertionOptions = {}) => {
+export function createAssertion(options: IAssertionOptions = {}) {
     const root: AssertionAPI = Object.assign({}, chai.assert, {
         _errorMessages: [],
     });
@@ -77,4 +77,4 @@ export const createAssertion = (options: IAssertionOptions = {}) => {
             };
         },
     });
-};
+}

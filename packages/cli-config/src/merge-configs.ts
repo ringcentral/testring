@@ -6,7 +6,7 @@ const clone = (value, options) => deepmerge(emptyTarget(value), value, options);
 function mergePlugins(target: Array<any>, source: Array<any>, options) {
     const plugins = {};
 
-    const putPluginIntoDictionary = (element) => {
+    function putPluginIntoDictionary(element) {
         if (typeof element === 'string') {
             if (!(element in plugins)) {
                 plugins[element] = null;
@@ -25,7 +25,7 @@ function mergePlugins(target: Array<any>, source: Array<any>, options) {
                 plugins[plugin] = deepmerge(plugins[plugin], config, options);
             }
         }
-    };
+    }
 
     target.forEach(putPluginIntoDictionary);
     source.forEach(putPluginIntoDictionary);

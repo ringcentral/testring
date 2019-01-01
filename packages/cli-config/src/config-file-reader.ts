@@ -5,7 +5,7 @@ import { loggerClient } from '@testring/logger';
 import { requirePackage } from '@testring/utils';
 import { IConfig } from '@testring/types';
 
-const findFile = (configPath: string) => {
+function findFile(configPath: string) {
     const filePath = path.resolve(configPath);
     const configExists = fs.existsSync(filePath);
 
@@ -14,9 +14,9 @@ const findFile = (configPath: string) => {
     }
 
     return null;
-};
+}
 
-const readJSConfig = async (configPath: string, config: IConfig): Promise<IConfig | null> => {
+async function readJSConfig(configPath: string, config: IConfig): Promise<IConfig | null> {
     try {
         const fullPath = path.resolve(configPath);
         const configFile = requirePackage(fullPath);
@@ -38,9 +38,9 @@ const readJSConfig = async (configPath: string, config: IConfig): Promise<IConfi
 
         throw error;
     }
-};
+}
 
-const readJSONConfig = async (configPath: string): Promise<IConfig | null> => {
+async function readJSONConfig(configPath: string): Promise<IConfig | null> {
     const fileContent = findFile(configPath);
 
     if (fileContent === null) {
@@ -55,13 +55,13 @@ const readJSONConfig = async (configPath: string): Promise<IConfig | null> => {
             ${exception.message}
         `);
     }
-};
+}
 
 
-const readConfig = async (
+async function readConfig(
     configPath: string | void,
     config: IConfig
-): Promise<IConfig | null> => {
+): Promise<IConfig | null> {
 
     if (!configPath) {
         return null;
@@ -82,8 +82,8 @@ const readConfig = async (
         default:
             throw new Error(`${extension} is not supported`);
     }
-};
+}
 
-export const getFileConfig = async (configPath: string | void, userConfig: IConfig) => {
+export async function getFileConfig(configPath: string | void, userConfig: IConfig) {
     return await readConfig(configPath, userConfig);
-};
+}

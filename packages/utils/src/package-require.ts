@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as resolve from 'resolve';
 
-export const resolvePackage = (modulePath: string, parentModule?: string): string => {
+export function resolvePackage(modulePath: string, parentModule?: string): string {
     try {
         if (typeof parentModule === 'string') {
             const parentModuleDir = path.dirname(parentModule);
@@ -20,9 +20,9 @@ export const resolvePackage = (modulePath: string, parentModule?: string): strin
             basedir: process.cwd(),
         });
     }
-};
+}
 
-export const requirePackage = (modulePath: string, parentModule?: string): any => {
+export function requirePackage(modulePath: string, parentModule?: string): any {
     const fileName = resolvePackage(modulePath, parentModule);
 
     try {
@@ -34,4 +34,4 @@ export const requirePackage = (modulePath: string, parentModule?: string): any =
 
         throw error;
     }
-};
+}

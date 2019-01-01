@@ -9,50 +9,50 @@ export interface ISerializedError extends ITransportSerializedStruct {
 
 export const ERROR_KEY = 'Error';
 
-export const serializeError = (error: Error | EvalError): ISerializedError => {
+export function serializeError(error: Error | EvalError): ISerializedError {
     return {
         $key: ERROR_KEY,
         type: error.name,
         message: error.message,
         stack: error.stack,
     };
-};
+}
 
-export const deserializeError = (serializedError: ISerializedError): Error => {
-    let Contructor;
+export function deserializeError(serializedError: ISerializedError): Error {
+    let Constructor;
 
     switch (serializedError.type) {
         case 'EvalError':
-            Contructor = EvalError;
+            Constructor = EvalError;
             break;
 
         case 'RangeError':
-            Contructor = RangeError;
+            Constructor = RangeError;
             break;
 
         case 'ReferenceError':
-            Contructor = ReferenceError;
+            Constructor = ReferenceError;
             break;
 
         case 'SyntaxError':
-            Contructor = SyntaxError;
+            Constructor = SyntaxError;
             break;
 
         case 'TypeError':
-            Contructor = TypeError;
+            Constructor = TypeError;
             break;
 
         case 'URIError':
-            Contructor = URIError;
+            Constructor = URIError;
             break;
 
         default:
-            Contructor = Error;
+            Constructor = Error;
     }
 
-    const error = new Contructor(serializedError.message);
+    const error = new Constructor(serializedError.message);
 
     error.stack = serializedError.stack;
 
     return error;
-};
+}

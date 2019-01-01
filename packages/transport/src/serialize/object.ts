@@ -7,7 +7,7 @@ export interface ISerializedObject extends ITransportSerializedStruct {
 
 export const OBJECT_KEY = 'Object';
 
-export const serializeObject = (object: object, serialize: TransportSerializer): ISerializedObject => {
+export function serializeObject(object: object, serialize: TransportSerializer): ISerializedObject {
     const dictionary = {};
 
     for (let key in object) {
@@ -20,12 +20,12 @@ export const serializeObject = (object: object, serialize: TransportSerializer):
         $key: OBJECT_KEY,
         dictionary,
     };
-};
+}
 
-export const deserializeObject = (
+export function deserializeObject(
     serializedObject: ISerializedObject,
     deserialize: TransportDeserializer
-): object => {
+): object {
     const dictionary = serializedObject.dictionary;
     const object = {};
 
@@ -38,4 +38,4 @@ export const deserializeObject = (
     }
 
     return object;
-};
+}

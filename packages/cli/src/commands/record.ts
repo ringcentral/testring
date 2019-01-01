@@ -65,7 +65,7 @@ class RecordCommand implements ICLICommand {
     }
 }
 
-export const runRecordingProcess = (config, transport, stdout) => {
+export function runRecordingProcess(config, transport, stdout) {
     return new RecordCommand(config, transport, stdout);
-};
+}
 

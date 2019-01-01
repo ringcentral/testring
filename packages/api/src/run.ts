@@ -6,7 +6,7 @@ import { testAPIController } from './test-api-controller';
 
 type TestFunction = (api: TestContext) => void | Promise<any>;
 
-const getValidCopyVmError = (error) => {
+function getValidCopyVmError(error) {
     if (error instanceof Error) {
         return error;
     }
@@ -15,9 +15,9 @@ const getValidCopyVmError = (error) => {
     let tmpError = new Error(error.message);
     tmpError.stack = error.stack;
     return tmpError;
-};
+}
 
-export const run = async (...tests: Array<TestFunction>) => {
+export async function run(...tests: Array<TestFunction>) {
     const testID = testAPIController.getTestID();
     const bus = testAPIController.getBus();
     const testParameters = testAPIController.getTestParameters() as any;
@@ -63,4 +63,4 @@ export const run = async (...tests: Array<TestFunction>) => {
             loggerClient.error(exitError);
         }
     }
-};
+}

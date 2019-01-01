@@ -11,9 +11,7 @@ const generateTestFile = (index: number) => ({
     meta: {},
 });
 
-const generateTestFiles = (count: number) => {
-    return Array.from({ length: count }, (v, i) => generateTestFile(i));
-};
+const generateTestFiles = (count: number) => Array.from({ length: count }, (v, i) => generateTestFile(i));
 
 describe('Controller', () => {
     it('should run spawn workers with count from according limit', async () => {

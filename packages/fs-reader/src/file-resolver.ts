@@ -6,7 +6,7 @@ const ERR_NO_FILES = new Error('No test files found');
 
 const isNotEmpty = (x: IFile | null): x is IFile => x !== null;
 
-export const readFile = (file: string): Promise<IFile | null> => {
+export function readFile(file: string): Promise<IFile | null> {
     return new Promise<IFile>((resolve, reject) => {
         const filePath: string = path.resolve(file);
 
@@ -25,9 +25,9 @@ export const readFile = (file: string): Promise<IFile | null> => {
             reject(new Error(`File doesn't exist: ${filePath}`));
         }
     });
-};
+}
 
-export const resolveFiles = async (files: Array<string>): Promise<IFile[]> => {
+export async function resolveFiles(files: Array<string>): Promise<IFile[]> {
     if (!files || files.length === 0) {
         throw ERR_NO_FILES;
     }
@@ -41,4 +41,4 @@ export const resolveFiles = async (files: Array<string>): Promise<IFile[]> => {
     }
 
     return compacted;
-};
+}

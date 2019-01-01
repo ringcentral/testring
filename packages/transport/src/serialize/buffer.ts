@@ -7,13 +7,13 @@ export interface ISerializedBuffer extends ITransportSerializedStruct {
 
 export const BUFFER_KEY = 'Buffer';
 
-export const serializeBuffer = (buffer: Buffer): ISerializedBuffer => {
+export function serializeBuffer(buffer: Buffer): ISerializedBuffer {
     return {
         $key: BUFFER_KEY,
         data: buffer.toString(),
     };
-};
+}
 
-export const deserializeBuffer = (serializedBuffer: ISerializedBuffer): Buffer => {
+export function deserializeBuffer(serializedBuffer: ISerializedBuffer): Buffer {
     return Buffer.from(serializedBuffer.data);
-};
+}

@@ -4,7 +4,7 @@ import * as process from 'process';
 
 const IS_WIN = process.platform === 'win32';
 
-const findNodeModulesDir = (modulePath: string) => {
+function findNodeModulesDir(modulePath: string) {
     if (modulePath === '/') {
         throw new Error('There is no any node_module directory!');
     }
@@ -14,7 +14,7 @@ const findNodeModulesDir = (modulePath: string) => {
     }
 
     return findNodeModulesDir(path.dirname(modulePath));
-};
+}
 
 function windowsQuotes(str) {
     if (!/ /.test(str)) {
@@ -34,7 +34,7 @@ function escapify(str) {
     }
 }
 
-export const resolveBinary = (name: string) => {
+export function resolveBinary(name: string) {
     const modulePath = require.resolve(name);
     const nodeModules = findNodeModulesDir(modulePath);
     const binaryPath = path.join(nodeModules, '.bin', name) + (IS_WIN ? '.cmd' : '');
@@ -44,4 +44,4 @@ export const resolveBinary = (name: string) => {
     }
 
     return escapify(binaryPath);
-};
+}
