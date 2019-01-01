@@ -2,7 +2,7 @@ import { ITestWorker, ITestWorkerInstance } from '@testring/types';
 
 const ERROR_INSTANCE = {
     test: 'file.js',
-    error: new Error('test')
+    error: new Error('test'),
 };
 
 class TestWorkerMockInstance implements ITestWorkerInstance {

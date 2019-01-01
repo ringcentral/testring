@@ -14,7 +14,14 @@
     "node": true
   },
   "rules": {
-    "no-use-before-define": ["error", {
+    "typescript/type-annotation-spacing": [2, {
+      "before": false,
+      "after": true,
+      "overrides": {
+        "arrow": { "before": true, "after": true }
+      }
+    }],
+    "no-use-before-define": [2, {
       "functions": true,
       "classes": true,
       "variables": true
