@@ -9,7 +9,7 @@ import {
 import { requirePlugin } from '@testring/utils';
 import { loggerClient } from '@testring/logger';
 
-const resolvePlugin = (pluginPath: string): IBrowserProxyPlugin => {
+function resolvePlugin(pluginPath: string): IBrowserProxyPlugin {
     const resolvedPlugin = requirePlugin(pluginPath);
 
     if (typeof resolvedPlugin !== 'function') {
@@ -17,7 +17,7 @@ const resolvePlugin = (pluginPath: string): IBrowserProxyPlugin => {
     }
 
     return resolvedPlugin;
-};
+}
 
 export class BrowserProxy {
     private plugin: IBrowserProxyPlugin;

@@ -8,7 +8,7 @@ import { WebApplicationController } from '@testring/web-application';
 import { browserProxyControllerFactory, BrowserProxyController } from '@testring/browser-proxy';
 import { ICLICommand, IConfig, ITransport } from '@testring/types';
 
-const formatJSON = (obj: any) => {
+function formatJSON(obj: any) {
     const separator = '⋅';
     const padding = 20;
 
@@ -28,7 +28,7 @@ const formatJSON = (obj: any) => {
     }
 
     return str + separator.repeat(padding);
-};
+}
 
 class RunCommand implements ICLICommand {
 
@@ -112,11 +112,11 @@ class RunCommand implements ICLICommand {
     }
 }
 
-export const runTests = (config, transport, stdout) => {
+export function runTests(config, transport, stdout) {
     if (typeof config.tests !== 'string') {
         throw new Error('required field --tests in arguments or config');
     }
 
     return new RunCommand(config, transport, stdout);
-};
+}
 

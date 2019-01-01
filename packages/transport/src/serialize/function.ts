@@ -10,7 +10,7 @@ export const FUNCTION_KEY = 'Function';
 
 const trimString = (str) => str.trim();
 
-const getBody = (fn: string) => {
+function getBody(fn: string) {
     const blockBodyRegExp = /{([^]*)}$/;
     const inlineBodyRegExp = /=>\s*(.+)$/;
 
@@ -31,9 +31,10 @@ const getBody = (fn: string) => {
 
         return inlineBody ? `return ${inlineBody[1]}` : '';
     }
-};
+}
 
-const getArguments = (fn: string) => {
+
+function getArguments(fn: string) {
     const argumentsRegExp = /^(function)?([^(]*\(([^)]*)\)|[A-z]+)/;
     const args = fn.match(argumentsRegExp);
 
@@ -44,9 +45,10 @@ const getArguments = (fn: string) => {
     }
 
     return matchedArgs.split(',').map(trimString);
-};
+}
 
-export const serializeFunction = (func: Function): ISerializedFunction => {
+
+export function serializeFunction(func: Function): ISerializedFunction {
     const content = func.toString();
     const body = getBody(content);
     const args = getArguments(content);
@@ -56,8 +58,8 @@ export const serializeFunction = (func: Function): ISerializedFunction => {
         body: body,
         arguments: args,
     };
-};
+}
 
-export const deserializeFunction = (serializedFunction: ISerializedFunction): Function => {
+export function deserializeFunction(serializedFunction: ISerializedFunction): Function {
     return new Function(...serializedFunction.arguments, serializedFunction.body);
-};
+}

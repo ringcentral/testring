@@ -5,7 +5,7 @@ const PREFIXES = [
     'testring-plugin-',
 ];
 
-const normalizeExport = (module) => {
+function normalizeExport(module) {
     // filtering null and other falsy values
     if (!module) {
         return module;
@@ -18,9 +18,9 @@ const normalizeExport = (module) => {
 
     // returning default as default
     return module.default ? module.default : module;
-};
+}
 
-export const requirePlugin = (pluginPath: string): any => {
+export function requirePlugin(pluginPath: string): any {
     let resolvedPlugin;
 
     for (let index = 0; index < PREFIXES.length; index++) {
@@ -38,4 +38,4 @@ export const requirePlugin = (pluginPath: string): any => {
     const plugin = requirePackage(resolvedPlugin);
 
     return normalizeExport(plugin);
-};
+}

@@ -7,7 +7,7 @@ import { mergeConfigs } from './merge-configs';
 
 const isDebugging = () => !!inspector.url();
 
-const getConfig = async (argv: Array<string> = []): Promise<IConfig> => {
+async function getConfig(argv: Array<string> = []): Promise<IConfig> {
     const args = getArguments(argv);
     const debugProperty =  { debug: isDebugging() };
 
@@ -27,6 +27,6 @@ const getConfig = async (argv: Array<string> = []): Promise<IConfig> => {
         args || {},
         debugProperty,
     );
-};
+}
 
 export { defaultConfiguration, getConfig };

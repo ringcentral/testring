@@ -1,33 +1,33 @@
 import * as bytes from 'bytes';
 
-export const getExternalMemory = (): string => {
+export function getExternalMemory(): string {
     const memoryAfter = process.memoryUsage();
 
     return bytes.format(memoryAfter.external);
-};
+}
 
-export const getTotalMemoryUsed = (): string => {
+export function getTotalMemoryUsed(): string {
     const memoryAfter = process.memoryUsage();
 
     return bytes.format(memoryAfter.rss);
-};
+}
 
-export const getHeapTotal = (): string => {
+export function getHeapTotal(): string {
     const memoryAfter = process.memoryUsage();
 
     return bytes.format(memoryAfter.heapTotal);
-};
+}
 
-export const getHeapUsed = (): string => {
+export function getHeapUsed(): string {
     const memoryAfter = process.memoryUsage();
 
     return bytes.format(memoryAfter.heapUsed);
-};
+}
 
-export const getMemoryReport = (): string => {
+export function getMemoryReport(): string {
     return `Total memory usage: ${getTotalMemoryUsed()}, External memory: ${getExternalMemory()}.`;
-};
+}
 
-export const getHeapReport = (): string => {
+export function getHeapReport(): string {
     return `Total heap: ${getHeapTotal()}, used heap: ${getHeapUsed()}`;
-};
+}

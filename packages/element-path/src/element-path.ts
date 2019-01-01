@@ -52,7 +52,7 @@ export type NodePath = {
 export type XpathLocator = {
     id: string;
     xpath: string;
-    parent?: string;
+    parent: string | null | undefined;
 };
 
 export class ElementPath {
@@ -69,11 +69,11 @@ export class ElementPath {
     private readonly parent: ElementPath | null;
 
     constructor(options: {
-        flows?: FlowsObject,
-        searchMask?: SearchMaskPrimitive,
-        searchOptions?: SearchObject,
-        attributeName?: string,
-        parent?: ElementPath,
+        flows?: FlowsObject;
+        searchMask?: SearchMaskPrimitive | null;
+        searchOptions?: SearchObject;
+        attributeName?: string;
+        parent?: ElementPath;
     } = {}) {
         this.flows = options.flows || {};
 
@@ -212,12 +212,12 @@ export class ElementPath {
     }
 
     protected getMaskXpathParts(searchOptions: {
-        anyKey?: boolean,
-        prefix?: string,
-        suffix?: string,
-        exactKey?: string,
-        containsKey?: string,
-        parts?: string[],
+        anyKey?: boolean;
+        prefix?: string;
+        suffix?: string;
+        exactKey?: string;
+        containsKey?: string;
+        parts?: string[];
     }): string[] {
         const attr = this.getAttributeName();
         let conditions: string[] = [];
@@ -249,8 +249,8 @@ export class ElementPath {
 
     // noinspection JSMethodCanBeStatic
     protected getTextXpathParts(searchOptions: {
-        containsText?: string,
-        equalsText?: string,
+        containsText?: string;
+        equalsText?: string;
     }): string[] {
         let conditions: string[] = [];
 
@@ -457,7 +457,7 @@ export class ElementPath {
         }
     }
 
-    public generateChildByXpath(element: { id: string, xpath: string }): ElementPath {
+    public generateChildByXpath(element: { id: string; xpath: string }): ElementPath {
         return this.generateChildElementPathByOptions({
             xpath: element.xpath,
             id: element.id,

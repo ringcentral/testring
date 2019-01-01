@@ -1,11 +1,11 @@
-const EMPTY_FN = () => {
-};
+const EMPTY_FN = () => {};
 
-export const voidLogger = (
+export function voidLogger(
     retry: number,
     shouldResolve: boolean,
     onError: (...any) => void = EMPTY_FN,
-    onResolve: (...any) => void = EMPTY_FN) => {
+    onResolve: (...any) => void = EMPTY_FN
+) {
 
     let count = retry;
 
@@ -22,4 +22,4 @@ export const voidLogger = (
             onResolve(...args);
         }
     };
-};
+}

@@ -3,9 +3,9 @@ import { requestFunction } from './request-function';
 import { HttpClient } from './http-client';
 import { HttpServer } from './http-server';
 
-const createHttpServer = (transport: ITransport) => {
+function createHttpServer(transport: ITransport) {
     return new HttpServer(transport, requestFunction);
-};
+}
 
 export {
     createHttpServer,
