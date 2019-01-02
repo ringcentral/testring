@@ -25,7 +25,7 @@ const PROXY_OWN_PROPS = ['__flows', '__path'];
 const PROXY_PROPS = ['__path', '__parentPath', '__flows', '__searchOptions', '__proxy'];
 
 export function proxify(instance: ElementPath, strictMode: boolean = true) {
-    const revocable = Proxy.revocable<ElementPath>(instance, {
+    const revocable = Proxy.revocable<any>(instance, {
         /* eslint-disable no-use-before-define */
         get: getTrap,
         set: setTrap,
