@@ -8,7 +8,7 @@
     "url": "https://github.com/ringcentral/testring.git"
   },
   "scripts": {
-    "postinstall": "lerna bootstrap",
+    "postinstall": "lerna bootstrap --no-ci",
     "preversion": "npm run build:precommit",
     "reinstall": "node ./bin/cleanup.js && npm install",
     "cleanup": "lerna clean --yes && lerna exec --parallel -- rimraf ./dist -G && rimraf ./node_modules",
