@@ -112,7 +112,7 @@ export class ExtensionController {
                 this.mainConnectionId,
                 {
                     event: MessagingTransportEvents.MESSAGE,
-                    payload: message
+                    payload: message,
                 }
             );
         }

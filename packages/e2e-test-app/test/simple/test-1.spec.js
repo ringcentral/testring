@@ -10,7 +10,7 @@ run(async (api) => {
 
     jar.setCookie(jar.createCookie({
         key: COOKIE_NAME,
-        value: COOKIE_VALUE
+        value: COOKIE_VALUE,
     }), URL);
 
     await api.http.get({
