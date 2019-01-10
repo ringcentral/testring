@@ -1,0 +1,4 @@
+node_modules
+test
+mocha.opts
+tsconfig.json

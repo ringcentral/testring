@@ -9,6 +9,6 @@ function onError(error) {
 
 npm.setAuthToken()
     .then(() => npm.publish({
-        access: 'public'
+        access: 'public',
     }))
     .catch(onError);

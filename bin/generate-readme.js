@@ -4,11 +4,12 @@ const fs = require('fs');
 
 const root = process.cwd();
 
-const pkg = require(
-    path.join(root, './package.json')
-);
+const filename = path.join(root,'./README.md');
 
-const content = `
+function generateFile(file) {
+    const pkg = require(path.join(root, './package.json'));
+
+    const content = `
 # \`${pkg.name}\`
 
 ${pkg.description ? `> ${pkg.description}` : ''}
@@ -27,4 +28,9 @@ yarn add ${pkg.name} --dev
 \`\`\`
 `;
 
-fs.writeFileSync(path.join(root,'./README.md'), content.trim());
+    fs.writeFileSync(file, content.trim());
+}
+
+if (!fs.existsSync(filename)) {
+    generateFile(filename);
+}
