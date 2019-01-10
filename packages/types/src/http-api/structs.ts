@@ -43,4 +43,4 @@ export interface IHttpResponseRejectMessage {
 
 export type HttpClientParams = {
     httpThrottle: number;
-}
+};
