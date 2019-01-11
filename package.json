@@ -11,7 +11,7 @@
     "postinstall": "lerna bootstrap --no-ci",
     "preversion": "npm run build:precommit",
     "reinstall": "node ./bin/cleanup.js && npm install",
-    "cleanup": "lerna clean --yes && lerna exec --parallel -- rimraf ./dist -G && rimraf ./node_modules",
+    "cleanup": "lerna clean --yes && lerna exec --parallel -- node ../../bin/cleanup",
     "add-package-files": "lerna exec --no-sort -- node ../../bin/add-package-files",
     "generate-readme": "lerna exec --no-sort -- node ../../bin/generate-readme",
     "lint": "npm run lint:src && npm run lint:test",
