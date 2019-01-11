@@ -9,8 +9,10 @@
   },
   "scripts": {
     "postinstall": "lerna bootstrap --no-ci",
-    "reinstall": "node ./bin/cleanup.js && npm install && npm run build",
-    "cleanup": "lerna clean --yes && lerna exec --parallel -- node ../../bin/cleanup",
+    "reinstall": "npm run cleanup && npm install && npm run build",
+    "cleanup": "npm run cleanup:packages && npm run cleanup:root",
+    "cleanup:root": "node ./bin/cleanup.js",
+    "cleanup:packages": "lerna clean --yes && lerna exec --parallel -- node ../../bin/cleanup",
     "add-package-files": "lerna exec --no-sort -- node ../../bin/add-package-files",
     "generate-readme": "lerna exec --no-sort -- node ../../bin/generate-readme",
     "lint": "npm run lint:src && npm run lint:test",
