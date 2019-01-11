@@ -16,7 +16,7 @@
     "add-package-files": "lerna exec --no-sort -- node ../../bin/add-package-files",
     "generate-readme": "lerna exec --no-sort -- node ../../bin/generate-readme",
     "lint": "npm run lint:src && npm run lint:test",
-    "lint:src": "lerna exec --parallel --ignore=\"@testring/@(e2e-test-app)\" -- eslint \"./src/**/*.[tj]s\" --fix",
+    "lint:src": "lerna exec --parallel --ignore=\"@testring/@(e2e-test-app)\" -- eslint \"./src/**/*.[tj]s\"",
     "lint:test": "lerna exec --parallel --no-sort --ignore=\"@testring/@(ui-kit|types)\" -- eslint ./test/**/*.[tj]s",
     "test": "lerna exec --ignore=\"@testring/@(ui-kit|types|e2e-test-app)\" -- mocha --opts mocha.opts",
     "test:watch": "lerna exec --parallel -- mocha --opts mocha.opts --watch",
