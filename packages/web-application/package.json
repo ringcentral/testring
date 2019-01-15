@@ -17,7 +17,7 @@
     "@testring/types": "0.4.49",
     "@types/nanoid": "1.0.0",
     "@types/node": "10.5.6",
-    "chai": "4.1.2",
+    "chai": "4.2.0",
     "nanoid": "1.1.0"
   },
   "devDependencies": {

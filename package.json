@@ -36,7 +36,11 @@
     "publish:version": "lerna version --exact",
     "publish:ci": "lerna publish from-git",
     "storybook": "lerna run --stream --scope @testring/ui-kit storybook",
-    "check-deps": "lerna exec -- npm-check --skip-unused --ignore @testring/*"
+    "check-deps": "npm run check-deps:root && npm run check-deps:packages",
+    "check-deps:root": "npm-check -u",
+    "check-deps:packages": "lerna exec -- npm outdated",
+    "check-deps:update": "lernaupdate",
+    "check-deps:dedupe": "lernaupdate -d"
   },
   "precommit": "build:precommit",
   "nyc": {
@@ -78,14 +82,15 @@
     "eslint-plugin-react": "7.9.1",
     "eslint-plugin-typescript": "0.14.0",
     "glob": "7.1.3",
-    "lerna": "3.10.2",
+    "lerna": "3.10.5",
+    "lerna-update-wizard": "0.11.1",
     "mocha": "5.2.0",
     "npm-check": "5.9.0",
     "nyc": "13.1.0",
     "pre-commit": "1.2.2",
     "rimraf": "2.6.3",
     "sinon": "7.2.2",
-    "ts-node": "7.0.0",
+    "ts-node": "7.0.1",
     "typescript": "3.1.1",
     "typescript-eslint-parser": "21.0.2"
   }
