@@ -2,6 +2,7 @@ import * as path from 'path';
 import { loggerClient } from '@testring/logger';
 import { FSReader } from '@testring/fs-reader';
 import { fork } from '@testring/child-process';
+import { generateUniqId } from '@testring/utils';
 import { TestWorkerLocal } from './test-worker-local';
 import {
     buildDependencyDictionary,
@@ -19,8 +20,6 @@ import {
     TestStatus,
     IWorkerEmitter,
 } from '@testring/types';
-
-const nanoid = require('nanoid');
 
 const WORKER_ROOT = require.resolve(
     path.resolve(__dirname, 'worker')
@@ -55,7 +54,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private queuedWorker: Promise<IWorkerEmitter> | null = null;
 
-    private workerID = `worker/${nanoid()}`;
+    private workerID = `worker/${generateUniqId()}`;
 
     private logger = loggerClient;
 

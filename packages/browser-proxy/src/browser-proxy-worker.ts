@@ -1,4 +1,5 @@
 import { ChildProcess } from 'child_process';
+
 import {
     BrowserProxyActions,
     BrowserProxyMessageTypes,
@@ -8,10 +9,8 @@ import {
     IBrowserProxyWorker,
     ITransport,
 } from '@testring/types';
-
+import { generateUniqId } from '@testring/utils';
 import { loggerClient } from '@testring/logger';
-
-const nanoid = require('nanoid');
 
 export class BrowserProxyWorker implements IBrowserProxyWorker {
     private pendingCommandsQueue: Set<IBrowserProxyPendingCommand> = new Set();
@@ -29,7 +28,7 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
     constructor(
         private transport: ITransport,
         private workerCreator: (onActionPluginPath: string, config: any) => ChildProcess | Promise<ChildProcess>,
-        private spawnConfig: { plugin: string, config: any },
+        private spawnConfig: { plugin: string; config: any },
     ) {
         this.registerResponseListener();
     }
@@ -162,7 +161,7 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
         }
 
         return new Promise((resolve, reject) => {
-            const uid = nanoid();
+            const uid = generateUniqId();
             const item: IBrowserProxyPendingCommand = {
                 uid,
                 resolve,

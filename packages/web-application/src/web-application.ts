@@ -6,13 +6,12 @@ import {
     WindowFeaturesConfig,
 } from '@testring/types';
 import { loggerClient, LoggerClient } from '@testring/logger';
+import { generateUniqId } from '@testring/utils';
 import { PluggableModule } from '@testring/pluggable-module';
 import { createElementPath, ElementPath } from '@testring/element-path';
 import { createAssertion } from './assert';
 import { WebClient } from './web-client';
 import * as utils from './utils';
-
-const nanoid = require('nanoid');
 
 type valueType = string | number | null | undefined;
 
@@ -286,7 +285,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public get client(): WebClient {
-        const applicationID = `${this.testUID}-${nanoid()}`;
+        const applicationID = `${this.testUID}-${generateUniqId()}`;
         const value = new WebClient(applicationID, this.transport);
 
         Object.defineProperty(this, 'client', {
@@ -1185,7 +1184,7 @@ export class WebApplication extends PluggableModule {
                 .replace(/\s+/g, '_');
 
             this.logger.media(
-                `${this.testUID}-${formattedDate}-${nanoid(5)}.png`,
+                `${this.testUID}-${formattedDate}-${generateUniqId(5)}.png`,
                 screenshoot
             );
         }

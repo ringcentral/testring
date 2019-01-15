@@ -12,8 +12,7 @@
   "dependencies": {
     "@testring/child-process": "0.4.49",
     "@testring/types": "0.4.49",
-    "@types/nanoid": "1.0.0",
-    "@types/node": "10.5.6",
-    "nanoid": "1.1.0"
+    "@testring/utils": "0.4.49",
+    "@types/node": "10.5.6"
   }
 }

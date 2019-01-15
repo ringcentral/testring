@@ -1,4 +1,4 @@
-import { Stack } from '@testring/utils';
+import { Stack, generateUniqId } from '@testring/utils';
 import { transport } from '@testring/transport';
 import {
     ILogEntity,
@@ -11,8 +11,6 @@ import {
     LogEntityPrefixType,
     LogEntityMarkerType,
 } from '@testring/types';
-
-const nanoid = require('nanoid');
 
 
 type stepEntity = {
@@ -43,7 +41,7 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
 
     protected generateStepEntity(message: string): stepEntity {
         return {
-            stepID: nanoid(),
+            stepID: generateUniqId(),
             message,
         };
     }

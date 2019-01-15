@@ -11,10 +11,8 @@ import {
     HttpClientParams,
 } from '@testring/types';
 import { LoggerClient, loggerClient } from '@testring/logger';
-import { Queue } from '@testring/utils';
+import { Queue, generateUniqId } from '@testring/utils';
 import { HttpCookieJar } from './cookie-jar';
-
-const nanoid = require('nanoid');
 
 const toString = c => c.toString();
 
@@ -104,7 +102,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
             throw new Error('request is not valid');
         }
 
-        const requestUID = nanoid();
+        const requestUID = generateUniqId();
 
         return new Promise((resolve, reject) => {
             const removeResponseHandler = this.transportInstance.on(

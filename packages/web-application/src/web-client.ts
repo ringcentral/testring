@@ -7,8 +7,7 @@ import {
     WebApplicationMessageType,
     WindowFeaturesConfig,
 } from '@testring/types';
-
-const nanoid = require('nanoid');
+import { generateUniqId } from '@testring/utils';
 
 export class WebClient implements IWebApplicationClient {
 
@@ -20,7 +19,7 @@ export class WebClient implements IWebApplicationClient {
         const transport = this.transport;
 
         return new Promise((resolve, reject) => {
-            const uid = nanoid();
+            const uid = generateUniqId();
             const request: IWebApplicationExecuteMessage = {
                 uid: uid,
                 applicant: this.applicant,
