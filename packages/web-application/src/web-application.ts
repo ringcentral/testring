@@ -1,11 +1,9 @@
-/* eslint-disable */
-
 import * as url from 'url';
 import {
     IAssertionErrorMeta,
     IAssertionSuccessMeta,
     ITransport,
-    WindowFeaturesConfig
+    WindowFeaturesConfig,
 } from '@testring/types';
 import { loggerClient, LoggerClient } from '@testring/logger';
 import { PluggableModule } from '@testring/pluggable-module';
@@ -51,13 +49,13 @@ export class WebApplication extends PluggableModule {
             return `Waiting for root element for ${timeout}`;
         },
         waitForExist(xpath, timeout: number = this.WAIT_TIMEOUT) {
-            return `Waiting ${this.formatXpath(xpath)} for ${timeout}`
+            return `Waiting ${this.formatXpath(xpath)} for ${timeout}`;
         },
         waitForNotExists(xpath, timeout: number = this.WAIT_TIMEOUT) {
             return `Waiting not exists ${this.formatXpath(xpath)} for ${timeout}`;
         },
         waitForNotVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
-            return `Waiting for not visible ${this.formatXpath(xpath)} for ${timeout}`
+            return `Waiting for not visible ${this.formatXpath(xpath)} for ${timeout}`;
         },
         waitForVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
             return `Waiting for visible ${this.formatXpath(xpath)} for ${timeout}`;
@@ -66,7 +64,7 @@ export class WebApplication extends PluggableModule {
             if (typeof uri === 'string') {
                 return `Opening page uri: ${uri}`;
             } else {
-                return `Opening page`;
+                return 'Opening page';
             }
         },
         isBecomeVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
@@ -106,7 +104,7 @@ export class WebApplication extends PluggableModule {
             return `Select by name ${this.formatXpath(xpath)} ${value}`;
         },
         selectByValue(xpath, value: string | number) {
-            return `Select by value ${this.formatXpath(xpath)} ${value}`
+            return `Select by value ${this.formatXpath(xpath)} ${value}`;
         },
         selectByVisibleText(xpath, value: string | number) {
             return `Select by visible text ${this.formatXpath(xpath)} ${value}`;
@@ -151,7 +149,7 @@ export class WebApplication extends PluggableModule {
             return `Scroll ${this.formatXpath(xpath)} to (${x}, ${y})`;
         },
         dragAndDrop(xpathSource, xpathDestination) {
-            return `dragAndDrop ${this.formatXpath(xpathSource)} to ${this.formatXpath(xpathDestination)}`
+            return `dragAndDrop ${this.formatXpath(xpathSource)} to ${this.formatXpath(xpathDestination)}`;
         },
         elements(xpath) {
             return `elements ${this.formatXpath(xpath)}`;
@@ -194,6 +192,8 @@ export class WebApplication extends PluggableModule {
                 if (decorators.hasOwnProperty(key)) {
                     const originMethod = this[key];
                     const logFn = decorators[key];
+
+                    // eslint-disable-next-line func-style
                     const method = function decoratedMethod(...args) {
                         const logger = this.logger;
                         const message = logFn.apply(this, args);
@@ -352,8 +352,7 @@ export class WebApplication extends PluggableModule {
         if (!skipMoveToObject) {
             try {
                 await this.client.moveToObject(normalizedXPath, 1, 1);
-            } catch {
-            }
+            } catch (ignore) { /* ignore */ }
         }
 
         return exists;
@@ -375,8 +374,7 @@ export class WebApplication extends PluggableModule {
             xpath = this.normalizeSelector(xpath);
             await this.client.waitForExist(xpath, timeout);
             exists = true;
-        } catch {
-        }
+        } catch (ignore) { /* ignore */ }
 
         if (exists) {
             throw new Error(`Wait for not exists failed, element ${this.formatXpath(xpath)} is exists`);
@@ -414,19 +412,17 @@ export class WebApplication extends PluggableModule {
             throw new Error('Wait for not visible is failed, root element is still pending');
         }
 
-        while (true) {
+        while (expires - Date.now() >= 0) {
             let visible = await this.client.isVisible(xpath);
 
             if (!visible) {
                 return false;
             }
 
-            if (expires - Date.now() <= 0) {
-                throw new Error('Wait for not visible failed, element ' + path + ' is visible');
-            }
-
             await this.pause(this.TICK_TIMEOUT);
         }
+
+        throw new Error('Wait for not visible failed, element ' + path + ' is visible');
     }
 
     public async getTitle() {
@@ -477,7 +473,10 @@ export class WebApplication extends PluggableModule {
         }
     }
 
-    public async openPage(page: ((arg: this) => any) | string, timeout: number = this.WAIT_PAGE_LOAD_TIMEOUT): Promise<any> {
+    public async openPage(
+        page: ((arg: this) => any) | string,
+        timeout: number = this.WAIT_PAGE_LOAD_TIMEOUT
+    ): Promise<any> {
         if (typeof page === 'string') {
             let timer;
 
@@ -490,7 +489,9 @@ export class WebApplication extends PluggableModule {
                     );
                 }),
             ]);
+
             clearTimeout(timer);
+
             return result;
 
         } else if (typeof page === 'function') {
@@ -515,19 +516,17 @@ export class WebApplication extends PluggableModule {
         const expires = Date.now() + timeout;
         xpath = this.normalizeSelector(xpath);
 
-        while (true) {
+        while (expires - Date.now() >= 0) {
             const visible = await this.client.isVisible(xpath);
 
             if (!visible) {
                 return true;
             }
 
-            if (expires - Date.now() <= 0) {
-                return false;
-            }
-
             await this.pause(this.TICK_TIMEOUT);
         }
+
+        return false;
     }
 
     public async click(xpath, timeout: number = this.WAIT_TIMEOUT) {
@@ -554,6 +553,7 @@ export class WebApplication extends PluggableModule {
             let result = await this.client.executeAsync((xpath, value, done) => {
 
                 function getElementByXPath(xpath) {
+                    // eslint-disable-next-line no-var
                     var element = document.evaluate(xpath, document, null,
                         XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
                     if (element.snapshotLength > 0) {
@@ -635,7 +635,7 @@ export class WebApplication extends PluggableModule {
 
         xpath = this.normalizeSelector(xpath);
 
-        return this.client.executeAsync(function(xpath, prop, done) {
+        return this.client.executeAsync(function (xpath, prop, done) {
             function getElementByXPath(xpath) {
 
                 const element = document.evaluate(
@@ -664,7 +664,7 @@ export class WebApplication extends PluggableModule {
 
                     done(texts);
                 } else {
-                    throw Error(`Element not found`);
+                    throw Error('Element not found');
                 }
             } catch (e) {
                 throw Error(`${e.message} ${xpath}`);
@@ -773,14 +773,14 @@ export class WebApplication extends PluggableModule {
         if (typeof value === 'string' || typeof value === 'number') {
             // TODO rework this for supporting custom selectors
             xpath += `//option[@value='${value}']`;
+
             try {
                 let options = await this.client.getText(xpath);
                 if (options instanceof Array) {
                     return options[0] || '';
                 }
                 return options || '';
-            } catch (ignore) {
-            }
+            } catch (ignore) { /* ignore */ }
         }
         return '';
     }
@@ -855,7 +855,7 @@ export class WebApplication extends PluggableModule {
         const inputTags = [
             'input',
             'select',
-            'textarea'
+            'textarea',
         ];
 
         xpath = this.normalizeSelector(xpath);
@@ -1168,12 +1168,12 @@ export class WebApplication extends PluggableModule {
     }
 
     public async disableScreenshots() {
-        this.logger.debug("Screenshots were disabled. DO NOT FORGET to turn them on back!");
+        this.logger.debug('Screenshots were disabled. DO NOT FORGET to turn them on back!');
         this.screenshotsEnabledManually = false;
     }
 
     public async enableScreenshots() {
-        this.logger.debug("Screenshots were enabled");
+        this.logger.debug('Screenshots were enabled');
         this.screenshotsEnabledManually = true;
     }
 
@@ -1181,7 +1181,8 @@ export class WebApplication extends PluggableModule {
         if (this.config.screenshotsEnabled && (this.screenshotsEnabledManually || force)) {
             const screenshoot = await this.client.makeScreenshot();
             const screenDate = new Date();
-            const formattedDate = (`${screenDate.toLocaleTimeString()} ${screenDate.toDateString()}`).replace(/\s+/g, '_');
+            const formattedDate = (`${screenDate.toLocaleTimeString()} ${screenDate.toDateString()}`)
+                .replace(/\s+/g, '_');
 
             this.logger.media(
                 `${this.testUID}-${formattedDate}-${nanoid(5)}.png`,
