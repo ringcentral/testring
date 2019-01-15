@@ -6,17 +6,16 @@ import { fork } from '@testring/child-process';
 import { Transport } from '@testring/transport';
 import { WebApplicationControllerEventType } from '@testring/types';
 import { BrowserProxyControllerMock } from '@testring/test-utils';
+import { generateUniqId } from '@testring/utils';
 import { WebApplicationController } from '../src/web-application-controller';
 import { ELEMENT_NAME, TEST_NAME } from './fixtures/constants';
-
-const nanoid = require('nanoid');
 
 const testProcessPath = path.resolve(__dirname, './fixtures/test-process.ts');
 
 // TODO add more tests
 describe('WebApplicationController functional', () => {
     it('should get messages from', (callback) => {
-        const processID = nanoid();
+        const processID = generateUniqId();
 
         const transport = new Transport();
         const browserProxyMock = new BrowserProxyControllerMock();

@@ -3,6 +3,7 @@ import * as WebSocket from 'ws';
 import { launch, LaunchedChrome } from 'chrome-launcher';
 import { loggerClient } from '@testring/logger';
 import { transport } from '@testring/transport';
+import { generateUniqId } from '@testring/utils';
 import {
     RecorderServerEvents,
     RecorderServerMessageTypes,
@@ -21,8 +22,6 @@ import {
 
 import { RecorderHttpServer } from './http-server';
 import { RecorderWebSocketServer, RecorderWsEvents } from './ws-server';
-
-const nanoid = require('nanoid');
 
 const extensionPath = path.dirname(require.resolve('@testring/recorder-extension'));
 const frontendPath = path.dirname(require.resolve('@testring/recorder-frontend'));
@@ -73,7 +72,7 @@ export class RecorderServer implements IRecorderServer {
     );
 
     private registerConnection(ws: WebSocket): void {
-        const conId = nanoid();
+        const conId = generateUniqId();
 
         this.connections.set(conId, ws);
 

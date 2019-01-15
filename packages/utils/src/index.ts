@@ -15,6 +15,7 @@ export { requirePlugin } from './plugin-require';
 export { Queue } from './queue';
 export { Stack } from './stack';
 
+export { generateUniqId } from './generate-uniq-id';
 
 export {
     getMemoryReport,

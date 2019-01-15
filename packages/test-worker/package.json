@@ -20,9 +20,7 @@
     "@testring/transport": "0.4.49",
     "@testring/types": "0.4.49",
     "@testring/utils": "0.4.49",
-    "@types/nanoid": "1.0.0",
-    "@types/node": "10.5.6",
-    "nanoid": "1.1.0"
+    "@types/node": "10.5.6"
   },
   "devDependencies": {
     "@testring/test-utils": "0.4.49"

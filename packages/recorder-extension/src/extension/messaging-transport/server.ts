@@ -1,11 +1,10 @@
 /// <reference types="chrome" />
 
 import * as EventEmitter from 'events';
+import { generateUniqId } from '@testring/utils';
 import { IMessagingTransportMessage, MessagingTransportEvents } from '@testring/types';
 
 import Port = chrome.runtime.Port;
-
-const nanoid = require('nanoid');
 
 export class MessagingTransportServer extends EventEmitter {
     constructor() {
@@ -23,7 +22,7 @@ export class MessagingTransportServer extends EventEmitter {
     }
 
     private registerConnection(port: Port): void {
-        const conId = nanoid();
+        const conId = generateUniqId();
 
         port.onMessage.addListener((message) => {
             this.handleMessage(message);

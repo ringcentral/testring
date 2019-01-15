@@ -5,14 +5,14 @@ import {
     ITransportDirectMessage,
     ITransportMessage,
 } from '@testring/types';
+import { generateUniqId } from '@testring/utils';
 import { serialize, deserialize } from './serialize';
 
-const nanoid = require('nanoid');
 
 class DirectTransport {
 
     private static createMessageUID(processID: string) {
-        return `${processID}|${nanoid()}`;
+        return `${processID}|${generateUniqId()}`;
     }
 
     private static isMessageFromProcess(processID: string, messageUID: string) {
