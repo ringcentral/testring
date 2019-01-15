@@ -18,3 +18,4 @@ function createFile(filename) {
 createFile('tsconfig.json');
 createFile('mocha.opts');
 createFile('.npmignore');
+createFile('.npmrc');

@@ -38,7 +38,7 @@
     "storybook": "lerna run --stream --scope @testring/ui-kit storybook",
     "check-deps": "npm run check-deps:root && npm run check-deps:packages",
     "check-deps:root": "npm-check -u",
-    "check-deps:packages": "lerna exec -- npm outdated",
+    "check-deps:packages": "lerna exec --no-bail -- npm-check --no-color --no-emoji --ignore @testring/*",
     "check-deps:update": "lernaupdate",
     "check-deps:dedupe": "lernaupdate -d"
   },
