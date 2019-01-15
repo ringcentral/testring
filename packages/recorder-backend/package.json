@@ -37,9 +37,9 @@
   "devDependencies": {
     "@testring/test-utils": "0.4.49",
     "@testring/utils": "0.4.49",
-    "nodemon": "1.17.5",
+    "nodemon": "1.18.9",
     "request": "2.87.0",
     "request-promise": "4.2.2",
-    "ts-node": "7.0.0"
+    "ts-node": "7.0.1"
   }
 }

@@ -13,17 +13,17 @@
     "build:watch": "webpack --watch --config webpack.config.ts"
   },
   "devDependencies": {
-    "@types/react": "16.4.6",
-    "@types/react-dom": "16.0.6",
-    "@types/webpack": "4.4.5",
-    "css-loader": "1.0.0",
-    "monaco-editor-webpack-plugin": "1.4.0",
-    "react": "16.4.1",
-    "react-dom": "16.4.1",
-    "react-monaco-editor": "0.17.2",
-    "style-loader": "0.21.0",
-    "ts-loader": "4.4.2",
-    "webpack": "4.15.1",
-    "webpack-cli": "3.0.8"
+    "@types/react": "16.7.18",
+    "@types/react-dom": "16.0.11",
+    "@types/webpack": "4.4.22",
+    "css-loader": "2.1.0",
+    "monaco-editor-webpack-plugin": "1.7.0",
+    "react": "16.7.0",
+    "react-dom": "16.7.0",
+    "react-monaco-editor": "0.22.0",
+    "style-loader": "0.23.1",
+    "ts-loader": "5.3.3",
+    "webpack": "4.28.4",
+    "webpack-cli": "3.2.1"
   }
 }
