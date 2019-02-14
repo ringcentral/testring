@@ -54,6 +54,13 @@ export class RecorderServer implements IRecorderServer {
                 this.handleMessage(message);
             }
         );
+
+        this.transportInstance.on(
+            RecorderServerMessageTypes.STOP,
+            (message) => {
+                this.handleClose(message);
+            }
+        );
     }
 
     private connections: Map<string, WebSocket> = new Map();

@@ -6,7 +6,8 @@ import { FSReader } from '@testring/fs-reader';
 import { TestWorker } from '@testring/test-worker';
 import { WebApplicationController } from '@testring/web-application';
 import { browserProxyControllerFactory, BrowserProxyController } from '@testring/browser-proxy';
-import { ICLICommand, IConfig, ITransport } from '@testring/types';
+import { ICLICommand, IConfig, ITransport, RecorderServerMessageTypes } from '@testring/types';
+import { RecorderServer } from '@testring/recorder-backend';
 
 function formatJSON(obj: any) {
     const separator = '⋅';
@@ -75,11 +76,40 @@ class RunCommand implements ICLICommand {
 
         this.webApplicationController.init();
 
+        if (this.config.recorder) {
+            const recorderServer = new RecorderServer();
+            await recorderServer.run();
+
+            loggerClient.info('Recorder Server started');
+
+            this.transport.on(RecorderServerMessageTypes.MESSAGE, async (message) => {
+                const testStr = message.payload;
+
+                try {
+                    const testResult = await this.testRunController.pushTestIntoQueue(testStr);
+
+                    loggerClient.info(`Test executed with result: ${testResult}`);
+                } catch (e) {
+                    loggerClient.info(`Test executed failed with error: ${e}`);
+                }
+            });
+
+            this.transport.on(RecorderServerMessageTypes.CLOSE, () => {
+                throw new Error('Recorder Server disconnected');
+            });
+
+            this.transport.on(RecorderServerMessageTypes.STOP, () => {
+                this.shutdown();
+            });
+        }
+
         loggerClient.info('Executing...');
 
         const testRunResult = await this.testRunController.runQueue(tests);
 
-        await this.shutdown();
+        if (!this.config.recorder) {
+            await this.shutdown();
+        }
 
         if (testRunResult) {
             loggerClient.error('Founded errors:');

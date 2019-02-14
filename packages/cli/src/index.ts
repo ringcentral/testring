@@ -5,7 +5,6 @@ import { getConfig } from '@testring/cli-config';
 import { transport } from '@testring/transport';
 import { ICLICommand, IConfig } from '@testring/types';
 import { runTests } from './commands/run';
-import { runRecordingProcess } from './commands/record';
 
 const pkg = require('../package.json');
 
@@ -18,8 +17,6 @@ yargs.usage('$0 [command] <arguments>');
 yargs.version(`testring version: ${pkg.version}`);
 
 yargs.command('run', 'To run tests');
-
-yargs.command('record', 'To make a record');
 
 yargs.help();
 
@@ -81,12 +78,9 @@ export const runCLI = async (argv: Array<string>) => {
     let commandExecution: ICLICommand;
 
     switch (command) {
+        case undefined:
         case 'run':
             commandExecution = runTests(config, transport, process.stdout);
-            break;
-
-        case 'record':
-            commandExecution = runRecordingProcess(config, transport, process.stdout);
             break;
 
         default:

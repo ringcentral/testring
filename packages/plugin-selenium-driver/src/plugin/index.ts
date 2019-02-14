@@ -1,3 +1,4 @@
+import * as path from 'path';
 import * as deepmerge from 'deepmerge';
 import { IBrowserProxyPlugin, WindowFeaturesConfig } from '@testring/types';
 import { spawn } from '@testring/child-process';
@@ -12,6 +13,8 @@ type browserClientItem = {
     initTime: number;
 };
 
+const extensionPath = path.dirname(require.resolve('@testring/recorder-extension'));
+
 const DEFAULT_CONFIG: SeleniumPluginConfig = {
     deprecationWarnings: false,
     clientCheckInterval: 5 * 1000,
@@ -20,7 +23,7 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
     desiredCapabilities: {
         browserName: 'chrome',
         chromeOptions: {
-            args: [],
+            args: [`load-extension=${extensionPath}`],
         },
     },
 };
