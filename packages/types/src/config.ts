@@ -7,6 +7,7 @@ export type RestartWorkerConfig = 'never' | 'always';
 export type ConfigPluginDescriptor = string | [string, PluginConfig];
 
 export interface IConfig {
+    recorder: boolean;
     restartWorker: RestartWorkerConfig;
     screenshots: ScreenshotsConfig;
     config: string;
