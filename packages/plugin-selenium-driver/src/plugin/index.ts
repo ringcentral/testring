@@ -1,3 +1,4 @@
+import * as path from 'path';
 import * as deepmerge from 'deepmerge';
 import { IBrowserProxyPlugin, WindowFeaturesConfig } from '@testring/types';
 import { spawn } from '@testring/child-process';
@@ -12,6 +13,8 @@ type browserClientItem = {
     initTime: number;
 };
 
+const extensionPath = path.dirname(require.resolve('@testring/recorder-extension'));
+
 const DEFAULT_CONFIG: SeleniumPluginConfig = {
     deprecationWarnings: false,
     clientCheckInterval: 5 * 1000,
@@ -20,11 +23,11 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
     desiredCapabilities: {
         browserName: 'chrome',
         chromeOptions: { // for local ChromeDriver
-            args: [],
+            args: [`load-extension=${extensionPath}`],
         },
         //please refer https://github.com/elgalu/docker-selenium/issues/201
-        'goog:chromeOptions': { // ffor RemoteWebdriver
-            args: [],
+        'goog:chromeOptions': { // for RemoteWebdriver
+            args: [`load-extension=${extensionPath}`],
         },
     },
 };

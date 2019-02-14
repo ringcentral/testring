@@ -5,6 +5,7 @@ export const enum RecorderServerEvents {
 }
 
 export const enum RecorderServerMessageTypes {
+    STOP = 'RecorderServerMessageTypes/STOP',
     CLOSE = 'RecorderServerMessageTypes/CLOSE',
     MESSAGE = 'RecorderServerMessageTypes/MESSAGE',
 }
