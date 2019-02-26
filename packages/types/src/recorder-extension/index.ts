@@ -1,3 +1,13 @@
+export type AttributeSummary = {
+    name: string;
+    value: string;
+};
+
+export type ElementSummary = {
+    tagName: string;
+    attributes: AttributeSummary[];
+};
+
 export const enum MessagingTransportEvents {
     CONNECT = 'ExtensionEvents/CONNECT',
     DISCONNECT = 'ExtensionEvents/DISCONNECT',

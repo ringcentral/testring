@@ -3,35 +3,22 @@
 import { MessagingTransportEvents, RecordingEventTypes, RecorderEvents, IExtensionConfig } from '@testring/types';
 
 import { MessagingTransportClient } from './extension/messaging-transport';
-import { resolveElementPath } from './extension/resolve-element-path';
+import { getAffectedElementsSummary } from './extension/get-affected-elements-summary';
 
 const transportClient = new MessagingTransportClient();
 
 let clickHandlerFunc = (event) => {};
 
-transportClient.on(
-    RecorderEvents.HANDSHAKE,
-    (config: IExtensionConfig) => {
-        const { testElementAttribute } = config;
-
-        document.removeEventListener('click', clickHandlerFunc);
-
-        clickHandlerFunc = (event) => clickHandler(event, testElementAttribute);
-
-        document.addEventListener('click', clickHandlerFunc);
-    }
-);
-
-const clickHandler = (event: MouseEvent, attribute: string): void => {
+const clickHandler = (event: MouseEvent): void => {
     try {
-        const xpath = resolveElementPath(event, attribute);
+        const elementsSummary = getAffectedElementsSummary(event);
 
-        if (xpath) {
+        if (elementsSummary) {
             transportClient.send({
                 event: MessagingTransportEvents.RECORDING_EVENT,
                 payload: {
                     type: RecordingEventTypes.CLICK,
-                    elementPath: xpath,
+                    elementsSummary,
                 },
             });
         }
@@ -39,3 +26,14 @@ const clickHandler = (event: MouseEvent, attribute: string): void => {
         console.warn(e) // eslint-disable-line
     }
 };
+
+transportClient.on(
+    RecorderEvents.HANDSHAKE,
+    (config: IExtensionConfig) => {
+        document.removeEventListener('click', clickHandlerFunc);
+
+        clickHandlerFunc = (event) => clickHandler(event);
+
+        document.addEventListener('click', clickHandlerFunc);
+    }
+);
