@@ -21,20 +21,19 @@ const getEventComposedPath = (event: any): Array<Element> => {
 };
 
 export const getElementsSummary = (elements: Array<Element>, withChildren: boolean = true): ElementSummary[] => {
-    elements = elements.filter(({ tagName, attributes }) => tagName && attributes);
+    return elements
+        .filter(({ tagName, attributes }) => tagName && attributes)
+        // @ts-ignore
+        .map(({ tagName, attributes, innerText, value, children }) => {
+            const attributesSummary = {};
+            Array.from(attributes).forEach(({ name, value }) => attributesSummary[name] = value);
 
-    // @ts-ignore
-    return elements.map(({ tagName, attributes, innerText, value, children }) => {
-        const attributesSummary = {};
-        Array.from(attributes).forEach(({ name, value }) => attributesSummary[name] = value);
+            let childrenSummary;
+            if (withChildren) {
+                childrenSummary = getElementsSummary(Array.from(children));
+            }
 
-        let childrenSummary;
-
-        if (withChildren) {
-            childrenSummary = getElementsSummary(Array.from(children));
-        }
-
-        return { tagName, innerText, value, attributes: attributesSummary, children: childrenSummary };
+            return { tagName, innerText, value, attributes: attributesSummary, children: childrenSummary };
     });
 };
 
