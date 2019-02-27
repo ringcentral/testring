@@ -17,12 +17,14 @@ function formatJSON(obj: any) {
     let item;
 
     for (const key in obj) {
-        if (key === 'plugins') {
-            item = obj[key].toString()
-                .replace(/\[object Object]/g, '')
-                .replace(/,,/g, ',');
-        } else {
-            item = JSON.stringify(obj[key]);
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            if (key === 'plugins') {
+                item = obj[key].toString()
+                    .replace(/\[object Object]/g, '')
+                    .replace(/,,/g, ',');
+            } else {
+                    item = JSON.stringify(obj[key]);
+            }
         }
 
         str += `${(key + ' ').padEnd(padding, separator)} ${item}\n`;
@@ -37,6 +39,7 @@ class RunCommand implements ICLICommand {
     private browserProxyController: BrowserProxyController;
     private testRunController: TestRunController;
     private httpServer: HttpServer;
+    private recorderServer: RecorderServer;
 
     constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {}
 
@@ -77,8 +80,8 @@ class RunCommand implements ICLICommand {
         this.webApplicationController.init();
 
         if (this.config.recorder) {
-            const recorderServer = new RecorderServer();
-            await recorderServer.run();
+            this.recorderServer = new RecorderServer();
+            this.recorderServer.run();
 
             loggerClient.info('Recorder Server started');
 
@@ -99,7 +102,7 @@ class RunCommand implements ICLICommand {
             });
 
             this.transport.on(RecorderServerMessageTypes.STOP, () => {
-                this.shutdown();
+                // TODO Recorder stop handling
             });
         }
 
@@ -107,9 +110,7 @@ class RunCommand implements ICLICommand {
 
         const testRunResult = await this.testRunController.runQueue(tests);
 
-        if (!this.config.recorder) {
-            await this.shutdown();
-        }
+        await this.shutdown();
 
         if (testRunResult) {
             loggerClient.error('Founded errors:');
@@ -129,16 +130,19 @@ class RunCommand implements ICLICommand {
         const testRunController = this.testRunController;
         const browserProxyController = this.browserProxyController;
         const webApplicationController = this.webApplicationController;
+        const recorderServer = this.recorderServer;
 
         this.httpServer = (null as any);
         this.testRunController = (null as any);
         this.browserProxyController = (null as any);
         this.webApplicationController = (null as any);
+        this.recorderServer = (null as any);
 
         httpServer && httpServer.kill();
         webApplicationController && webApplicationController.kill();
         testRunController && await testRunController.kill();
         browserProxyController && await browserProxyController.kill();
+        recorderServer && await recorderServer.kill();
     }
 }
 

@@ -13,7 +13,7 @@ type browserClientItem = {
     initTime: number;
 };
 
-const extensionPath = '/home/flops/RC/extension-example/';
+const extensionPath = path.dirname(require.resolve('@testring/recorder-extension'));
 
 const DEFAULT_CONFIG: SeleniumPluginConfig = {
     deprecationWarnings: false,
