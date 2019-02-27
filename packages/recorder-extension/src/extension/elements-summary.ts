@@ -20,17 +20,13 @@ const getEventComposedPath = (event: any): Array<Element> => {
     return composePath(event.target);
 };
 
-const getElementsSummary = (elements: Array<Element>, withChildren: boolean = false): ElementSummary[] => {
+export const getElementsSummary = (elements: Array<Element>, withChildren: boolean = true): ElementSummary[] => {
     elements = elements.filter(({ tagName, attributes }) => tagName && attributes);
 
     // @ts-ignore
     return elements.map(({ tagName, attributes, innerText, value, children }) => {
-        const attributesSummary = Array.from(attributes).map(({ name, value }) => {
-            return {
-                name,
-                value,
-            };
-        });
+        const attributesSummary = {};
+        Array.from(attributes).forEach(({ name, value }) => attributesSummary[name] = value);
 
         let childrenSummary;
 
@@ -38,7 +34,7 @@ const getElementsSummary = (elements: Array<Element>, withChildren: boolean = fa
             childrenSummary = getElementsSummary(Array.from(children));
         }
 
-        return { tagName, attributes: attributesSummary, innerText, value, children: childrenSummary };
+        return { tagName, innerText, value, attributes: attributesSummary, children: childrenSummary };
     });
 };
 
@@ -47,14 +43,11 @@ export const getAffectedElementsSummary = (event: Event): ElementSummary[] | voi
         throw new Error('Event is not evoked by user');
     }
 
-    const elements = getEventComposedPath(event);
-    const elementsSummary = getElementsSummary(elements);
+    const affectedElements = getEventComposedPath(event);
+    const affectedElementsSummary = getElementsSummary(affectedElements, false);
 
-    if (elementsSummary.length > 0) {
-        return elementsSummary;
+    if (affectedElementsSummary.length > 0) {
+        return affectedElementsSummary;
     }
 };
 
-export const getDomSummary = (element: Element) => {
-    return getElementsSummary(Array.from(element.children), true);
-};
