@@ -20,10 +20,11 @@ const getEventComposedPath = (event: any): Array<Element> => {
     return composePath(event.target);
 };
 
-const getElementsSummary = (elements: Array<Element>): ElementSummary[] => {
+const getElementsSummary = (elements: Array<Element>, withChildren: boolean = false): ElementSummary[] => {
     elements = elements.filter(({ tagName, attributes }) => tagName && attributes);
 
-    return elements.map(({ tagName, attributes }) => {
+    // @ts-ignore
+    return elements.map(({ tagName, attributes, innerText, value, children }) => {
         const attributesSummary = Array.from(attributes).map(({ name, value }) => {
             return {
                 name,
@@ -31,7 +32,13 @@ const getElementsSummary = (elements: Array<Element>): ElementSummary[] => {
             };
         });
 
-        return { tagName, attributes: attributesSummary };
+        let childrenSummary;
+
+        if (withChildren) {
+            childrenSummary = getElementsSummary(Array.from(children));
+        }
+
+        return { tagName, attributes: attributesSummary, innerText, value, children: childrenSummary };
     });
 };
 
@@ -46,4 +53,8 @@ export const getAffectedElementsSummary = (event: Event): ElementSummary[] | voi
     if (elementsSummary.length > 0) {
         return elementsSummary;
     }
+};
+
+export const getDomSummary = (element: Element) => {
+    return getElementsSummary(Array.from(element.children), true);
 };

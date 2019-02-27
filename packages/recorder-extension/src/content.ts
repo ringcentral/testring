@@ -3,7 +3,7 @@
 import { MessagingTransportEvents, RecordingEventTypes, RecorderEvents, IExtensionConfig } from '@testring/types';
 
 import { MessagingTransportClient } from './extension/messaging-transport';
-import { getAffectedElementsSummary } from './extension/get-affected-elements-summary';
+import { getAffectedElementsSummary, getDomSummary } from './extension/elements-summary';
 
 const transportClient = new MessagingTransportClient();
 
@@ -12,6 +12,7 @@ let clickHandlerFunc = (event) => {};
 const clickHandler = (event: MouseEvent): void => {
     try {
         const elementsSummary = getAffectedElementsSummary(event);
+        const domSummary = getDomSummary(document.body);
 
         if (elementsSummary) {
             transportClient.send({
@@ -19,6 +20,7 @@ const clickHandler = (event: MouseEvent): void => {
                 payload: {
                     type: RecordingEventTypes.CLICK,
                     elementsSummary,
+                    domSummary,
                 },
             });
         }

@@ -31,6 +31,7 @@ export const Layout = () => (
             <button data-test-automation-id="goodButtonOutOfScope" >
                 Out of scope, but still good
             </button>
+            <input type="text" name="asd" />
         </div>
         <button>
             Totally out of scope, not good

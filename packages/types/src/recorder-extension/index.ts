@@ -6,6 +6,9 @@ export type AttributeSummary = {
 export type ElementSummary = {
     tagName: string;
     attributes: AttributeSummary[];
+    innerText: string;
+    value: string | undefined;
+    children: ElementSummary[];
 };
 
 export const enum MessagingTransportEvents {
