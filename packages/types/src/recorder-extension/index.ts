@@ -1,11 +1,6 @@
-export type AttributeSummary = {
-    name: string;
-    value: string;
-};
-
 export type ElementSummary = {
     tagName: string;
-    attributes: AttributeSummary[];
+    attributes: {[name: string]: string};
     innerText: string;
     value: string | undefined;
     children: ElementSummary[];
