@@ -18,7 +18,7 @@ export interface IServer {
 
 export interface IRecorderServer {
     run: () => void;
-    stop: () => Promise<void>;
+    kill: () => Promise<void>;
     openBrowser: () => void;
 }
 

@@ -20,7 +20,7 @@ describe('Recorder server', () => {
 
     beforeEach(async () => {
         if (srv) {
-            await srv.stop();
+            await srv.kill();
         }
 
         httpPort = await getAvailableFollowingPort(DEFAULT_RECORDER_HTTP_PORT, DEFAULT_RECORDER_HOST);
@@ -168,7 +168,7 @@ describe('Recorder server', () => {
             transport.on(
                 RecorderServerEvents.CONNECTION,
                 async () => {
-                    await srv.stop();
+                    await srv.kill();
                 }
             );
         });

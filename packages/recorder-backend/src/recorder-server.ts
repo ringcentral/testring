@@ -174,7 +174,7 @@ export class RecorderServer implements IRecorderServer {
         await this.httpServer.run();
     }
 
-    public async stop(): Promise<void> {
+    public async kill(): Promise<void> {
         await this.wsServer.stop();
         await this.httpServer.stop();
     }
