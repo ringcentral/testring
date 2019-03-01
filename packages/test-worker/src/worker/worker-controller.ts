@@ -50,15 +50,42 @@ export class WorkerController {
         const sandbox = new Sandbox(message.content, message.path, message.dependencies);
         const bus = this.testAPI.getBus();
 
-        let isAsync = false;
-
         this.testAPI.setEnvironmentParameters(message.envParameters);
         this.testAPI.setTestParameters(message.parameters);
         this.testAPI.setTestID(testID);
 
         // Test becomes async, when run method called
         // In all other cases it's plane sync file execution
-        bus.once(TestEvents.started, () => isAsync = true);
+        let isAsync = false;
+        let pending = true;
+        let caughtError: Error | null = null;
+
+        let finishCallback = () => {};
+        let failCallback = (error: Error) => {
+            caughtError = error;
+        };
+
+        const startHandler = () => {
+            isAsync = true;
+        };
+        const finishHandler = () => {
+            pending = false;
+            finishCallback();
+        };
+        const failHandler = (error) => {
+            pending = false;
+            failCallback(error);
+        };
+        const clearExecution = () => {
+            Sandbox.clearCache();
+            bus.removeListener(TestEvents.started, startHandler);
+            bus.removeListener(TestEvents.finished, finishHandler);
+            bus.removeListener(TestEvents.failed, failHandler);
+        };
+
+        bus.on(TestEvents.started, startHandler);
+        bus.on(TestEvents.finished, finishHandler);
+        bus.on(TestEvents.failed, failHandler);
 
         // Test file execution, should throw exception,
         // if something goes wrong
@@ -66,25 +93,26 @@ export class WorkerController {
 
         if (isAsync) {
             return new Promise<TestStatus>((resolve, reject) => {
-                bus.once(TestEvents.finished, () => {
-                    bus.removeAllListeners(TestEvents.finished);
-                    bus.removeAllListeners(TestEvents.failed);
-
-                    Sandbox.clearCache();
+                if (pending) {
+                    finishCallback = () => {
+                        resolve(TestStatus.done);
+                        clearExecution();
+                    };
+                    failCallback = (error) => {
+                        reject(error);
+                        clearExecution();
+                    };
+                } else if (caughtError === null) {
+                    clearExecution();
                     resolve(TestStatus.done);
-                });
-
-                bus.once(TestEvents.failed, (error) => {
-                    bus.removeAllListeners(TestEvents.finished);
-                    bus.removeAllListeners(TestEvents.failed);
-
-                    Sandbox.clearCache();
-                    reject(error);
-                });
+                } else {
+                    clearExecution();
+                    reject(caughtError);
+                }
             });
         }
 
-        Sandbox.clearCache();
+        clearExecution();
         return TestStatus.done;
     }
 }

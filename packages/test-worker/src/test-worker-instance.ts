@@ -27,16 +27,12 @@ const WORKER_ROOT = require.resolve(
 
 const WORKER_DEFAULT_CONFIG: ITestWorkerConfig = {
     screenshots: 'disable',
+    needToRelease: false,
     localWorker: false,
     debug: false,
 };
 
 const delay = (timeout: number) => new Promise<void>(resolve => setTimeout(resolve, timeout));
-
-const createConfig = (workerConfig: Partial<ITestWorkerConfig>): ITestWorkerConfig => ({
-    ...WORKER_DEFAULT_CONFIG,
-    ...workerConfig,
-});
 
 export class TestWorkerInstance implements ITestWorkerInstance {
 
@@ -88,7 +84,14 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         private beforeCompile: (paths: Array<string>, filePath: string, fileContent: string) => Promise<Array<string>>,
         workerConfig: Partial<ITestWorkerConfig> = {}
     ) {
-        this.config = createConfig(workerConfig);
+        this.config = this.createConfig(workerConfig);
+    }
+
+    private createConfig(workerConfig: Partial<ITestWorkerConfig>): ITestWorkerConfig {
+        return {
+            ...WORKER_DEFAULT_CONFIG,
+            ...workerConfig,
+        };
     }
 
     public async execute(file: IFile, parameters: any, envParameters: any): Promise<any> {
@@ -180,6 +183,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         }
 
         return {
+            needToRelease: this.config.needToRelease,
             ...compiledFile,
             dependencies,
             parameters,
