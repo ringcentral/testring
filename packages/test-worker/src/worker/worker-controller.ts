@@ -57,25 +57,13 @@ export class WorkerController {
         // Test becomes async, when run method called
         // In all other cases it's plane sync file execution
         let isAsync = false;
-        let pending = true;
-        let caughtError: Error | null = null;
 
         let finishCallback = () => {};
-        let failCallback = (error: Error) => {
-            caughtError = error;
-        };
+        let failCallback = (error: Error) => {};
 
-        const startHandler = () => {
-            isAsync = true;
-        };
-        const finishHandler = () => {
-            pending = false;
-            finishCallback();
-        };
-        const failHandler = (error) => {
-            pending = false;
-            failCallback(error);
-        };
+        const startHandler = () => isAsync = true;
+        const finishHandler = () => finishCallback();
+        const failHandler = (error) => failCallback(error);
         const clearExecution = () => {
             Sandbox.clearCache();
             bus.removeListener(TestEvents.started, startHandler);
@@ -93,22 +81,14 @@ export class WorkerController {
 
         if (isAsync) {
             return new Promise<TestStatus>((resolve, reject) => {
-                if (pending) {
-                    finishCallback = () => {
-                        resolve(TestStatus.done);
-                        clearExecution();
-                    };
-                    failCallback = (error) => {
-                        reject(error);
-                        clearExecution();
-                    };
-                } else if (caughtError === null) {
-                    clearExecution();
+                finishCallback = () => {
                     resolve(TestStatus.done);
-                } else {
                     clearExecution();
-                    reject(caughtError);
-                }
+                };
+                failCallback = (error) => {
+                    reject(error);
+                    clearExecution();
+                };
             });
         }
 

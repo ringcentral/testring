@@ -69,7 +69,6 @@ describe('WorkerController', () => {
         });
     });
 
-
     it('should run async test', (callback) => {
         const transportMock = new TransportMock();
         const workerController = new WorkerController(transportMock, testAPIController);
@@ -156,6 +155,54 @@ describe('WorkerController', () => {
                 
                 async function test() {
                     throw new Error("${ERROR_TEXT}");
+                }
+                
+                runMock(test);
+            `,
+            path: 'test.js',
+            dependencies: {},
+            parameters: {},
+            envParameters: null,
+        });
+    });
+
+    it('should run async test with await pending in it', (callback) => {
+        const transportMock = new TransportMock();
+        const workerController = new WorkerController(transportMock, testAPIController);
+
+        workerController.init();
+
+        transportMock.on<ITestExecutionCompleteMessage>(TestWorkerAction.executionComplete, (message) => {
+            chai.expect(message.status).to.be.equal(TestStatus.done);
+            chai.expect(message.error).to.be.equal(null);
+
+            callback();
+        });
+
+        transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
+            needToRelease: false,
+            content: `
+                var api = require('${TESTRING_API_ABSOLUTE_PATH}');
+                var types = require('${TESTRING_TYPES_ABSOLUTE_PATH}');
+
+                async function runMock () {
+                    var fns = Array.prototype.slice.apply(arguments);
+                    var bus = api.testAPIController.getBus();
+
+                    bus.emit(types.TestEvents.started);
+
+                    try {
+                        for (let i = 0; i < fns.length; i++) {
+                            await fns[i]();
+                        }
+                        bus.emit(types.TestEvents.finished);
+                    } catch (err) {
+                        bus.emit(types.TestEvents.failed, err);
+                    }
+                };
+                
+                async function test() {
+                    await new Promise(resolve => setTimeout(() => resolve(), 300));
                 }
                 
                 runMock(test);
