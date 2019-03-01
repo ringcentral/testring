@@ -66,6 +66,11 @@ createField('envConfig', {
     type: 'string',
 });
 
+createField('recorder', {
+    describe: 'Passed to enable recorder server',
+    type: 'boolean',
+});
+
 // CLI entry point, it makes all initialization job and
 // handles all errors, that was not cached inside command
 
