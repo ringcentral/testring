@@ -9,7 +9,7 @@ export const enum RecordingEventTypes {
     CLICK = 'RecordingEventTypes/CLICK',
 }
 
-export const testActionsByRecordingEventTypes = {
+export const actionsByRecordingEventTypes = {
     [RecordingEventTypes.CLICK]: 'click',
 };
 
