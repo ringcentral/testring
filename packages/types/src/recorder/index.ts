@@ -9,6 +9,10 @@ export const enum RecordingEventTypes {
     CLICK = 'RecordingEventTypes/CLICK',
 }
 
+export const testActionsByRecordingEventTypes = {
+    [RecordingEventTypes.CLICK]: 'click',
+};
+
 export interface IRecordingEvent {
     type: RecordingEventTypes;
     elementPath: ElementPath;

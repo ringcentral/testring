@@ -12,6 +12,7 @@ import {
     IWsMessage,
     IExtensionConfig,
     RecorderEvents,
+    testActionsByRecordingEventTypes,
 } from '@testring/types';
 import {
     RECORDER_ELEMENT_IDENTIFIER,
@@ -22,6 +23,7 @@ import {
 
 import { RecorderHttpServer } from './http-server';
 import { RecorderWebSocketServer, RecorderWsEvents } from './ws-server';
+import { testGeneration } from './test-generation';
 
 const extensionPath = path.dirname(require.resolve('@testring/recorder-extension'));
 const frontendPath = path.dirname(require.resolve('@testring/recorder-frontend'));
@@ -71,6 +73,13 @@ export class RecorderServer implements IRecorderServer {
         this.wsPort,
     );
 
+    private manageTest(payload) {
+        const path = 'root.abc.abc';
+        const action = testActionsByRecordingEventTypes[payload.type];
+        const line = testGeneration.getActionLine('SW', action, path);
+        testGeneration.addLine(line);
+    }
+
     private registerConnection(ws: WebSocket): void {
         const conId = generateUniqId();
 
@@ -81,6 +90,7 @@ export class RecorderServer implements IRecorderServer {
                 const { event, payload } = JSON.parse(message);
 
                 if (event) {
+                    this.manageTest(payload);
                     this.transportInstance.broadcast(
                         event,
                         { conId, payload },
