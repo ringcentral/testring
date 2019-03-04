@@ -2,19 +2,22 @@ import * as fs from 'fs';
 
 export class TestWriter {
     test: string[] = [];
+    filePath: string;
+
+    constructor(filePath: string) {
+        this.filePath = filePath;
+    }
 
     addLine(line: string) {
         this.test.push(line);
     }
 
-    writeTest() {
-        const filePath = 'test.js';
-
-        if (!fs.existsSync(filePath)) {
-            fs.closeSync(fs.openSync(filePath, 'w'));
+    write() {
+        if (!fs.existsSync(this.filePath)) {
+            fs.closeSync(fs.openSync(this.filePath, 'w'));
         }
 
-        fs.writeFile(filePath, this.test.join('\n'), (err) => {
+        fs.writeFile(this.filePath, this.test.join('\n'), (err) => {
             if (err) {
                 throw err;
             }
