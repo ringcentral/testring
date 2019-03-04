@@ -12,7 +12,6 @@ import {
     IWsMessage,
     IExtensionConfig,
     RecorderEvents,
-    testActionsByRecordingEventTypes,
 } from '@testring/types';
 import {
     RECORDER_ELEMENT_IDENTIFIER,
@@ -23,7 +22,7 @@ import {
 
 import { RecorderHttpServer } from './http-server';
 import { RecorderWebSocketServer, RecorderWsEvents } from './ws-server';
-import { testGeneration } from './test-generation';
+import { TestManager } from './test-manager';
 
 const extensionPath = path.dirname(require.resolve('@testring/recorder-extension'));
 const frontendPath = path.dirname(require.resolve('@testring/recorder-frontend'));
@@ -35,6 +34,7 @@ export class RecorderServer implements IRecorderServer {
         private httpPort: number = DEFAULT_RECORDER_HTTP_PORT,
         private wsPort: number = DEFAULT_RECORDER_WS_PORT,
         private transportInstance: ITransport = transport,
+        private testManagerInstance: TestManager = new TestManager({ manager: 'SW' }),
     ) {
         this.wsServer.on(
             RecorderWsEvents.CONNECTION,
@@ -80,14 +80,8 @@ export class RecorderServer implements IRecorderServer {
         this.wsPort,
     );
 
-    private manageTest(payload) {
-        const path = 'root.abc.abc';
-        const action = testActionsByRecordingEventTypes[payload.type];
-        const line = testGeneration.getActionLine('SW', action, path);
-        testGeneration.addLine(line);
-    }
-
     private registerConnection(ws: WebSocket): void {
+        this.testManagerInstance.initialize();
         const conId = generateUniqId();
 
         this.connections.set(conId, ws);
@@ -97,7 +91,7 @@ export class RecorderServer implements IRecorderServer {
                 const { event, payload } = JSON.parse(message);
 
                 if (event) {
-                    this.manageTest(payload);
+                    this.testManagerInstance.handleAction(payload);
                     this.transportInstance.broadcast(
                         event,
                         { conId, payload },
