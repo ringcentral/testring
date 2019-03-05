@@ -43,7 +43,7 @@ export const getAffectedElementsSummary = (event: Event): ElementSummary[] | voi
     }
 
     const affectedElements = getEventComposedPath(event);
-    const affectedElementsSummary = getElementsSummary(affectedElements, false);
+    const affectedElementsSummary = getElementsSummary(affectedElements, false).reverse();
 
     if (affectedElementsSummary.length > 0) {
         return affectedElementsSummary;
