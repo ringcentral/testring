@@ -430,8 +430,8 @@ export class WebApplication extends PluggableModule {
 
     public async logNavigatorVersion() {
         const userAgent = await this.execute(() => window.navigator && window.navigator.userAgent);
-
         this.logger.debug(userAgent);
+        return userAgent;
     }
 
     private documentReadyWait() {
