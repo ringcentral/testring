@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { TestWriter } from './test-writer';
 import { PathComposer } from './path-composer';
-import { actionsByRecordingEventTypes } from '@testring/types';
+import { commandsByRecordingEventTypes } from '@testring/types';
 import { RECORDER_ELEMENT_IDENTIFIER } from '@testring/constants';
 
 type TestManagerOptions = {
@@ -20,14 +20,15 @@ export class TestManager {
         this.pathComposer = new PathComposer(RECORDER_ELEMENT_IDENTIFIER);
     }
 
-    private getActionLine(action: string, path: string) {
-        return `${this.manager}.${action}(${path});`;
+    private getCommand(eventType: string, path: string, value: string) {
+        return commandsByRecordingEventTypes[eventType](this.manager, path, value);
     }
 
-    handleAction(actionInfo) {
-        const path = this.pathComposer.getPathByAttribute(actionInfo.affectedElementsSummary);
-        const action = actionsByRecordingEventTypes[actionInfo.type];
-        const line = this.getActionLine(action, path);
+    // FIXME add type
+    handleEvent(eventInfo) {
+        const path = this.pathComposer.getPath(eventInfo.affectedElementsSummary);
+        const targetElementSummary = [...eventInfo.affectedElementsSummary].pop();
+        const line = this.getCommand(eventInfo.type, path, targetElementSummary.value);
 
         this.testWriter.addLine(line);
     }

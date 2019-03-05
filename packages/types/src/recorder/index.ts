@@ -10,9 +10,9 @@ export const enum RecordingEventTypes {
     CHANGE = 'RecordingEventTypes/CHANGE',
 }
 
-export const actionsByRecordingEventTypes = {
-    [RecordingEventTypes.CLICK]: 'click',
-    [RecordingEventTypes.CHANGE]: 'setValue',
+export const commandsByRecordingEventTypes = {
+    [RecordingEventTypes.CLICK]: (manager, path) => `${manager}.click(${path});`,
+    [RecordingEventTypes.CHANGE]: (manager, path, value) => `${manager}.setValue(${path}, ${value});`,
 };
 
 export interface IRecordingEvent {

@@ -7,7 +7,7 @@ export class PathComposer {
         this.targetAttribute = attribute;
     }
 
-    getPathByAttribute(elementsSummary: ElementSummary[]) {
+    getPath(elementsSummary: ElementSummary[]) {
         return elementsSummary
             .map((elemensSummary) => elemensSummary.attributes[this.targetAttribute])
             .filter(attribute => attribute !== undefined)
