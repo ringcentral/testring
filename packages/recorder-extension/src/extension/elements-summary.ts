@@ -28,12 +28,17 @@ export const getElementsSummary = (elements: Array<Element>, withChildren: boole
             const attributesSummary = {};
             Array.from(attributes).forEach(({ name, value }) => attributesSummary[name] = value);
 
-            let childrenSummary;
+            const elementSummary: ElementSummary = { tagName, value, attributes: attributesSummary };
+
             if (withChildren) {
-                childrenSummary = getElementsSummary(Array.from(children));
+                elementSummary.children = getElementsSummary(Array.from(children));
             }
 
-            return { tagName, innerText, value, attributes: attributesSummary, children: childrenSummary };
+            if (children.length === 0) {
+                elementSummary.innerText = innerText;
+            }
+
+            return elementSummary;
     });
 };
 
