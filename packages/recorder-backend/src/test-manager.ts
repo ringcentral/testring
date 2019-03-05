@@ -20,15 +20,20 @@ export class TestManager {
         this.pathComposer = new PathComposer(RECORDER_ELEMENT_IDENTIFIER);
     }
 
-    private getCommand(eventType: string, path: string, value: string) {
-        return commandsByRecordingEventTypes[eventType](this.manager, path, value);
+    private getCommand({ eventType, path, value, text }) {
+        return commandsByRecordingEventTypes[eventType]({ manager: this.manager, path, value, text });
     }
 
     // FIXME add type
     handleEvent(eventInfo) {
         const path = this.pathComposer.getPath(eventInfo.affectedElementsSummary);
         const targetElementSummary = [...eventInfo.affectedElementsSummary].pop();
-        const line = this.getCommand(eventInfo.type, path, targetElementSummary.value);
+        const line = this.getCommand({
+            path,
+            eventType: eventInfo.type,
+            value: targetElementSummary.value,
+            text: targetElementSummary.innerText,
+        });
 
         this.testWriter.addLine(line);
     }

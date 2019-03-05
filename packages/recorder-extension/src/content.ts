@@ -37,3 +37,10 @@ transportClient.on(
         });
     }
 );
+
+let contextMenuEvent;
+window.oncontextmenu = (e) => contextMenuEvent = e;
+transportClient.on(
+    MessagingTransportEvents.RECORDING_EVENT,
+    () => eventHandler(contextMenuEvent, RecordingEventTypes.EQUAL_TEXT),
+);
