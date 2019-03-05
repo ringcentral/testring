@@ -9,9 +9,9 @@ type TestManagerOptions = {
 };
 
 export class TestManager {
-    manager: string;
-    testWriter: TestWriter;
-    pathComposer: PathComposer;
+    private readonly manager: string;
+    private readonly testWriter: TestWriter;
+    private readonly pathComposer: PathComposer;
 
     constructor({ manager }: TestManagerOptions) {
         this.manager = manager;
@@ -20,7 +20,7 @@ export class TestManager {
         this.pathComposer = new PathComposer(RECORDER_ELEMENT_IDENTIFIER);
     }
 
-    getActionLine(action: string, path: string) {
+    private getActionLine(action: string, path: string) {
         return `${this.manager}.${action}(${path});`;
     }
 

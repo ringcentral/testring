@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 
 export class TestWriter {
+    private readonly filePath: string;
     test: string[] = [];
-    filePath: string;
 
     constructor(filePath: string) {
         this.filePath = filePath;
