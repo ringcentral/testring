@@ -81,7 +81,6 @@ export class RecorderServer implements IRecorderServer {
     );
 
     private registerConnection(ws: WebSocket): void {
-        this.testManagerInstance.initialize();
         const conId = generateUniqId();
 
         this.connections.set(conId, ws);

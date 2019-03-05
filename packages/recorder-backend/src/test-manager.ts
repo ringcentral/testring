@@ -16,10 +16,6 @@ export class TestManager {
         this.testWriter = new TestWriter(path.resolve(__dirname, 'test.js'));
     }
 
-    initialize() {
-        this.testWriter.addLine(`const ${this.manager} = await this.get${this.manager};`);
-    }
-
     getActionLine(action: string, path: string) {
         return `${this.manager}.${action}(${path});`;
     }
