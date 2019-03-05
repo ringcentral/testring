@@ -7,10 +7,12 @@ export const enum RecorderEvents {
 
 export const enum RecordingEventTypes {
     CLICK = 'RecordingEventTypes/CLICK',
+    CHANGE = 'RecordingEventTypes/CHANGE',
 }
 
 export const actionsByRecordingEventTypes = {
     [RecordingEventTypes.CLICK]: 'click',
+    [RecordingEventTypes.CHANGE]: 'setValue',
 };
 
 export interface IRecordingEvent {

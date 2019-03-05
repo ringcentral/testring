@@ -1,15 +1,13 @@
 /// <reference types="chrome" />
 
-import { MessagingTransportEvents, RecordingEventTypes, RecorderEvents, IExtensionConfig } from '@testring/types';
+import { IExtensionConfig, MessagingTransportEvents, RecorderEvents, RecordingEventTypes } from '@testring/types';
 
 import { MessagingTransportClient } from './extension/messaging-transport';
 import { getAffectedElementsSummary, getElementsSummary } from './extension/elements-summary';
 
 const transportClient = new MessagingTransportClient();
 
-let clickHandlerFunc = (event) => {};
-
-const clickHandler = (event: MouseEvent): void => {
+const eventHandler = (event: Event, type: RecordingEventTypes): void => {
     try {
         const affectedElementsSummary = getAffectedElementsSummary(event);
         const domSummary = getElementsSummary([document.body]);
@@ -18,7 +16,7 @@ const clickHandler = (event: MouseEvent): void => {
             transportClient.send({
                 event: MessagingTransportEvents.RECORDING_EVENT,
                 payload: {
-                    type: RecordingEventTypes.CLICK,
+                    type,
                     affectedElementsSummary,
                     domSummary,
                 },
@@ -32,10 +30,10 @@ const clickHandler = (event: MouseEvent): void => {
 transportClient.on(
     RecorderEvents.HANDSHAKE,
     (config: IExtensionConfig) => {
-        document.removeEventListener('click', clickHandlerFunc);
+        document.addEventListener('click', (event) => eventHandler(event, RecordingEventTypes.CLICK));
 
-        clickHandlerFunc = (event) => clickHandler(event);
-
-        document.addEventListener('click', clickHandlerFunc);
+        Array.from(document.querySelectorAll('input')).forEach((input) => {
+            input.addEventListener('change', (event) => eventHandler(event, RecordingEventTypes.CHANGE));
+        });
     }
 );
