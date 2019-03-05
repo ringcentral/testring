@@ -8,11 +8,13 @@ export const enum RecorderEvents {
 export const enum RecordingEventTypes {
     CLICK = 'RecordingEventTypes/CLICK',
     CHANGE = 'RecordingEventTypes/CHANGE',
+    EQUAL_TEXT = 'RecordingEventTypes/EQUAL_TEXT',
 }
 
 export const commandsByRecordingEventTypes = {
-    [RecordingEventTypes.CLICK]: (manager, path) => `${manager}.click(${path});`,
-    [RecordingEventTypes.CHANGE]: (manager, path, value) => `${manager}.setValue(${path}, ${value});`,
+    [RecordingEventTypes.CLICK]: ({ manager, path }) => `await ${manager}.click(${path});`,
+    [RecordingEventTypes.CHANGE]: ({ manager, path, value }) => `await ${manager}.setValue(${path}, '${value}');`,
+    [RecordingEventTypes.EQUAL_TEXT]: ({ manager, path, text }) => `await ${manager}.assert.equal(await ${manager}.getText(${path}), '${text}');`,
 };
 
 export interface IRecordingEvent {
