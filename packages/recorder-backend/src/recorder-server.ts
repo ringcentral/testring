@@ -34,7 +34,7 @@ export class RecorderServer implements IRecorderServer {
         private httpPort: number = DEFAULT_RECORDER_HTTP_PORT,
         private wsPort: number = DEFAULT_RECORDER_WS_PORT,
         private transportInstance: ITransport = transport,
-        private testManagerInstance: TestManager = new TestManager({ manager: 'SW' }),
+        private testManager: TestManager = new TestManager('SW'),
     ) {
         this.wsServer.on(
             RecorderWsEvents.CONNECTION,
@@ -90,7 +90,7 @@ export class RecorderServer implements IRecorderServer {
                 const { event, payload } = JSON.parse(message);
 
                 if (event) {
-                    this.testManagerInstance.handleEvent(payload);
+                    this.testManager.handleEvent(payload);
                     this.transportInstance.broadcast(
                         event,
                         { conId, payload },

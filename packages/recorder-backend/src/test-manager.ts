@@ -4,21 +4,12 @@ import { PathComposer } from './path-composer';
 import { commandsByRecordingEventTypes } from '@testring/types';
 import { RECORDER_ELEMENT_IDENTIFIER } from '@testring/constants';
 
-type TestManagerOptions = {
-    manager: string;
-};
-
 export class TestManager {
-    private readonly manager: string;
-    private readonly testWriter: TestWriter;
-    private readonly pathComposer: PathComposer;
-
-    constructor({ manager }: TestManagerOptions) {
-        this.manager = manager;
-
-        this.testWriter = new TestWriter(path.resolve(__dirname, 'test.js'));
-        this.pathComposer = new PathComposer(RECORDER_ELEMENT_IDENTIFIER);
-    }
+    constructor(
+        private manager: string,
+        private testWriter = new TestWriter(path.resolve(__dirname, 'test.js')),
+        private pathComposer = new PathComposer(RECORDER_ELEMENT_IDENTIFIER),
+    ) { }
 
     private getCommand({ eventType, path, value, text }) {
         return commandsByRecordingEventTypes[eventType]({ manager: this.manager, path, value, text });
