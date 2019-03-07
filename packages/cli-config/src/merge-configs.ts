@@ -54,7 +54,7 @@ export function mergeConfigs<T>(defaults: T, ...extensions: Partial<T>[]): T {
     const options = {};
 
     const plugins = deepMergePlugins((list as any[]).map((obj) => obj && obj.plugins ? obj.plugins : []), options);
-    const source = deepmerge.all(list, options);
+    const source = deepmerge.all<T>(list, options);
 
     if (plugins.length > 0) {
         (source as any).plugins = plugins;

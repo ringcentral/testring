@@ -1,5 +1,4 @@
 {
-  "lerna": "2.11.0",
   "independent": false,
   "packages": [
     "packages/*"
@@ -15,9 +14,8 @@
     },
     "publish": {
       "forcePublish": "*",
-      "allowBranch": "master",
-      "skipNpm": true
+      "allowBranch": "master"
     }
   },
-  "version": "0.4.49"
+  "version": "0.4.50"
 }

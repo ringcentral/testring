@@ -61,7 +61,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     private config: SeleniumPluginConfig;
 
     constructor(config: Partial<SeleniumPluginConfig> = {}) {
-        this.config = deepmerge.all([
+        this.config = deepmerge.all<SeleniumPluginConfig>([
             DEFAULT_CONFIG,
             config,
         ], {
