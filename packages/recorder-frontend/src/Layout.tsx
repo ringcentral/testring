@@ -33,6 +33,11 @@ export const Layout = () => (
             </button>
             <input type="text" name="input" data-test-automation-id="input" />
         </div>
+        <div data-test-automation-id="numeric">
+            <div data-test-automation-id="item1">123</div>
+            <div data-test-automation-id="item2">456</div>
+            <div data-test-automation-id="item3">789</div>
+        </div>
         <button>
             Totally out of scope, not good
         </button>

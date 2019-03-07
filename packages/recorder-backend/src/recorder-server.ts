@@ -123,6 +123,13 @@ export class RecorderServer implements IRecorderServer {
             RecorderServerEvents.CONNECTION,
             { conId }
         );
+
+        this.testManager.on(RecorderEvents.SPECIFY_PATH, (eventInfo) => {
+            this.send(conId, {
+                event: RecorderEvents.SPECIFY_PATH,
+                payload: eventInfo,
+            });
+        });
     }
 
     private unregisterConnection(conId: string): void {

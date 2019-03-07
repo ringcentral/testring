@@ -38,6 +38,25 @@ transportClient.on(
     }
 );
 
+transportClient.on(
+    RecorderEvents.SPECIFY_PATH,
+    (eventInfo) => {
+        const specifiedPath = prompt('Please specify path', eventInfo.path);
+
+        if (specifiedPath === null) {
+            return;
+        }
+
+        transportClient.send({
+            event: MessagingTransportEvents.RECORDING_EVENT,
+            payload: {
+                ...eventInfo,
+                path: specifiedPath,
+            },
+        });
+    }
+);
+
 let contextMenuEvent;
 window.oncontextmenu = (e) => contextMenuEvent = e;
 transportClient.on(
