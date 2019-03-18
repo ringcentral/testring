@@ -43,6 +43,7 @@ export class TestManager extends EventEmitter {
         });
 
         this.testWriter.addLine(line);
+        this.emit(RecorderEvents.EMIT_BROWSER_EVENT, eventInfo);
     }
 
     finishTest() {
