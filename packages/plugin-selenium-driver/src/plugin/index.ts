@@ -83,7 +83,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     private createConfig(config: Partial<SeleniumPluginConfig>): SeleniumPluginConfig {
-        const mergedConfig = deepmerge.all<SeleniumPluginConfig>([
+        let mergedConfig = deepmerge.all<SeleniumPluginConfig>([
             DEFAULT_CONFIG,
             config,
         ], {
@@ -91,7 +91,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         });
 
         if (mergedConfig.recorderExtension) {
-            deepmerge.all<SeleniumPluginConfig>([
+            mergedConfig = deepmerge.all<SeleniumPluginConfig>([
                 mergedConfig,
                 EXTENSION_ARGS as Partial<SeleniumPluginConfig>,
             ]);
