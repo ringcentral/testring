@@ -13,9 +13,10 @@ type browserClientItem = {
     initTime: number;
 };
 
-const extensionPath = path.dirname(require.resolve('@testring/recorder-extension'));
+const EXTENSION_PATH = path.dirname(require.resolve('@testring/recorder-extension'));
 
 const DEFAULT_CONFIG: SeleniumPluginConfig = {
+    recorderExtension: false,
     deprecationWarnings: false,
     clientCheckInterval: 5 * 1000,
     clientTimeout: 15 * 60 * 1000,
@@ -23,7 +24,15 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
     desiredCapabilities: {
         browserName: 'chrome',
         chromeOptions: {
-            args: [`load-extension=${extensionPath}`],
+            args: [],
+        },
+    },
+};
+
+const EXTENSION_ARGS = {
+    desiredCapabilities: {
+        chromeOptions: {
+            args: [`load-extension=${EXTENSION_PATH}`],
         },
     },
 };
@@ -64,18 +73,31 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     private config: SeleniumPluginConfig;
 
     constructor(config: Partial<SeleniumPluginConfig> = {}) {
-        this.config = deepmerge.all<SeleniumPluginConfig>([
-            DEFAULT_CONFIG,
-            config,
-        ], {
-            clone: true,
-        });
+        this.config = this.createConfig(config);
 
         if (this.config.host === undefined) {
             this.runLocalSelenium();
         }
 
         this.initIntervals();
+    }
+
+    private createConfig(config: Partial<SeleniumPluginConfig>): SeleniumPluginConfig {
+        const mergedConfig = deepmerge.all<SeleniumPluginConfig>([
+            DEFAULT_CONFIG,
+            config,
+        ], {
+            clone: true,
+        });
+
+        if (mergedConfig.recorderExtension) {
+            deepmerge.all<SeleniumPluginConfig>([
+                mergedConfig,
+                EXTENSION_ARGS as Partial<SeleniumPluginConfig>,
+            ]);
+        }
+
+        return mergedConfig;
     }
 
     private initIntervals() {
