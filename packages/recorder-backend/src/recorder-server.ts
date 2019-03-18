@@ -130,6 +130,13 @@ export class RecorderServer implements IRecorderServer {
                 payload: eventInfo,
             });
         });
+
+        this.testManager.on(RecorderEvents.EMIT_BROWSER_EVENT, (eventInfo) => {
+            this.send(conId, {
+                event: RecorderEvents.EMIT_BROWSER_EVENT,
+                payload: eventInfo,
+            });
+        });
     }
 
     private unregisterConnection(conId: string): void {

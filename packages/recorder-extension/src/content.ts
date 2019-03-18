@@ -5,11 +5,20 @@ import { IExtensionConfig, MessagingTransportEvents, RecorderEvents, RecordingEv
 import { MessagingTransportClient } from './extension/messaging-transport';
 import { getAffectedElementsSummary, getElementsSummary } from './extension/elements-summary';
 
+type RecorderEvent = Event & { isRecorderEvent: boolean };
+
+let activeBrowserEvent: RecorderEvent | null = null;
+let activeBrowserEventTarget: EventTarget | null = null;
+
 const transportClient = new MessagingTransportClient();
 
-const eventHandler = (event: Event, type: RecordingEventTypes): void => {
+const eventHandler = (e: Event | RecorderEvent, type: RecordingEventTypes): void => {
+    if ('isRecorderEvent' in e) {
+        return;
+    }
+
     try {
-        const affectedElementsSummary = getAffectedElementsSummary(event);
+        const affectedElementsSummary = getAffectedElementsSummary(e);
         const domSummary = getElementsSummary([document.body]);
 
         if (affectedElementsSummary) {
@@ -25,12 +34,23 @@ const eventHandler = (event: Event, type: RecordingEventTypes): void => {
     } catch (e) {
         console.warn(e) // eslint-disable-line
     }
+
+    const EventConstructor: any = e.constructor;
+    activeBrowserEvent = new EventConstructor(e.type, { ...e, bubbles: true });
+
+    if (activeBrowserEvent) {
+        activeBrowserEvent.isRecorderEvent = true;
+    }
+
+    activeBrowserEventTarget = e.target;
+    e.stopImmediatePropagation();
+    e.preventDefault();
 };
 
 transportClient.on(
     RecorderEvents.HANDSHAKE,
     (config: IExtensionConfig) => {
-        document.addEventListener('click', (event) => eventHandler(event, RecordingEventTypes.CLICK));
+        document.addEventListener('click', (event) => eventHandler(event, RecordingEventTypes.CLICK), true);
 
         Array.from(document.querySelectorAll('input')).forEach((input) => {
             input.addEventListener('change', (event) => eventHandler(event, RecordingEventTypes.CHANGE));
@@ -56,6 +76,15 @@ transportClient.on(
         });
     }
 );
+
+transportClient.on(RecorderEvents.EMIT_BROWSER_EVENT, () => {
+    if (activeBrowserEvent !== null && activeBrowserEventTarget !== null) {
+        activeBrowserEventTarget.dispatchEvent(activeBrowserEvent);
+
+        activeBrowserEventTarget = null;
+        activeBrowserEvent = null;
+    }
+});
 
 let contextMenuEvent;
 window.oncontextmenu = (e) => contextMenuEvent = e;
