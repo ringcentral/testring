@@ -64,6 +64,7 @@ export class WorkerController {
         const startHandler = () => isAsync = true;
         const finishHandler = () => finishCallback();
         const failHandler = (error) => failCallback(error);
+
         const clearExecution = () => {
             Sandbox.clearCache();
             bus.removeListener(TestEvents.started, startHandler);
