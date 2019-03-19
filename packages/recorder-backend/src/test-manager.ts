@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import * as path from 'path';
 import { TestWriter } from './test-writer';
 import { PathComposer } from './path-composer';
-import { commandsByRecordingEventTypes, RecorderEvents } from '@testring/types';
+import { BrowserEventInfo, commandsByRecordingEventTypes, RecorderEvents } from '@testring/types';
 import { RECORDER_ELEMENT_IDENTIFIER } from '@testring/constants';
 
 export class TestManager extends EventEmitter {
@@ -18,8 +18,7 @@ export class TestManager extends EventEmitter {
         return commandsByRecordingEventTypes[eventType]({ manager: this.manager, path, value, text });
     }
 
-    // FIXME add type
-    handleEvent(eventInfo) {
+    handleEvent(eventInfo: BrowserEventInfo) {
         let path;
 
         if (eventInfo.path) {
@@ -35,15 +34,17 @@ export class TestManager extends EventEmitter {
         }
 
         const targetElementSummary = [...eventInfo.affectedElementsSummary].pop();
-        const line = this.getCommand({
-            path,
-            eventType: eventInfo.type,
-            value: targetElementSummary.value,
-            text: targetElementSummary.innerText,
-        });
+        if (targetElementSummary) {
+            const line = this.getCommand({
+                path,
+                eventType: eventInfo.type,
+                value: targetElementSummary.value,
+                text: targetElementSummary.innerText,
+            });
 
-        this.testWriter.addLine(line);
-        this.emit(RecorderEvents.EMIT_BROWSER_EVENT, eventInfo);
+            this.testWriter.addLine(line);
+            this.emit(RecorderEvents.EMIT_BROWSER_EVENT, eventInfo);
+        }
     }
 
     finishTest() {
