@@ -1,12 +1,9 @@
 import * as fs from 'fs';
 
 export class TestWriter {
-    private readonly filePath: string;
-    test: string[] = [];
+    private test: string[] = [];
 
-    constructor(filePath: string) {
-        this.filePath = filePath;
-    }
+    constructor(private readonly filePath: string) { }
 
     addLine(line: string) {
         this.test.push(line);
