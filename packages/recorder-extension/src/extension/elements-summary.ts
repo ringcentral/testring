@@ -1,6 +1,6 @@
 import { ElementSummary } from '@testring/types';
 
-const composePath = (element: Element, path: Array<Element> = []): Array<Element> => {
+const composePath = (element: HTMLElement, path: Array<HTMLElement> = []): Array<HTMLElement> => {
     const nextPath = [ ...path, element ];
 
     if (!element.parentElement) {
@@ -10,7 +10,7 @@ const composePath = (element: Element, path: Array<Element> = []): Array<Element
     return composePath(element.parentElement, nextPath);
 };
 
-const getEventComposedPath = (event: any): Array<Element> => {
+const getEventComposedPath = (event: any): Array<HTMLElement> => {
     if (event.path) {
         return event.path;
     } else if (event.composedPath) {
@@ -20,18 +20,25 @@ const getEventComposedPath = (event: any): Array<Element> => {
     return composePath(event.target);
 };
 
-export const getElementsSummary = (elements: Array<Element>, withChildren: boolean = true): ElementSummary[] => {
+export const getElementsSummary = (elements: Array<HTMLElement>, withChildren: boolean = true): ElementSummary[] => {
     return elements
         .filter(({ tagName, attributes }) => tagName && attributes)
-        // @ts-ignore
-        .map(({ tagName, attributes, innerText, value, children }) => {
+        .map((element) => {
+            let value;
+            const { tagName, attributes, innerText, children } = element;
+
+            if (element instanceof HTMLInputElement) {
+                value = element.value;
+            }
+
             const attributesSummary = {};
             Array.from(attributes).forEach(({ name, value }) => attributesSummary[name] = value);
 
             const elementSummary: ElementSummary = { tagName, value, attributes: attributesSummary };
 
             if (withChildren) {
-                elementSummary.children = getElementsSummary(Array.from(children));
+                const childrenArray = (Array.from(children) as  Array<HTMLElement>);
+                elementSummary.children = getElementsSummary(childrenArray);
             }
 
             if (children.length === 0) {
