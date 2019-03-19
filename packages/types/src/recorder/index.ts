@@ -1,3 +1,5 @@
+import { ElementSummary } from '../recorder-extension';
+
 export type ElementPath = Array<IElementPathNode>;
 
 export const enum RecorderEvents {
@@ -27,3 +29,10 @@ export interface IRecordingEvent {
 export interface IElementPathNode {
     id: string;
 }
+
+export type BrowserEventInfo = {
+    type: RecordingEventTypes;
+    affectedElementsSummary: ElementSummary[];
+    domSummary: ElementSummary;
+    path?: string;
+};
