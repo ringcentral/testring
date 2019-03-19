@@ -83,7 +83,8 @@ export class RecorderServer implements IRecorderServer {
                 const { event, payload } = JSON.parse(message);
 
                 if (event) {
-                    this.testManager.handleEvent(payload);
+                    // this.testManager.handleEvent(payload);
+
                     this.transportInstance.broadcast(
                         event,
                         { conId, payload },
