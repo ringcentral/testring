@@ -18,8 +18,9 @@ async function task(pkg) {
             },
             (error) => {
                 let published;
+
                 if (error) {
-                    // ignoring error with ouput
+                    // ignoring error with output
                     process.stderr.write(error.toString());
                     published = false;
                 } else {
@@ -38,13 +39,15 @@ async function task(pkg) {
 
 async function main() {
     const packages = await getPackages(__dirname);
-    const filtered = filterPackages(packages, [], [], true);
+    const filtered = filterPackages(packages, [], [], false);
     const batchedPackages = batchPackages(filtered);
 
     try {
         const packagesBatchDescriptors = await runParallelBatches(batchedPackages, 2, task);
         const packagesDescriptors = packagesBatchDescriptors.reduce((pkgs, batch) => pkgs.concat(batch), []);
-        process.stdout.write(`Packages published: ${Object.keys(packagesDescriptors).length}\n`);
+        const totalPackages = packagesDescriptors.reduce((acc, item) => acc += item.published ? 1 : 0, 0);
+
+        process.stdout.write(`Packages published: ${totalPackages}\n`);
     } catch (e) {
         process.stderr.write(e.toString());
         process.exit(1);
