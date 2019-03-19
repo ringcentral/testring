@@ -1,50 +1,56 @@
 /// <reference types="chrome" />
 
-import { IExtensionConfig, MessagingTransportEvents, RecorderEvents, RecordingEventTypes } from '@testring/types';
+import {
+    BrowserEventInfo,
+    IExtensionConfig,
+    MessagingTransportEvents,
+    RecorderEvents,
+    RecordingEventTypes,
+} from '@testring/types';
 
 import { MessagingTransportClient } from './extension/messaging-transport';
 import { getAffectedElementsSummary, getElementsSummary } from './extension/elements-summary';
+import { generateUniqId } from '@testring/utils';
 
 type RecorderEvent = Event & { isRecorderEvent: boolean };
+type BrowserEventMap = {
+    [id: string]: {
+        browserEvent: RecorderEvent;
+        browserEventTarget: EventTarget;
+    };
+};
 
-let activeBrowserEvent: RecorderEvent | null = null;
-let activeBrowserEventTarget: EventTarget | null = null;
-
+const browserEventMap: BrowserEventMap = { };
 const transportClient = new MessagingTransportClient();
 
 const eventHandler = (e: Event | RecorderEvent, type: RecordingEventTypes): void => {
-    if ('isRecorderEvent' in e) {
+    if ('isRecorderEvent' in e || e.target === null) {
         return;
     }
 
-    try {
-        const affectedElementsSummary = getAffectedElementsSummary(e);
-        const domSummary = getElementsSummary([document.body]);
-
-        if (affectedElementsSummary) {
-            transportClient.send({
-                event: MessagingTransportEvents.RECORDING_EVENT,
-                payload: {
-                    type,
-                    affectedElementsSummary,
-                    domSummary,
-                },
-            });
-        }
-    } catch (e) {
-        console.warn(e) // eslint-disable-line
-    }
-
+    const id = generateUniqId();
     const EventConstructor: any = e.constructor;
-    activeBrowserEvent = new EventConstructor(e.type, { ...e, bubbles: true });
-
-    if (activeBrowserEvent) {
-        activeBrowserEvent.isRecorderEvent = true;
-    }
-
-    activeBrowserEventTarget = e.target;
+    const browserEvent: RecorderEvent = new EventConstructor(e.type, { ...e, bubbles: true });
+    browserEvent.isRecorderEvent = true;
+    const browserEventTarget = e.target;
+    browserEventMap[id] = {
+        browserEvent,
+        browserEventTarget,
+    };
     e.stopImmediatePropagation();
     e.preventDefault();
+
+    const affectedElementsSummary = getAffectedElementsSummary(e);
+    const domSummary = getElementsSummary([document.body]);
+    transportClient.send({
+        event: MessagingTransportEvents.RECORDING_EVENT,
+        payload: {
+            id,
+            type,
+            affectedElementsSummary,
+            domSummary,
+        },
+    });
 };
 
 transportClient.on(
@@ -77,13 +83,11 @@ transportClient.on(
     }
 );
 
-transportClient.on(RecorderEvents.EMIT_BROWSER_EVENT, () => {
-    if (activeBrowserEvent !== null && activeBrowserEventTarget !== null) {
-        activeBrowserEventTarget.dispatchEvent(activeBrowserEvent);
+transportClient.on(RecorderEvents.EMIT_BROWSER_EVENT, ({ id }: BrowserEventInfo) => {
+    const { browserEvent, browserEventTarget } = browserEventMap[id];
+    browserEventTarget.dispatchEvent(browserEvent);
 
-        activeBrowserEventTarget = null;
-        activeBrowserEvent = null;
-    }
+    delete browserEventMap[id];
 });
 
 let contextMenuEvent;
