@@ -34,5 +34,6 @@ export type BrowserEventInfo = {
     type: RecordingEventTypes;
     affectedElementsSummary: ElementSummary[];
     domSummary: ElementSummary;
+    id: string;
     path?: string;
 };
