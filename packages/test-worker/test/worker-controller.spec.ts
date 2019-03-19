@@ -30,7 +30,7 @@ describe('WorkerController', () => {
         });
 
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
-            needToRelease: false,
+            waitForRelease: false,
             content: `
                 function test () {} 
                 test();
@@ -60,7 +60,7 @@ describe('WorkerController', () => {
         });
 
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
-            needToRelease: false,
+            waitForRelease: false,
             content: `throw new Error("${ERROR_TEXT}")`,
             path: 'test.js',
             dependencies: {},
@@ -83,7 +83,7 @@ describe('WorkerController', () => {
         });
 
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
-            needToRelease: false,
+            waitForRelease: false,
             content: `
                 var api = require('${TESTRING_API_ABSOLUTE_PATH}');
                 var types = require('${TESTRING_TYPES_ABSOLUTE_PATH}');
@@ -133,7 +133,7 @@ describe('WorkerController', () => {
         });
 
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
-            needToRelease: false,
+            waitForRelease: false,
             content: `
                 var api = require('${TESTRING_API_ABSOLUTE_PATH}');
                 var types = require('${TESTRING_TYPES_ABSOLUTE_PATH}');
@@ -180,7 +180,7 @@ describe('WorkerController', () => {
         });
 
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
-            needToRelease: false,
+            waitForRelease: false,
             content: `
                 var api = require('${TESTRING_API_ABSOLUTE_PATH}');
                 var types = require('${TESTRING_TYPES_ABSOLUTE_PATH}');
