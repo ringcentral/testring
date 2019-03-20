@@ -483,7 +483,7 @@ export class WebApplication extends PluggableModule {
                 this.openPageFromURI(page),
                 new Promise((resolve, reject) => {
                     timer = setTimeout(
-                        () => reject(new Error('Page open timeout')),
+                        () => reject(new Error(`Page open timeout: ${page}`)),
                         timeout,
                     );
                 }),
