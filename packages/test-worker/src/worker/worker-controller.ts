@@ -4,6 +4,7 @@ import { Sandbox } from '@testring/sandbox';
 import { TestAPIController } from '@testring/api';
 import {
     ITransport,
+    ITestEvaluationMessage,
     ITestExecutionMessage,
     ITestExecutionCompleteMessage,
     TestWorkerAction,
@@ -22,28 +23,51 @@ export class WorkerController {
     public init() {
         this.transportInstance.on(TestWorkerAction.executeTest, async (message: ITestExecutionMessage) => {
             try {
-                const testResult = await this.executeTest(message);
+                await this.executeTest(message);
 
-                this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
-                    TestWorkerAction.executionComplete,
-                    {
-                        status: testResult,
-                        error: null,
-                    }
-                );
+                if (message.waitForRelease) {
+                    this.waitForRelease();
+                } else {
+                    this.completeExecutionSuccessfully();
+                }
             } catch (error) {
-                this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
-                    TestWorkerAction.executionComplete,
-                    {
-                        status: TestStatus.failed,
-                        error,
-                    }
-                );
+                this.completeExecutionFailed(error);
             }
         });
     }
 
-    public async executeTest(message: ITestExecutionMessage): Promise<TestStatus> {
+    private waitForRelease() {
+        this.transportInstance.on(TestWorkerAction.evaluateCode, async (message: ITestEvaluationMessage) => {
+            Sandbox.evaluateScript(message.path, message.content);
+        });
+        this.transportInstance.on(TestWorkerAction.releaseTest, async () => {
+            this.completeExecutionSuccessfully();
+        });
+    }
+
+    private completeExecutionSuccessfully() {
+        Sandbox.clearCache();
+
+        this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
+            TestWorkerAction.executionComplete,
+            {
+                status: TestStatus.done,
+                error: null,
+            }
+        );
+    }
+
+    private completeExecutionFailed(error: Error) {
+        this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
+            TestWorkerAction.executionComplete,
+            {
+                status: TestStatus.failed,
+                error,
+            }
+        );
+    }
+
+    public async executeTest(message: ITestExecutionMessage): Promise<void> {
         // TODO pass message.parameters somewhere inside web application
         const testID = path.relative(process.cwd(), message.path);
 
@@ -65,8 +89,7 @@ export class WorkerController {
         const finishHandler = () => finishCallback();
         const failHandler = (error) => failCallback(error);
 
-        const clearExecution = () => {
-            Sandbox.clearCache();
+        const removeListeners = () => {
             bus.removeListener(TestEvents.started, startHandler);
             bus.removeListener(TestEvents.finished, finishHandler);
             bus.removeListener(TestEvents.failed, failHandler);
@@ -78,23 +101,22 @@ export class WorkerController {
 
         // Test file execution, should throw exception,
         // if something goes wrong
-        sandbox.execute();
+        await sandbox.execute();
 
         if (isAsync) {
-            return new Promise<TestStatus>((resolve, reject) => {
+            return new Promise<void>((resolve, reject) => {
                 finishCallback = () => {
-                    resolve(TestStatus.done);
-                    clearExecution();
+                    resolve();
+                    removeListeners();
                 };
                 failCallback = (error) => {
                     reject(error);
-                    clearExecution();
+                    removeListeners();
                 };
             });
         }
 
-        clearExecution();
-        return TestStatus.done;
+        removeListeners();
     }
 }
 

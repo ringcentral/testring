@@ -37,13 +37,13 @@ export class TestWorkerLocal extends EventEmitter implements IWorkerEmitter {
         return true;
     }
 
-    private executeTest(payload) {
-        this.workerController.executeTest(payload as ITestExecutionMessage)
-            .then((testResult) => {
+    private executeTest(payload: ITestExecutionMessage) {
+        this.workerController.executeTest(payload)
+            .then(() => {
                 this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
                     TestWorkerAction.executionComplete,
                     {
-                        status: testResult,
+                        status: TestStatus.done,
                         error: null,
                     }
                 );
