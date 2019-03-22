@@ -280,4 +280,17 @@ describe('Sandbox', () => {
             chai.expect(sandbox.execute().equals).to.be.equal(true);
         });
     });
+
+    context('Evaluate', () => {
+        it('Evaluate code in sandbox', async () => {
+            const source = 'var test = 10;';
+            const sandbox = new Sandbox(source, 'test-data.js', {});
+
+            await sandbox.execute();
+
+            await Sandbox.evaluateScript('test-data.js', 'test = 20;');
+            const context = sandbox.getContext();
+            chai.expect(context.test).to.be.equal(20);
+        });
+    });
 });

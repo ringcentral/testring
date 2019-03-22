@@ -16,6 +16,8 @@ export const enum TestStatus {
 }
 
 export const enum TestWorkerAction {
+    evaluateCode = 'evaluateCode',
+    releaseTest = 'releaseTest',
     executeTest = 'executeTest',
     executionComplete = 'executionComplete',
 }

@@ -12,6 +12,10 @@ export interface ITestExecutionMessage extends IFile {
     envParameters: any;
 }
 
+export interface ITestEvaluationMessage extends IFile {
+
+}
+
 export interface ITestExecutionCompleteMessage {
     status: TestStatus;
     error: Error | null;

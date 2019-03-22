@@ -18,6 +18,7 @@ class Sandbox {
 
     constructor(private source: string, private filename: string, private dependencies: DependencyDict) {
         this.context = this.createContext(this.filename, this.dependencies);
+        Sandbox.modulesCache.set(filename, this);
     }
 
     public getContext() {
@@ -31,13 +32,15 @@ class Sandbox {
 
         this.isCompiling = true;
 
-        const context = vm.createContext(this.context);
+        const context = vm.createContext(this.getContext());
         const script = new Script(this.source, this.filename);
 
-        this.runInContext(script, context);
-
-        this.isCompiled = true;
-        this.isCompiling = false;
+        try {
+            this.runInContext(script, context);
+        } finally {
+            this.isCompiled = true;
+            this.isCompiling = false;
+        }
 
         return this.exports;
     }
@@ -58,8 +61,32 @@ class Sandbox {
         Sandbox.modulesCache.clear();
     }
 
-    private static modulesCache: Map<string, Script> = new Map();
+    public static async evaluateScript(filename: string, code: string): Promise<any> {
+        if (!Sandbox.modulesCache.has(filename)) {
+            throw new Error(`Sandbox ${filename} is not created`);
+        }
 
+        const sandbox = Sandbox.modulesCache.get(filename) as Sandbox;
+        const context = vm.createContext(sandbox.getContext());
+        const script = new Script(code, filename);
+
+        sandbox.isCompiled = false;
+        sandbox.isCompiling = true;
+
+        let result;
+        try {
+            result = await sandbox.runInContext(script, context);
+        } catch (error) {
+            throw error;
+        } finally {
+            sandbox.isCompiled = true;
+            sandbox.isCompiling = false;
+        }
+
+        return result;
+    }
+
+    private static modulesCache: Map<string, Sandbox> = new Map();
 
     private require(requestPath) {
         const dependencies = this.dependencies[this.filename];
