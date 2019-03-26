@@ -23,11 +23,11 @@ export class TestRunControllerAPI extends AbstractAPI {
         this.registryWritePlugin(TestRunControllerPlugins.afterRun, handler);
     }
 
-    shouldNotRetry(handler: (testPath: string) => Promise<boolean>) {
+    shouldNotRetry(handler: (params: IQueuedTest) => Promise<boolean>) {
         this.registryWritePlugin(TestRunControllerPlugins.shouldNotRetry, handler);
     }
 
-    shouldNotStart(handler: (testPath: string) => Promise<boolean>) {
+    shouldNotStart(handler: (params: IQueuedTest) => Promise<boolean>) {
         this.registryWritePlugin(TestRunControllerPlugins.shouldNotStart, handler);
     }
 }
