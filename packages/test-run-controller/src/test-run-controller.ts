@@ -40,7 +40,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             TestRunControllerPlugins.afterTest,
             TestRunControllerPlugins.beforeTestRetry,
             TestRunControllerPlugins.afterRun,
-            TestRunControllerPlugins.shouldRetry,
+            TestRunControllerPlugins.shouldNotRetry,
+            TestRunControllerPlugins.shouldNotStart,
         ]);
     }
 
@@ -249,14 +250,14 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             throw error;
         }
 
-        const shouldRetry = await this.callHook(
-            TestRunControllerPlugins.shouldRetry,
-            queueItem.test.path,
+        const shouldNotRetry = await this.callHook(
+            TestRunControllerPlugins.shouldNotRetry,
+            queueItem,
             this.getWorkerMeta(worker)
         );
 
         if (
-            !!shouldRetry &&
+            !!shouldNotRetry &&
             queueItem.retryCount < (this.config.retryCount || 0)
         ) {
             await delay(this.config.retryDelay || 0);
@@ -288,6 +289,16 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
         try {
             const timeout = queuedTest.parameters.testTimeout || this.config.testTimeout;
+
+            const shouldNotStart = await this.callHook(
+                TestRunControllerPlugins.shouldNotStart,
+                queuedTest,
+                this.getWorkerMeta(worker)
+            );
+
+            if (!shouldNotStart) {
+                return;
+            }
 
             await this.callHook(TestRunControllerPlugins.beforeTest, queuedTest, this.getWorkerMeta(worker));
 

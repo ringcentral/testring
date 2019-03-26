@@ -6,7 +6,8 @@ export const enum TestRunControllerPlugins {
     afterTest = 'afterTest',
     beforeTestRetry = 'beforeTestRetry',
     afterRun = 'afterRun',
-    shouldRetry = 'shouldRetry',
+    shouldNotRetry = 'shouldNotRetry',
+    shouldNotStart = 'shouldNotStart',
 }
 
 export interface IQueuedTest {
