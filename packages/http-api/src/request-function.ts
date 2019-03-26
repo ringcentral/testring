@@ -1,6 +1,6 @@
 import { IHttpRequest, IHttpResponse } from '@testring/types';
 import { Response, jar } from 'request';
-import * as requestPromise from 'request-promise';
+import * as requestPromise from 'request-promise-native';
 
 const toString = c => c.toString();
 
@@ -43,6 +43,7 @@ export async function requestFunction(request: IHttpRequest): Promise<IHttpRespo
         timeout: request.timeout,
         headers: request.headers,
         json: request.json,
+        gzip: request.gzip,
         jar: cookieJar,
         resolveWithFullResponse: true,
     };

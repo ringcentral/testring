@@ -24,6 +24,7 @@ export interface IHttpRequest {
     query?: IHttpQueryParameters;
     cookies?: Array<any>;
     resolveWithFullResponse?: boolean;
+    gzip?: boolean;
 }
 
 export interface IHttpRequestMessage {
