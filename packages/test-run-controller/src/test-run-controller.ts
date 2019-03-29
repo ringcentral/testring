@@ -252,12 +252,13 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
         const shouldNotRetry = await this.callHook(
             TestRunControllerPlugins.shouldNotRetry,
+            false,
             queueItem,
             this.getWorkerMeta(worker)
         );
 
         if (
-            !!shouldNotRetry &&
+            !shouldNotRetry &&
             queueItem.retryCount < (this.config.retryCount || 0)
         ) {
             await delay(this.config.retryDelay || 0);
@@ -292,11 +293,12 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
             const shouldNotStart = await this.callHook(
                 TestRunControllerPlugins.shouldNotStart,
+                false,
                 queuedTest,
                 this.getWorkerMeta(worker)
             );
 
-            if (!shouldNotStart) {
+            if (!!shouldNotStart) {
                 return;
             }
 

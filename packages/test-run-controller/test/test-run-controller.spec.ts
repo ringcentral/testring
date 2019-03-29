@@ -76,6 +76,67 @@ describe('Controller', () => {
         chai.expect(executionCalls).to.be.equal(testsCount + testsCount * retriesCount);
     });
 
+    it('should not use retries when test fails', async () => {
+        const testsCount = 3;
+        const retriesCount = 5;
+        const config = { workerLimit: 2, retryDelay: 0, retryCount: retriesCount, testTimeout: DEFAULT_TIMEOUT } as any;
+
+        const tests = generateTestFiles(testsCount);
+
+        const testWorkerMock = new TestWorkerMock(true);
+        const testRunController = new TestRunController(config, testWorkerMock);
+        const shouldNotRetry = testRunController.getHook(TestRunControllerPlugins.shouldNotRetry);
+
+        if (shouldNotRetry) {
+            shouldNotRetry.writeHook('testPlugin', (state, queueItem, { processID }) => {
+                chai.expect(processID).to.be.equal(testWorkerMock.$getInstanceName());
+                chai.expect(state).to.be.equal(false);
+                return true;
+            });
+        }
+
+        const errors = await testRunController.runQueue(tests);
+
+        const executionCalls = testWorkerMock.$getExecutionCallsCount();
+
+        // Errors are generated only when last retry has failed
+        chai.expect(errors).to.be.lengthOf(testsCount);
+
+        // Runner must not try to retry tests run
+        chai.expect(executionCalls).to.be.equal(testsCount);
+    });
+
+
+    it('should not start tests', async () => {
+        const testsCount = 3;
+        const retriesCount = 5;
+        const config = { workerLimit: 2, retryDelay: 0, retryCount: retriesCount, testTimeout: DEFAULT_TIMEOUT } as any;
+
+        const tests = generateTestFiles(testsCount);
+
+        const testWorkerMock = new TestWorkerMock(true);
+        const testRunController = new TestRunController(config, testWorkerMock);
+        const shouldNotStart = testRunController.getHook(TestRunControllerPlugins.shouldNotStart);
+
+        if (shouldNotStart) {
+            shouldNotStart.writeHook('testPlugin', (state, queueItem, { processID }) => {
+                chai.expect(processID).to.be.equal(testWorkerMock.$getInstanceName());
+                chai.expect(state).to.be.equal(false);
+                return true;
+            });
+        }
+
+        const errors = await testRunController.runQueue(tests);
+
+        const executionCalls = testWorkerMock.$getExecutionCallsCount();
+
+        // There should not ba any errors
+        chai.expect(errors).to.be.equal(null);
+
+        // Runner must not try to retry tests run
+        chai.expect(executionCalls).to.be.equal(0);
+    });
+
     it('should be matching processID meta', async () => {
         const config = { bail: true, workerLimit: 2, timeout: DEFAULT_TIMEOUT } as any;
         const tests = generateTestFiles(2);

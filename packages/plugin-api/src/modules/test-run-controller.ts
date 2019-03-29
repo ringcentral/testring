@@ -3,7 +3,7 @@ import { AbstractAPI } from './abstract';
 
 export class TestRunControllerAPI extends AbstractAPI {
 
-    beforeRun(handler: (queue: Array<IQueuedTest>) => Promise<IQueuedTest[]>) {
+    beforeRun(handler: (queue: IQueuedTest[]) => Promise<IQueuedTest[]>) {
         this.registryWritePlugin(TestRunControllerPlugins.beforeRun, handler);
     }
 
@@ -19,15 +19,15 @@ export class TestRunControllerAPI extends AbstractAPI {
         this.registryWritePlugin(TestRunControllerPlugins.afterTest, handler);
     }
 
-    afterRun(handler: (queue: Array<IQueuedTest>) => Promise<void>) {
+    afterRun(handler: (queue: IQueuedTest[]) => Promise<void>) {
         this.registryWritePlugin(TestRunControllerPlugins.afterRun, handler);
     }
 
-    shouldNotRetry(handler: (params: IQueuedTest) => Promise<boolean>) {
+    shouldNotRetry(handler: (state: boolean, test: IQueuedTest) => Promise<boolean>) {
         this.registryWritePlugin(TestRunControllerPlugins.shouldNotRetry, handler);
     }
 
-    shouldNotStart(handler: (params: IQueuedTest) => Promise<boolean>) {
+    shouldNotStart(handler: (state: boolean, test: IQueuedTest) => Promise<boolean>) {
         this.registryWritePlugin(TestRunControllerPlugins.shouldNotStart, handler);
     }
 }
