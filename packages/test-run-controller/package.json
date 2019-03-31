@@ -1,6 +1,6 @@
 {
   "name": "@testring/test-run-controller",
-  "version": "0.4.54",
+  "version": "0.4.55",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,12 +10,12 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/logger": "0.4.54",
-    "@testring/pluggable-module": "0.4.54",
-    "@testring/types": "0.4.54",
-    "@testring/utils": "0.4.54"
+    "@testring/logger": "0.4.55",
+    "@testring/pluggable-module": "0.4.55",
+    "@testring/types": "0.4.55",
+    "@testring/utils": "0.4.55"
   },
   "devDependencies": {
-    "@testring/test-utils": "0.4.54"
+    "@testring/test-utils": "0.4.55"
   }
 }
