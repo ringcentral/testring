@@ -40,8 +40,9 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             TestRunControllerPlugins.afterTest,
             TestRunControllerPlugins.beforeTestRetry,
             TestRunControllerPlugins.afterRun,
-            TestRunControllerPlugins.shouldNotRetry,
+            TestRunControllerPlugins.shouldNotExecute,
             TestRunControllerPlugins.shouldNotStart,
+            TestRunControllerPlugins.shouldNotRetry,
         ]);
     }
 
@@ -88,6 +89,13 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     }
 
     private async executeQueue(testQueue: TestQueue): Promise<Error[] | null> {
+        const shouldNotExecute = await this.callHook(TestRunControllerPlugins.shouldNotExecute, false, testQueue);
+
+        if (!!shouldNotExecute) {
+            this.logger.info('The run queue execution was stopped.');
+            return  null;
+        }
+
         try {
             const configWorkerLimit = this.config.workerLimit;
 

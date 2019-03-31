@@ -106,6 +106,34 @@ describe('Controller', () => {
         chai.expect(executionCalls).to.be.equal(testsCount);
     });
 
+    it('should not start tests execution', async () => {
+        const testsCount = 3;
+        const retriesCount = 5;
+        const config = { workerLimit: 2, retryDelay: 0, retryCount: retriesCount, testTimeout: DEFAULT_TIMEOUT } as any;
+
+        const tests = generateTestFiles(testsCount);
+
+        const testWorkerMock = new TestWorkerMock(true);
+        const testRunController = new TestRunController(config, testWorkerMock);
+        const shouldNotStart = testRunController.getHook(TestRunControllerPlugins.shouldNotExecute);
+
+        if (shouldNotStart) {
+            shouldNotStart.writeHook('testPlugin', (state) => {
+                chai.expect(state).to.be.equal(false);
+                return true;
+            });
+        }
+
+        const errors = await testRunController.runQueue(tests);
+
+        const executionCalls = testWorkerMock.$getExecutionCallsCount();
+
+        // There should not ba any errors
+        chai.expect(errors).to.be.equal(null);
+
+        // Runner must not try to retry tests run
+        chai.expect(executionCalls).to.be.equal(0);
+    });
 
     it('should not start tests', async () => {
         const testsCount = 3;
