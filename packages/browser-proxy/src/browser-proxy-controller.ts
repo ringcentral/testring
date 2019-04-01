@@ -110,7 +110,11 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
     public async kill(): Promise<void> {
         const workersToKill = [...this.workersPool.values()].map(worker => worker.kill());
 
-        await Promise.all(workersToKill);
+        try {
+            await Promise.all(workersToKill);
+        } catch (err) {
+            logger.error('Exit failed ', err);
+        }
 
         this.reset();
     }

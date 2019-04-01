@@ -84,7 +84,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         process.on('exit', () => {
             clearInterval(this.clientCheckInterval);
             this.stopAllSessions().catch((err) => {
-                this.logger.error(err);
+                this.logger.error('Clean process exit failed', err);
             });
         });
     }
@@ -157,8 +157,12 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         for (let [applicant, clientData] of this.browserClients) {
             if (clientData.initTime < timeLimit) {
-                this.logger.warn(`Stopped session applicant ${applicant} and marked as expired`);
-                await this.end(applicant);
+                this.logger.warn(`Session applicant ${applicant} marked as expired`);
+                try {
+                    await this.end(applicant);
+                } catch (e) {
+                    this.logger.error(`Session applicant ${applicant} failed to stop`, e);
+                }
                 this.expiredBrowserClients.add(applicant);
             }
         }
@@ -236,10 +240,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             const sessionID = ((client as any).requestHandler || {}).sessionID;
 
             if (startingSessionID === sessionID) {
-                this.logger.debug(`Stopping sessions for applicant ${applicant}. Session id:`, sessionID);
+                this.logger.debug(`Stopping sessions for applicant ${applicant}. Session id: ${sessionID}`);
             } else {
                 this.logger.warn(`Stopping sessions for applicant warning ${applicant}.`,
-                    `Session ids are not equal, starting with - ${startingSessionID}, ending with - ${sessionID}`);
+                    `Session ids are not equal, started with - ${startingSessionID}, ended with - ${sessionID}`);
                 try {
                     await this.wrapWithPromise(client.session('DELETE', startingSessionID));
                 } catch (err) {
@@ -253,8 +257,13 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     public async kill() {
+        this.logger.debug('Kill command is called');
         for (const applicant of this.browserClients.keys()) {
-            await this.end(applicant);
+            try {
+                await this.end(applicant);
+            } catch (e) {
+                this.logger.error(e);
+            }
         }
 
         if (this.localSelenium) {
