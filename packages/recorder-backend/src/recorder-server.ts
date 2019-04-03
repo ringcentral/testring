@@ -22,7 +22,6 @@ import {
 
 import { RecorderHttpServer } from './http-server';
 import { RecorderWebSocketServer, RecorderWsEvents } from './ws-server';
-import { TestManager } from './test-manager';
 
 const extensionPath = path.dirname(require.resolve('@testring/recorder-extension'));
 const frontendPath = path.dirname(require.resolve('@testring/recorder-frontend'));
@@ -34,7 +33,6 @@ export class RecorderServer implements IRecorderServer {
         private httpPort: number = DEFAULT_RECORDER_HTTP_PORT,
         private wsPort: number = DEFAULT_RECORDER_WS_PORT,
         private transportInstance: ITransport = transport,
-        private testManager: TestManager = new TestManager('SW'),
     ) {
         this.wsServer.on(
             RecorderWsEvents.CONNECTION,
@@ -90,8 +88,6 @@ export class RecorderServer implements IRecorderServer {
                 const { event, payload } = JSON.parse(message);
 
                 if (event) {
-                    // this.testManager.handleEvent(payload);
-
                     this.transportInstance.broadcast(
                         event,
                         { conId, payload },
@@ -124,20 +120,6 @@ export class RecorderServer implements IRecorderServer {
             RecorderServerEvents.CONNECTION,
             { conId }
         );
-
-        this.testManager.on(RecorderEvents.SPECIFY_PATH, (eventInfo) => {
-            this.send(conId, {
-                event: RecorderEvents.SPECIFY_PATH,
-                payload: eventInfo,
-            });
-        });
-
-        this.testManager.on(RecorderEvents.EMIT_BROWSER_EVENT, (eventInfo) => {
-            this.send(conId, {
-                event: RecorderEvents.EMIT_BROWSER_EVENT,
-                payload: eventInfo,
-            });
-        });
     }
 
     private unregisterConnection(conId: string): void {
