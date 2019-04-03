@@ -1,41 +1,98 @@
 /// <reference types="chrome" />
 
-import { MessagingTransportEvents, RecordingEventTypes, RecorderEvents, IExtensionConfig } from '@testring/types';
+import {
+    BrowserEventInfo,
+    IExtensionConfig,
+    MessagingTransportEvents,
+    RecorderEvents,
+    RecordingEventTypes,
+} from '@testring/types';
 
 import { MessagingTransportClient } from './extension/messaging-transport';
-import { resolveElementPath } from './extension/resolve-element-path';
+import { getAffectedElementsSummary, getElementsSummary } from './extension/elements-summary';
+import { generateUniqId } from '@testring/utils';
 
+type RecorderEvent = Event & { isRecorderEvent: boolean };
+type BrowserEventMap = {
+    [id: string]: {
+        browserEvent: RecorderEvent;
+        browserEventTarget: EventTarget;
+    };
+};
+
+const browserEventMap: BrowserEventMap = { };
 const transportClient = new MessagingTransportClient();
 
-let clickHandlerFunc = (event) => {};
+const eventHandler = (e: Event | RecorderEvent, type: RecordingEventTypes): void => {
+    if ('isRecorderEvent' in e || e.target === null) {
+        return;
+    }
+
+    const id = generateUniqId();
+    const EventConstructor: any = e.constructor;
+    const browserEvent: RecorderEvent = new EventConstructor(e.type, { ...e, bubbles: true });
+    browserEvent.isRecorderEvent = true;
+    const browserEventTarget = e.target;
+    browserEventMap[id] = {
+        browserEvent,
+        browserEventTarget,
+    };
+    e.stopImmediatePropagation();
+    e.preventDefault();
+
+    const affectedElementsSummary = getAffectedElementsSummary(e);
+    const domSummary = getElementsSummary([document.body]);
+    transportClient.send({
+        event: MessagingTransportEvents.RECORDING_EVENT,
+        payload: {
+            id,
+            type,
+            affectedElementsSummary,
+            domSummary,
+        },
+    });
+};
 
 transportClient.on(
     RecorderEvents.HANDSHAKE,
     (config: IExtensionConfig) => {
-        const { testElementAttribute } = config;
+        document.addEventListener('click', (event) => eventHandler(event, RecordingEventTypes.CLICK), true);
 
-        document.removeEventListener('click', clickHandlerFunc);
-
-        clickHandlerFunc = (event) => clickHandler(event, testElementAttribute);
-
-        document.addEventListener('click', clickHandlerFunc);
+        Array.from(document.querySelectorAll('input')).forEach((input) => {
+            input.addEventListener('change', (event) => eventHandler(event, RecordingEventTypes.CHANGE));
+        });
     }
 );
 
-const clickHandler = (event: MouseEvent, attribute: string): void => {
-    try {
-        const xpath = resolveElementPath(event, attribute);
+transportClient.on(
+    RecorderEvents.SPECIFY_PATH,
+    (eventInfo) => {
+        const specifiedPath = prompt('Please specify path', eventInfo.path);
 
-        if (xpath) {
-            transportClient.send({
-                event: MessagingTransportEvents.RECORDING_EVENT,
-                payload: {
-                    type: RecordingEventTypes.CLICK,
-                    elementPath: xpath,
-                },
-            });
+        if (specifiedPath === null) {
+            return;
         }
-    } catch (e) {
-        console.warn(e) // eslint-disable-line
+
+        transportClient.send({
+            event: MessagingTransportEvents.RECORDING_EVENT,
+            payload: {
+                ...eventInfo,
+                path: specifiedPath,
+            },
+        });
     }
-};
+);
+
+transportClient.on(RecorderEvents.EMIT_BROWSER_EVENT, ({ id }: BrowserEventInfo) => {
+    const { browserEvent, browserEventTarget } = browserEventMap[id];
+    browserEventTarget.dispatchEvent(browserEvent);
+
+    delete browserEventMap[id];
+});
+
+let contextMenuEvent;
+window.oncontextmenu = (e) => contextMenuEvent = e;
+transportClient.on(
+    MessagingTransportEvents.RECORDING_EVENT,
+    () => eventHandler(contextMenuEvent, RecordingEventTypes.EQUAL_TEXT),
+);

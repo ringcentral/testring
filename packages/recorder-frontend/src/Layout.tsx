@@ -2,6 +2,8 @@ import React from 'react';
 
 import { Editor } from './components/editor';
 
+const handler = (e) => console.log(e.target.getAttribute('data-test-automation-id'));
+
 export const Layout = () => (
     <div style={{
         display: 'flex',
@@ -19,8 +21,8 @@ export const Layout = () => (
             TestRing
         </h1>
 
-        <div data-test-automation-id="automationScope" >
-            <button data-test-automation-id="goodButtonInScope" >
+        <div data-test-automation-id="automationScope" onClick={handler}>
+            <button data-test-automation-id="goodButtonInScope" id="goodButtonInScope" onClick={handler}>
                 Good button in scope
             </button>
             <button>
@@ -31,6 +33,12 @@ export const Layout = () => (
             <button data-test-automation-id="goodButtonOutOfScope" >
                 Out of scope, but still good
             </button>
+            <input type="text" name="input" data-test-automation-id="input" />
+        </div>
+        <div data-test-automation-id="numeric" onClick={handler}>
+            <div data-test-automation-id="item1">123</div>
+            <div data-test-automation-id="item2">456</div>
+            <div data-test-automation-id="item3">789</div>
         </div>
         <button>
             Totally out of scope, not good

@@ -14,6 +14,7 @@ export class ExtensionController {
     constructor() {
         this.registerMessagingListeners();
         this.registerWsListeners();
+        this.registerContextMenu();
     }
 
     private messagingServer = new MessagingTransportServer();
@@ -23,6 +24,21 @@ export class ExtensionController {
     private mainConnectionId: string;
 
     private wsMessagesQueue = new Queue<string>();
+
+    private registerContextMenu() {
+        chrome.contextMenus.create({
+            id: 'equalText',
+            title: 'Equal text',
+            contexts: ['all'],
+        });
+
+        chrome.contextMenus.onClicked.addListener((clickData) => {
+            this.messagingServer.send(
+                this.mainConnectionId,
+                { event: MessagingTransportEvents.RECORDING_EVENT, payload: clickData }
+            );
+        });
+    }
 
     private registerMessagingListeners() {
         this.messagingServer.on(
