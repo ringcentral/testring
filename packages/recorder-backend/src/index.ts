@@ -1,3 +1,3 @@
-import { RecorderServer } from './recorder-server';
+import { RecorderServerController } from './recorder-server-controller';
 
-export { RecorderServer };
+export { RecorderServerController };

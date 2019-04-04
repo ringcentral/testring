@@ -16,7 +16,9 @@
     "@testring/constants": "0.4.56",
     "@testring/logger": "0.4.56",
     "@testring/recorder-extension": "0.4.56",
+    "@testring/child-process": "0.4.56",
     "@testring/recorder-frontend": "0.4.56",
+    "@testring/pluggable-module": "0.4.56",
     "@testring/transport": "0.4.56",
     "@testring/types": "0.4.56",
     "@testring/utils": "0.4.56",
@@ -37,7 +39,6 @@
   },
   "devDependencies": {
     "@testring/test-utils": "0.4.56",
-    "@testring/utils": "0.4.49",
     "nodemon": "1.18.9",
     "request": "2.87.0",
     "request-promise": "4.2.2",
