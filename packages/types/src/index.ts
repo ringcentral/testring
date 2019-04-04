@@ -4,6 +4,7 @@ export * from './test-run-controller';
 
 export * from './pluggable-module';
 
+export * from './recorder-backend/enums';
 export * from './recorder-backend';
 
 export * from './child-process';

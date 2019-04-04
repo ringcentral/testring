@@ -7,6 +7,7 @@ run(async (api) => {
 
     const jar = api.http.createCookieJar();
 
+    await new Promise(resolve => setTimeout(() => resolve(), 15000));
 
     jar.setCookie(jar.createCookie({
         key: COOKIE_NAME,

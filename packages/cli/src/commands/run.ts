@@ -7,7 +7,7 @@ import { TestWorker } from '@testring/test-worker';
 import { WebApplicationController } from '@testring/web-application';
 import { browserProxyControllerFactory, BrowserProxyController } from '@testring/browser-proxy';
 import { ICLICommand, IConfig, ITransport, RecorderServerMessageTypes } from '@testring/types';
-import { RecorderServer } from '@testring/recorder-backend';
+import { RecorderServerController } from '@testring/recorder-backend';
 
 function formatJSON(obj: any) {
     const separator = '⋅';
@@ -39,7 +39,7 @@ class RunCommand implements ICLICommand {
     private browserProxyController: BrowserProxyController;
     private testRunController: TestRunController;
     private httpServer: HttpServer;
-    private recorderServer: RecorderServer;
+    private recorderServer: RecorderServerController;
 
     constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {}
 
@@ -68,6 +68,7 @@ class RunCommand implements ICLICommand {
             browserProxy: this.browserProxyController,
             testRunController: this.testRunController,
             httpClientInstance: httpClient,
+            recorder: this.recorderServer,
         }, this.config);
 
         loggerClient.info('User config:\n', formatJSON(this.config));
@@ -81,8 +82,8 @@ class RunCommand implements ICLICommand {
         this.webApplicationController.init();
 
         if (this.config.recorder) {
-            this.recorderServer = new RecorderServer();
-            this.recorderServer.run();
+            this.recorderServer = new RecorderServerController(this.transport);
+            await this.recorderServer.init();
 
             loggerClient.info('Recorder Server started');
 

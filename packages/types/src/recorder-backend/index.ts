@@ -1,14 +1,28 @@
-export const enum RecorderServerEvents {
-    CONNECTION = 'RecorderServerEvents/CONNECTION',
-    MESSAGE = 'RecorderServerEvents/MESSAGE',
-    CLOSE = 'RecorderServerEvents/CLOSE',
+export interface IRecorderServerRoute {
+    url: string;
+    method: string;
+    handler: string;
+    windowProps: {
+        width: number;
+        height: number;
+        position: number;
+    };
 }
 
-export const enum RecorderServerMessageTypes {
-    STOP = 'RecorderServerMessageTypes/STOP',
-    CLOSE = 'RecorderServerMessageTypes/CLOSE',
-    MESSAGE = 'RecorderServerMessageTypes/MESSAGE',
+export interface IRecorderServerConfig {
+    host: string;
+    httpPort: number;
+    wsPort: number;
+    middlewares: string[];
+    router: IRecorderServerRoute[];
+    handlers: string[];
 }
+
+export interface IRecorderServerController {
+    init: () => Promise<void>;
+    kill: () => Promise<void>;
+}
+
 
 export interface IServer {
     run: () => Promise<void>;
@@ -26,3 +40,4 @@ export interface IWsMessage {
     conId: string;
     payload?: any;
 }
+
