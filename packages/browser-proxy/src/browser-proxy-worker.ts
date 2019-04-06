@@ -7,6 +7,7 @@ import {
     IBrowserProxyCommandResponse,
     IBrowserProxyPendingCommand,
     IBrowserProxyWorker,
+    IBrowserProxyWorkerConfig,
     ITransport,
 } from '@testring/types';
 import { generateUniqId } from '@testring/utils';
@@ -28,7 +29,7 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
     constructor(
         private transport: ITransport,
         private workerCreator: (onActionPluginPath: string, config: any) => ChildProcess | Promise<ChildProcess>,
-        private spawnConfig: { plugin: string; config: any },
+        private spawnConfig: IBrowserProxyWorkerConfig,
     ) {
         this.registerResponseListener();
     }
