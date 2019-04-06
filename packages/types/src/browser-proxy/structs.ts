@@ -24,3 +24,8 @@ export interface IBrowserProxyPendingCommand {
     applicant: string;
     uid: string;
 }
+
+export interface IBrowserProxyWorkerConfig {
+    plugin: string;
+    config: any;
+}

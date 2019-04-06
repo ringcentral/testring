@@ -6,18 +6,13 @@ import {
     IBrowserProxyCommand,
     IBrowserProxyController,
     IBrowserProxyWorker,
+    IBrowserProxyWorkerConfig,
     ITransport,
 } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { loggerClient } from '@testring/logger';
 
 import { BrowserProxyWorker } from './browser-proxy-worker';
-
-
-type BrowserProxyWorkerConfig = {
-    plugin: string;
-    config: any;
-};
 
 
 const logger = loggerClient.withPrefix('[browser-proxy-controller]');
@@ -28,12 +23,12 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
     private applicantWorkerMap: Map<string, IBrowserProxyWorker> = new Map();
 
-    private defaultExternalPlugin: BrowserProxyWorkerConfig = {
+    private defaultExternalPlugin: IBrowserProxyWorkerConfig = {
         plugin: 'unknown',
         config: null,
     };
 
-    private externalPlugin: BrowserProxyWorkerConfig;
+    private externalPlugin: IBrowserProxyWorkerConfig;
 
     private lastWorkerIndex: number;
 

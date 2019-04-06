@@ -9,31 +9,10 @@ import { browserProxyControllerFactory, BrowserProxyController } from '@testring
 import { ICLICommand, IConfig, ITransport, RecorderServerMessageTypes } from '@testring/types';
 import { RecorderServerController } from '@testring/recorder-backend';
 
-function formatJSON(obj: any) {
-    const separator = '⋅';
-    const padding = 20;
-
-    let str = separator.repeat(padding) + '\n';
-    let item;
-
-    for (const key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-            if (key === 'plugins') {
-                item = obj[key].toString()
-                    .replace(/\[object Object]/g, '')
-                    .replace(/,,/g, ',');
-            } else {
-                    item = JSON.stringify(obj[key]);
-            }
-        }
-
-        str += `${(key + ' ').padEnd(padding, separator)} ${item}\n`;
-    }
-
-    return str + separator.repeat(padding);
-}
 
 class RunCommand implements ICLICommand {
+
+    private logger = loggerClient;
 
     private webApplicationController: WebApplicationController;
     private browserProxyController: BrowserProxyController;
@@ -43,11 +22,36 @@ class RunCommand implements ICLICommand {
 
     constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {}
 
+    formatJSON(obj: object) {
+        const separator = '⋅';
+        const padding = 20;
+
+        let str = separator.repeat(padding) + '\n';
+        let item;
+
+        for (const key in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                if (key === 'plugins') {
+                    item = obj[key].toString()
+                        .replace(/\[object Object]/g, '')
+                        .replace(/,,/g, ',');
+                } else {
+                    item = JSON.stringify(obj[key]);
+                }
+            }
+
+            str += `${(key + ' ').padEnd(padding, separator)} ${item}\n`;
+        }
+
+        return str + separator.repeat(padding);
+    }
+
     async execute() {
         const testWorker = new TestWorker(this.transport, {
             waitForRelease: this.config.recorder,
             debug: this.config.debug,
             localWorker: this.config.workerLimit === 'local',
+            screenshots: this.config.screenshots,
         });
 
         this.httpServer = createHttpServer(this.transport);
@@ -71,60 +75,64 @@ class RunCommand implements ICLICommand {
             recorder: this.recorderServer,
         }, this.config);
 
-        loggerClient.info('User config:\n', formatJSON(this.config));
+        this.logger.info('User config:\n', this.formatJSON(this.config));
 
         const tests = await fsReader.find(this.config.tests);
 
-        loggerClient.info(`Found ${tests.length} test(s) to run.`);
+        this.logger.info(`Found ${tests.length} test(s) to run.`);
 
         await this.browserProxyController.init();
 
         this.webApplicationController.init();
 
         if (this.config.recorder) {
-            this.recorderServer = new RecorderServerController(this.transport);
-            await this.recorderServer.init();
-
-            loggerClient.info('Recorder Server started');
-
-            this.transport.on(RecorderServerMessageTypes.MESSAGE, async (message) => {
-                const testStr = message.payload;
-
-                try {
-                    const testResult = await this.testRunController.pushTestIntoQueue(testStr);
-
-                    loggerClient.info(`Test executed with result: ${testResult}`);
-                } catch (e) {
-                    loggerClient.info(`Test executed failed with error: ${e}`);
-                }
-            });
-
-            this.transport.on(RecorderServerMessageTypes.CLOSE, () => {
-                throw new Error('Recorder Server disconnected');
-            });
-
-            this.transport.on(RecorderServerMessageTypes.STOP, () => {
-                // TODO Recorder stop handling
-            });
+            await this.initRecorder();
         }
 
-        loggerClient.info('Executing...');
+        this.logger.info('Executing...');
 
         const testRunResult = await this.testRunController.runQueue(tests);
 
         await this.shutdown();
 
         if (testRunResult) {
-            loggerClient.error('Founded errors:');
+            this.logger.error('Founded errors:');
 
             testRunResult.forEach((error) => {
-                loggerClient.error(error);
+                this.logger.error(error);
             });
 
             throw `Failed ${testRunResult.length}/${tests.length} tests.`;
         } else {
-            loggerClient.info(`Tests done: ${tests.length}/${tests.length}.`);
+            this.logger.info(`Tests done: ${tests.length}/${tests.length}.`);
         }
+    }
+
+    async initRecorder() {
+        this.logger.info('Recorder Server is enabled');
+
+        this.recorderServer = new RecorderServerController(this.transport);
+        await this.recorderServer.init();
+
+        this.transport.on(RecorderServerMessageTypes.MESSAGE, async (message) => {
+            const testStr = message.payload;
+
+            try {
+                const testResult = await this.testRunController.pushTestIntoQueue(testStr);
+
+                this.logger.info(`Test executed with result: ${testResult}`);
+            } catch (e) {
+                this.logger.info(`Test executed failed with error: ${e}`);
+            }
+        });
+
+        this.transport.on(RecorderServerMessageTypes.CLOSE, () => {
+            throw new Error('Recorder Server disconnected');
+        });
+
+        this.transport.on(RecorderServerMessageTypes.STOP, () => {
+            // TODO Recorder stop handling
+        });
     }
 
     async shutdown() {
