@@ -3,10 +3,7 @@ import { testAPIController } from '@testring/api';
 import { WorkerController } from './worker/worker-controller';
 import {
     ITransport,
-    ITestExecutionMessage,
-    ITestExecutionCompleteMessage,
     TestWorkerAction,
-    TestStatus,
     IWorkerEmitter,
     ITransportDirectMessage,
 } from '@testring/types';
@@ -31,32 +28,10 @@ export class TestWorkerLocal extends EventEmitter implements IWorkerEmitter {
         const { payload, type } = message;
 
         if (type === TestWorkerAction.executeTest) {
-            this.executeTest(payload);
+            this.workerController.executeTest(payload);
         }
 
         return true;
-    }
-
-    private executeTest(payload: ITestExecutionMessage) {
-        this.workerController.executeTest(payload)
-            .then(() => {
-                this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
-                    TestWorkerAction.executionComplete,
-                    {
-                        status: TestStatus.done,
-                        error: null,
-                    }
-                );
-            })
-            .catch((error) => {
-                this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
-                    TestWorkerAction.executionComplete,
-                    {
-                        status: TestStatus.failed,
-                        error,
-                    }
-                );
-            });
     }
 }
 

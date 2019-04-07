@@ -22,17 +22,7 @@ export class WorkerController {
 
     public init() {
         this.transportInstance.on(TestWorkerAction.executeTest, async (message: ITestExecutionMessage) => {
-            try {
-                await this.executeTest(message);
-
-                if (message.waitForRelease) {
-                    this.waitForRelease();
-                } else {
-                    this.completeExecutionSuccessfully();
-                }
-            } catch (error) {
-                this.completeExecutionFailed(error);
-            }
+            await this.executeTest(message);
         });
     }
 
@@ -68,6 +58,20 @@ export class WorkerController {
     }
 
     public async executeTest(message: ITestExecutionMessage): Promise<void> {
+        try {
+            await this.runTest(message);
+
+            if (message.waitForRelease) {
+                this.waitForRelease();
+            } else {
+                this.completeExecutionSuccessfully();
+            }
+        } catch (error) {
+            this.completeExecutionFailed(error);
+        }
+    }
+
+    private async runTest(message: ITestExecutionMessage): Promise<void> {
         // TODO pass message.parameters somewhere inside web application
         const testID = path.relative(process.cwd(), message.path);
 
