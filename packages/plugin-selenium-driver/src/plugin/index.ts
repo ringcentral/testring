@@ -178,17 +178,19 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     private async checkClientsTimeout() {
-        const timeLimit = Date.now() - this.config.clientTimeout;
+        if (this.config.clientTimeout !== 0) {
+            const timeLimit = Date.now() - this.config.clientTimeout;
 
-        for (let [applicant, clientData] of this.browserClients) {
-            if (clientData.initTime < timeLimit) {
-                this.logger.warn(`Session applicant ${applicant} marked as expired`);
-                try {
-                    await this.end(applicant);
-                } catch (e) {
-                    this.logger.error(`Session applicant ${applicant} failed to stop`, e);
+            for (let [applicant, clientData] of this.browserClients) {
+                if (clientData.initTime < timeLimit) {
+                    this.logger.warn(`Session applicant ${applicant} marked as expired`);
+                    try {
+                        await this.end(applicant);
+                    } catch (e) {
+                        this.logger.error(`Session applicant ${applicant} failed to stop`, e);
+                    }
+                    this.expiredBrowserClients.add(applicant);
                 }
-                this.expiredBrowserClients.add(applicant);
             }
         }
     }
