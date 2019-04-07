@@ -37,6 +37,7 @@ const eventHandler = (e: Event | RecorderEvent, type: RecordingEventTypes): void
         browserEvent,
         browserEventTarget,
     };
+    e.stopPropagation();
     e.stopImmediatePropagation();
     e.preventDefault();
 

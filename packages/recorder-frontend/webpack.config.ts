@@ -7,55 +7,55 @@ const config: webpack.Configuration = {
     entry: './src/index.tsx',
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'index.bundle.js'
+        filename: 'index.bundle.js',
     },
     resolve: {
-        extensions: [ '.tsx', '.ts', '.js', '.css' ]
+        extensions: [ '.tsx', '.ts', '.js', '.css' ],
     },
     plugins: [
         new MonacoWebpackPlugin({
-            languages: ['javascript']
-        })
+            languages: ['javascript'],
+        }),
     ],
     module: {
         rules: [
             {
                 test: /\.tsx?$/,
                 use: 'ts-loader',
-                exclude: /node_modules/
+                exclude: /node_modules/,
             },
             {
                 test: /\.css$/,
                 exclude: /node_modules/,
                 use: [
                     {
-                        loader: 'style-loader'
+                        loader: 'style-loader',
                     },
                     {
                         loader: 'css-loader',
                         options: {
                             importLoaders: 1,
-                            modules: true
-                        }
-                    }
-                ]
+                            modules: true,
+                        },
+                    },
+                ],
             },
             {
                 test: /\.css$/,
                 include: /node_modules/,
                 use: [
                     {
-                        loader: 'style-loader'
+                        loader: 'style-loader',
                     },
                     {
-                        loader: 'css-loader'
-                    }
-                ]
-            }
-        ]
+                        loader: 'css-loader',
+                    },
+                ],
+            },
+        ],
     },
 
-    stats: 'errors-only'
+    stats: 'errors-only',
 };
 
 export default config;
