@@ -32,7 +32,10 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
 const EXTENSION_ARGS = {
     desiredCapabilities: {
         chromeOptions: {
-            args: [`load-extension=${EXTENSION_PATH}`],
+            args: [
+                `load-extension=${EXTENSION_PATH}`,
+                'allow-running-insecure-content',
+            ],
         },
     },
 };

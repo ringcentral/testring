@@ -37,7 +37,7 @@ const pageTemplate = (
     `;
 };
 
-export default function indexPage(req, res, store) {
+export default function editorPage(req, res, store) {
     const { recorderConfig } = store.getState();
     const { host, wsPort } = recorderConfig;
 
