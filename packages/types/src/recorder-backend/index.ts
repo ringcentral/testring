@@ -1,11 +1,26 @@
-export interface IRecorderServerRoute {
-    url: string;
+interface IRecorderRoute {
     method: string;
-    handler: string;
-    windowProps: {
+    mask: string;
+    windowProps?: {
         width: number;
         height: number;
         position: number;
+    };
+}
+
+export interface IRecorderServerRoute extends IRecorderRoute {
+    handler: string;
+}
+
+export interface IRecorderHttpRoute extends IRecorderRoute {
+    handler: (...args: any[]) => Promise<void> | void;
+}
+
+export interface IRecorderStaticRoutes {
+    [key: string]: {
+        rootPath: string;
+        directory: string;
+        options?: {};
     };
 }
 
@@ -13,9 +28,8 @@ export interface IRecorderServerConfig {
     host: string;
     httpPort: number;
     wsPort: number;
-    middlewares: string[];
     router: IRecorderServerRoute[];
-    handlers: string[];
+    staticRoutes: IRecorderStaticRoutes;
 }
 
 export interface IRecorderServerController {

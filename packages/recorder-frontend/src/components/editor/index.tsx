@@ -5,24 +5,24 @@ import style from './style.css';
 export class Editor extends React.Component {
     state = {
         code: '// type your code...',
-        editor: {} as any
+        editor: {} as any,
     };
 
     editorDidMount(editor, monaco) {
         editor.focus();
         this.setState({
             editor,
-            monaco
+            monaco,
         });
     }
     onChange() {
-        console.log(this.state.editor.getPosition(), this.state.editor.getSelections());
+        console.log(this.state.editor.getPosition(), this.state.editor.getSelections()); // eslint-disable-line no-console
     }
     render() {
-        const {code} = this.state;
+        const { code } = this.state;
 
         const options = {
-            selectOnLineNumbers: true
+            selectOnLineNumbers: true,
         };
 
         return (
@@ -31,8 +31,6 @@ export class Editor extends React.Component {
                 onClick={this.onChange.bind(this)}
                 onKeyUp={this.onChange.bind(this)}>
                 <MonacoEditor
-                    width="500"
-                    height="400"
                     language="javascript"
                     theme="vs-dark"
                     value={code}

@@ -42,7 +42,7 @@ export async function run(...tests: Array<TestFunction>) {
     } finally {
         let exitError;
         try {
-            await api.end();
+            //await api.end();
         } catch (error) {
             exitError = error;
         }

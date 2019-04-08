@@ -16,3 +16,9 @@ export const enum RecorderPlugins {
     beforeStop = 'beforeStop',
     afterStop = 'afterStop',
 }
+
+
+export const enum RecorderWorkerMessages {
+    START_SERVER = 'START_SERVER',
+    START_SERVER_COMPLETE = 'START_SERVER_COMPLETE',
+}

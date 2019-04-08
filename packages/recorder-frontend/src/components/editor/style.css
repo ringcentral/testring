@@ -1,5 +1,7 @@
 .editorWrapper {
+    height: 100%;
+    width: 100%;
     display: block;
     position: relative;
-    padding: 40px;
+    overflow: hidden;
 }
