@@ -51,8 +51,10 @@ export class RecorderWorkerController {
         this.logger.info('Starting recorder server');
         this.config = config;
 
-        this.store = await initStore({}, {
-            recorderConfig: config,
+        this.store = await initStore({
+            recorderConfig: (state = {
+                recorderConfig: config,
+            }) => state,
         });
 
         try {

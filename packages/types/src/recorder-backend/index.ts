@@ -14,6 +14,7 @@ export interface IRecorderServerRoute extends IRecorderRoute {
 
 export interface IRecorderHttpRoute extends IRecorderRoute {
     handler: (...args: any[]) => Promise<void> | void;
+    options?: any;
 }
 
 export interface IRecorderStaticRoutes {

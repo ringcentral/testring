@@ -69,7 +69,10 @@ export class HttpServer implements IServer {
                 case 'post':
                 case 'delete':
                 case 'put':
-                    this.server[route.method](route.mask, (req, res) => route.handler(req, res, this.getContext()));
+                    this.server[route.method](
+                        route.mask,
+                        (req, res) => route.handler(req, res, this.getContext(), route.options)
+                    );
                     break;
                 default:
                     throw Error(`Unknown route method: ${route.method}`);

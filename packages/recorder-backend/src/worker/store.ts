@@ -1,37 +1,14 @@
-import { createStore, Store, combineReducers } from 'redux';
+import {
+    createStore,
+    combineReducers,
+    Store,
+} from 'redux';
 
-// enum recorderWindowsActions {
-//     OPEN_WINDOW = 'OPEN_WINDOW',
-// }
-//
-// interface IRecorderExtentionWindow {
-//     id: string;
-//     position: 'bottom' | 'overlay';
-//     url: string;
-// }
-//
-// interface IRecorderWindowsStore {
-//     windows: IRecorderExtentionWindow[];
-// }
-//
-// function windowReducer(state: IRecorderWindowsStore, action) {
-//     switch (action.type) {
-//         case recorderWindowsActions.OPEN_WINDOW:
-//             return {
-//                 ...state,
-//                 windows: [...state.windows, action.payload],
-//             };
-//         default:
-//             return state;
-//     }
-// }
+import * as recorderReducers from '../reducers';
 
-export function initStore(reducers, initialState = {}): Store {
+export function initStore(reducers): Store {
     return createStore(combineReducers({
         ...reducers,
-        //windows: windowReducer,
-    }), {
-        ...initialState,
-        windows: {},
-    });
+        ...recorderReducers,
+    }));
 }
