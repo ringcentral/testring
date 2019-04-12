@@ -4,65 +4,42 @@ import { BreakpointsTypes } from './constants';
 
 type HasBreakpointCallback = (state: boolean) => Promise<void> | void;
 
-type ReleaseBreakpointCallback = () => Promise<void> | void;
-
 export default class AsyncBreakpoints extends EventEmitter {
     private breakpoints: Map<BreakpointsTypes, Promise<void>> = new Map();
-    private breakpointCallbacks: Map<BreakpointsTypes, ReleaseBreakpointCallback[]> = new Map();
 
-    private resolverEvent = 'resolver';
+    private resolverEvent = 'resolveEvent';
 
     constructor() {
         super();
     }
 
-    private addBreakpoint(type: BreakpointsTypes, releaseCallback?: ReleaseBreakpointCallback): Promise<void> {
+    private addBreakpoint(type: BreakpointsTypes): Promise<void> {
         if (this.breakpoints.has(type)) {
             return this.breakpoints.get(type) as Promise<void>;
         }
 
         const breakpoint = new Promise<void>((resolve) => {
-            // this.on(this.resolverEvent, () => resolve());
-            setTimeout(() => {
-                resolve();
-            }, 1000);
+            const handler = (resolvedType) => {
+                if (resolvedType === type) {
+                    this.clearBreakpoint(type);
+                    resolve();
+                    this.off(this.resolverEvent, handler);
+                }
+            };
+            this.on(this.resolverEvent, handler);
         });
 
         this.breakpoints.set(type, breakpoint);
 
-        if (releaseCallback) {
-            this.addReleaseCallback(type, releaseCallback);
-        }
-
         return breakpoint;
     }
 
-    private addReleaseCallback(type: BreakpointsTypes, releaseCallback: ReleaseBreakpointCallback) {
-        if (this.breakpointCallbacks.has(type)) {
-            const callbacks = this.breakpointCallbacks.get(type) as ReleaseBreakpointCallback[];
-            this.breakpointCallbacks.set(type, [...callbacks, releaseCallback]);
-        } else {
-            this.breakpointCallbacks.set(type, [releaseCallback]);
-        }
+    private clearBreakpoint(type: BreakpointsTypes) {
+        this.breakpoints.delete(type);
     }
 
-    private async flushReleaseCallbacks(type: BreakpointsTypes) {
-        if (this.breakpointCallbacks.has(type)) {
-            const callbacks = this.breakpointCallbacks.get(type) as ReleaseBreakpointCallback[];
-            this.breakpointCallbacks.delete(type);
-
-            for (let callback of callbacks) {
-                await callback();
-            }
-        }
-    }
-
-    async resolveBreakpoint(type: BreakpointsTypes) {
-        setImmediate(() => {
-            this.emit(this.resolverEvent, type);
-        });
-
-        await this.flushReleaseCallbacks(type);
+    resolveBreakpoint(type: BreakpointsTypes) {
+        this.emit(this.resolverEvent, type);
     }
 
     async waitForBreakpoint(
@@ -78,8 +55,9 @@ export default class AsyncBreakpoints extends EventEmitter {
         }
     }
 
-    public addBeforeInstructionBreakpoint(releaseCallback?: ReleaseBreakpointCallback) {
-        this.addBreakpoint(BreakpointsTypes.beforeInstruction, releaseCallback);
+
+    public addBeforeInstructionBreakpoint() {
+        this.addBreakpoint(BreakpointsTypes.beforeInstruction);
     }
 
     public async waitBeforeInstructionBreakpoint(hasBreakpointCallback: HasBreakpointCallback = () => undefined) {
@@ -93,8 +71,13 @@ export default class AsyncBreakpoints extends EventEmitter {
         this.resolveBreakpoint(BreakpointsTypes.beforeInstruction);
     }
 
-    public addAfterInstructionBreakpoint(releaseCallback?: ReleaseBreakpointCallback) {
-        this.addBreakpoint(BreakpointsTypes.afterInstruction, releaseCallback);
+    public isBeforeInstructionBreakpointActive() {
+        return this.breakpoints.has(BreakpointsTypes.beforeInstruction);
+    }
+
+
+    public addAfterInstructionBreakpoint() {
+        this.addBreakpoint(BreakpointsTypes.afterInstruction);
     }
 
     public async waitAfterInstructionBreakpoint(hasBreakpointCallback: HasBreakpointCallback = () => undefined) {
@@ -106,5 +89,9 @@ export default class AsyncBreakpoints extends EventEmitter {
 
     public resolveAfterInstructionBreakpoint() {
         this.resolveBreakpoint(BreakpointsTypes.afterInstruction);
+    }
+
+    public isAfterInstructionBreakpointActive() {
+        return this.breakpoints.has(BreakpointsTypes.afterInstruction);
     }
 }

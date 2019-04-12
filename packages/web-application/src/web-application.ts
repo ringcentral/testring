@@ -207,7 +207,7 @@ export class WebApplication extends PluggableModule {
                         } else {
                             await asyncBreakpoints.waitBeforeInstructionBreakpoint((state) => {
                                 if (state) {
-                                    logger.debug('Stopped in breakpoint before instruction execution');
+                                    logger.debug('Debug: Stopped in breakpoint before instruction execution');
                                 }
                             });
                             logger.startStep(message);
@@ -240,7 +240,7 @@ export class WebApplication extends PluggableModule {
 
                             await asyncBreakpoints.waitAfterInstructionBreakpoint((state) => {
                                 if (state) {
-                                    logger.debug('Stopped in breakpoint after instruction execution');
+                                    logger.debug('Debug: Stopped in breakpoint after instruction execution');
                                 }
                             });
                         }
