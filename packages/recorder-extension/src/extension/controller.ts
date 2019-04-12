@@ -26,18 +26,18 @@ export class ExtensionController {
     private wsMessagesQueue = new Queue<string>();
 
     private registerContextMenu() {
-        chrome.contextMenus.create({
-            id: 'equalText',
-            title: 'Equal text',
-            contexts: ['all'],
-        });
-
-        chrome.contextMenus.onClicked.addListener((clickData) => {
-            this.messagingServer.send(
-                this.mainConnectionId,
-                { event: MessagingTransportEvents.RECORDING_EVENT, payload: clickData }
-            );
-        });
+        // chrome.contextMenus.create({
+        //     id: 'equalText',
+        //     title: 'Equal text',
+        //     contexts: ['all'],
+        // });
+        //
+        // chrome.contextMenus.onClicked.addListener((clickData) => {
+        //     this.messagingServer.send(
+        //         this.mainConnectionId,
+        //         { event: MessagingTransportEvents.RECORDING_EVENT, payload: clickData }
+        //     );
+        // });
     }
 
     private registerMessagingListeners() {

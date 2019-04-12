@@ -7,20 +7,14 @@ import {
     RecorderWorkerMessages,
 } from '@testring/types';
 
-import {
-    DEFAULT_RECORDER_HOST,
-    DEFAULT_RECORDER_HTTP_PORT,
-    DEFAULT_RECORDER_WS_PORT,
-} from '@testring/constants';
-
 import * as path from 'path';
 
 import { fork } from '@testring/child-process';
 import { generateUniqId } from '@testring/utils';
 import { PluggableModule } from '@testring/pluggable-module';
 import { loggerClient } from '@testring/logger';
+import { defaultRecorderConfig } from './default-recorder-config';
 
-const FRONTEND_PATH = path.dirname(require.resolve('@testring/recorder-frontend'));
 
 export class RecorderServerController extends PluggableModule implements IRecorderServerController {
 
@@ -39,34 +33,8 @@ export class RecorderServerController extends PluggableModule implements IRecord
         ]);
     }
 
-    private getRouterPath(filepath: string) {
-        return path.resolve(__dirname, './routes/', filepath);
-    }
-
     private getConfig(): IRecorderServerConfig {
-        return {
-            host: DEFAULT_RECORDER_HOST,
-            httpPort: DEFAULT_RECORDER_HTTP_PORT,
-            wsPort: DEFAULT_RECORDER_WS_PORT,
-            router: [
-                {
-                    method: 'get',
-                    mask: '/',
-                    handler: this.getRouterPath('index-page'),
-                },
-                {
-                    method: 'get',
-                    mask: '/editor',
-                    handler: this.getRouterPath('editor-page'),
-                },
-            ],
-            staticRoutes: {
-                'recorder-frontend': {
-                    'rootPath': '/static',
-                    'directory': FRONTEND_PATH,
-                },
-            },
-        };
+        return defaultRecorderConfig;
     }
 
     private getWorkerID(): string {

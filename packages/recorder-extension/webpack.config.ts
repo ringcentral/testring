@@ -7,15 +7,16 @@ const config: webpack.Configuration = {
     entry: {
         background: './src/background.ts',
         content: './src/content.ts',
+        popup: './src/popup.ts',
     },
 
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: '[name].bundle.js'
+        filename: '[name].bundle.js',
     },
 
     resolve: {
-        extensions: [ '.tsx', '.ts', '.js' ]
+        extensions: [ '.tsx', '.ts', '.js' ],
     },
 
     module: {
@@ -29,8 +30,8 @@ const config: webpack.Configuration = {
                     },
                 },
                 exclude: /node_modules/,
-            }
-        ]
+            },
+        ],
     },
 
     node: {
@@ -40,7 +41,7 @@ const config: webpack.Configuration = {
 
     devtool: false,
 
-    stats: 'errors-only'
+    stats: 'minimal',
 };
 
 export default config;
