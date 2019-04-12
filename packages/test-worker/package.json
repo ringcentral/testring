@@ -11,6 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "@testring/api": "0.4.56",
+    "@testring/async-breakpoints": "0.4.56",
     "@testring/child-process": "0.4.56",
     "@testring/dependencies-builder": "0.4.56",
     "@testring/fs-reader": "0.4.56",

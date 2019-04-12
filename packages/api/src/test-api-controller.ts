@@ -1,5 +1,11 @@
 import { EventEmitter } from 'events';
 
+import { asyncBreakpoints } from '@testring/async-breakpoints';
+
+type BeforeRunCallback = () => any;
+type AfterRunCallback = () => any;
+
+
 export class TestAPIController {
     private bus = new EventEmitter();
 
@@ -8,6 +14,10 @@ export class TestAPIController {
     private testParameters: object = {};
 
     private environmentParameters: object = {};
+
+    private beforeRunCallbacks: BeforeRunCallback[] = [];
+
+    private afterRunCallbacks: AfterRunCallback[] = [];
 
     public getBus() {
         return this.bus;
@@ -35,6 +45,38 @@ export class TestAPIController {
 
     public getEnvironmentParameters(): object {
         return this.environmentParameters;
+    }
+
+    public registerBeforeRunCallback(callback: BeforeRunCallback) {
+        this.beforeRunCallbacks.push(callback);
+    }
+
+    public async flushBeforeRunCallbacks() {
+        await asyncBreakpoints.waitBeforeInstructionBreakpoint();
+
+        for (let callback of this.beforeRunCallbacks) {
+            await callback();
+        }
+
+        this.beforeRunCallbacks = [];
+
+        await asyncBreakpoints.waitAfterInstructionBreakpoint();
+    }
+
+    public registerAfterRunCallback(callback: AfterRunCallback) {
+        this.afterRunCallbacks.push(callback);
+    }
+
+    public async flushAfterRunCallbacks() {
+        await asyncBreakpoints.waitBeforeInstructionBreakpoint();
+
+        for (let callback of this.afterRunCallbacks) {
+            await callback();
+        }
+
+        this.afterRunCallbacks = [];
+
+        await asyncBreakpoints.waitAfterInstructionBreakpoint();
     }
 }
 

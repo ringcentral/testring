@@ -20,4 +20,7 @@ export const enum TestWorkerAction {
     releaseTest = 'releaseTest',
     executeTest = 'executeTest',
     executionComplete = 'executionComplete',
+    pauseTestExecution = 'pauseTestExecution',
+    resumeTestExecution = 'resumeTestExecution',
+    runTillNextExecution = 'runTillNextExecution',
 }

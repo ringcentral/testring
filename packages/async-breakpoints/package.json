@@ -1,0 +1,16 @@
+{
+
+  "name": "@testring/async-breakpoints",
+  "version": "0.4.56",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ringcentral/testring/issues"
+  }
+}
