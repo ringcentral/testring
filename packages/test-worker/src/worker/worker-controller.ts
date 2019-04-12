@@ -31,18 +31,13 @@ export class WorkerController {
         this.transportInstance.on(TestWorkerAction.pauseTestExecution, async () => {
             this.activatePauseMode();
         });
-        this.transportInstance.on(TestWorkerAction.resumeTestExecution, async () => {
-            this.releasePauseMode();
-        });
-
         this.transportInstance.on(TestWorkerAction.runTillNextExecution, async () => {
             this.setRunTillNextExecutionMode();
         });
-    }
 
-    private releasePauseMode() {
-        asyncBreakpoints.resolveBeforeInstructionBreakpoint();
-        asyncBreakpoints.resolveAfterInstructionBreakpoint();
+        this.transportInstance.on(TestWorkerAction.resumeTestExecution, async () => {
+            this.releasePauseMode();
+        });
     }
 
     private activatePauseMode() {
@@ -50,9 +45,16 @@ export class WorkerController {
     }
 
     private setRunTillNextExecutionMode() {
-        asyncBreakpoints.addAfterInstructionBreakpoint(() => {
+        if (asyncBreakpoints.isAfterInstructionBreakpointActive()) {
             asyncBreakpoints.resolveAfterInstructionBreakpoint();
-        });
+        }
+
+        asyncBreakpoints.addAfterInstructionBreakpoint();
+    }
+
+    private releasePauseMode() {
+        asyncBreakpoints.resolveBeforeInstructionBreakpoint();
+        asyncBreakpoints.resolveAfterInstructionBreakpoint();
     }
 
 
