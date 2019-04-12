@@ -1,20 +1,21 @@
 import { Express } from 'express-serve-static-core';
 import { Store } from 'redux';
 import {
-    IRecorderHttpRoute, IRecorderStaticRoutes,
+    IRecorderHttpRoute,
+    IRecorderStaticRoutes,
     IServer,
 } from '@testring/types';
 
 import * as express from 'express';
 
-export class HttpServer implements IServer {
+export class RecorderHttpServer implements IServer {
     private server: Express;
 
     private waitForStart: Promise<void> | void;
 
     constructor(
-        private port: number,
         private hostName: string,
+        private port: number,
         private routes: IRecorderHttpRoute[],
         private staticRoutes: IRecorderStaticRoutes,
         private store: Store,
