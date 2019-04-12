@@ -5,10 +5,13 @@ import {
     ITransport,
     WindowFeaturesConfig,
 } from '@testring/types';
+
+import { asyncBreakpoints } from '@testring/async-breakpoints';
 import { loggerClient, LoggerClient } from '@testring/logger';
 import { generateUniqId } from '@testring/utils';
 import { PluggableModule } from '@testring/pluggable-module';
 import { createElementPath, ElementPath } from '@testring/element-path';
+
 import { createAssertion } from './assert';
 import { WebClient } from './web-client';
 import * as utils from './utils';
@@ -193,7 +196,7 @@ export class WebApplication extends PluggableModule {
                     const logFn = decorators[key];
 
                     // eslint-disable-next-line func-style
-                    const method = function decoratedMethod(...args) {
+                    const method = async function decoratedMethod(...args) {
                         const logger = this.logger;
                         const message = logFn.apply(this, args);
                         let result;
@@ -202,6 +205,11 @@ export class WebApplication extends PluggableModule {
                             logger.debug(message);
                             result = originMethod.apply(this, args);
                         } else {
+                            await asyncBreakpoints.waitBeforeInstructionBreakpoint((state) => {
+                                if (state) {
+                                    logger.debug('Stopped in breakpoint before instruction execution');
+                                }
+                            });
                             logger.startStep(message);
                             this.isLogOpened = true;
 
@@ -229,6 +237,12 @@ export class WebApplication extends PluggableModule {
 
                                 throw err;
                             }
+
+                            await asyncBreakpoints.waitAfterInstructionBreakpoint((state) => {
+                                if (state) {
+                                    logger.debug('Stopped in breakpoint after instruction execution');
+                                }
+                            });
                         }
 
                         return result;

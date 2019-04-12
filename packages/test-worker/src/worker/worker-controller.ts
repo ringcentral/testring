@@ -1,7 +1,3 @@
-import * as process from 'process';
-import * as path from 'path';
-import { Sandbox } from '@testring/sandbox';
-import { TestAPIController } from '@testring/api';
 import {
     ITransport,
     ITestEvaluationMessage,
@@ -11,6 +7,13 @@ import {
     TestStatus,
     TestEvents,
 } from '@testring/types';
+
+import * as process from 'process';
+import * as path from 'path';
+
+import { Sandbox } from '@testring/sandbox';
+import { TestAPIController } from '@testring/api';
+import { asyncBreakpoints } from '@testring/async-breakpoints';
 
 export class WorkerController {
 
@@ -24,7 +27,34 @@ export class WorkerController {
         this.transportInstance.on(TestWorkerAction.executeTest, async (message: ITestExecutionMessage) => {
             await this.executeTest(message);
         });
+
+        this.transportInstance.on(TestWorkerAction.pauseTestExecution, async () => {
+            this.activatePauseMode();
+        });
+        this.transportInstance.on(TestWorkerAction.resumeTestExecution, async () => {
+            this.releasePauseMode();
+        });
+
+        this.transportInstance.on(TestWorkerAction.runTillNextExecution, async () => {
+            this.setRunTillNextExecutionMode();
+        });
     }
+
+    private releasePauseMode() {
+        asyncBreakpoints.resolveBeforeInstructionBreakpoint();
+        asyncBreakpoints.resolveAfterInstructionBreakpoint();
+    }
+
+    private activatePauseMode() {
+        asyncBreakpoints.addBeforeInstructionBreakpoint();
+    }
+
+    private setRunTillNextExecutionMode() {
+        asyncBreakpoints.addAfterInstructionBreakpoint(() => {
+            asyncBreakpoints.resolveAfterInstructionBreakpoint();
+        });
+    }
+
 
     private waitForRelease() {
         this.transportInstance.on(TestWorkerAction.evaluateCode, async (message: ITestEvaluationMessage) => {
@@ -36,6 +66,7 @@ export class WorkerController {
     }
 
     private completeExecutionSuccessfully() {
+        this.releasePauseMode();
         Sandbox.clearCache();
 
         this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
@@ -48,6 +79,8 @@ export class WorkerController {
     }
 
     private completeExecutionFailed(error: Error) {
+        this.releasePauseMode();
+
         this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
             TestWorkerAction.executionComplete,
             {
@@ -61,13 +94,13 @@ export class WorkerController {
         try {
             await this.runTest(message);
 
+            this.completeExecutionSuccessfully();
+        } catch (error) {
             if (message.waitForRelease) {
                 this.waitForRelease();
             } else {
-                this.completeExecutionSuccessfully();
+                this.completeExecutionFailed(error);
             }
-        } catch (error) {
-            this.completeExecutionFailed(error);
         }
     }
 
