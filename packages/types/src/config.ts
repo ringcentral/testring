@@ -6,20 +6,23 @@ export type RestartWorkerConfig = 'never' | 'always';
 
 export type ConfigPluginDescriptor = string | [string, PluginConfig];
 
-export interface IConfig {
+export interface IConfigLogger {
+    logLevel: string;
+    silent: boolean;
+}
+
+export interface IConfig extends IConfigLogger {
     recorder: boolean;
     restartWorker: RestartWorkerConfig;
     screenshots: ScreenshotsConfig;
     config: string;
     debug: boolean;
-    silent: boolean;
     bail: boolean;
     workerLimit: number | 'local';
     retryCount: number;
     retryDelay: number;
     testTimeout: number;
     tests: string;
-    logLevel: string;
     envConfig?: string;
     envParameters?: any;
     plugins: Array<ConfigPluginDescriptor>;

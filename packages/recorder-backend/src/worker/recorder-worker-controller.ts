@@ -5,16 +5,12 @@ import {
     RecorderWorkerMessages,
 } from '@testring/types';
 
-import * as path from 'path';
 import { Store } from 'redux';
 import { loggerClient } from '@testring/logger';
-import { launch, LaunchedChrome } from 'chrome-launcher';
 
 import { RecorderHttpServer } from './recorder-http-server';
 import { RecorderWSServer } from './recorder-ws-server';
 import { initStore } from './store';
-
-const extensionPath = path.dirname(require.resolve('@testring/recorder-extension'));
 
 export class RecorderWorkerController {
     private logger = loggerClient.withPrefix('[recorder-worker]');
@@ -105,15 +101,5 @@ export class RecorderWorkerController {
                 this.logger.warn(err);
             }
         }
-    }
-
-    public openBrowser(): Promise<LaunchedChrome> {
-        return launch({
-            enableExtensions: true,
-            startingUrl: this.httpServer.getUrl(),
-            chromeFlags: [
-                `--load-extension=${extensionPath}`,
-            ],
-        });
     }
 }

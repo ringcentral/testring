@@ -48,7 +48,7 @@ export class RecorderHttpServer implements IServer {
     }
 
     public getUrl() {
-        return `${this.hostName}:${this.port}`;
+        return `http://${this.hostName}:${this.port}`;
     }
 
     private getContext() {
