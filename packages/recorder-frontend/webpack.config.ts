@@ -55,7 +55,7 @@ const config: webpack.Configuration = {
         ],
     },
 
-    stats: 'errors-only',
+    stats: 'minimal',
 };
 
 export default config;

@@ -1,7 +1,8 @@
 {
   "name": "@testring/recorder-extension",
   "version": "0.4.56",
-  "main": "./dist/background.bundle.js",
+  "main": "./index.js",
+  "types": "./index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/ringcentral/testring.git"
@@ -9,11 +10,8 @@
   "author": "RingCentral",
   "license": "MIT",
   "scripts": {
-    "build:static": "ts-node ./bin/build.ts",
-    "build:static:watch": "nodemon --watch static/**/* --watch manifest.tpl.json --ext json,html,png --exec \"npm run build:static\"",
-    "build:script": "webpack --config webpack.config.ts",
-    "build:script:watch": "webpack --config webpack.config.ts --watch",
-    "build": "npm run build:static && npm run build:script"
+    "build": "webpack --config webpack.config.ts",
+    "build:watch": "webpack --config webpack.config.ts --watch --devtool inline-source-map"
   },
   "devDependencies": {
     "@testring/client-ws-transport": "0.4.56",
@@ -21,9 +19,9 @@
     "@testring/utils": "0.4.56",
     "@types/chrome": "0.0.69",
     "@types/webpack": "4.4.22",
-    "mkdirp": "0.5.1",
-    "ncp": "2.0.0",
-    "nodemon": "1.18.9",
+    "chrome-launcher": "0.10.5",
+    "copy-webpack-plugin": "5.0.2",
+    "crx3-utils": "0.0.3",
     "ts-loader": "5.3.3",
     "ts-node": "7.0.1",
     "webpack": "4.28.4",

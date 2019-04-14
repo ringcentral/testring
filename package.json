@@ -29,7 +29,7 @@
     "build:main": "lerna exec --ignore=\"@testring/@(e2e-test-app|recorder-frontend|recorder-extension|ui-kit)\" -- tsc --target es2015",
     "build:recorder": "lerna run --stream --scope @testring/recorder-frontend build",
     "build:extension": "lerna run --stream --scope @testring/recorder-extension build",
-    "build:watch": "lerna exec --ignore=\"@testring/@(e2e-test-app|recorder-frontend|recorder-extension|ui-kit)\" --parallel -- tsc --target es2015 --watch",
+    "build:watch": "lerna exec --ignore=\"@testring/@(e2e-test-app|recorder-frontend|recorder-extension|ui-kit)\" --parallel -- tsc --target es2015 --watch --inlineSourceMap",
     "build:clear": "npm run lint && npm run build",
     "build:precommit": "npm run check-deps:precommit && npm run build:clear && npm run test && npm run test:e2e-simple",
     "build:ci": "npm run build:clear && npm run test:ci",
