@@ -88,7 +88,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                         'allow-running-insecure-content',
                     ],
                     extensions: [
-                        fs.readFileSync(absoluteExtensionPath).toString('base64'),
+                        fs.readFileSync(absoluteExtensionPath, 'base64'),
                     ],
                 },
             },

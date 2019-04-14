@@ -41,7 +41,7 @@ export class BrowserProxy {
         try {
             pluginFactory = resolvePlugin(pluginPath);
         } catch (error) {
-            this.logger.debug(`Can't load plugin ${pluginPath}`, error);
+            this.logger.error(`Can't load plugin ${pluginPath}`, error);
         }
 
         if (pluginFactory) {
