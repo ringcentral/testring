@@ -2,8 +2,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as childProcess from 'child_process';
 
-import * as crx from 'crx3-utils';
-
 // TODO after migration on nodejs >= 11 use crx3-utils instead
 import { getPlatform } from 'chrome-launcher/dist/utils';
 import * as chromeFinder from 'chrome-launcher/dist/chrome-finder';
@@ -37,18 +35,8 @@ export class CRXPlugin {
             : path.join(this.options.rootPath, this.options.keyPath);
     }
 
-    private getReportPath() {
-        return this.resolvePath(this.options.filename + '.json');
-    }
-
     private getExtensionPath() {
         return this.resolvePath(this.options.filename + '.crx');
-    }
-
-    private async getExtensionId(extensionBuffer: Buffer) {
-        const hdr = crx.parse(extensionBuffer);
-
-        return crx.mpdecimal(hdr.signed_header_data.crx_id);
     }
 
     private async writeFile(filepath, data) {
@@ -63,19 +51,7 @@ export class CRXPlugin {
         });
     }
 
-    private async saveReport(extensionBuffer: Buffer) {
-        const data = {
-            extensionId: await this.getExtensionId(extensionBuffer),
-            extensionPath: path.relative(this.options.rootPath, this.getExtensionPath()),
-            reportPath: path.relative(this.options.rootPath, this.getReportPath()),
-        };
-
-        await this.writeFile(this.getReportPath(), JSON.stringify(data));
-
-        return data;
-    }
-
-    private async generateExtension(): Promise<Buffer> {
+    private async generateExtension() {
         const installations = await chromeFinder[getPlatform()]();
 
         if (!installations[0]) {
@@ -115,21 +91,14 @@ export class CRXPlugin {
                 }
             });
         });
-
-        return output;
-    }
-
-    private async generateFiles() {
-        const extensionBuffer = await this.generateExtension();
-        return await this.saveReport(extensionBuffer);
     }
 
     public apply(compiler) {
         compiler.hooks.afterEmit.tap('CRXPlugin', async () => {
             try {
-                const data = await this.generateFiles();
+                await this.generateExtension();
                 // eslint-disable-next-line no-console
-                console.log(`\nCRX Plugin: ${data.extensionPath} is generated.`);
+                console.log('\nCRX Plugin: is generated.');
             } catch (err) {
                 // eslint-disable-next-line no-console
                 console.log('\nCRX Plugin error:', err);
