@@ -10,7 +10,7 @@
   "license": "MIT",
   "scripts": {
     "build": "webpack --config webpack.config.ts",
-    "build:watch": "webpack --watch --config webpack.config.ts"
+    "build:watch": "webpack --config webpack.config.ts --watch --devtool inline-source-map"
   },
   "devDependencies": {
     "@types/react": "16.7.18",

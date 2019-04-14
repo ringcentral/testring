@@ -1,5 +1,38 @@
 import * as path from 'path';
+
 import * as webpack from 'webpack';
+import * as CopyWebpackPlugin from 'copy-webpack-plugin';
+
+import { CRXPlugin } from './crx-plugin';
+
+
+const absolutePath = (filepath) => path.join(__dirname, filepath);
+
+const packageJson = require('./package.json');
+const appVersion = packageJson.version;
+
+const staticRelativeDir = 'static/';
+const outputDir = absolutePath('dist');
+
+const manifestRelativePath = path.join(staticRelativeDir, 'manifest.json');
+
+
+const staticFilesTransform = (content, absolutePath) => {
+    const relativePath = path.relative(__dirname, absolutePath);
+
+    if (relativePath === manifestRelativePath) {
+        const data = JSON.parse(content);
+
+        // Adding version in manifest.json
+        return JSON.stringify({
+            ...data,
+            version: appVersion,
+        });
+    }
+
+    return content;
+};
+
 
 const config: webpack.Configuration = {
     mode: 'development',
@@ -11,7 +44,7 @@ const config: webpack.Configuration = {
     },
 
     output: {
-        path: path.resolve(__dirname, 'dist'),
+        path: outputDir,
         filename: '[name].bundle.js',
     },
 
@@ -42,6 +75,23 @@ const config: webpack.Configuration = {
     devtool: false,
 
     stats: 'minimal',
+
+    plugins: [
+        new CopyWebpackPlugin([
+            {
+                from: staticRelativeDir,
+                to: outputDir,
+                transform: staticFilesTransform,
+            },
+        ]),
+        new CRXPlugin({
+            directory: outputDir,
+            keyPath: absolutePath('extension/testring-dev.pem'),
+            filename: 'testring-dev',
+            outputDirectory: absolutePath('extension'),
+            rootPath: __dirname,
+        }),
+    ],
 };
 
 export default config;

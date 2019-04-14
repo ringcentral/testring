@@ -6,7 +6,7 @@ module.exports = async (config) =>  ({
     plugins: [
         ['selenium-driver', {
             clientTimeout: (config.recorder || config.debug) ? 0 : config.testTimeout,
-            recorderExtension: config.recorder || config.debug,
+            recorderExtension: config.recorder,
         }],
         ['babel', {
             presets: [

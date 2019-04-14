@@ -1,2 +1,4 @@
 !.npmignore
 !tsconfig.json
+extension/*.json
+extension/*.crx

@@ -1,19 +1,21 @@
-import * as path from 'path';
-import * as deepmerge from 'deepmerge';
-import { IBrowserProxyPlugin, WindowFeaturesConfig } from '@testring/types';
-import { spawn } from '@testring/child-process';
-import { Config, Client, RawResult, remote } from 'webdriverio';
 import { SeleniumPluginConfig } from '../types';
+import { IBrowserProxyPlugin, WindowFeaturesConfig } from '@testring/types';
+
 import { ChildProcess } from 'child_process';
+import * as fs from 'fs';
+
+import { Config, Client, RawResult, remote } from 'webdriverio';
+import * as deepmerge from 'deepmerge';
+
+import { spawn } from '@testring/child-process';
 import { loggerClient } from '@testring/logger';
+import { absoluteExtensionPath } from '@testring/recorder-extension';
 
 type browserClientItem = {
     client: Client<any>;
     sessionId: string;
     initTime: number;
 };
-
-const EXTENSION_PATH = path.dirname(require.resolve('@testring/recorder-extension'));
 
 const DEFAULT_CONFIG: SeleniumPluginConfig = {
     recorderExtension: false,
@@ -25,17 +27,6 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
         browserName: 'chrome',
         chromeOptions: {
             args: [],
-        },
-    },
-};
-
-const EXTENSION_ARGS = {
-    desiredCapabilities: {
-        chromeOptions: {
-            args: [
-                `load-extension=${EXTENSION_PATH}`,
-                'allow-running-insecure-content',
-            ],
         },
     },
 };
@@ -85,6 +76,21 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         this.initIntervals();
     }
 
+    private getDevelopmentConfigAdditions(): Partial<SeleniumPluginConfig> {
+        return {
+            desiredCapabilities: {
+                chromeOptions: {
+                    args: [
+                        'allow-running-insecure-content',
+                    ],
+                    extensions: [
+                        fs.readFileSync(absoluteExtensionPath).toString('base64'),
+                    ],
+                },
+            },
+        } as Partial<SeleniumPluginConfig>;
+    }
+
     private createConfig(config: Partial<SeleniumPluginConfig>): SeleniumPluginConfig {
         let mergedConfig = deepmerge.all<SeleniumPluginConfig>([
             DEFAULT_CONFIG,
@@ -96,7 +102,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         if (mergedConfig.recorderExtension) {
             mergedConfig = deepmerge.all<SeleniumPluginConfig>([
                 mergedConfig,
-                EXTENSION_ARGS as Partial<SeleniumPluginConfig>,
+                this.getDevelopmentConfigAdditions(),
             ]);
         }
 
