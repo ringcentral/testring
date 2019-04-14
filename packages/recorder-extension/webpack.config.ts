@@ -9,6 +9,7 @@ import { CRXPlugin } from './crx-plugin';
 const absolutePath = (filepath) => path.join(__dirname, filepath);
 
 const packageJson = require('./package.json');
+const manifestKeyJson = require('./extension/manifest-key.json');
 const appVersion = packageJson.version;
 
 const staticRelativeDir = 'static/';
@@ -23,9 +24,10 @@ const staticFilesTransform = (content, absolutePath) => {
     if (relativePath === manifestRelativePath) {
         const data = JSON.parse(content);
 
-        // Adding version in manifest.json
+        // Adding version and key in manifest.json
         return JSON.stringify({
             ...data,
+            ...manifestKeyJson,
             version: appVersion,
         });
     }

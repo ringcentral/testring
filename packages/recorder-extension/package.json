@@ -21,7 +21,6 @@
     "@types/webpack": "4.4.22",
     "chrome-launcher": "0.10.5",
     "copy-webpack-plugin": "5.0.2",
-    "crx3-utils": "0.0.3",
     "ts-loader": "5.3.3",
     "ts-node": "7.0.1",
     "webpack": "4.28.4",
