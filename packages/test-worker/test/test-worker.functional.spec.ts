@@ -2,12 +2,18 @@
 
 import * as chai from 'chai';
 import { Transport } from '@testring/transport';
-import { TestWorkerPlugin } from '@testring/types';
+import { ScreenshotsConfig, TestWorkerPlugin } from '@testring/types';
 import { TestWorker } from '../src/test-worker';
 
 describe('TestWorkerInstance', () => {
     const defaultSyncTestContent = 'process.cwd();';
     const defaultFilename = './test.js';
+
+    const defaultConfig = {
+        screenshots: 'disable' as ScreenshotsConfig,
+        waitForRelease: false,
+        localWorker: false,
+    };
 
     context('test execution', () => {
         it('should run sync test', async () => {
@@ -17,7 +23,7 @@ describe('TestWorkerInstance', () => {
             };
 
             const transport = new Transport();
-            const testWorker = new TestWorker(transport, { debug: false });
+            const testWorker = new TestWorker(transport, defaultConfig);
             const instance = testWorker.spawn();
 
             try {
@@ -36,7 +42,7 @@ describe('TestWorkerInstance', () => {
             };
 
             const transport = new Transport();
-            const testWorker = new TestWorker(transport, { debug: false });
+            const testWorker = new TestWorker(transport, defaultConfig);
             const instance = testWorker.spawn();
 
             instance.execute(file, {}, null)
@@ -60,7 +66,7 @@ describe('TestWorkerInstance', () => {
         };
 
         const transport = new Transport();
-        const testWorker = new TestWorker(transport, { debug: false });
+        const testWorker = new TestWorker(transport, defaultConfig);
         const instance = testWorker.spawn();
 
         const execution = instance.execute(file, {}, null);
@@ -78,7 +84,7 @@ describe('TestWorkerInstance', () => {
             };
 
             const transport = new Transport();
-            const testWorker = new TestWorker(transport, { debug: false });
+            const testWorker = new TestWorker(transport, defaultConfig);
             const instance = testWorker.spawn();
 
             const hook = testWorker.getHook(TestWorkerPlugin.compile);
@@ -107,7 +113,7 @@ describe('TestWorkerInstance', () => {
             };
 
             const transport = new Transport();
-            const testWorker = new TestWorker(transport, { debug: false });
+            const testWorker = new TestWorker(transport, defaultConfig);
             const instance = testWorker.spawn();
 
             const hook = testWorker.getHook(TestWorkerPlugin.compile);
