@@ -2,7 +2,6 @@ import { SeleniumPluginConfig } from '../types';
 import { IBrowserProxyPlugin, WindowFeaturesConfig } from '@testring/types';
 
 import { ChildProcess } from 'child_process';
-import * as fs from 'fs';
 
 import { Config, Client, RawResult, remote } from 'webdriverio';
 import * as deepmerge from 'deepmerge';
@@ -81,10 +80,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             desiredCapabilities: {
                 chromeOptions: {
                     args: [
+                        `load-extension=${absoluteExtensionPath}`,
                         'allow-running-insecure-content',
-                    ],
-                    extensions: [
-                        fs.readFileSync(absoluteExtensionPath, 'base64'),
                     ],
                 },
             },

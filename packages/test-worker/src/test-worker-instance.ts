@@ -29,7 +29,6 @@ const WORKER_DEFAULT_CONFIG: ITestWorkerConfig = {
     screenshots: 'disable',
     waitForRelease: false,
     localWorker: false,
-    debug: false,
 };
 
 const delay = (timeout: number) => new Promise<void>(resolve => setTimeout(resolve, timeout));
@@ -310,9 +309,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     }
 
     private async createWorker(): Promise<IWorkerEmitter> {
-        const worker = await fork(WORKER_ROOT, [], {
-            debug: this.config.debug,
-        });
+        const worker = await fork(WORKER_ROOT, [], {});
 
         worker.stdout.on('data', (data) => {
             this.logger.log(`[${this.getWorkerID()}] [logged] ${data.toString().trim()}`);

@@ -86,13 +86,13 @@ const config: webpack.Configuration = {
                 transform: staticFilesTransform,
             },
         ]),
-        new CRXPlugin({
+        (process.argv.indexOf('--enable-crx') > -1) ? new CRXPlugin({
             directory: outputDir,
             keyPath: absolutePath('extension/testring-dev.pem'),
             filename: 'testring-dev',
             outputDirectory: absolutePath('extension'),
             rootPath: __dirname,
-        }),
+        }) : () => {},
     ],
 };
 
