@@ -12,7 +12,7 @@ export interface IConfigLogger {
 }
 
 export interface IConfig extends IConfigLogger {
-    recorder: boolean;
+    devtool: boolean;
     restartWorker: RestartWorkerConfig;
     screenshots: ScreenshotsConfig;
     config: string;

@@ -4,7 +4,7 @@ import {
 } from '@testring/types';
 
 export const defaultConfiguration: IConfig = {
-    recorder: false,
+    devtool: false,
     tests: './tests/**/*.js',
     restartWorker: 'never',
     screenshots: 'disable',
