@@ -58,10 +58,6 @@ export async function run(...tests: Array<TestFunction>) {
     } catch (error) {
         catchedError = getValidCopyVmError(error);
     } finally {
-        try {
-            await testAPIController.flushAfterRunCallbacks();
-        } catch (ignore) { /* ignore */  }
-
         if (passed) {
             loggerClient.endStep(testID, 'Test passed');
 

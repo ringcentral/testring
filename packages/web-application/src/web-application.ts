@@ -33,6 +33,8 @@ export class WebApplication extends PluggableModule {
 
     private mainTabID: number | null = null;
 
+    private firstUrlInit: boolean = true;
+
     public assert = createAssertion({
         onSuccess: (meta) => this.successAssertionHandler(meta),
         onError: (meta) => this.errorAssertionHandler(meta),
@@ -1159,7 +1161,20 @@ export class WebApplication extends PluggableModule {
         return new Promise(resolve => setTimeout(resolve, timeout));
     }
 
-    public url(val?: string) {
+    private async extensionHandshake() {
+        if (this.firstUrlInit) {
+            try {
+                const id = generateUniqId();
+                await this.client.url(`chrome-extension://flpcflgnlhmilggkbhbknmdmiobadohh/options.html?httpPort=3050&wsPort=3051&appId=${id}`);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            } catch (e) { /* ignore */ }
+
+            this.firstUrlInit = false;
+        }
+    }
+
+    public async url(val?: string) {
+        await this.extensionHandshake();
         return this.client.url(val);
     }
 
