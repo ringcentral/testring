@@ -66,8 +66,8 @@ createField('envConfig', {
     type: 'string',
 });
 
-createField('recorder', {
-    describe: 'Passed to enable recorder server',
+createField('devtool', {
+    describe: 'Passed to enable recorder/debug server',
     type: 'boolean',
 });
 
