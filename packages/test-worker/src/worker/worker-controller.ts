@@ -12,10 +12,13 @@ import * as process from 'process';
 import * as path from 'path';
 
 import { Sandbox } from '@testring/sandbox';
-import { TestAPIController } from '@testring/api';
+import { testAPIController, TestAPIController } from '@testring/api';
 import { asyncBreakpoints } from '@testring/async-breakpoints';
+import { loggerClient, LoggerClient } from '@testring/logger';
 
 export class WorkerController {
+
+    private logger: LoggerClient = loggerClient.withPrefix('[worker-controller]');
 
     constructor(
         private transportInstance: ITransport,
@@ -58,16 +61,22 @@ export class WorkerController {
     }
 
 
-    private waitForRelease() {
+    private async waitForRelease() {
         this.transportInstance.on(TestWorkerAction.evaluateCode, async (message: ITestEvaluationMessage) => {
             Sandbox.evaluateScript(message.path, message.content);
         });
         this.transportInstance.on(TestWorkerAction.releaseTest, async () => {
-            this.completeExecutionSuccessfully();
+            await this.completeExecutionSuccessfully();
         });
     }
 
-    private completeExecutionSuccessfully() {
+    private async completeExecutionSuccessfully() {
+        try {
+            await testAPIController.flushAfterRunCallbacks();
+        } catch (e) {
+            this.logger.error('Failed to release tests execution');
+        }
+
         this.releasePauseMode();
         Sandbox.clearCache();
 
@@ -80,7 +89,7 @@ export class WorkerController {
         );
     }
 
-    private completeExecutionFailed(error: Error) {
+    private async completeExecutionFailed(error: Error) {
         this.releasePauseMode();
 
         this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
@@ -96,12 +105,16 @@ export class WorkerController {
         try {
             await this.runTest(message);
 
-            this.completeExecutionSuccessfully();
+            if (message.waitForRelease) {
+                await this.waitForRelease();
+            } else {
+                await this.completeExecutionSuccessfully();
+            }
         } catch (error) {
             if (message.waitForRelease) {
-                this.waitForRelease();
+                await this.waitForRelease();
             } else {
-                this.completeExecutionFailed(error);
+                await this.completeExecutionFailed(error);
             }
         }
     }

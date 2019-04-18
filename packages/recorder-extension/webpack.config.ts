@@ -43,6 +43,7 @@ const config: webpack.Configuration = {
         background: './src/background.ts',
         content: './src/content.ts',
         popup: './src/popup.ts',
+        options: './src/options.ts',
     },
 
     output: {
