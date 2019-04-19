@@ -1,10 +1,12 @@
 import {
+    IRecorderRuntimeConfiguration,
     IRecorderServerConfig,
     IRecorderServerController,
     RecorderPlugins,
     IChildProcessFork,
     ITransport,
     RecorderWorkerMessages,
+    WebApplicationDevtoolMessageType,
 } from '@testring/types';
 
 import * as path from 'path';
@@ -15,6 +17,8 @@ import { PluggableModule } from '@testring/pluggable-module';
 import { loggerClient } from '@testring/logger';
 import { defaultRecorderConfig } from './default-recorder-config';
 
+import { extensionId } from '@testring/recorder-extension';
+
 
 export class RecorderServerController extends PluggableModule implements IRecorderServerController {
 
@@ -23,6 +27,8 @@ export class RecorderServerController extends PluggableModule implements IRecord
     private worker: IChildProcessFork;
 
     private logger = loggerClient.withPrefix('[recorder-server]');
+
+    private config: IRecorderServerConfig;
 
     constructor(private transport: ITransport) {
         super([
@@ -37,9 +43,28 @@ export class RecorderServerController extends PluggableModule implements IRecord
         return defaultRecorderConfig;
     }
 
+    public getRuntimeConfiguration(): IRecorderRuntimeConfiguration {
+        if (this.config === undefined) {
+            throw Error('Configuration is not initialized yet');
+        } else {
+            const {
+                httpPort,
+                wsPort,
+                host,
+            } = this.config;
+
+            return {
+                extensionId,
+                httpPort,
+                wsPort,
+                host,
+            };
+        }
+    }
+
     private getWorkerID(): string {
         if (!this.workerID) {
-            this.workerID = `recorder-${generateUniqId()}`;
+            this.workerID = `recorder/${generateUniqId()}`;
         }
         return this.workerID;
     }
@@ -48,7 +73,7 @@ export class RecorderServerController extends PluggableModule implements IRecord
         const workerPath = path.resolve(__dirname, 'worker');
         const workerID = this.getWorkerID();
 
-        this.worker = await fork(workerPath, [], { debug: false });
+        this.worker = await fork(workerPath);
 
         this.worker.stdout.on('data', (data) => {
             this.logger.log(`[logged] ${data.toString().trim()}`);
@@ -67,12 +92,46 @@ export class RecorderServerController extends PluggableModule implements IRecord
         this.worker.kill();
     }
 
+    private addToServerProxyHandler(messageType) {
+        const toServerHandler = (messageData, processID?: string) => {
+            this.transport.send(this.getWorkerID(), messageType, {
+                messageData,
+                fromWorker: processID,
+            });
+        };
+        this.transport.on(messageType, toServerHandler);
+    }
+
+    private addFromServerProxyHandler(messageType) {
+        const fromServerHandler = (payload) => {
+            if (payload.fromWorker !== null && payload.fromWorker !== undefined) {
+                this.transport.send(payload.fromWorker, messageType, payload.messageData);
+            } else {
+                this.transport.broadcast(messageType, payload.messageData);
+            }
+        };
+        this.transport.on(messageType, fromServerHandler);
+    }
+
+    private initMessagesProxy() {
+        [
+            WebApplicationDevtoolMessageType.register,
+            WebApplicationDevtoolMessageType.unregister,
+        ].forEach((event) => this.addToServerProxyHandler(event));
+
+
+        [
+            WebApplicationDevtoolMessageType.registerComplete,
+            WebApplicationDevtoolMessageType.unregisterComplete,
+        ].forEach((event) => this.addFromServerProxyHandler(event));
+    }
+
     public async init() {
-        const config = await this.callHook<IRecorderServerConfig>(RecorderPlugins.beforeStart, this.getConfig());
+        this.config = await this.callHook<IRecorderServerConfig>(RecorderPlugins.beforeStart, this.getConfig());
 
         await this.startServer();
 
-        this.transport.send(this.getWorkerID(), RecorderWorkerMessages.START_SERVER, config);
+        this.transport.send(this.getWorkerID(), RecorderWorkerMessages.START_SERVER, this.config);
 
         let caughtError = null;
         let pending = true;
@@ -99,6 +158,7 @@ export class RecorderServerController extends PluggableModule implements IRecord
             }
         });
 
+        await this.initMessagesProxy();
         await this.callHook(RecorderPlugins.afterStart);
     }
 

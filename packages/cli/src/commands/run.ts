@@ -47,6 +47,10 @@ class RunCommand implements ICLICommand {
     }
 
     async execute() {
+        if (this.config.devtool) {
+            await this.initRecorder();
+        }
+
         const testWorker = new TestWorker(this.transport, {
             waitForRelease: this.config.devtool !== false,
             localWorker: this.config.workerLimit === 'local',
@@ -55,7 +59,12 @@ class RunCommand implements ICLICommand {
 
         this.httpServer = createHttpServer(this.transport);
         this.browserProxyController = browserProxyControllerFactory(this.transport);
-        this.testRunController = new TestRunController(this.config, testWorker);
+
+        if (this.config.devtool) {
+            this.testRunController = new TestRunController(this.config, testWorker, this.recorderServer.getRuntimeConfiguration());
+        } else {
+            this.testRunController = new TestRunController(this.config, testWorker, null);
+        }
         this.webApplicationController = new WebApplicationController(this.browserProxyController, this.transport);
 
         const loggerServer = new LoggerServer(this.config, this.transport, this.stdout);
@@ -83,10 +92,6 @@ class RunCommand implements ICLICommand {
         await this.browserProxyController.init();
 
         this.webApplicationController.init();
-
-        if (this.config.devtool) {
-            await this.initRecorder();
-        }
 
         this.logger.info('Executing...');
 

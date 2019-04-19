@@ -1,9 +1,26 @@
 import { IBrowserProxyPlugin } from '../browser-proxy';
 import { IBrowserProxyCommand } from '../browser-proxy/structs';
+import { IRecorderRuntimeConfiguration } from '../recorder-backend';
 
 export const enum WebApplicationMessageType {
     execute = 'WebApplication/execute',
     response = 'WebApplication/response'
+}
+
+export const enum WebApplicationDevtoolMessageType {
+    register = 'WebApplication/register',
+    registerComplete = 'WebApplication/registerComplete',
+    unregister = 'WebApplication/unregister',
+    unregisterComplete = 'WebApplication/unregisterComplete',
+}
+
+export interface IWebApplicationRegisterMessage {
+    id: string;
+}
+
+export interface IWebApplicationRegisterCompleteMessage {
+    id: string;
+    error: null | Error;
 }
 
 export const enum WebApplicationControllerEventType {
@@ -49,6 +66,11 @@ export type IWebApplicationClient = {
 export type WindowFeatureBoolean = 'yes' | 'no';
 
 export type WindowFeaturesConfig = string | IWindowFeatures;
+
+export interface IWebApplicationConfig {
+    screenshotsEnabled: boolean;
+    devtool: null | IRecorderRuntimeConfiguration;
+}
 
 export interface IWindowFeatures {
     top?: number;

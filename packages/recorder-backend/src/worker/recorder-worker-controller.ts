@@ -1,8 +1,10 @@
 import {
     IRecorderHttpRoute,
     IRecorderServerConfig,
+    IRecorderWebAppRegisterMessage,
     ITransport,
     RecorderWorkerMessages,
+    WebApplicationDevtoolMessageType,
 } from '@testring/types';
 
 import { Store } from 'redux';
@@ -27,7 +29,35 @@ export class RecorderWorkerController {
         this.transport.on(RecorderWorkerMessages.START_SERVER, (config: IRecorderServerConfig) => {
             this.init(config);
         });
+
+        this.addDevtoolMessageListeners();
+
         process.once('exit', () => this.exitHandler);
+    }
+
+    private addDevtoolMessageListeners() {
+        this.transport.on<IRecorderWebAppRegisterMessage>(WebApplicationDevtoolMessageType.register, (message) => {
+            this.registerWebApplication(message);
+        });
+        this.transport.on<IRecorderWebAppRegisterMessage>(WebApplicationDevtoolMessageType.unregister, (message) => {
+           this.unregisterWebApplication(message);
+        });
+    }
+
+    private registerWebApplication(message: IRecorderWebAppRegisterMessage) {
+        this.logger.debug(message);
+        this.transport.broadcastUniversally(WebApplicationDevtoolMessageType.registerComplete, {
+            ...message,
+            messageData: {
+                ...message.messageData,
+                error: null,
+            },
+        });
+    }
+
+    private unregisterWebApplication(message: IRecorderWebAppRegisterMessage) {
+        this.logger.debug(message);
+        this.transport.broadcastUniversally(WebApplicationDevtoolMessageType.unregisterComplete, message);
     }
 
     private loadHandler(filepath: string) {

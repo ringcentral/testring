@@ -1,3 +1,8 @@
+import {
+    IWebApplicationRegisterCompleteMessage,
+    IWebApplicationRegisterMessage,
+} from '../web-application';
+
 interface IRecorderRoute {
     method: string;
     mask: string;
@@ -25,10 +30,17 @@ export interface IRecorderStaticRoutes {
     };
 }
 
-export interface IRecorderServerConfig {
+interface IRecorderServerBaseConfig {
     host: string;
     httpPort: number;
     wsPort: number;
+}
+
+export interface IRecorderRuntimeConfiguration extends IRecorderServerBaseConfig {
+    extensionId: string;
+}
+
+export interface IRecorderServerConfig extends IRecorderServerBaseConfig {
     router: IRecorderServerRoute[];
     staticRoutes: IRecorderStaticRoutes;
 }
@@ -56,3 +68,14 @@ export interface IWsMessage {
     payload?: any;
 }
 
+interface IRecorderProxiedMessages {
+    fromWorker: null | string;
+}
+
+export interface IRecorderWebAppRegisterMessage extends IRecorderProxiedMessages {
+    messageData: IWebApplicationRegisterMessage;
+}
+
+export interface IRecorderWebAppRegisterCompleteMessage extends IRecorderProxiedMessages {
+    messageData: IWebApplicationRegisterCompleteMessage;
+}

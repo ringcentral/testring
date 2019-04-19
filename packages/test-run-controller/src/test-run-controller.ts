@@ -2,6 +2,8 @@ import {
     IConfig,
     IFile,
     IQueuedTest,
+    IRecorderRuntimeConfiguration,
+    ITestQueuedTestRunData,
     ITestRunController,
     ITestWorker,
     ITestWorkerCallbackMeta,
@@ -32,7 +34,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
     constructor(
         private config: IConfig,
-        private testWorker: ITestWorker
+        private testWorker: ITestWorker,
+        private devtoolConfig: IRecorderRuntimeConfiguration | null,
     ) {
         super([
             TestRunControllerPlugins.beforeRun,
@@ -210,8 +213,9 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         let isRetryRun = queueItem.retryCount > 0;
         const {
             debug,
-            logLevel,
             httpThrottle,
+            logLevel,
+            devtool,
         } = this.config;
 
         if (this.config.screenshots === 'enable') {
@@ -220,17 +224,25 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             screenshotsEnabled = isRetryRun;
         }
 
+        let devtoolConfig: IRecorderRuntimeConfiguration | null = null;
+        if (devtool) {
+            devtoolConfig = this.devtoolConfig;
+        }
+
+        const runData: ITestQueuedTestRunData = {
+            debug,
+            logLevel,
+            httpThrottle,
+            screenshotsEnabled,
+            devtool: devtoolConfig,
+            isRetryRun,
+        };
+
         return {
             ...queueItem,
             parameters: {
                 ...queueItem.parameters,
-                runData: {
-                    debug,
-                    logLevel,
-                    httpThrottle,
-                    screenshotsEnabled,
-                    isRetryRun,
-                },
+                runData,
             },
         };
     }
