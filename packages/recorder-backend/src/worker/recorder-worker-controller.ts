@@ -8,6 +8,9 @@ import {
     RecorderProxyMessages,
     RecorderWorkerMessages,
     WebApplicationDevtoolMessageType,
+    RecorderWSServerEvents,
+    IRecorderWSMeta,
+    RecorderEvents, IRecorderWSMessage,
 } from '@testring/types';
 
 import { Store } from 'redux';
@@ -31,6 +34,8 @@ export class RecorderWorkerController {
 
     private storesByWorkerId: Map<string, Store> = new Map();
     private storesByWebAppId: Map<string, Store> = new Map();
+    private workerIdByWebAppId: Map<string, string> = new Map();
+    private webAppIdByConnectionId: Map<string, string> = new Map();
 
     private config: IRecorderServerConfig;
 
@@ -102,6 +107,7 @@ export class RecorderWorkerController {
         const store = await this.getStoreByWorkerId(workerId);
 
         if (store !== null && !this.storesByWebAppId.has(webAppId)) {
+            this.workerIdByWebAppId.set(webAppId, workerId);
             this.storesByWebAppId.set(webAppId, store);
         } else {
             throw Error(`Error while registering web app with id ${webAppId}`);
@@ -110,6 +116,7 @@ export class RecorderWorkerController {
 
     private async unregisterWebAppId(webAppId: string) {
         if (this.storesByWebAppId.has(webAppId)) {
+            this.workerIdByWebAppId.delete(webAppId);
             this.storesByWebAppId.delete(webAppId);
         } else {
             throw Error(`Error while unregistering web app with id ${webAppId}`);
@@ -266,7 +273,36 @@ export class RecorderWorkerController {
             config.wsPort,
         );
         await this.wsServer.run();
+
+        this.wsServer.on(
+            RecorderWSServerEvents.MESSAGE,
+            (data: IRecorderWSMessage, meta: IRecorderWSMeta) => this.WSSMessageHandler(data, meta),
+        );
+        this.wsServer.on(
+            RecorderWSServerEvents.CLOSE,
+            (meta: IRecorderWSMeta) => this.WSSConnectionHandler(meta),
+        );
         this.logger.debug(`WS server listening: ${this.wsServer.getUrl()}`);
+    }
+
+    private WSSConnectionHandler(meta: IRecorderWSMeta) {
+        this.webAppIdByConnectionId.delete(meta.connectionId);
+    }
+
+    private WSSMessageHandler(data: IRecorderWSMessage, meta: IRecorderWSMeta) {
+        const { connectionId } = meta;
+
+        if (data.type === RecorderEvents.HANDSHAKE_REQUEST) {
+            const { appId } = data.payload;
+            const payload = {
+                appId: data.payload.appId,
+                connectionId,
+                error: null,
+            };
+            this.webAppIdByConnectionId.set(connectionId, appId);
+
+            this.wsServer.send(meta.connectionId, RecorderEvents.HANDSHAKE_RESPONSE, payload);
+        }
     }
 
     private async exitHandler() {

@@ -1,11 +1,20 @@
+import {
+    IRecorderWSMessage,
+    IServer,
+    RecorderEvents,
+    RecorderWSServerEvents,
+} from '@testring/types';
+
 import { EventEmitter } from 'events';
 import { Server as WSS } from 'ws';
 import * as WebSocket from 'ws';
-import { IServer, RecorderEvents } from '@testring/types';
 import { generateUniqId } from '@testring/utils';
+import { LoggerClient, loggerClient } from '@testring/logger';
 
 export class RecorderWSServer extends EventEmitter implements IServer {
     private connections: Map<string, WebSocket> = new Map();
+
+    private logger: LoggerClient = loggerClient.withPrefix('[recorder-wss]');
 
     constructor(
         private hostName: string,
@@ -35,16 +44,38 @@ export class RecorderWSServer extends EventEmitter implements IServer {
         const connectionId = generateUniqId();
         this.connections.set(connectionId, ws);
 
-        ws.on('close', () => this.connections.delete(connectionId));
-        this.requestHandshakeSession(connectionId);
+        this.emit(RecorderWSServerEvents.CONNECTION, {
+            connectionId,
+        });
+
+        ws.on('message', (message: string) => {
+            try {
+                const { type, payload } = JSON.parse(message);
+
+                const data: IRecorderWSMessage = {
+                    type,
+                    payload,
+                };
+
+                this.emit(RecorderWSServerEvents.MESSAGE, data, { connectionId });
+            } catch (e) {
+                this.emit(RecorderWSServerEvents.ERROR, e, { connectionId });
+                this.logger.warn(e);
+            }
+        });
+
+        ws.on('close', () => {
+            this.emit(RecorderWSServerEvents.CLOSE, { connectionId });
+            this.connections.delete(connectionId);
+        });
     }
 
-    public send(connectionId: string, eventType: RecorderEvents, payload: object) {
+    public send(connectionId: string, type: RecorderEvents, payload: object) {
         const connection = this.connections.get(connectionId);
 
         if (connection) {
             connection.send(JSON.stringify({
-                event: eventType,
+                type,
                 payload,
             }));
         } else {
@@ -56,12 +87,6 @@ export class RecorderWSServer extends EventEmitter implements IServer {
         for (let [connectionId] of this.connections) {
             this.send(connectionId, eventType, payload);
         }
-    }
-
-    private requestHandshakeSession(connectionId: string) {
-        this.send(connectionId, RecorderEvents.HANDSHAKE_REQUEST,{
-            connectionId,
-        });
     }
 
     public async stop(): Promise<void> {

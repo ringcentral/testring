@@ -4,6 +4,12 @@ export const enum RecorderServerEvents {
     CLOSE = 'RecorderServerEvents/CLOSE',
 }
 
+export const enum RecorderWSServerEvents {
+    CONNECTION = 'RecorderWSServerEvents/CONNECTION',
+    ERROR = 'RecorderWSServerEvents/ERROR',
+    MESSAGE = 'RecorderWSServerEvents/MESSAGE',
+    CLOSE = 'RecorderWSServerEvents/CLOSE',
+}
 
 export const enum RecorderServerMessageTypes {
     STOP = 'RecorderServerMessageTypes/STOP',

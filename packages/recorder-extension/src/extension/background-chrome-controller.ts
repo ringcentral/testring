@@ -5,6 +5,8 @@ import {
     IExtensionServersConfiguration,
 } from '@testring/types';
 
+import { ClientWsTransport } from '@testring/client-ws-transport';
+
 import { BackgroundChromeServer } from './chrome-transport/chrome-server';
 
 type resolveReadyCallback = (value?: any) => void;
@@ -18,6 +20,8 @@ export class BackgroundChromeController {
 
     private serverConfig: IExtensionServersConfiguration | null = null;
 
+    private ws: ClientWsTransport;
+
     constructor() {
         this.backgroundServer = new BackgroundChromeServer();
 
@@ -25,7 +29,7 @@ export class BackgroundChromeController {
         this.handleMessages();
     }
 
-    handleMessages() {
+    private handleMessages() {
         this.backgroundServer.on(
             ExtensionMessagingTransportEvents.MESSAGE,
             (message: IExtensionMessagingTransportMessage, conId: string) => {
@@ -44,7 +48,7 @@ export class BackgroundChromeController {
         );
     }
 
-    isReady(): Promise<void> {
+    public isReady(): Promise<void> {
         if (this.waitForReadyPromise) {
             return this.waitForReadyPromise;
         }
@@ -56,10 +60,22 @@ export class BackgroundChromeController {
         return this.waitForReadyPromise;
     }
 
-    async setExtensionOptionsHandler(configuration: IExtensionServersConfiguration, conId) {
+    private async initWebSocket(serverConfig: IExtensionServersConfiguration) {
+        this.ws = new ClientWsTransport(serverConfig.host, serverConfig.wsPort);
+
+        this.ws.connect();
+
+        await this.ws.handshake(serverConfig.appId);
+    }
+
+    public async setExtensionOptionsHandler(configuration: IExtensionServersConfiguration, conId) {
         if (this.resolveReadyStateCallback) {
             this.serverConfig = configuration;
+
+            await this.initWebSocket(this.serverConfig);
+
             this.resolveReadyStateCallback();
+
             this.resolveReadyStateCallback = null;
         } else {
             // eslint-disable-next-line no-console
@@ -67,7 +83,7 @@ export class BackgroundChromeController {
         }
     }
 
-    async waitForReadyHandler(message, conId) {
+    public async waitForReadyHandler(message, conId) {
         if (this.serverConfig === null) {
             await this.waitForReadyPromise;
         }

@@ -4,6 +4,7 @@ export type ElementPath = Array<IElementPathNode>;
 
 export const enum RecorderEvents {
     HANDSHAKE_REQUEST = 'RecorderEvents/HANDSHAKE_REQUEST',
+    HANDSHAKE_RESPONSE = 'RecorderEvents/HANDSHAKE_RESPONSE',
     EMIT_BROWSER_EVENT = 'RecorderEvents/EMIT_BROWSER_EVENT',
     SPECIFY_PATH = 'RecorderEvents/SPECIFY_PATH',
     RECORDING = 'RecorderEvents/RECORDING',
