@@ -14,14 +14,36 @@ async function init() {
 
     const runAction = (actionType) => wsClient.send(RecorderEvents.WORKER_ACTION, { actionType });
 
+    const btnStyle = {
+        'height': '40px',
+        'margin': '30px 10px',
+        'display': 'inline-block',
+    };
+
     class ButtonsLayout extends React.Component {
         render() {
             return (
-                <div>
-                    <button onClick={() => runAction(TestWorkerAction.pauseTestExecution)}>Pause</button>
-                    <button onClick={() => runAction(TestWorkerAction.resumeTestExecution)}>Resume</button>
-                    <button onClick={() => runAction(TestWorkerAction.runTillNextExecution)}>Pause on Next</button>
-                    <button onClick={() => runAction(TestWorkerAction.releaseTest)}>Release</button>
+                <div style={{ 'textAlign': 'center' }}>
+                    <button
+                        style={btnStyle}
+                        onClick={() => runAction(TestWorkerAction.pauseTestExecution)}>
+                        Pause
+                    </button>
+                    <button
+                        style={btnStyle}
+                        onClick={() => runAction(TestWorkerAction.runTillNextExecution)}>
+                        Pause on Next
+                    </button>
+                    <button
+                        style={btnStyle}
+                        onClick={() => runAction(TestWorkerAction.resumeTestExecution)}>
+                        Resume
+                    </button>
+                    <button
+                        style={btnStyle}
+                        onClick={() => runAction(TestWorkerAction.releaseTest)}>
+                        Release
+                    </button>
                 </div>
             );
         }

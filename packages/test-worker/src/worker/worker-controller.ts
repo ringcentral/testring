@@ -128,12 +128,12 @@ export class WorkerController {
                 await this.completeExecutionSuccessfully();
             }
         } catch (error) {
-            if (error instanceof BreakStackError) {
-                await this.completeExecutionSuccessfully();
-            }
-
             if (!message.waitForRelease) {
-                await this.completeExecutionFailed(error);
+                if (error instanceof BreakStackError) {
+                    await this.completeExecutionSuccessfully();
+                } else {
+                    await this.completeExecutionFailed(error);
+                }
             }
         }
     }
