@@ -10,11 +10,11 @@ import {
     IRecorderServer,
     ITransport,
     IWsMessage,
-    IExtensionConfig,
-    RecorderEvents,
+    // IExtensionConfig,
+    // RecorderEvents,
 } from '@testring/types';
 import {
-    RECORDER_ELEMENT_IDENTIFIER,
+    // RECORDER_ELEMENT_IDENTIFIER,
     DEFAULT_RECORDER_HOST,
     DEFAULT_RECORDER_HTTP_PORT,
     DEFAULT_RECORDER_WS_PORT,
@@ -104,17 +104,17 @@ export class RecorderServer implements IRecorderServer {
             this.unregisterConnection(conId);
         });
 
-        this.send(
-            conId,
-            {
-                event: RecorderEvents.HANDSHAKE,
-                payload: {
-                    connectionId: conId,
-                    // TODO: get identifier from framework config
-                    testElementAttribute: RECORDER_ELEMENT_IDENTIFIER,
-                } as IExtensionConfig,
-            }
-        );
+        // this.send(
+        //     conId,
+        //     {
+        //         event: RecorderEvents.HANDSHAKE,
+        //         payload: {
+        //             connectionId: conId,
+        //             // TODO: get identifier from framework config
+        //             testElementAttribute: RECORDER_ELEMENT_IDENTIFIER,
+        //         } as IExtensionConfig,
+        //     }
+        // );
 
         this.transportInstance.broadcast(
             RecorderServerEvents.CONNECTION,

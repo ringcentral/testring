@@ -3,7 +3,7 @@ import { ElementSummary } from '../recorder-extension';
 export type ElementPath = Array<IElementPathNode>;
 
 export const enum RecorderEvents {
-    HANDSHAKE = 'RecorderEvents/HANDSHAKE',
+    HANDSHAKE_REQUEST = 'RecorderEvents/HANDSHAKE_REQUEST',
     EMIT_BROWSER_EVENT = 'RecorderEvents/EMIT_BROWSER_EVENT',
     SPECIFY_PATH = 'RecorderEvents/SPECIFY_PATH',
     RECORDING = 'RecorderEvents/RECORDING',

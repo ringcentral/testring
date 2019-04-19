@@ -18,7 +18,7 @@ export class RecorderHttpServer implements IServer {
         private port: number,
         private routes: IRecorderHttpRoute[],
         private staticRoutes: IRecorderStaticRoutes,
-        private storeMap: Map<string, Store>,
+        private storesByWebAppId: Map<string, Store>,
     ) {
         this.server = express();
     }
@@ -51,15 +51,28 @@ export class RecorderHttpServer implements IServer {
         return `http://${this.hostName}:${this.port}`;
     }
 
-    private getContext(req) {
-        return this.storeMap;
-    }
-
     private initStaticRoutes() {
         for (let key in this.staticRoutes) {
             let route = this.staticRoutes[key];
 
             this.server.use(route.rootPath, express.static(route.directory, route.options));
+        }
+    }
+
+    private routeHandler(req, res, handler, options) {
+        const webAppId = req.query.appId || null;
+
+        if (webAppId === null) {
+            res.send('Web App is not defined in get params');
+            return;
+        }
+
+        if (this.storesByWebAppId.has(webAppId)) {
+            const context = this.storesByWebAppId.get(webAppId);
+
+            return handler(req, res, context, options);
+        } else {
+            res.send(`No Web App id is defined ${webAppId}`);
         }
     }
 
@@ -72,7 +85,7 @@ export class RecorderHttpServer implements IServer {
                 case 'put':
                     this.server[route.method](
                         route.mask,
-                        (req, res) => route.handler(req, res, this.getContext(req), route.options)
+                        (req, res) => this.routeHandler(req, res, route.handler, route.options)
                     );
                     break;
                 default:
