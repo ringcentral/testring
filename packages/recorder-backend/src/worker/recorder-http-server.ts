@@ -70,7 +70,7 @@ export class RecorderHttpServer implements IServer {
         if (this.storesByWebAppId.has(webAppId)) {
             const context = this.storesByWebAppId.get(webAppId);
 
-            return handler(req, res, context, options);
+            return handler(req, res, context, webAppId, options);
         } else {
             res.send(`No Web App id is defined ${webAppId}`);
         }

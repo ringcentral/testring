@@ -2,7 +2,6 @@ const pageTemplate = (
     host: string,
     wsPort: number,
     staticHost: string,
-    wsProtocol: string,
 ) => {
     return `
 <!doctype html>
@@ -22,10 +21,7 @@ const pageTemplate = (
     <script>
         window.rcRecorderConfig = {
             host: '${ host }',
-            ws: {
-                protocol: '${ wsProtocol }',
-                port: ${ wsPort },
-            }
+            wsport: ${ wsPort },
         };
     </script>
 </head>
@@ -45,6 +41,5 @@ export default function editorPage(req, res, store) {
         host,
         wsPort,
         '/static',
-        'ws://',
     ));
 }
