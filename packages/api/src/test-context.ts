@@ -1,3 +1,4 @@
+import { ITestQueuedTestRunData } from '@testring/types';
 import { loggerClient } from '@testring/logger';
 import { HttpClient } from '@testring/http-api';
 import { transport } from '@testring/transport';
@@ -63,7 +64,7 @@ export class TestContext {
         loggerClient.warn(LOG_PREFIX, ...message);
     }
 
-    protected getRunData(): any {
+    protected getRunData(): ITestQueuedTestRunData {
         return this.getParameters().runData;
     }
 

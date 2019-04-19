@@ -1,9 +1,13 @@
 import * as url from 'url';
 import {
+    IWebApplicationConfig,
     IAssertionErrorMeta,
     IAssertionSuccessMeta,
     ITransport,
     WindowFeaturesConfig,
+    WebApplicationDevtoolMessageType,
+    IWebApplicationRegisterMessage,
+    IWebApplicationRegisterCompleteMessage,
 } from '@testring/types';
 
 import { asyncBreakpoints } from '@testring/async-breakpoints';
@@ -27,13 +31,17 @@ export class WebApplication extends PluggableModule {
 
     protected TICK_TIMEOUT: number = 100;
 
+    private config: IWebApplicationConfig;
+
     private screenshotsEnabledManually: boolean = true;
 
     private isLogOpened: boolean = false;
 
     private mainTabID: number | null = null;
 
-    private firstUrlInit: boolean = true;
+    private isRegisteredInDevtool: boolean = false;
+
+    private applicationId: string = `webApp-${generateUniqId()}`;
 
     public assert = createAssertion({
         onSuccess: (meta) => this.successAssertionHandler(meta),
@@ -175,12 +183,18 @@ export class WebApplication extends PluggableModule {
     constructor(
         private testUID: string,
         protected transport: ITransport,
-        protected config: any = {
-            screenshotsEnabled: false,
-        },
+        config: Partial<IWebApplicationConfig>,
     ) {
         super();
+        this.config = this.getConfig(config);
         this.decorateMethods();
+    }
+
+    protected getConfig(userConfig: Partial<IWebApplicationConfig>): IWebApplicationConfig {
+        return Object.assign({}, {
+            screenshotsEnabled: false,
+            devtool: null,
+        }, userConfig);
     }
 
     protected decorateMethods() {
@@ -1161,15 +1175,73 @@ export class WebApplication extends PluggableModule {
         return new Promise(resolve => setTimeout(resolve, timeout));
     }
 
-    private async extensionHandshake() {
-        if (this.firstUrlInit) {
-            try {
-                const id = generateUniqId();
-                await this.client.url(`chrome-extension://flpcflgnlhmilggkbhbknmdmiobadohh/options.html?httpPort=3050&wsPort=3051&appId=${id}`);
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            } catch (e) { /* ignore */ }
+    private async registerAppInDevtool(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            const removeListener = this.transport.on(
+                WebApplicationDevtoolMessageType.registerComplete,
+                (message: IWebApplicationRegisterCompleteMessage) => {
+                    if (message.id === this.applicationId) {
+                        if (message.error === null || message.error === undefined) {
+                            resolve();
+                        } else {
+                            reject(message.error);
+                        }
+                        removeListener();
+                    }
+                });
 
-            this.firstUrlInit = false;
+            const payload: IWebApplicationRegisterMessage = {
+                id: this.applicationId,
+            };
+
+            this.transport.broadcastUniversally(WebApplicationDevtoolMessageType.register, payload);
+        });
+    }
+
+    private async unregisterAppInDevtool(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            const removeListener = this.transport.on<IWebApplicationRegisterCompleteMessage>(
+                WebApplicationDevtoolMessageType.unregisterComplete,
+                (message) => {
+                    if (message.id === this.applicationId) {
+                        if (message.error === null || message.error === undefined) {
+                            resolve();
+                        } else {
+                            reject(message.error);
+                        }
+                        removeListener();
+                    }
+                });
+
+            const payload: IWebApplicationRegisterMessage = {
+                id: this.applicationId,
+            };
+
+            this.transport.broadcastUniversally(WebApplicationDevtoolMessageType.unregister, payload);
+        });
+    }
+
+    private async extensionHandshake() {
+        if (this.config.devtool !== null && !this.isRegisteredInDevtool) {
+            const id = this.applicationId;
+
+            this.logger.debug(`WebApplication ${id} devtool initial registration`);
+            await this.registerAppInDevtool();
+
+            const {
+                extensionId,
+                httpPort,
+                wsPort,
+            } = this.config.devtool;
+            const url = `chrome-extension://${extensionId}/options.html?httpPort=${httpPort}&wsPort=${wsPort}&appId=${id}`;
+
+            await this.client.url(url);
+
+            await this.client.executeAsync(function (done) {
+                setTimeout(done, 5000);
+            });
+
+            this.isRegisteredInDevtool = true;
         }
     }
 
@@ -1224,6 +1296,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async end() {
+        await this.unregisterAppInDevtool();
         await this.client.end();
     }
 }
