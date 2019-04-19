@@ -1,15 +1,17 @@
+import { EventEmitter } from 'events';
 import { Server as WSS } from 'ws';
 import * as WebSocket from 'ws';
 import { IServer, RecorderEvents } from '@testring/types';
 import { generateUniqId } from '@testring/utils';
 
-export class RecorderWSServer implements IServer {
+export class RecorderWSServer extends EventEmitter implements IServer {
     private connections: Map<string, WebSocket> = new Map();
 
     constructor(
         private hostName: string,
         private port: number,
     ) {
+        super();
     }
 
     private server: WSS;
@@ -34,7 +36,7 @@ export class RecorderWSServer implements IServer {
         this.connections.set(connectionId, ws);
 
         ws.on('close', () => this.connections.delete(connectionId));
-        this.handshakeSession(connectionId);
+        this.requestHandshakeSession(connectionId);
     }
 
     public send(connectionId: string, eventType: RecorderEvents, payload: object) {
@@ -56,8 +58,8 @@ export class RecorderWSServer implements IServer {
         }
     }
 
-    private handshakeSession(connectionId: string) {
-        this.send(connectionId, RecorderEvents.HANDSHAKE,{
+    private requestHandshakeSession(connectionId: string) {
+        this.send(connectionId, RecorderEvents.HANDSHAKE_REQUEST,{
             connectionId,
         });
     }

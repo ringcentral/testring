@@ -30,6 +30,7 @@ export class RecorderWorkerController {
     private wsServer: RecorderWSServer;
 
     private storesByWorkerId: Map<string, Store> = new Map();
+    private storesByWebAppId: Map<string, Store> = new Map();
 
     private config: IRecorderServerConfig;
 
@@ -56,19 +57,62 @@ export class RecorderWorkerController {
         return store;
     }
 
-    private async getOrRegisterStore(workerId: string | null | undefined): Promise<Store> {
+    private denormalizeWorkerId(workerId: string | null): string | null {
+        if (workerId === 'main') {
+            return null;
+        }
+
+        return workerId;
+    }
+
+    private normalizeWorkerId(workerId: string | null | undefined): string {
         if (workerId === null || workerId === undefined) {
             workerId = 'main';
         }
 
+        return workerId;
+    }
+
+    private async getStoreByWorkerId(workerId: string): Promise<Store | null> {
+        workerId = this.normalizeWorkerId(workerId);
+
         if (this.storesByWorkerId.has(workerId)) {
             return this.storesByWorkerId.get(workerId) as Store;
+        }
+
+        return null;
+    }
+
+    private async getOrRegisterStoreByWorkerId(workerId: string): Promise<Store> {
+        const store = await this.getStoreByWorkerId(workerId);
+
+        if (store === null) {
+            workerId = this.normalizeWorkerId(workerId);
+            const createdStore = await this.createStore(workerId);
+
+            this.storesByWorkerId.set(workerId, createdStore);
+
+            return createdStore;
+        }
+
+        return store;
+    }
+
+    private async registerWebAppId(workerId: string, webAppId: string) {
+        const store = await this.getStoreByWorkerId(workerId);
+
+        if (store !== null && !this.storesByWebAppId.has(webAppId)) {
+            this.storesByWebAppId.set(webAppId, store);
         } else {
-            const store = await this.createStore(workerId);
+            throw Error(`Error while registering web app with id ${webAppId}`);
+        }
+    }
 
-            this.storesByWorkerId.set(workerId, store);
-
-            return store;
+    private async unregisterWebAppId(webAppId: string) {
+        if (this.storesByWebAppId.has(webAppId)) {
+            this.storesByWebAppId.delete(webAppId);
+        } else {
+            throw Error(`Error while unregistering web app with id ${webAppId}`);
         }
     }
 
@@ -111,8 +155,10 @@ export class RecorderWorkerController {
         let error = null;
 
         try {
-            const store = await this.getOrRegisterStore(message.fromWorker);
+            const workerId = this.normalizeWorkerId(message.fromWorker);
+            const store = await this.getOrRegisterStoreByWorkerId(workerId);
             const id = message.messageData.id;
+            await this.registerWebAppId(workerId, id);
             const payload: IRecorderWebAppRegisterData = { id };
 
             store.dispatch({
@@ -136,20 +182,30 @@ export class RecorderWorkerController {
         let error = null;
 
         try {
-            const store = await this.getOrRegisterStore(message.fromWorker);
-            const id = message.messageData.id;
-            const payload: IRecorderWebAppRegisterData = { id };
+            const store = await this.getStoreByWorkerId(this.normalizeWorkerId(message.fromWorker));
 
-            store.dispatch({
-                type: recorderWebAppAction.UNREGISTER,
-                payload,
-            });
+            if (store) {
+                const id = message.messageData.id;
+                const payload: IRecorderWebAppRegisterData = { id };
+
+                await this.unregisterWebAppId(id);
+
+                store.dispatch({
+                    type: recorderWebAppAction.UNREGISTER,
+                    payload,
+                });
+            } else {
+                throw Error('Worker is already gone');
+            }
         } catch (e) {
             error = e;
         }
 
+        const workerId = this.denormalizeWorkerId(message.fromWorker);
+
         this.sendProxiedMessage(WebApplicationDevtoolMessageType.unregisterComplete, {
             ...message,
+            fromWorker: workerId,
             messageData: {
                 ...message.messageData,
                 error,
@@ -183,27 +239,34 @@ export class RecorderWorkerController {
         this.config = config;
 
         try {
-            this.httpServer = new RecorderHttpServer(
-                config.host,
-                config.httpPort,
-                this.getHttpRouter(),
-                this.getHttpStaticRouter(),
-                this.storesByWorkerId,
-            );
-            await this.httpServer.run();
-            this.logger.debug(`Http server listening: ${this.httpServer.getUrl()}`);
-
-            this.wsServer = new RecorderWSServer(
-                config.host,
-                config.wsPort,
-            );
-            await this.wsServer.run();
-            this.logger.debug(`WS server listening: ${this.wsServer.getUrl()}`);
+            await this.initHttpServer(config);
+            await this.initWSServer(config);
 
             this.transport.broadcastUniversally(RecorderWorkerMessages.START_SERVER_COMPLETE, null);
         } catch (err) {
             this.transport.broadcastUniversally(RecorderWorkerMessages.START_SERVER_COMPLETE, err);
         }
+    }
+
+    async initHttpServer(config: IRecorderServerConfig) {
+        this.httpServer = new RecorderHttpServer(
+            config.host,
+            config.httpPort,
+            this.getHttpRouter(),
+            this.getHttpStaticRouter(),
+            this.storesByWebAppId,
+        );
+        await this.httpServer.run();
+        this.logger.debug(`Http server listening: ${this.httpServer.getUrl()}`);
+    }
+
+    async initWSServer(config: IRecorderServerConfig) {
+        this.wsServer = new RecorderWSServer(
+            config.host,
+            config.wsPort,
+        );
+        await this.wsServer.run();
+        this.logger.debug(`WS server listening: ${this.wsServer.getUrl()}`);
     }
 
     private async exitHandler() {
