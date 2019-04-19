@@ -55,7 +55,7 @@ export class RecorderHttpServer implements IServer {
         for (let key in this.staticRoutes) {
             let route = this.staticRoutes[key];
 
-            this.server.use(route.rootPath, express.static(route.directory, route.options));
+            this.server.use(route.rootPath, express.static(route.directory, { etag: false }));
         }
     }
 

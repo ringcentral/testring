@@ -158,6 +158,16 @@ export class RecorderWorkerController {
         });
     }
 
+    private async sendToWorkerMessage(workerId: string, messageType: string, messageData: any) {
+        const fromWorker = this.denormalizeWorkerId(workerId);
+
+        this.transport.broadcastUniversally<IRecorderProxyMessage>(RecorderProxyMessages.FROM_WORKER, {
+            messageData,
+            fromWorker,
+            messageType,
+        });
+    }
+
     private async registerWebApplication(message: IRecorderWebAppRegisterMessage) {
         let error = null;
 
@@ -304,6 +314,16 @@ export class RecorderWorkerController {
             this.webAppIdByConnectionId.set(connectionId, appId);
 
             this.wsServer.send(meta.connectionId, RecorderEvents.HANDSHAKE_RESPONSE, payload);
+        }
+
+        if (data.type === RecorderEvents.WORKER_ACTION) {
+            const appId = this.webAppIdByConnectionId.get(connectionId);
+            const workerId = this.workerIdByWebAppId.get(appId as string);
+            const actionType = data.payload.actionType;
+
+            if (workerId && actionType) {
+                this.sendToWorkerMessage(workerId, actionType, {});
+            }
         }
     }
 

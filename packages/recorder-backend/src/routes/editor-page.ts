@@ -27,7 +27,7 @@ const pageTemplate = (
 </head>
 <body>
     <div id="rcRecorderApp" style="width: 100%; height: 100%;"></div>
-    <script src="${staticHost}/index.bundle.js" ></script>
+    <script src="${staticHost}/editor.bundle.js" ></script>
 </body>
 </html>
     `;
