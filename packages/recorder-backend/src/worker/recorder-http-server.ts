@@ -18,7 +18,7 @@ export class RecorderHttpServer implements IServer {
         private port: number,
         private routes: IRecorderHttpRoute[],
         private staticRoutes: IRecorderStaticRoutes,
-        private store: Store,
+        private storeMap: Map<string, Store>,
     ) {
         this.server = express();
     }
@@ -51,8 +51,8 @@ export class RecorderHttpServer implements IServer {
         return `http://${this.hostName}:${this.port}`;
     }
 
-    private getContext() {
-        return this.store;
+    private getContext(req) {
+        return this.storeMap;
     }
 
     private initStaticRoutes() {
@@ -72,7 +72,7 @@ export class RecorderHttpServer implements IServer {
                 case 'put':
                     this.server[route.method](
                         route.mask,
-                        (req, res) => route.handler(req, res, this.getContext(), route.options)
+                        (req, res) => route.handler(req, res, this.getContext(req), route.options)
                     );
                     break;
                 default:

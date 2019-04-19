@@ -103,11 +103,20 @@ export class RecorderServerController extends PluggableModule implements IRecord
     }
 
     private addFromServerProxyHandler(messageType) {
+        const PROXY_KEY = '@PROXIFIED';
+
         const fromServerHandler = (payload) => {
+            if (payload[PROXY_KEY]) {
+                return;
+            }
+
             if (payload.fromWorker !== null && payload.fromWorker !== undefined) {
                 this.transport.send(payload.fromWorker, messageType, payload.messageData);
             } else {
-                this.transport.broadcast(messageType, payload.messageData);
+                this.transport.broadcastLocal(messageType, {
+                    [PROXY_KEY]: true,
+                    ...payload.messageData,
+                });
             }
         };
         this.transport.on(messageType, fromServerHandler);

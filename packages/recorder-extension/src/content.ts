@@ -99,15 +99,15 @@ transportClient.on(
 );
 
 
-const iframe = document.createElement('iframe');
-Object.assign(iframe.style, {
-    position: 'fixed',
-    'zIndex': 99999999,
-    height: '300px',
-    width: '100%',
-    bottom: 0,
-    left: 0,
-    border: 0,
-});
-iframe.src = 'http://localhost:3050/editor';
-document.body.appendChild(iframe);
+// const iframe = document.createElement('iframe');
+// Object.assign(iframe.style, {
+//     position: 'fixed',
+//     'zIndex': 99999999,
+//     height: '300px',
+//     width: '100%',
+//     bottom: 0,
+//     left: 0,
+//     border: 0,
+// });
+// iframe.src = 'http://localhost:3050/editor';
+// document.body.appendChild(iframe);
