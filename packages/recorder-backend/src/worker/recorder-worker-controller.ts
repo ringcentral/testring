@@ -168,6 +168,8 @@ export class RecorderWorkerController {
             await this.registerWebAppId(workerId, id);
             const payload: IRecorderWebAppRegisterData = { id };
 
+            this.logger.debug(`Register web app ${id}`);
+
             store.dispatch({
                 type: recorderWebAppAction.REGISTER,
                 payload,
