@@ -2,8 +2,8 @@ import {
     Action,
 } from 'redux';
 
-enum recorderWindowsActions {
-    OPEN_WINDOW = 'OPEN_WINDOW',
+export enum recorderWindowsActions {
+    OPEN_WINDOW = 'WINDOWS@OPEN_WINDOW',
 }
 
 interface IRecorderExtensionWindow {

@@ -4,9 +4,9 @@ import {
     Store,
 } from 'redux';
 
-import * as recorderReducers from '../reducers';
+import recorderReducers  from '../reducers';
 
-export function initStore(reducers): Store {
+export function initStore(reducers = {}): Store {
     return createStore(combineReducers({
         ...reducers,
         ...recorderReducers,
