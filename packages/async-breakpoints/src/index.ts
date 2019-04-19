@@ -1,5 +1,6 @@
-import AsyncBreakpoints from './async-breakpoints';
+import { AsyncBreakpoints } from './async-breakpoints';
+import { BreakStackError } from './break-stack-error';
 
 const asyncBreakpoints = new AsyncBreakpoints();
 
-export { AsyncBreakpoints, asyncBreakpoints };
+export { AsyncBreakpoints, asyncBreakpoints, BreakStackError };

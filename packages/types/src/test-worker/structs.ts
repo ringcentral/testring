@@ -20,3 +20,9 @@ export interface ITestExecutionCompleteMessage {
     status: TestStatus;
     error: Error | null;
 }
+
+export interface ITestControllerExecutionState {
+    paused: boolean;
+    pausedTilNext: boolean;
+    pending: boolean;
+}
