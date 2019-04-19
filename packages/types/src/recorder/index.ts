@@ -8,6 +8,7 @@ export const enum RecorderEvents {
     EMIT_BROWSER_EVENT = 'RecorderEvents/EMIT_BROWSER_EVENT',
     SPECIFY_PATH = 'RecorderEvents/SPECIFY_PATH',
     RECORDING = 'RecorderEvents/RECORDING',
+    WORKER_ACTION = 'RecorderEvents/WORKER_ACTION',
 }
 
 export const enum RecordingEventTypes {

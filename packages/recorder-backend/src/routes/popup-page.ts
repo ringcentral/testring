@@ -21,7 +21,7 @@ const pageTemplate = (
     </style>
     <script>
         window.rcRecorderConfig = {
-            appId: ${ webAppId }
+            appId: '${ webAppId }',
             host: '${ host }',
             wsPort: ${ wsPort },
         };
@@ -29,6 +29,7 @@ const pageTemplate = (
 </head>
 <body>
     <div id="rcRecorderApp" style="width: 100%; height: 100%;">test</div>
+    <script src="${staticHost}/popup.bundle.js" ></script>
 </body>
 </html>
     `;

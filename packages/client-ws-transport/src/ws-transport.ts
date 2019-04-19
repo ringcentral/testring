@@ -66,10 +66,22 @@ export class ClientWsTransport extends EventEmitter {
 
     private messageHandler(message: MessageEvent): void {
         const { data } = message;
+        let jsonData: any;
+
+        if (typeof data === 'string') {
+            try {
+                jsonData = JSON.parse(data);
+            } catch (e) {
+                jsonData = data;
+            }
+        } else {
+            jsonData = data;
+        }
+
 
         this.emit(
             ClientWsTransportEvents.MESSAGE,
-            data
+            jsonData,
         );
     }
 

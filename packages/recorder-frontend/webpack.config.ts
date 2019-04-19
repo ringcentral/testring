@@ -4,10 +4,13 @@ import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin';
 
 const config: webpack.Configuration = {
     mode: 'development',
-    entry: './src/index.tsx',
+    entry: {
+        editor: './src/editor.tsx',
+        popup: './src/popup.tsx',
+    },
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'index.bundle.js',
+        filename: '[name].bundle.js',
     },
     resolve: {
         extensions: [ '.tsx', '.ts', '.js', '.css' ],
@@ -22,7 +25,6 @@ const config: webpack.Configuration = {
             {
                 test: /\.tsx?$/,
                 use: 'ts-loader',
-                exclude: /node_modules/,
             },
             {
                 test: /\.css$/,
@@ -56,6 +58,11 @@ const config: webpack.Configuration = {
     },
 
     stats: 'minimal',
+
+    node: {
+        net: 'empty',
+        fs: 'empty',
+    },
 };
 
 export default config;
