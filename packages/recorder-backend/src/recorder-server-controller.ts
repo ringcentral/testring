@@ -7,6 +7,8 @@ import {
     ITransport,
     RecorderWorkerMessages,
     WebApplicationDevtoolMessageType,
+    IRecorderProxyMessage,
+    RecorderProxyMessages,
 } from '@testring/types';
 
 import * as path from 'path';
@@ -93,33 +95,22 @@ export class RecorderServerController extends PluggableModule implements IRecord
     }
 
     private addToServerProxyHandler(messageType) {
-        const toServerHandler = (messageData, processID?: string) => {
-            this.transport.send(this.getWorkerID(), messageType, {
-                messageData,
+        const toServerHandler = (messageData, processID: string | null = null) => {
+            this.transport.send<IRecorderProxyMessage>(this.getWorkerID(), RecorderProxyMessages.TO_WORKER, {
                 fromWorker: processID,
+                messageType,
+                messageData,
             });
         };
         this.transport.on(messageType, toServerHandler);
     }
 
-    private addFromServerProxyHandler(messageType) {
-        const PROXY_KEY = '@PROXIFIED';
-
-        const fromServerHandler = (payload) => {
-            if (payload[PROXY_KEY]) {
-                return;
-            }
-
-            if (payload.fromWorker !== null && payload.fromWorker !== undefined) {
-                this.transport.send(payload.fromWorker, messageType, payload.messageData);
-            } else {
-                this.transport.broadcastLocal(messageType, {
-                    [PROXY_KEY]: true,
-                    ...payload.messageData,
-                });
-            }
-        };
-        this.transport.on(messageType, fromServerHandler);
+    private handleProxiedMessage(message: IRecorderProxyMessage) {
+        if (message.fromWorker) {
+            this.transport.send(message.fromWorker as string, message.messageType, message.messageData);
+        } else {
+            this.transport.broadcastLocal(message.messageType, message.messageData);
+        }
     }
 
     private initMessagesProxy() {
@@ -128,11 +119,9 @@ export class RecorderServerController extends PluggableModule implements IRecord
             WebApplicationDevtoolMessageType.unregister,
         ].forEach((event) => this.addToServerProxyHandler(event));
 
-
-        [
-            WebApplicationDevtoolMessageType.registerComplete,
-            WebApplicationDevtoolMessageType.unregisterComplete,
-        ].forEach((event) => this.addFromServerProxyHandler(event));
+        this.transport.on<IRecorderProxyMessage>(RecorderProxyMessages.FROM_WORKER, (payload) => {
+            this.handleProxiedMessage(payload);
+        });
     }
 
     public async init() {
