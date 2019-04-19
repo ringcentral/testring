@@ -26,6 +26,11 @@ export const defaultRecorderConfig: IRecorderServerConfig = {
             mask: '/editor',
             handler: getRouterPath('editor-page'),
         },
+        {
+            method: 'get',
+            mask: '/popup',
+            handler: getRouterPath('popup-page'),
+        },
     ],
     staticRoutes: {
         'recorder-frontend': {

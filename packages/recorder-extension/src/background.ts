@@ -1,5 +1,5 @@
 /// <reference types="chrome" />
 
-import { ExtensionController } from './extension';
+import { BackgroundChromeController } from './extension/background-chrome-controller';
 
-new ExtensionController();
+new BackgroundChromeController();
