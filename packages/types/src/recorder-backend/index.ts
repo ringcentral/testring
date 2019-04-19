@@ -2,6 +2,7 @@ import {
     IWebApplicationRegisterCompleteMessage,
     IWebApplicationRegisterMessage,
 } from '../web-application';
+import { RecorderEvents } from '../recorder';
 
 interface IRecorderRoute {
     method: string;
@@ -50,7 +51,6 @@ export interface IRecorderServerController {
     kill: () => Promise<void>;
 }
 
-
 export interface IServer {
     run: () => Promise<void>;
     stop: () => Promise<void>;
@@ -83,4 +83,22 @@ export interface IRecorderWebAppRegisterMessage extends IRecorderProxyCleanedMes
 
 export interface IRecorderWebAppRegisterCompleteMessage extends IRecorderProxyCleanedMessage {
     messageData: IWebApplicationRegisterCompleteMessage;
+}
+
+export interface IRecorderWSMeta {
+    connectionId: string;
+}
+
+export interface IRecorderWSMessage {
+    type: RecorderEvents;
+    payload: any;
+}
+
+export interface IRecorderWSHandshakeResponseMessage {
+    type: RecorderEvents.HANDSHAKE_RESPONSE;
+    payload: {
+        appId: string;
+        connectionId: string;
+        error: null | Error;
+    };
 }

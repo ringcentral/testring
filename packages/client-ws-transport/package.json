@@ -10,7 +10,6 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/constants": "0.4.56",
     "@testring/types": "0.4.56",
     "@testring/utils": "0.4.56"
   }
