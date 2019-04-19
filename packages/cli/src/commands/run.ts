@@ -61,9 +61,17 @@ class RunCommand implements ICLICommand {
         this.browserProxyController = browserProxyControllerFactory(this.transport);
 
         if (this.config.devtool) {
-            this.testRunController = new TestRunController(this.config, testWorker, this.recorderServer.getRuntimeConfiguration());
+            this.testRunController = new TestRunController(
+                this.config,
+                testWorker,
+                this.recorderServer.getRuntimeConfiguration()
+            );
         } else {
-            this.testRunController = new TestRunController(this.config, testWorker, null);
+            this.testRunController = new TestRunController(
+                this.config,
+                testWorker,
+                null
+            );
         }
         this.webApplicationController = new WebApplicationController(this.browserProxyController, this.transport);
 

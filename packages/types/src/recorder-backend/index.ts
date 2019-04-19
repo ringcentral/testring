@@ -68,14 +68,19 @@ export interface IWsMessage {
     payload?: any;
 }
 
-interface IRecorderProxiedMessages {
+export interface IRecorderProxyCleanedMessage {
     fromWorker: null | string;
+    messageData: any;
 }
 
-export interface IRecorderWebAppRegisterMessage extends IRecorderProxiedMessages {
+export interface IRecorderProxyMessage extends IRecorderProxyCleanedMessage {
+    messageType: string;
+}
+
+export interface IRecorderWebAppRegisterMessage extends IRecorderProxyCleanedMessage {
     messageData: IWebApplicationRegisterMessage;
 }
 
-export interface IRecorderWebAppRegisterCompleteMessage extends IRecorderProxiedMessages {
+export interface IRecorderWebAppRegisterCompleteMessage extends IRecorderProxyCleanedMessage {
     messageData: IWebApplicationRegisterCompleteMessage;
 }

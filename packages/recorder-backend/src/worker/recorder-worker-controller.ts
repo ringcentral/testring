@@ -1,8 +1,11 @@
 import {
     IRecorderHttpRoute,
+    IRecorderProxyMessage,
     IRecorderServerConfig,
     IRecorderWebAppRegisterMessage,
     ITransport,
+    IRecorderProxyCleanedMessage,
+    RecorderProxyMessages,
     RecorderWorkerMessages,
     WebApplicationDevtoolMessageType,
 } from '@testring/types';
@@ -70,11 +73,37 @@ export class RecorderWorkerController {
     }
 
     private addDevtoolMessageListeners() {
-        this.transport.on<IRecorderWebAppRegisterMessage>(WebApplicationDevtoolMessageType.register, (message) => {
-            this.registerWebApplication(message);
+        this.transport.on<IRecorderProxyMessage>(RecorderProxyMessages.TO_WORKER, async (message) => {
+            try {
+                await this.handleProxiedMessages(message);
+            } catch (e) {
+                this.logger.error(e);
+            }
         });
-        this.transport.on<IRecorderWebAppRegisterMessage>(WebApplicationDevtoolMessageType.unregister, (message) => {
-           this.unregisterWebApplication(message);
+    }
+
+    private async handleProxiedMessages(message: IRecorderProxyMessage) {
+        const {
+            messageType,
+            ...rest
+        } = message;
+
+        switch (messageType) {
+            case WebApplicationDevtoolMessageType.register:
+                await this.registerWebApplication(rest as IRecorderWebAppRegisterMessage);
+                break;
+            case WebApplicationDevtoolMessageType.unregister:
+                await this.unregisterWebApplication(rest as IRecorderWebAppRegisterMessage);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private async sendProxiedMessage(messageType: string, message: IRecorderProxyCleanedMessage) {
+        this.transport.broadcastUniversally<IRecorderProxyMessage>(RecorderProxyMessages.FROM_WORKER, {
+            ...message,
+            messageType,
         });
     }
 
@@ -98,7 +127,7 @@ export class RecorderWorkerController {
             error = e;
         }
 
-        this.transport.broadcastUniversally(WebApplicationDevtoolMessageType.registerComplete, {
+        this.sendProxiedMessage(WebApplicationDevtoolMessageType.registerComplete, {
             ...message,
             messageData: {
                 ...message.messageData,
@@ -123,7 +152,7 @@ export class RecorderWorkerController {
             error = e;
         }
 
-        this.transport.broadcastUniversally(WebApplicationDevtoolMessageType.unregisterComplete, {
+        this.sendProxiedMessage(WebApplicationDevtoolMessageType.unregisterComplete, {
             ...message,
             messageData: {
                 ...message.messageData,
