@@ -5,7 +5,7 @@ import {
     ITestExecutionCompleteMessage,
     TestWorkerAction,
     TestStatus,
-    TestEvents,
+    TestEvents, ITestControllerExecutionState,
 } from '@testring/types';
 
 import * as process from 'process';
@@ -13,41 +13,52 @@ import * as path from 'path';
 
 import { Sandbox } from '@testring/sandbox';
 import { testAPIController, TestAPIController } from '@testring/api';
-import { asyncBreakpoints } from '@testring/async-breakpoints';
+import { asyncBreakpoints, BreakStackError } from '@testring/async-breakpoints';
 import { loggerClient, LoggerClient } from '@testring/logger';
 
 export class WorkerController {
 
     private logger: LoggerClient = loggerClient.withPrefix('[worker-controller]');
 
+    private isDevtoolsInitialized: boolean = false;
+
+    private executionState: ITestControllerExecutionState = {
+        paused: false,
+        pending: false,
+        pausedTilNext: false,
+    };
+
     constructor(
-        private transportInstance: ITransport,
-        private testAPI: TestAPIController
+        private transport: ITransport,
+        private testAPI: TestAPIController,
     ) {
     }
 
     public init() {
-        this.transportInstance.on(TestWorkerAction.executeTest, async (message: ITestExecutionMessage) => {
+        this.transport.on(TestWorkerAction.executeTest, async (message: ITestExecutionMessage) => {
             await this.executeTest(message);
-        });
-
-        this.transportInstance.on(TestWorkerAction.pauseTestExecution, async () => {
-            this.activatePauseMode();
-        });
-        this.transportInstance.on(TestWorkerAction.runTillNextExecution, async () => {
-            this.setRunTillNextExecutionMode();
-        });
-
-        this.transportInstance.on(TestWorkerAction.resumeTestExecution, async () => {
-            this.releasePauseMode();
         });
     }
 
+    private setPendingState(state: boolean) {
+        this.executionState.pending = state;
+    }
+
+    private setPausedState(state: boolean) {
+        this.executionState.paused = state;
+    }
+
+    private setPausedTilNextState(state: boolean) {
+        this.executionState.pausedTilNext = state;
+    }
+
     private activatePauseMode() {
+        this.setPausedState(true);
         asyncBreakpoints.addBeforeInstructionBreakpoint();
     }
 
     private setRunTillNextExecutionMode() {
+        this.setPausedTilNextState(true);
         if (asyncBreakpoints.isAfterInstructionBreakpointActive()) {
             asyncBreakpoints.resolveAfterInstructionBreakpoint();
         }
@@ -56,19 +67,12 @@ export class WorkerController {
     }
 
     private releasePauseMode() {
+        this.setPausedState(false);
+        this.setPausedTilNextState(false);
         asyncBreakpoints.resolveBeforeInstructionBreakpoint();
         asyncBreakpoints.resolveAfterInstructionBreakpoint();
     }
 
-
-    private async waitForRelease() {
-        this.transportInstance.on(TestWorkerAction.evaluateCode, async (message: ITestEvaluationMessage) => {
-            Sandbox.evaluateScript(message.path, message.content);
-        });
-        this.transportInstance.on(TestWorkerAction.releaseTest, async () => {
-            await this.completeExecutionSuccessfully();
-        });
-    }
 
     private async completeExecutionSuccessfully() {
         try {
@@ -80,7 +84,7 @@ export class WorkerController {
         this.releasePauseMode();
         Sandbox.clearCache();
 
-        this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
+        this.transport.broadcastUniversally<ITestExecutionCompleteMessage>(
             TestWorkerAction.executionComplete,
             {
                 status: TestStatus.done,
@@ -89,10 +93,19 @@ export class WorkerController {
         );
     }
 
+    private async releaseTestExecution() {
+        if (this.executionState.pending) {
+            asyncBreakpoints.breakStack();
+            await this.completeExecutionSuccessfully();
+        } else {
+            await this.completeExecutionSuccessfully();
+        }
+    }
+
     private async completeExecutionFailed(error: Error) {
         this.releasePauseMode();
 
-        this.transportInstance.broadcastUniversally<ITestExecutionCompleteMessage>(
+        this.transport.broadcastUniversally<ITestExecutionCompleteMessage>(
             TestWorkerAction.executionComplete,
             {
                 status: TestStatus.failed,
@@ -103,20 +116,60 @@ export class WorkerController {
 
     public async executeTest(message: ITestExecutionMessage): Promise<void> {
         try {
-            await this.runTest(message);
-
             if (message.waitForRelease) {
-                await this.waitForRelease();
-            } else {
+                await this.setDevtoolListeners();
+            }
+
+            this.setPendingState(true);
+            await this.runTest(message);
+            this.setPendingState(false);
+
+            if (!message.waitForRelease) {
                 await this.completeExecutionSuccessfully();
             }
         } catch (error) {
-            if (message.waitForRelease) {
-                await this.waitForRelease();
-            } else {
+            if (error instanceof BreakStackError) {
+                await this.completeExecutionSuccessfully();
+            }
+
+            if (!message.waitForRelease) {
                 await this.completeExecutionFailed(error);
             }
         }
+    }
+
+    private evaluateCode(message: ITestEvaluationMessage) {
+        this.setPendingState(true);
+        Sandbox.evaluateScript(message.path, message.content);
+        this.setPendingState(false);
+    }
+
+    private async setDevtoolListeners(): Promise<void> {
+        if (this.isDevtoolsInitialized) {
+            return;
+        }
+
+        this.transport.on(TestWorkerAction.evaluateCode, async (message: ITestEvaluationMessage) => {
+            this.evaluateCode(message);
+        });
+
+        this.transport.on(TestWorkerAction.releaseTest, async () => {
+            this.releaseTestExecution();
+        });
+
+        this.transport.on(TestWorkerAction.pauseTestExecution, async () => {
+            this.activatePauseMode();
+        });
+
+        this.transport.on(TestWorkerAction.runTillNextExecution, async () => {
+            this.setRunTillNextExecutionMode();
+        });
+
+        this.transport.on(TestWorkerAction.resumeTestExecution, async () => {
+            this.releasePauseMode();
+        });
+
+        this.isDevtoolsInitialized = true;
     }
 
     private async runTest(message: ITestExecutionMessage): Promise<void> {

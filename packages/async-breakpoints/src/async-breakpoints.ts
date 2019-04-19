@@ -1,13 +1,16 @@
 import { EventEmitter } from 'events';
 
 import { BreakpointsTypes } from './constants';
+import { BreakStackError } from './break-stack-error';
 
 type HasBreakpointCallback = (state: boolean) => Promise<void> | void;
 
-export default class AsyncBreakpoints extends EventEmitter {
+export class AsyncBreakpoints extends EventEmitter {
     private breakpoints: Map<BreakpointsTypes, Promise<void>> = new Map();
 
     private resolverEvent = 'resolveEvent';
+
+    private breakStackEvent = 'breakStack';
 
     constructor() {
         super();
@@ -18,15 +21,29 @@ export default class AsyncBreakpoints extends EventEmitter {
             return this.breakpoints.get(type) as Promise<void>;
         }
 
-        const breakpoint = new Promise<void>((resolve) => {
-            const handler = (resolvedType) => {
+        const breakpoint = new Promise<void>((resolve, reject) => {
+            const releaseHandler = (resolvedType) => {
                 if (resolvedType === type) {
                     this.clearBreakpoint(type);
+                    // eslint-disable-next-line no-use-before-define
+                    unsubscribe();
                     resolve();
-                    this.off(this.resolverEvent, handler);
                 }
             };
-            this.on(this.resolverEvent, handler);
+
+            const breakStackHandler = () => {
+                // eslint-disable-next-line no-use-before-define
+                unsubscribe();
+                reject(new BreakStackError('Release'));
+            };
+
+            const unsubscribe = () => {
+                this.off(this.resolverEvent, releaseHandler);
+                this.off(this.breakStackEvent, breakStackHandler);
+            };
+
+            this.on(this.resolverEvent, releaseHandler);
+            this.on(this.breakStackEvent, breakStackHandler);
         });
 
         this.breakpoints.set(type, breakpoint);
@@ -93,5 +110,9 @@ export default class AsyncBreakpoints extends EventEmitter {
 
     public isAfterInstructionBreakpointActive() {
         return this.breakpoints.has(BreakpointsTypes.afterInstruction);
+    }
+
+    public breakStack() {
+        this.emit(this.breakStackEvent);
     }
 }
