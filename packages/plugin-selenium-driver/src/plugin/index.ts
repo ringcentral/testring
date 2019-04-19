@@ -184,7 +184,13 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     private async checkClientsTimeout() {
-        if (this.config.clientTimeout !== 0) {
+        if (this.config.clientTimeout === 0) {
+            for (let [applicant] of this.browserClients) {
+                try {
+                    this.execute(applicant, '(function () {})()', []);
+                } catch (e) { /* ignore */ }
+            }
+        } else {
             const timeLimit = Date.now() - this.config.clientTimeout;
 
             for (let [applicant, clientData] of this.browserClients) {
