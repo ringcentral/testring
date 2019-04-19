@@ -58,6 +58,11 @@ export class WorkerController {
     }
 
     private setRunTillNextExecutionMode() {
+        this.setPausedState(false);
+        if (asyncBreakpoints.isBeforeInstructionBreakpointActive()) {
+            asyncBreakpoints.resolveBeforeInstructionBreakpoint();
+        }
+
         this.setPausedTilNextState(true);
         if (asyncBreakpoints.isAfterInstructionBreakpointActive()) {
             asyncBreakpoints.resolveAfterInstructionBreakpoint();
