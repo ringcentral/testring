@@ -115,10 +115,6 @@ export class RecorderWorkerController {
             const id = message.messageData.id;
             const payload: IRecorderWebAppRegisterData = { id };
 
-            store.subscribe(() => {
-                this.logger.log(store.getState());
-            });
-
             store.dispatch({
                 type: recorderWebAppAction.REGISTER,
                 payload,

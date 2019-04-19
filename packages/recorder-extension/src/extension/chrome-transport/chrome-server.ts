@@ -1,12 +1,13 @@
-/// <reference types="chrome" />
+import {
+    ExtensionMessagingTransportEvents,
+    IExtensionMessagingTransportMessage,
+} from '@testring/types';
 
 import * as EventEmitter from 'events';
 import { generateUniqId } from '@testring/utils';
-import { IMessagingTransportMessage, MessagingTransportEvents } from '@testring/types';
-
 import Port = chrome.runtime.Port;
 
-export class MessagingTransportServer extends EventEmitter {
+export class BackgroundChromeServer extends EventEmitter {
     constructor() {
         super();
 
@@ -21,11 +22,11 @@ export class MessagingTransportServer extends EventEmitter {
         });
     }
 
-    private registerConnection(port: Port): void {
+    private registerConnection(port) {
         const conId = generateUniqId();
 
-        port.onMessage.addListener((message) => {
-            this.handleMessage(message);
+        port.onMessage.addListener((message: IExtensionMessagingTransportMessage) => {
+            this.handleMessage(message, conId);
         });
 
         port.onDisconnect.addListener(() => {
@@ -35,7 +36,7 @@ export class MessagingTransportServer extends EventEmitter {
         this.connections.set(conId, port);
 
         this.emit(
-            MessagingTransportEvents.CONNECT,
+            ExtensionMessagingTransportEvents.CONNECT,
             conId,
         );
     }
@@ -44,37 +45,32 @@ export class MessagingTransportServer extends EventEmitter {
         this.connections.delete(conId);
 
         this.emit(
-            MessagingTransportEvents.DISCONNECT,
+            ExtensionMessagingTransportEvents.DISCONNECT,
             conId,
         );
     }
 
-    private handleMessage(message: IMessagingTransportMessage): void {
-        const { event, payload } = message;
-
+    private handleMessage(message: IExtensionMessagingTransportMessage, conId: string) {
         this.emit(
-            event,
-            payload,
+            ExtensionMessagingTransportEvents.MESSAGE,
+            message,
+            conId
         );
     }
 
-    public disconnect(conId: string): void {
-        const port = this.connections.get(conId);
-
-        if (port) {
-            port.disconnect();
-
-            this.unregisterConnection(conId);
-        }
-    }
-
-    public send(conId: string, message: IMessagingTransportMessage): void {
+    public send(conId: string, message: IExtensionMessagingTransportMessage): void {
         const port = this.connections.get(conId);
 
         if (port) {
             port.postMessage(message);
         } else {
             throw new Error(`Connection with id ${conId} not found`);
+        }
+    }
+
+    public broadcast(message: IExtensionMessagingTransportMessage) {
+        for (let [conId] of this.connections) {
+            this.send(conId, message);
         }
     }
 }

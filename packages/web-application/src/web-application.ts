@@ -1232,8 +1232,9 @@ export class WebApplication extends PluggableModule {
                 extensionId,
                 httpPort,
                 wsPort,
+                host,
             } = this.config.devtool;
-            const url = `chrome-extension://${extensionId}/options.html?httpPort=${httpPort}&wsPort=${wsPort}&appId=${id}`;
+            const url = `chrome-extension://${extensionId}/options.html?httpPort=${httpPort}&host=${host}&wsPort=${wsPort}&appId=${id}&handshakePage=true`;
 
             await this.client.url(url);
 

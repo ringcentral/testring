@@ -6,11 +6,24 @@ export type ElementSummary = {
     children?: ElementSummary[];
 };
 
-export const enum MessagingTransportEvents {
+export interface IExtensionServersConfiguration {
+    httpPort: number;
+    wsPort: number;
+    host: string;
+    appId: string;
+}
+
+export const enum ExtensionMessagingTransportEvents {
     CONNECT = 'ExtensionEvents/CONNECT',
     DISCONNECT = 'ExtensionEvents/DISCONNECT',
     MESSAGE = 'ExtensionEvents/MESSAGE',
-    RECORDING_EVENT = 'ExtensionEvents/RECORDING_EVENT',
+}
+
+export const enum ExtensionMessagingTransportTypes {
+    SET_EXTENSION_OPTIONS = 'ExtensionTypes/SET_EXTENSION_OPTIONS',
+    WAIT_FOR_READY = 'ExtensionTypes/WAIT_FOR_READY',
+    IS_READY = 'ExtensionTypes/IS_READY',
+    DISPATCH_ACTION = 'ExtensionTypes/DISPATCH_ACTION',
 }
 
 export const enum ClientWsTransportEvents {
@@ -20,8 +33,8 @@ export const enum ClientWsTransportEvents {
     MESSAGE = 'ClientWsTransportEvents/MESSAGE',
 }
 
-export interface IMessagingTransportMessage {
-    event: string;
+export interface IExtensionMessagingTransportMessage {
+    type: ExtensionMessagingTransportTypes;
     payload: any;
 }
 
