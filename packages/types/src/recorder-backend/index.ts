@@ -2,7 +2,7 @@ import {
     IWebApplicationRegisterCompleteMessage,
     IWebApplicationRegisterMessage,
 } from '../web-application';
-import { RecorderEvents } from '../recorder';
+import { RecorderEvents } from '../recorder-extension/enums';
 
 interface IRecorderRoute {
     method: string;
@@ -94,7 +94,7 @@ export interface IRecorderWSMessage {
     payload: any;
 }
 
-export interface IRecorderWSHandshakeResponseMessage {
+export interface IRecorderWSHandshakeResponseMessage extends IRecorderWSMessage {
     type: RecorderEvents.HANDSHAKE_RESPONSE;
     payload: {
         appId: string;

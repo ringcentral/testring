@@ -34,9 +34,8 @@ export * from './config';
 
 export * from './plugin';
 
+export * from './recorder-extension/enums';
 export * from './recorder-extension';
-
-export * from './recorder';
 
 export * from './dependencies-builder';
 
