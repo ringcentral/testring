@@ -6,10 +6,13 @@ export type ElementSummary = {
     children?: ElementSummary[];
 };
 
-export interface IExtensionServersConfiguration {
+export interface IExtensionNetworkConfig {
     httpPort: number;
     wsPort: number;
     host: string;
+}
+
+export interface IExtensionApplicationConfig extends IExtensionNetworkConfig {
     appId: string;
 }
 
@@ -20,10 +23,13 @@ export const enum ExtensionMessagingTransportEvents {
 }
 
 export const enum ExtensionMessagingTransportTypes {
+    // Chrome background messages
     SET_EXTENSION_OPTIONS = 'ExtensionTypes/SET_EXTENSION_OPTIONS',
     WAIT_FOR_READY = 'ExtensionTypes/WAIT_FOR_READY',
-    IS_READY = 'ExtensionTypes/IS_READY',
     DISPATCH_ACTION = 'ExtensionTypes/DISPATCH_ACTION',
+
+    // Chrome client messages
+    IS_READY = 'ExtensionTypes/IS_READY',
 }
 
 export const enum ClientWsTransportEvents {
@@ -38,7 +44,3 @@ export interface IExtensionMessagingTransportMessage {
     payload: any;
 }
 
-export interface IExtensionConfig {
-    connectionId: string;
-    testElementAttribute: string;
-}

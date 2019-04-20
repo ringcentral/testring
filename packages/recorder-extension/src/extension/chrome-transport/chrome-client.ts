@@ -3,13 +3,13 @@ import {
     IExtensionMessagingTransportMessage,
     ExtensionMessagingTransportEvents,
     ExtensionMessagingTransportTypes,
-    IExtensionServersConfiguration,
+    IExtensionApplicationConfig,
 } from '@testring/types';
 
 import Port = chrome.runtime.Port;
 
 export class BackgroundChromeClient extends EventEmitter {
-    private serverConfig: IExtensionServersConfiguration | null = null;
+    private serverConfig: IExtensionApplicationConfig | null = null;
 
     constructor() {
         super();
@@ -64,7 +64,7 @@ export class BackgroundChromeClient extends EventEmitter {
         );
     }
 
-    public async setConfig(config: IExtensionServersConfiguration) {
+    public async setConfig(config: IExtensionApplicationConfig) {
         this.send(ExtensionMessagingTransportTypes.SET_EXTENSION_OPTIONS, config);
     }
 
@@ -85,7 +85,7 @@ export class BackgroundChromeClient extends EventEmitter {
         });
     }
 
-    public getConfig(): IExtensionServersConfiguration {
+    public getConfig(): IExtensionApplicationConfig {
         if (this.serverConfig === null) {
             throw Error('Application is not ready, please use waitForReady method before call');
         }
