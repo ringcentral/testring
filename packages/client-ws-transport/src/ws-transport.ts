@@ -161,7 +161,7 @@ export class ClientWsTransport extends EventEmitter {
         });
     }
 
-    public send(type: RecorderEvents, payload: any): Promise<void> {
+    public send<T>(type: RecorderEvents, payload: T): Promise<void> {
         return new Promise((resolve) => {
             if (this.messagesQueue.length <= 0) {
                 try {
