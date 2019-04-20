@@ -2,12 +2,13 @@ import {
     ExtensionMessagingTransportEvents,
     ExtensionMessagingTransportTypes,
     IExtensionMessagingTransportMessage,
-    IExtensionServersConfiguration,
+    IExtensionApplicationConfig,
 } from '@testring/types';
 
 import { ClientWsTransport } from '@testring/client-ws-transport';
 
 import { BackgroundChromeServer } from './chrome-transport/chrome-server';
+import { CSPController } from './csp-controller';
 
 type resolveReadyCallback = (value?: any) => void;
 
@@ -18,34 +19,40 @@ export class BackgroundChromeController {
 
     private resolveReadyStateCallback: null | resolveReadyCallback;
 
-    private serverConfig: IExtensionServersConfiguration | null = null;
+    private serverConfig: IExtensionApplicationConfig | null = null;
 
     private ws: ClientWsTransport;
+
+    private CSPController: CSPController = new CSPController();
 
     constructor() {
         this.backgroundServer = new BackgroundChromeServer();
 
         this.isReady();
-        this.handleMessages();
+
+        this.registerInternalHandlers();
     }
 
-    private handleMessages() {
-        this.backgroundServer.on(
-            ExtensionMessagingTransportEvents.MESSAGE,
-            (message: IExtensionMessagingTransportMessage, conId: string) => {
+    private registerInternalHandlers() {
+        const handler = async (message: IExtensionMessagingTransportMessage, conId: string) => {
+            try {
                 switch (message.type) {
                     case ExtensionMessagingTransportTypes.WAIT_FOR_READY:
-                        this.waitForReadyHandler(message.payload, conId);
+                        await this.waitForReadyHandler(message.payload, conId);
                         break;
                     case ExtensionMessagingTransportTypes.SET_EXTENSION_OPTIONS:
-                        this.setExtensionOptionsHandler(message.payload, conId);
+                        await this.setExtensionOptionsHandler(message.payload as IExtensionApplicationConfig, conId);
                         break;
                     default:
-                        // eslint-disable-next-line no-console
-                        console.error('Unknown message');
+                        throw Error('Unknown message ' + message);
                 }
+            } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error(error);
             }
-        );
+        };
+
+        this.backgroundServer.on(ExtensionMessagingTransportEvents.MESSAGE, handler);
     }
 
     public isReady(): Promise<void> {
@@ -60,7 +67,7 @@ export class BackgroundChromeController {
         return this.waitForReadyPromise;
     }
 
-    private async initWebSocket(serverConfig: IExtensionServersConfiguration) {
+    private async initWebSocket(serverConfig: IExtensionApplicationConfig) {
         this.ws = new ClientWsTransport(serverConfig.host, serverConfig.wsPort);
 
         this.ws.connect();
@@ -68,9 +75,11 @@ export class BackgroundChromeController {
         await this.ws.handshake(serverConfig.appId);
     }
 
-    public async setExtensionOptionsHandler(configuration: IExtensionServersConfiguration, conId) {
+    private async setExtensionOptionsHandler(configuration: IExtensionApplicationConfig, conId: string) {
         if (this.resolveReadyStateCallback) {
             this.serverConfig = configuration;
+
+            this.CSPController.setConfig(this.serverConfig);
 
             await this.initWebSocket(this.serverConfig);
 
@@ -83,16 +92,20 @@ export class BackgroundChromeController {
         }
     }
 
-    public async waitForReadyHandler(message, conId) {
+    private async waitForReadyHandler(message, conId: string) {
         if (this.serverConfig === null) {
             await this.waitForReadyPromise;
         }
 
-        setImmediate(() => {
-            this.backgroundServer.send(conId, {
-                type: ExtensionMessagingTransportTypes.IS_READY,
-                payload: this.serverConfig,
+        await new Promise((resolve) => {
+            setImmediate(() => {
+                this.backgroundServer.send(conId, {
+                    type: ExtensionMessagingTransportTypes.IS_READY,
+                    payload: this.serverConfig,
+                });
             });
+
+            resolve();
         });
     }
 }

@@ -81,7 +81,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 chromeOptions: {
                     args: [
                         `load-extension=${absoluteExtensionPath}`,
-                        'allow-running-insecure-content',
                     ],
                 },
             },

@@ -1,5 +1,5 @@
 import { BackgroundChromeClient } from './extension/chrome-transport/chrome-client';
-import { IExtensionServersConfiguration } from '@testring/types';
+import { IExtensionApplicationConfig } from '@testring/types';
 
 function renderSetterTemplate(data) {
     return `
@@ -30,7 +30,7 @@ function dummyPage() {
     `;
 }
 
-function normalizeConfig(config): IExtensionServersConfiguration {
+function normalizeConfig(config): IExtensionApplicationConfig {
     return {
         host: config.host,
         appId: config.appId,

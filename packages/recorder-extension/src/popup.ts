@@ -1,9 +1,9 @@
-import { IExtensionServersConfiguration } from '@testring/types';
+import { IExtensionApplicationConfig } from '@testring/types';
 import { BackgroundChromeClient } from './extension/chrome-transport/chrome-client';
 
 const client = new BackgroundChromeClient();
 
-function renderPopup(config: IExtensionServersConfiguration) {
+function renderPopup(config: IExtensionApplicationConfig) {
     const iframe = document.createElement('iframe');
 
     Object.assign(iframe.style, {
