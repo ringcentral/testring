@@ -1,16 +1,23 @@
 import { ITestWorker, ITestWorkerInstance } from '@testring/types';
+import Timer = NodeJS.Timer;
 
 const ERROR_INSTANCE = {
     test: 'file.js',
     error: new Error('test'),
 };
 
+type executionCallback = () => Promise<void> | void;
+
 class TestWorkerMockInstance implements ITestWorkerInstance {
 
+    private timeout: Timer | null = null;
+    private callback: executionCallback | null = null;
+
     private executeCalls = 0;
+    private killCalls = 0;
     private workerID = 'worker/test';
 
-    constructor(private shouldFail: boolean) {
+    constructor(private shouldFail: boolean, private executionDelay: number) {
     }
 
     getWorkerID() {
@@ -21,13 +28,43 @@ class TestWorkerMockInstance implements ITestWorkerInstance {
         this.executeCalls++;
 
         if (this.shouldFail) {
-            return Promise.reject(this.$getErrorInstance());
+            if (this.executionDelay > 0) {
+                return new Promise((resolve, reject) => {
+                    this.callback = () => resolve();
+                    this.timeout = setTimeout(() => reject(this.$getErrorInstance()), this.executionDelay);
+                });
+            } else {
+                return Promise.reject(this.$getErrorInstance());
+            }
         }
 
-        return Promise.resolve();
+        if (this.executionDelay > 0) {
+            return new Promise((resolve) => {
+                this.callback = () => resolve();
+                this.timeout = setTimeout(resolve, this.executionDelay);
+            });
+        } else {
+            return Promise.resolve();
+        }
     }
 
     async kill() {
+        if (this.callback !== null) {
+            const callback = this.callback;
+            this.callback = null;
+            setImmediate(() => callback());
+        }
+
+        if (this.timeout) {
+            clearTimeout(this.timeout);
+            this.timeout = null;
+        }
+
+        this.killCalls++;
+    }
+
+    $getKillCallsCount() {
+        return this.killCalls;
     }
 
     $getExecuteCallsCount() {
@@ -43,11 +80,11 @@ export class TestWorkerMock implements ITestWorker {
 
     private spawnedInstances: Array<TestWorkerMockInstance> = [];
 
-    constructor(private shouldFail: boolean = false) {
+    constructor(private shouldFail: boolean = false, private executionDelay: number = 0) {
     }
 
     spawn() {
-        const instance = new TestWorkerMockInstance(this.shouldFail);
+        const instance = new TestWorkerMockInstance(this.shouldFail, this.executionDelay);
 
         this.spawnedInstances.push(instance);
 
@@ -64,6 +101,12 @@ export class TestWorkerMock implements ITestWorker {
 
     $getSpawnedCount() {
         return this.spawnedInstances.length;
+    }
+
+    $getKillCallsCount() {
+        return this.spawnedInstances.reduce((count, instance) => {
+            return count + instance.$getKillCallsCount();
+        }, 0);
     }
 
     $getExecutionCallsCount() {

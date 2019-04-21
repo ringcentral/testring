@@ -3,8 +3,6 @@ import { LogLevel } from './logger/enums';
 
 export type ScreenshotsConfig = 'disable' | 'enable' | 'afterError';
 
-export type RestartWorkerConfig = 'never' | 'always';
-
 export type ConfigPluginDescriptor = string | [string, PluginConfig];
 
 export interface IConfigLogger {
@@ -15,7 +13,7 @@ export interface IConfigLogger {
 export interface IConfig extends IConfigLogger {
     // TODO make configurable
     devtool: boolean;
-    restartWorker: RestartWorkerConfig;
+    restartWorker: boolean;
     screenshots: ScreenshotsConfig;
     config: string;
     debug: boolean;
