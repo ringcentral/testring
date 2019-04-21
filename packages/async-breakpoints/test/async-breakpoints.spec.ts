@@ -86,7 +86,41 @@ describe('Async Breakpoints', () => {
         asyncBreakpoint.breakStack();
     });
 
-    it('Concurrent call', (done) => {
+    it('Concurrent same breakpoint call', (done) => {
+        const asyncBreakpoint = new AsyncBreakpoints();
+
+        asyncBreakpoint.addBeforeInstructionBreakpoint();
+
+        Promise.all([
+            asyncBreakpoint.waitBeforeInstructionBreakpoint(),
+            asyncBreakpoint.waitBeforeInstructionBreakpoint(),
+        ]).then(() => done()).catch(() => done('Not finished'));
+
+        asyncBreakpoint.resolveBeforeInstructionBreakpoint();
+        asyncBreakpoint.resolveAfterInstructionBreakpoint();
+    });
+
+    it('Concurrent different breakpoint break', (done) => {
+        const asyncBreakpoint = new AsyncBreakpoints();
+
+        asyncBreakpoint.addAfterInstructionBreakpoint();
+
+        Promise.all([
+            asyncBreakpoint.waitAfterInstructionBreakpoint(),
+            asyncBreakpoint.waitAfterInstructionBreakpoint(),
+        ]).catch(err => {
+            try {
+                chai.expect(err).to.be.instanceOf(BreakStackError);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        asyncBreakpoint.breakStack();
+    });
+
+    it('Concurrent different breakpoint call', (done) => {
         const asyncBreakpoint = new AsyncBreakpoints();
 
         asyncBreakpoint.addBeforeInstructionBreakpoint();
@@ -101,8 +135,7 @@ describe('Async Breakpoints', () => {
         asyncBreakpoint.resolveAfterInstructionBreakpoint();
     });
 
-
-    it('Concurrent break', (done) => {
+    it('Concurrent different breakpoint break', (done) => {
         const asyncBreakpoint = new AsyncBreakpoints();
 
         asyncBreakpoint.addBeforeInstructionBreakpoint();
