@@ -1,7 +1,7 @@
 {
   "name": "@testring/recorder-frontend",
   "version": "0.4.56",
-  "main": "./dist/index.bundle.js",
+  "main": "./index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/ringcentral/testring.git"
