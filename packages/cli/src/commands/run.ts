@@ -6,7 +6,7 @@ import { FSReader } from '@testring/fs-reader';
 import { TestWorker } from '@testring/test-worker';
 import { WebApplicationController } from '@testring/web-application';
 import { browserProxyControllerFactory, BrowserProxyController } from '@testring/browser-proxy';
-import { ICLICommand, IConfig, ITransport, RecorderServerMessageTypes } from '@testring/types';
+import { ICLICommand, IConfig, ITransport } from '@testring/types';
 import { RecorderServerController } from '@testring/recorder-backend';
 
 
@@ -125,26 +125,6 @@ class RunCommand implements ICLICommand {
 
         this.recorderServer = new RecorderServerController(this.transport);
         await this.recorderServer.init();
-
-        this.transport.on(RecorderServerMessageTypes.MESSAGE, async (message) => {
-            const testStr = message.payload;
-
-            try {
-                const testResult = await this.testRunController.pushTestIntoQueue(testStr);
-
-                this.logger.info(`Test executed with result: ${testResult}`);
-            } catch (e) {
-                this.logger.info(`Test executed failed with error: ${e}`);
-            }
-        });
-
-        this.transport.on(RecorderServerMessageTypes.CLOSE, () => {
-            throw new Error('Recorder Server disconnected');
-        });
-
-        this.transport.on(RecorderServerMessageTypes.STOP, () => {
-            // TODO Recorder stop handling
-        });
     }
 
     async shutdown() {
