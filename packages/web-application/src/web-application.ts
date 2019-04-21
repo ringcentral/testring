@@ -183,7 +183,7 @@ export class WebApplication extends PluggableModule {
     constructor(
         private testUID: string,
         protected transport: ITransport,
-        config: Partial<IWebApplicationConfig>,
+        config: Partial<IWebApplicationConfig> = {},
     ) {
         super();
         this.config = this.getConfig(config);
