@@ -1297,7 +1297,9 @@ export class WebApplication extends PluggableModule {
     }
 
     public async end() {
-        await this.unregisterAppInDevtool();
+        if (this.config.devtool !== null && this.isRegisteredInDevtool) {
+            await this.unregisterAppInDevtool();
+        }
         await this.client.end();
     }
 }
