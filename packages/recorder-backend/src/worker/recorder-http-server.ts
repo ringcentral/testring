@@ -1,9 +1,10 @@
-import { Express } from 'express-serve-static-core';
-import { Store } from 'redux';
+import { Express, Request, Response } from 'express-serve-static-core';
 import {
     IRecorderHttpRoute,
     IRecorderStaticRoutes,
     IServer,
+    RecorderHttpContextResolver,
+    RecorderHttpRouteHandler,
 } from '@testring/types';
 
 import * as express from 'express';
@@ -18,7 +19,7 @@ export class RecorderHttpServer implements IServer {
         private port: number,
         private routes: IRecorderHttpRoute[],
         private staticRoutes: IRecorderStaticRoutes,
-        private storesByWebAppId: Map<string, Store>,
+        private contextResolver: RecorderHttpContextResolver,
     ) {
         this.server = express();
     }
@@ -59,20 +60,15 @@ export class RecorderHttpServer implements IServer {
         }
     }
 
-    private routeHandler(req, res, handler, options) {
-        const webAppId = req.query.appId || null;
+    private async routeHandler(req: Request, res: Response, handler: RecorderHttpRouteHandler, options: any) {
+        try {
+            const data = await this.contextResolver(req, res);
 
-        if (webAppId === null) {
-            res.send('Web App is not defined in get params');
-            return;
-        }
-
-        if (this.storesByWebAppId.has(webAppId)) {
-            const context = this.storesByWebAppId.get(webAppId);
-
-            return handler(req, res, context, webAppId, options);
-        } else {
-            res.send(`No Web App id is defined ${webAppId}`);
+            return handler(req, res, data.context, data.key, options);
+        } catch (e) {
+            res.status(500)
+                .send(`${e.message}\n${e.stack}`)
+                .end();
         }
     }
 

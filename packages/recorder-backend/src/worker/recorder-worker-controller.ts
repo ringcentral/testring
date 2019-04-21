@@ -10,8 +10,10 @@ import {
     WebApplicationDevtoolMessageType,
     RecorderWSServerEvents,
     IRecorderWSMeta,
-    RecorderEvents, IRecorderWSMessage,
+    RecorderEvents,
+    IRecorderWSMessage,
 } from '@testring/types';
+import { Request } from 'express-serve-static-core';
 
 import { Store } from 'redux';
 import { loggerClient } from '@testring/logger';
@@ -214,7 +216,7 @@ export class RecorderWorkerController {
                     payload,
                 });
             } else {
-                throw Error('Worker is already gone');
+                throw Error('Worker is already unregistered');
             }
         } catch (e) {
             error = e;
@@ -267,13 +269,31 @@ export class RecorderWorkerController {
         }
     }
 
+    async httpContextResolver(req: Request): Promise<{ context: Store; key: string }> {
+        const PARAM_KEY = 'appId';
+        const webAppId = req.query[PARAM_KEY] || null;
+
+        if (webAppId === null) {
+            throw Error(`${PARAM_KEY} search query is required.`);
+        }
+
+        if (this.storesByWebAppId.has(webAppId)) {
+            return {
+                context: this.storesByWebAppId.get(webAppId) as Store,
+                key: webAppId,
+            };
+        } else {
+            throw Error(`Store id ${webAppId} is not found.`);
+        }
+    }
+
     async initHttpServer(config: IRecorderServerConfig) {
         this.httpServer = new RecorderHttpServer(
             config.host,
             config.httpPort,
             this.getHttpRouter(),
             this.getHttpStaticRouter(),
-            this.storesByWebAppId,
+            (req) => this.httpContextResolver(req),
         );
         await this.httpServer.run();
         this.logger.debug(`Http server listening: ${this.httpServer.getUrl()}`);
