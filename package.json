@@ -19,7 +19,7 @@
     "lint:src": "lerna exec --parallel --ignore=\"@testring/@(e2e-test-app)\" -- eslint \"./src/**/*.[tj]s\"",
     "lint:test": "lerna exec --parallel --no-sort --ignore=\"@testring/@(ui-kit|types)\" -- eslint ./test/**/*.[tj]s",
     "test": "lerna exec --ignore=\"@testring/@(ui-kit|types|e2e-test-app)\" -- mocha --opts mocha.opts",
-    "test:watch": "lerna exec --parallel -- mocha --opts mocha.opts --watch",
+    "test:watch": "lerna exec --ignore=\"@testring/@(ui-kit|types|e2e-test-app)\" --parallel -- mocha --opts mocha.opts --watch",
     "test:e2e": "lerna run --stream --scope @testring/e2e-test-app e2e",
     "test:e2e-simple": "lerna run --stream --scope @testring/e2e-test-app e2e-simple",
     "test:coverage": "nyc npm test",
