@@ -1,5 +1,4 @@
 {
-
   "name": "@testring/async-breakpoints",
   "version": "0.4.56",
   "main": "./dist/index.js",
@@ -12,5 +11,8 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/ringcentral/testring/issues"
+  },
+  "devDependencies": {
+    "chai": "4.2.0"
   }
 }

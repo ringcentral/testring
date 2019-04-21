@@ -1,16 +1,21 @@
 import { EventEmitter } from 'events';
 
-import { BreakpointsTypes } from './constants';
 import { BreakStackError } from './break-stack-error';
 
 type HasBreakpointCallback = (state: boolean) => Promise<void> | void;
 
+export enum BreakpointsTypes {
+    beforeInstruction = 'beforeInstruction',
+    afterInstruction = 'afterInstruction',
+}
+
+export enum BreakpointEvents {
+    resolverEvent = 'resolveEvent',
+    breakStackEvent = 'breakStack',
+}
+
 export class AsyncBreakpoints extends EventEmitter {
     private breakpoints: Map<BreakpointsTypes, Promise<void>> = new Map();
-
-    private resolverEvent = 'resolveEvent';
-
-    private breakStackEvent = 'breakStack';
 
     constructor() {
         super();
@@ -38,12 +43,12 @@ export class AsyncBreakpoints extends EventEmitter {
             };
 
             const unsubscribe = () => {
-                this.off(this.resolverEvent, releaseHandler);
-                this.off(this.breakStackEvent, breakStackHandler);
+                this.off(BreakpointEvents.resolverEvent, releaseHandler);
+                this.off(BreakpointEvents.breakStackEvent, breakStackHandler);
             };
 
-            this.on(this.resolverEvent, releaseHandler);
-            this.on(this.breakStackEvent, breakStackHandler);
+            this.on(BreakpointEvents.resolverEvent, releaseHandler);
+            this.on(BreakpointEvents.breakStackEvent, breakStackHandler);
         });
 
         this.breakpoints.set(type, breakpoint);
@@ -51,12 +56,16 @@ export class AsyncBreakpoints extends EventEmitter {
         return breakpoint;
     }
 
-    private clearBreakpoint(type: BreakpointsTypes) {
+    private clearBreakpoint(type: BreakpointsTypes): void {
         this.breakpoints.delete(type);
     }
 
-    resolveBreakpoint(type: BreakpointsTypes) {
-        this.emit(this.resolverEvent, type);
+    private resolveBreakpoint(type: BreakpointsTypes): void {
+        this.emit(BreakpointEvents.resolverEvent, type);
+    }
+
+    public breakStack(): void {
+        this.emit(BreakpointEvents.breakStackEvent);
     }
 
     async waitForBreakpoint(
@@ -73,46 +82,46 @@ export class AsyncBreakpoints extends EventEmitter {
     }
 
 
-    public addBeforeInstructionBreakpoint() {
+    public addBeforeInstructionBreakpoint(): void {
         this.addBreakpoint(BreakpointsTypes.beforeInstruction);
     }
 
-    public async waitBeforeInstructionBreakpoint(hasBreakpointCallback: HasBreakpointCallback = () => undefined) {
+    public async waitBeforeInstructionBreakpoint(
+        hasBreakpointCallback: HasBreakpointCallback = () => undefined
+    ): Promise<void> {
         return this.waitForBreakpoint(
             BreakpointsTypes.beforeInstruction,
             hasBreakpointCallback,
         );
     }
 
-    public resolveBeforeInstructionBreakpoint() {
+    public resolveBeforeInstructionBreakpoint(): void {
         this.resolveBreakpoint(BreakpointsTypes.beforeInstruction);
     }
 
-    public isBeforeInstructionBreakpointActive() {
+    public isBeforeInstructionBreakpointActive(): boolean {
         return this.breakpoints.has(BreakpointsTypes.beforeInstruction);
     }
 
 
-    public addAfterInstructionBreakpoint() {
+    public addAfterInstructionBreakpoint(): void {
         this.addBreakpoint(BreakpointsTypes.afterInstruction);
     }
 
-    public async waitAfterInstructionBreakpoint(hasBreakpointCallback: HasBreakpointCallback = () => undefined) {
+    public async waitAfterInstructionBreakpoint(
+        hasBreakpointCallback: HasBreakpointCallback = () => undefined
+    ): Promise<void> {
         return this.waitForBreakpoint(
             BreakpointsTypes.afterInstruction,
             hasBreakpointCallback,
         );
     }
 
-    public resolveAfterInstructionBreakpoint() {
+    public resolveAfterInstructionBreakpoint(): void {
         this.resolveBreakpoint(BreakpointsTypes.afterInstruction);
     }
 
-    public isAfterInstructionBreakpointActive() {
+    public isAfterInstructionBreakpointActive(): boolean {
         return this.breakpoints.has(BreakpointsTypes.afterInstruction);
-    }
-
-    public breakStack() {
-        this.emit(this.breakStackEvent);
     }
 }
