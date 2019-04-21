@@ -1,5 +1,4 @@
 import { loggerClient } from '@testring/logger';
-import { TestEvents } from '@testring/types';
 import { TestContext } from './test-context';
 import { testAPIController } from './test-api-controller';
 
@@ -44,7 +43,7 @@ export async function run(...tests: Array<TestFunction>) {
     });
 
     try {
-        bus.emit(TestEvents.started);
+        await bus.startedTest();
 
         await testAPIController.flushBeforeRunCallbacks();
 
@@ -61,11 +60,11 @@ export async function run(...tests: Array<TestFunction>) {
         if (passed) {
             loggerClient.endStep(testID, 'Test passed');
 
-            bus.emit(TestEvents.finished);
+            await bus.finishedTest();
         } else {
             loggerClient.endStep(testID, 'Test failed', catchedError);
 
-            bus.emit(TestEvents.failed, catchedError);
+            await bus.failedTest(catchedError);
         }
     }
 }

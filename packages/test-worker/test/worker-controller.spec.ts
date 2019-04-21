@@ -12,7 +12,7 @@ import {
 import { WorkerController } from '../src/worker/worker-controller';
 
 const TESTRING_API_ABSOLUTE_PATH = require.resolve('@testring/api');
-const TESTRING_TYPES_ABSOLUTE_PATH = require.resolve('@testring/types');
+
 
 describe('WorkerController', () => {
     it('should run sync test', (callback) => {
@@ -86,21 +86,20 @@ describe('WorkerController', () => {
             waitForRelease: false,
             content: `
                 var api = require('${TESTRING_API_ABSOLUTE_PATH}');
-                var types = require('${TESTRING_TYPES_ABSOLUTE_PATH}');
 
                 async function runMock () {
                     var fns = Array.prototype.slice.apply(arguments);
                     var bus = api.testAPIController.getBus();
 
-                    bus.emit(types.TestEvents.started);
+                    await bus.startedTest();
 
                     try {
                         for (let i = 0; i < fns.length; i++) {
                             await fns[i]();
                         }
-                        bus.emit(types.TestEvents.finished);
+                        await bus.finishedTest();
                     } catch (err) {
-                        bus.emit(types.TestEvents.failed, err);
+                        await bus.failedTest(err);
                     }
                 };
                 
@@ -136,20 +135,20 @@ describe('WorkerController', () => {
             waitForRelease: false,
             content: `
                 var api = require('${TESTRING_API_ABSOLUTE_PATH}');
-                var types = require('${TESTRING_TYPES_ABSOLUTE_PATH}');
 
                 async function runMock () {
                     var fns = Array.prototype.slice.apply(arguments);
+                    var bus = api.testAPIController.getBus();
 
-                    api.testAPIController.getBus().emit(types.TestEvents.started);
+                    await bus.startedTest();
 
                     try {
                         for (let i = 0; i < fns.length; i++) {
                             await fns[i]();
                         }
-                        api.testAPIController.getBus().emit(types.TestEvents.finished);
+                        await bus.finishedTest();
                     } catch (err) {
-                        api.testAPIController.getBus().emit(types.TestEvents.failed, err);
+                        await bus.failedTest(err);
                     }
                 };
                 
@@ -183,21 +182,20 @@ describe('WorkerController', () => {
             waitForRelease: false,
             content: `
                 var api = require('${TESTRING_API_ABSOLUTE_PATH}');
-                var types = require('${TESTRING_TYPES_ABSOLUTE_PATH}');
 
                 async function runMock () {
                     var fns = Array.prototype.slice.apply(arguments);
                     var bus = api.testAPIController.getBus();
 
-                    bus.emit(types.TestEvents.started);
+                    await bus.startedTest();
 
                     try {
                         for (let i = 0; i < fns.length; i++) {
                             await fns[i]();
                         }
-                        bus.emit(types.TestEvents.finished);
+                        await bus.finishedTest();
                     } catch (err) {
-                        bus.emit(types.TestEvents.failed, err);
+                        await bus.failedTest(err);
                     }
                 };
                 

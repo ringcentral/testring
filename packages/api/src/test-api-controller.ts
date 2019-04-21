@@ -1,13 +1,38 @@
+import { TestEvents } from '@testring/types';
+
 import { EventEmitter } from 'events';
 
 import { asyncBreakpoints } from '@testring/async-breakpoints';
+
 
 type BeforeRunCallback = () => any;
 type AfterRunCallback = () => any;
 
 
+export class BusEmitter extends EventEmitter {
+    private async addDelayToStack(): Promise<void> {
+        new Promise(resolve => setImmediate(resolve));
+    }
+
+    public async startedTest(): Promise<void> {
+        this.emit(TestEvents.started);
+        await this.addDelayToStack();
+    }
+
+    public async finishedTest(): Promise<void> {
+        this.emit(TestEvents.finished);
+        await this.addDelayToStack();
+    }
+
+    public async failedTest(error: Error): Promise<void> {
+        this.emit(TestEvents.failed, error);
+        await this.addDelayToStack();
+    }
+}
+
+
 export class TestAPIController {
-    private bus = new EventEmitter();
+    private bus = new BusEmitter();
 
     private testID: string = '';
 
