@@ -2,12 +2,12 @@ import {
     DEFAULT_RECORDER_HOST,
     DEFAULT_RECORDER_HTTP_PORT,
     DEFAULT_RECORDER_WS_PORT,
-} from '@testring/constants';
+} from './constants';
 import { IRecorderServerConfig } from '@testring/types';
 
 import * as path from 'path';
 
-const FRONTEND_PATH = path.dirname(require.resolve('@testring/recorder-frontend'));
+import { absolutePath as FRONTEND_PATH } from '@testring/recorder-frontend';
 
 const getRouterPath = (filepath) => path.resolve(__dirname, './routes/', filepath);
 
