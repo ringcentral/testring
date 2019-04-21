@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { render } from 'react-dom';
 
-import { ClientWsTransport } from '@testring/client-ws-transport/dist';
+import { ClientWsTransport } from '@testring/client-ws-transport';
 import { RecorderEvents, TestWorkerAction } from '@testring/types';
 
 
