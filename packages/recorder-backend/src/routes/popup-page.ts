@@ -28,7 +28,7 @@ const pageTemplate = (
     </script>
 </head>
 <body>
-    <div id="rcRecorderApp" style="width: 100%; height: 100%;">test</div>
+    <div id="rcRecorderApp" style="width: 100%; height: 100%;">Waiting for initialize</div>
     <script src="${staticHost}/popup.bundle.js" ></script>
 </body>
 </html>
