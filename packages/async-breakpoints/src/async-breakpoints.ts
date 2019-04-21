@@ -43,8 +43,8 @@ export class AsyncBreakpoints extends EventEmitter {
             };
 
             const unsubscribe = () => {
-                this.off(BreakpointEvents.resolverEvent, releaseHandler);
-                this.off(BreakpointEvents.breakStackEvent, breakStackHandler);
+                this.removeListener(BreakpointEvents.resolverEvent, releaseHandler);
+                this.removeListener(BreakpointEvents.breakStackEvent, breakStackHandler);
             };
 
             this.on(BreakpointEvents.resolverEvent, releaseHandler);
