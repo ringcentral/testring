@@ -18,8 +18,22 @@ export interface IRecorderServerRoute extends IRecorderRoute {
     handler: string;
 }
 
+export type RecorderHttpRouteHandler = (
+    // @TODO maybe add import express and redux types?
+    req: any,
+    res: any,
+    context: any,
+    appId: string,
+    options?: any,
+) => Promise<void> | void;
+
+export type RecorderHttpContextResolver = (req: any, res: any) => Promise<{
+    context: object;
+    key: string;
+}>;
+
 export interface IRecorderHttpRoute extends IRecorderRoute {
-    handler: (...args: any[]) => Promise<void> | void;
+    handler: RecorderHttpRouteHandler;
     options?: any;
 }
 
