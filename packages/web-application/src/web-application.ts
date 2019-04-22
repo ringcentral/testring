@@ -8,6 +8,7 @@ import {
     WebApplicationDevtoolMessageType,
     IWebApplicationRegisterMessage,
     IWebApplicationRegisterCompleteMessage,
+    WebApplicationDevtoolCallback,
 } from '@testring/types';
 
 import { asyncBreakpoints } from '@testring/async-breakpoints';
@@ -1234,12 +1235,12 @@ export class WebApplication extends PluggableModule {
                 wsPort,
                 host,
             } = this.config.devtool;
-            const url = `chrome-extension://${extensionId}/options.html?httpPort=${httpPort}&host=${host}&wsPort=${wsPort}&appId=${id}&handshakePage=true`;
+            const url = `chrome-extension://${extensionId}/options.html?httpPort=${httpPort}&host=${host}&wsPort=${wsPort}&appId=${id}&page=handshake`;
 
             await this.client.url(url);
 
-            await this.client.executeAsync(function (done) {
-                setTimeout(done, 5000);
+            await this.client.executeAsync(function (done: WebApplicationDevtoolCallback) {
+                (window as any).resolveWebApp = done;
             });
 
             this.isRegisteredInDevtool = true;

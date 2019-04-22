@@ -2,18 +2,6 @@ import { IBrowserProxyPlugin } from '../browser-proxy';
 import { IBrowserProxyCommand } from '../browser-proxy/structs';
 import { IRecorderRuntimeConfiguration } from '../recorder-backend';
 
-export const enum WebApplicationMessageType {
-    execute = 'WebApplication/execute',
-    response = 'WebApplication/response'
-}
-
-export const enum WebApplicationDevtoolMessageType {
-    register = 'WebApplication/register',
-    registerComplete = 'WebApplication/registerComplete',
-    unregister = 'WebApplication/unregister',
-    unregisterComplete = 'WebApplication/unregisterComplete',
-}
-
 export interface IWebApplicationRegisterMessage {
     id: string;
 }
@@ -21,13 +9,6 @@ export interface IWebApplicationRegisterMessage {
 export interface IWebApplicationRegisterCompleteMessage {
     id: string;
     error: null | Error;
-}
-
-export const enum WebApplicationControllerEventType {
-    execute = 'execute',
-    response = 'response',
-    afterResponse = 'afterResponse',
-    error = 'error'
 }
 
 export interface IWebApplicationExecuteMessage {
@@ -63,14 +44,14 @@ export type IWebApplicationClient = {
     [K in keyof IBrowserProxyPlugin]: (...args: Array<any>) => Promise<any>
 };
 
-export type WindowFeatureBoolean = 'yes' | 'no';
-
-export type WindowFeaturesConfig = string | IWindowFeatures;
-
 export interface IWebApplicationConfig {
     screenshotsEnabled: boolean;
     devtool: null | IRecorderRuntimeConfiguration;
 }
+
+export type WindowFeatureBoolean = 'yes' | 'no';
+
+export type WindowFeaturesConfig = string | IWindowFeatures;
 
 export interface IWindowFeatures {
     top?: number;
@@ -84,4 +65,6 @@ export interface IWindowFeatures {
     resizable?: WindowFeatureBoolean;
     scrollbars?: WindowFeatureBoolean;
 }
+
+export type WebApplicationDevtoolCallback = (err: null | Error) => void;
 

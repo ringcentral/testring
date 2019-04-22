@@ -17,7 +17,7 @@ export class BackgroundChromeClient extends EventEmitter {
         this.connect();
     }
 
-    private port: Port;
+    private port: Port | undefined;
 
     private connect(): void {
         this.disconnect();
@@ -37,7 +37,7 @@ export class BackgroundChromeClient extends EventEmitter {
         this.emit(ExtensionMessagingTransportEvents.CONNECT);
     }
 
-    private handleDisconnect() {
+    private handleDisconnect(): void {
         delete this.port;
 
         this.emit(ExtensionMessagingTransportEvents.DISCONNECT);
@@ -50,26 +50,30 @@ export class BackgroundChromeClient extends EventEmitter {
         }
     }
 
-    public send(type: ExtensionMessagingTransportTypes, payload: any): void {
-        this.port.postMessage({
-            type,
-            payload,
-        });
+    public send<T>(type: ExtensionMessagingTransportTypes, payload: T): void {
+        if (this.port) {
+            this.port.postMessage({
+                type,
+                payload,
+            });
+        } else {
+            throw Error('No connection to send message to');
+        }
     }
 
-    private handleMessage(message: IExtensionMessagingTransportMessage) {
+    private handleMessage(message: IExtensionMessagingTransportMessage): void {
         this.emit(
             ExtensionMessagingTransportEvents.MESSAGE,
             message,
         );
     }
 
-    public async setConfig(config: IExtensionApplicationConfig) {
+    public setConfig(config: IExtensionApplicationConfig): void {
         this.send(ExtensionMessagingTransportTypes.SET_EXTENSION_OPTIONS, config);
     }
 
-    public async waitForReady() {
-        return new Promise((resolve) => {
+    public async waitForReady(): Promise<void> {
+        return new Promise<void>((resolve) => {
             const handler = (message: IExtensionMessagingTransportMessage) => {
                 if (message.type === ExtensionMessagingTransportTypes.IS_READY) {
                     this.serverConfig = message.payload;
@@ -81,7 +85,8 @@ export class BackgroundChromeClient extends EventEmitter {
             };
 
             this.on(ExtensionMessagingTransportEvents.MESSAGE, handler);
-            this.send(ExtensionMessagingTransportTypes.WAIT_FOR_READY, {});
+
+            this.send<null>(ExtensionMessagingTransportTypes.WAIT_FOR_READY, null);
         });
     }
 
