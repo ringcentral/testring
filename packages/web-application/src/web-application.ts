@@ -31,7 +31,7 @@ export class WebApplication extends PluggableModule {
 
     protected TICK_TIMEOUT: number = 100;
 
-    private config: IWebApplicationConfig;
+    protected config: IWebApplicationConfig;
 
     private screenshotsEnabledManually: boolean = true;
 
