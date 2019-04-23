@@ -18,7 +18,7 @@ class RunCommand implements ICLICommand {
     private browserProxyController: BrowserProxyController;
     private testRunController: TestRunController;
     private httpServer: HttpServer;
-    private recorderServer: RecorderServerController;
+    private devtoolServerController: RecorderServerController;
 
     constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {}
 
@@ -47,12 +47,14 @@ class RunCommand implements ICLICommand {
     }
 
     async execute() {
-        if (this.config.devtool) {
-            await this.initRecorder();
+        const devtoolEnabled = this.config.devtool;
+
+        if (devtoolEnabled) {
+            this.devtoolServerController = await this.initDevtoolServer();
         }
 
         const testWorker = new TestWorker(this.transport, {
-            waitForRelease: this.config.devtool !== false,
+            waitForRelease: devtoolEnabled,
             localWorker: this.config.workerLimit === 'local',
             screenshots: this.config.screenshots,
         });
@@ -60,19 +62,12 @@ class RunCommand implements ICLICommand {
         this.httpServer = createHttpServer(this.transport);
         this.browserProxyController = browserProxyControllerFactory(this.transport);
 
-        if (this.config.devtool) {
-            this.testRunController = new TestRunController(
-                this.config,
-                testWorker,
-                this.recorderServer.getRuntimeConfiguration()
-            );
-        } else {
-            this.testRunController = new TestRunController(
-                this.config,
-                testWorker,
-                null
-            );
-        }
+        this.testRunController = new TestRunController(
+            this.config,
+            testWorker,
+            this.devtoolServerController ? this.devtoolServerController.getRuntimeConfiguration(): null,
+        );
+
         this.webApplicationController = new WebApplicationController(this.browserProxyController, this.transport);
 
         const loggerServer = new LoggerServer(this.config, this.transport, this.stdout);
@@ -88,7 +83,7 @@ class RunCommand implements ICLICommand {
             browserProxy: this.browserProxyController,
             testRunController: this.testRunController,
             httpClientInstance: httpClient,
-            recorder: this.recorderServer,
+            recorder: this.devtoolServerController,
         }, this.config);
 
         this.logger.info('User config:\n', this.formatJSON(this.config));
@@ -120,11 +115,13 @@ class RunCommand implements ICLICommand {
         }
     }
 
-    async initRecorder() {
+    async initDevtoolServer() {
         this.logger.info('Recorder Server is enabled');
 
-        this.recorderServer = new RecorderServerController(this.transport);
-        await this.recorderServer.init();
+        const devtoolServerController = new RecorderServerController(this.transport);
+        await devtoolServerController.init();
+
+        return devtoolServerController;
     }
 
     async shutdown() {
@@ -132,19 +129,19 @@ class RunCommand implements ICLICommand {
         const testRunController = this.testRunController;
         const browserProxyController = this.browserProxyController;
         const webApplicationController = this.webApplicationController;
-        const recorderServer = this.recorderServer;
+        const devtoolServer = this.devtoolServerController;
 
         this.httpServer = (null as any);
         this.testRunController = (null as any);
         this.browserProxyController = (null as any);
         this.webApplicationController = (null as any);
-        this.recorderServer = (null as any);
+        this.devtoolServerController = (null as any);
 
         httpServer && httpServer.kill();
         webApplicationController && webApplicationController.kill();
         testRunController && await testRunController.kill();
         browserProxyController && await browserProxyController.kill();
-        recorderServer && await recorderServer.kill();
+        devtoolServer && await devtoolServer.kill();
     }
 }
 
