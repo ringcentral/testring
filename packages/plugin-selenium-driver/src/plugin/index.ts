@@ -19,7 +19,11 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
     port: 4444,
     desiredCapabilities: {
         browserName: 'chrome',
-        chromeOptions: {
+        chromeOptions: { // for local ChromeDriver
+            args: [],
+        },
+        //please refer https://github.com/elgalu/docker-selenium/issues/201
+        'goog:chromeOptions': { // ffor RemoteWebdriver
             args: [],
         },
     },
