@@ -13,7 +13,7 @@
     "@testring/child-process": "0.4.56",
     "@testring/logger": "0.4.56",
     "@testring/plugin-api": "0.4.56",
-    "@testring/recorder-extension": "0.4.56",
+    "@testring/devtool-extension": "0.4.56",
     "@testring/types": "0.4.56",
     "@types/deepmerge": "2.2.0",
     "@types/node": "10.5.6",

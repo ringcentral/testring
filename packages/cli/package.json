@@ -16,7 +16,7 @@
     "@testring/http-api": "0.4.56",
     "@testring/logger": "0.4.56",
     "@testring/plugin-api": "0.4.56",
-    "@testring/recorder-backend": "0.4.56",
+    "@testring/devtool-backend": "0.4.56",
     "@testring/test-run-controller": "0.4.56",
     "@testring/test-worker": "0.4.56",
     "@testring/transport": "0.4.56",
