@@ -1,8 +1,7 @@
 {
-  "name": "@testring/recorder-extension",
+  "name": "@testring/devtool-frontend",
   "version": "0.4.56",
   "main": "./index.js",
-  "types": "./index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/ringcentral/testring.git"
@@ -16,13 +15,16 @@
   "devDependencies": {
     "@testring/client-ws-transport": "0.4.56",
     "@testring/types": "0.4.56",
-    "@testring/utils": "0.4.56",
-    "@types/chrome": "0.0.69",
+    "@types/react": "16.7.18",
+    "@types/react-dom": "16.0.11",
     "@types/webpack": "4.4.22",
-    "chrome-launcher": "0.10.5",
-    "copy-webpack-plugin": "5.0.2",
+    "css-loader": "2.1.0",
+    "monaco-editor-webpack-plugin": "1.7.0",
+    "react": "16.7.0",
+    "react-dom": "16.7.0",
+    "react-monaco-editor": "0.22.0",
+    "style-loader": "0.23.1",
     "ts-loader": "5.3.3",
-    "ts-node": "7.0.1",
     "webpack": "4.28.4",
     "webpack-cli": "3.2.1"
   }

@@ -7,7 +7,7 @@ import { IRecorderServerConfig } from '@testring/types';
 
 import * as path from 'path';
 
-import { absolutePath as FRONTEND_PATH } from '@testring/recorder-frontend';
+import { absolutePath as FRONTEND_PATH } from '@testring/devtool-frontend';
 
 const getRouterPath = (filepath) => path.resolve(__dirname, './routes/', filepath);
 

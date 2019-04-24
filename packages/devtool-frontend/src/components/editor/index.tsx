@@ -16,7 +16,8 @@ export class Editor extends React.Component {
         });
     }
     onChange() {
-        console.log(this.state.editor.getPosition(), this.state.editor.getSelections()); // eslint-disable-line no-console
+        // eslint-disable-next-line no-console
+        console.log(this.state.editor.getPosition(), this.state.editor.getSelections());
     }
     render() {
         const { code } = this.state;

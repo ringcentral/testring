@@ -8,7 +8,7 @@ import * as deepmerge from 'deepmerge';
 
 import { spawn } from '@testring/child-process';
 import { loggerClient } from '@testring/logger';
-import { absoluteExtensionPath } from '@testring/recorder-extension';
+import { absoluteExtensionPath } from '@testring/devtool-extension';
 
 type browserClientItem = {
     client: Client<any>;

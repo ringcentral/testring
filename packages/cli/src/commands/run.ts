@@ -7,7 +7,7 @@ import { TestWorker } from '@testring/test-worker';
 import { WebApplicationController } from '@testring/web-application';
 import { browserProxyControllerFactory, BrowserProxyController } from '@testring/browser-proxy';
 import { ICLICommand, IConfig, ITransport } from '@testring/types';
-import { RecorderServerController } from '@testring/recorder-backend';
+import { RecorderServerController } from '@testring/devtool-backend';
 
 
 class RunCommand implements ICLICommand {

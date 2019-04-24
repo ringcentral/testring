@@ -19,7 +19,7 @@ import { PluggableModule } from '@testring/pluggable-module';
 import { loggerClient } from '@testring/logger';
 import { defaultRecorderConfig } from './default-recorder-config';
 
-import { extensionId } from '@testring/recorder-extension';
+import { extensionId } from '@testring/devtool-extension';
 
 
 export class RecorderServerController extends PluggableModule implements IRecorderServerController {
