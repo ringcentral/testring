@@ -2,18 +2,18 @@ import {
     Action,
 } from 'redux';
 
-export enum recorderWindowsActions {
+export enum devtoolWindowsActions {
     OPEN_WINDOW = 'WINDOWS@OPEN_WINDOW',
 }
 
-interface IRecorderExtensionWindow {
+interface IDevtoolExtensionWindow {
     id: string;
     position: 'bottom' | 'overlay';
     url: string;
 }
 
-interface IRecorderWindowsStore {
-    windows: IRecorderExtensionWindow[];
+interface IDevtoolWindowsStore {
+    windows: IDevtoolExtensionWindow[];
 }
 
 interface IRecorderWindowAction extends Action {
@@ -21,14 +21,14 @@ interface IRecorderWindowAction extends Action {
 }
 
 export function windowReducer(
-    state: IRecorderWindowsStore = {
+    state: IDevtoolWindowsStore = {
         windows: [],
     },
     action: IRecorderWindowAction,
 ) {
     switch (action.type) {
-        case recorderWindowsActions.OPEN_WINDOW:
-            const payload: IRecorderExtensionWindow = action.payload;
+        case devtoolWindowsActions.OPEN_WINDOW:
+            const payload: IDevtoolExtensionWindow = action.payload;
 
             return {
                 ...state,
