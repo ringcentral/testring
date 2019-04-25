@@ -27,10 +27,6 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
         chromeOptions: { // for local ChromeDriver
             args: [],
         },
-        //please refer https://github.com/elgalu/docker-selenium/issues/201
-        'goog:chromeOptions': { // for RemoteWebdriver
-            args: [],
-        },
     },
 };
 
@@ -88,7 +84,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                     ],
                 },
             },
-        } as Partial<SeleniumPluginConfig>;
+        } as any;
     }
 
     private createConfig(config: Partial<SeleniumPluginConfig>): SeleniumPluginConfig {
