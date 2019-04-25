@@ -1,4 +1,4 @@
 import { transport } from '@testring/transport';
-import { RecorderWorkerController } from './recorder-worker-controller';
+import { DevtoolWorkerController } from './devtool-worker-controller';
 
-new RecorderWorkerController(transport);
+new DevtoolWorkerController(transport);

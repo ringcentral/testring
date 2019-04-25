@@ -17,12 +17,12 @@ import { fork } from '@testring/child-process';
 import { generateUniqId } from '@testring/utils';
 import { PluggableModule } from '@testring/pluggable-module';
 import { loggerClient } from '@testring/logger';
-import { defaultRecorderConfig } from './default-recorder-config';
+import { defaultDevtoolConfig } from './default-devtool-config';
 
 import { extensionId } from '@testring/devtool-extension';
 
 
-export class RecorderServerController extends PluggableModule implements IDevtoolServerController {
+export class DevtoolServerController extends PluggableModule implements IDevtoolServerController {
 
     private workerID: string;
 
@@ -42,7 +42,7 @@ export class RecorderServerController extends PluggableModule implements IDevtoo
     }
 
     private getConfig(): IDevtoolServerConfig {
-        return defaultRecorderConfig;
+        return defaultDevtoolConfig;
     }
 
     public getRuntimeConfiguration(): IDevtoolRuntimeConfiguration {
@@ -97,7 +97,7 @@ export class RecorderServerController extends PluggableModule implements IDevtoo
     private addToServerProxyHandler(messageType) {
         const toServerHandler = (messageData, processID: string | null = null) => {
             this.transport.send<IDevtoolProxyMessage>(this.getWorkerID(), DevtoolProxyMessages.TO_WORKER, {
-                fromWorker: processID,
+                source: processID,
                 messageType,
                 messageData,
             });
@@ -106,8 +106,8 @@ export class RecorderServerController extends PluggableModule implements IDevtoo
     }
 
     private handleProxiedMessage(message: IDevtoolProxyMessage) {
-        if (message.fromWorker) {
-            this.transport.send(message.fromWorker as string, message.messageType, message.messageData);
+        if (message.source) {
+            this.transport.send(message.source as string, message.messageType, message.messageData);
         } else {
             this.transport.broadcastLocal(message.messageType, message.messageData);
         }

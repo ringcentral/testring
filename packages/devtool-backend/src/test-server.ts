@@ -1,19 +1,19 @@
 import { LogLevel } from '@testring/types';
 import { transport } from '@testring/transport';
 
-import { RecorderWorkerController } from './worker/recorder-worker-controller';
+import { DevtoolWorkerController } from './worker/devtool-worker-controller';
 import { loggerClient, LoggerServer } from '@testring/logger';
 
-import { defaultRecorderConfig } from './default-recorder-config';
+import { defaultDevtoolConfig } from './default-devtool-config';
 
 
-const server = new RecorderWorkerController(transport);
+const server = new DevtoolWorkerController(transport);
 
 new LoggerServer({
     logLevel: 'verbose' as LogLevel,
     silent: false,
 }, transport, process.stdout);
 
-server.init(defaultRecorderConfig).catch((err) => {
+server.init(defaultDevtoolConfig).catch((err) => {
     loggerClient.error(err);
 });

@@ -11,7 +11,7 @@ import * as WebSocket from 'ws';
 import { generateUniqId } from '@testring/utils';
 import { LoggerClient, loggerClient } from '@testring/logger';
 
-export class RecorderWSServer extends EventEmitter implements IServer {
+export class DevtoolWsServer extends EventEmitter implements IServer {
     private connections: Map<string, WebSocket> = new Map();
 
     private logger: LoggerClient = loggerClient.withPrefix('[recorder-wss]');

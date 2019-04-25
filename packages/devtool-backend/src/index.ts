@@ -1,3 +1,3 @@
-import { RecorderServerController } from './recorder-server-controller';
+import { DevtoolServerController } from './devtool-server-controller';
 
-export { RecorderServerController };
+export { DevtoolServerController };

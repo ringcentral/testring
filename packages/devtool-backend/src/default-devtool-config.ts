@@ -11,7 +11,7 @@ import { absolutePath as FRONTEND_PATH } from '@testring/devtool-frontend';
 
 const getRouterPath = (filepath) => path.resolve(__dirname, './routes/', filepath);
 
-export const defaultRecorderConfig: IDevtoolServerConfig = {
+export const defaultDevtoolConfig: IDevtoolServerConfig = {
     host: DEFAULT_RECORDER_HOST,
     httpPort: DEFAULT_RECORDER_HTTP_PORT,
     wsPort: DEFAULT_RECORDER_WS_PORT,
