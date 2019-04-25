@@ -16,7 +16,8 @@ interface IDevtoolWindowsStore {
     windows: IDevtoolExtensionWindow[];
 }
 
-interface IRecorderWindowAction extends Action {
+interface IDevtoolWindowAction extends Action {
+    type: devtoolWindowsActions;
     payload: any;
 }
 
@@ -24,7 +25,7 @@ export function windowReducer(
     state: IDevtoolWindowsStore = {
         windows: [],
     },
-    action: IRecorderWindowAction,
+    action: IDevtoolWindowAction,
 ) {
     switch (action.type) {
         case devtoolWindowsActions.OPEN_WINDOW:
