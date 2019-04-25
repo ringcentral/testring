@@ -5,7 +5,7 @@ import {
     IAssertionSuccessMeta,
     ITransport,
     WindowFeaturesConfig,
-    WebApplicationDevtoolMessageType,
+    WebApplicationDevtoolActions,
     IWebApplicationRegisterMessage,
     IWebApplicationRegisterCompleteMessage,
     WebApplicationDevtoolCallback,
@@ -1179,7 +1179,7 @@ export class WebApplication extends PluggableModule {
     private async registerAppInDevtool(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             const removeListener = this.transport.on(
-                WebApplicationDevtoolMessageType.registerComplete,
+                WebApplicationDevtoolActions.registerComplete,
                 (message: IWebApplicationRegisterCompleteMessage) => {
                     if (message.id === this.applicationId) {
                         if (message.error === null || message.error === undefined) {
@@ -1195,14 +1195,14 @@ export class WebApplication extends PluggableModule {
                 id: this.applicationId,
             };
 
-            this.transport.broadcastUniversally(WebApplicationDevtoolMessageType.register, payload);
+            this.transport.broadcastUniversally(WebApplicationDevtoolActions.register, payload);
         });
     }
 
     private async unregisterAppInDevtool(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             const removeListener = this.transport.on<IWebApplicationRegisterCompleteMessage>(
-                WebApplicationDevtoolMessageType.unregisterComplete,
+                WebApplicationDevtoolActions.unregisterComplete,
                 (message) => {
                     if (message.id === this.applicationId) {
                         if (message.error === null || message.error === undefined) {
@@ -1218,7 +1218,7 @@ export class WebApplication extends PluggableModule {
                 id: this.applicationId,
             };
 
-            this.transport.broadcastUniversally(WebApplicationDevtoolMessageType.unregister, payload);
+            this.transport.broadcastUniversally(WebApplicationDevtoolActions.unregister, payload);
         });
     }
 

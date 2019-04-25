@@ -2,6 +2,7 @@ import {
     IWebApplicationRegisterCompleteMessage,
     IWebApplicationRegisterMessage,
 } from '../web-application';
+import { ITestControllerExecutionState } from '../test-worker/structs';
 import { DevtoolEvents } from '../devtool-extension/enums';
 
 interface IDevtoolRoute {
@@ -78,6 +79,14 @@ export interface IDevtoolProxyCleanedMessage {
 
 export interface IDevtoolProxyMessage extends IDevtoolProxyCleanedMessage {
     messageType: string;
+}
+
+export interface IDevtoolWorkerRegisterMessage extends IDevtoolProxyCleanedMessage {
+    messageData: ITestControllerExecutionState;
+}
+
+export interface IDevtoolWorkerUpdateStateMessage extends IDevtoolProxyCleanedMessage {
+    messageData: ITestControllerExecutionState;
 }
 
 export interface IDevtoolWebAppRegisterMessage extends IDevtoolProxyCleanedMessage {
