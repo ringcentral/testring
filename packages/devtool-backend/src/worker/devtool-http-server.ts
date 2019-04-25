@@ -9,7 +9,7 @@ import {
 
 import * as express from 'express';
 
-export class RecorderHttpServer implements IServer {
+export class DevtoolHttpServer implements IServer {
     private server: Express;
 
     private waitForStart: Promise<void> | void;

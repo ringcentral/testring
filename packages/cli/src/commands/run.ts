@@ -7,7 +7,7 @@ import { TestWorker } from '@testring/test-worker';
 import { WebApplicationController } from '@testring/web-application';
 import { browserProxyControllerFactory, BrowserProxyController } from '@testring/browser-proxy';
 import { ICLICommand, IConfig, ITransport } from '@testring/types';
-import { RecorderServerController } from '@testring/devtool-backend';
+import { DevtoolServerController } from '@testring/devtool-backend';
 
 
 class RunCommand implements ICLICommand {
@@ -18,7 +18,7 @@ class RunCommand implements ICLICommand {
     private browserProxyController: BrowserProxyController;
     private testRunController: TestRunController;
     private httpServer: HttpServer;
-    private devtoolServerController: RecorderServerController;
+    private devtoolServerController: DevtoolServerController;
 
     constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {}
 
@@ -118,7 +118,7 @@ class RunCommand implements ICLICommand {
     async initDevtoolServer() {
         this.logger.info('Recorder Server is enabled');
 
-        const devtoolServerController = new RecorderServerController(this.transport);
+        const devtoolServerController = new DevtoolServerController(this.transport);
         await devtoolServerController.init();
 
         return devtoolServerController;

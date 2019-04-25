@@ -18,8 +18,8 @@ import { Request } from 'express-serve-static-core';
 import { Store } from 'redux';
 import { loggerClient } from '@testring/logger';
 
-import { RecorderHttpServer } from './recorder-http-server';
-import { RecorderWSServer } from './recorder-ws-server';
+import { DevtoolHttpServer } from './devtool-http-server';
+import { DevtoolWsServer } from './devtool-ws-server';
 import { initStore } from './store';
 
 
@@ -27,12 +27,12 @@ import { IRecorderWebAppRegisterData, recorderWebAppAction } from '../reducers/w
 import { recorderConfigActions } from '../reducers/recorder-config-reducer';
 
 
-export class RecorderWorkerController {
+export class DevtoolWorkerController {
     private logger = loggerClient.withPrefix('[recorder-worker]');
 
-    private httpServer: RecorderHttpServer;
+    private httpServer: DevtoolHttpServer;
 
-    private wsServer: RecorderWSServer;
+    private wsServer: DevtoolWsServer;
 
     private storesByWorkerId: Map<string, Store> = new Map();
     private storesByWebAppId: Map<string, Store> = new Map();
@@ -161,11 +161,11 @@ export class RecorderWorkerController {
     }
 
     private async sendToWorkerMessage(workerId: string, messageType: string, messageData: any) {
-        const fromWorker = this.denormalizeWorkerId(workerId);
+        const source = this.denormalizeWorkerId(workerId);
 
         this.transport.broadcastUniversally<IDevtoolProxyMessage>(DevtoolProxyMessages.FROM_WORKER, {
             messageData,
-            fromWorker,
+            source,
             messageType,
         });
     }
@@ -174,7 +174,7 @@ export class RecorderWorkerController {
         let error = null;
 
         try {
-            const workerId = this.normalizeWorkerId(message.fromWorker);
+            const workerId = this.normalizeWorkerId(message.source);
             const store = await this.getOrRegisterStoreByWorkerId(workerId);
             const id = message.messageData.id;
             await this.registerWebAppId(workerId, id);
@@ -203,7 +203,7 @@ export class RecorderWorkerController {
         let error = null;
 
         try {
-            const store = await this.getStoreByWorkerId(this.normalizeWorkerId(message.fromWorker));
+            const store = await this.getStoreByWorkerId(this.normalizeWorkerId(message.source));
 
             if (store) {
                 const id = message.messageData.id;
@@ -222,11 +222,11 @@ export class RecorderWorkerController {
             error = e;
         }
 
-        const workerId = this.denormalizeWorkerId(message.fromWorker);
+        const workerId = this.denormalizeWorkerId(message.source);
 
         this.sendProxiedMessage(WebApplicationDevtoolMessageType.unregisterComplete, {
             ...message,
-            fromWorker: workerId,
+            source: workerId,
             messageData: {
                 ...message.messageData,
                 error,
@@ -288,7 +288,7 @@ export class RecorderWorkerController {
     }
 
     async initHttpServer(config: IDevtoolServerConfig) {
-        this.httpServer = new RecorderHttpServer(
+        this.httpServer = new DevtoolHttpServer(
             config.host,
             config.httpPort,
             this.getHttpRouter(),
@@ -300,7 +300,7 @@ export class RecorderWorkerController {
     }
 
     async initWSServer(config: IDevtoolServerConfig) {
-        this.wsServer = new RecorderWSServer(
+        this.wsServer = new DevtoolWsServer(
             config.host,
             config.wsPort,
         );

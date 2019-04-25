@@ -72,7 +72,7 @@ export interface IServer {
 }
 
 export interface IDevtoolProxyCleanedMessage {
-    fromWorker: null | string;
+    source: null | string;
     messageData: any;
 }
 
