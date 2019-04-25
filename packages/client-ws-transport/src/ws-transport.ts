@@ -1,7 +1,7 @@
 import {
     ClientWsTransportEvents,
-    IRecorderWSHandshakeResponseMessage,
-    RecorderEvents,
+    IDevtoolWSHandshakeResponseMessage,
+    DevtoolEvents,
 } from '@testring/types';
 
 import { EventEmitter } from 'events';
@@ -9,7 +9,7 @@ import { Queue } from '@testring/utils';
 
 
 interface IQueuedMessage {
-    type: RecorderEvents;
+    type: DevtoolEvents;
     payload: any;
     resolve: () => any;
 }
@@ -102,7 +102,7 @@ export class ClientWsTransport extends EventEmitter {
         }
     }
 
-    private wsSend(type: RecorderEvents, payload: any): void {
+    private wsSend(type: DevtoolEvents, payload: any): void {
         if (!this.getConnectionStatus()) {
             throw new Error('WebSocket connection not OPEN');
         }
@@ -141,8 +141,8 @@ export class ClientWsTransport extends EventEmitter {
 
     public async handshake(appId: string) {
         return new Promise<void>((resolve, reject) => {
-            const handler = (data: IRecorderWSHandshakeResponseMessage) => {
-                if (data.type === RecorderEvents.HANDSHAKE_RESPONSE) {
+            const handler = (data: IDevtoolWSHandshakeResponseMessage) => {
+                if (data.type === DevtoolEvents.HANDSHAKE_RESPONSE) {
                     this.off(ClientWsTransportEvents.MESSAGE, handler);
 
                     if (typeof data.payload.error === 'string') {
@@ -155,13 +155,13 @@ export class ClientWsTransport extends EventEmitter {
 
             this.on(ClientWsTransportEvents.MESSAGE, handler);
 
-            this.send(RecorderEvents.HANDSHAKE_REQUEST, {
+            this.send(DevtoolEvents.HANDSHAKE_REQUEST, {
                appId,
             });
         });
     }
 
-    public send<T>(type: RecorderEvents, payload: T): Promise<void> {
+    public send<T>(type: DevtoolEvents, payload: T): Promise<void> {
         return new Promise((resolve) => {
             if (this.messagesQueue.length <= 0) {
                 try {

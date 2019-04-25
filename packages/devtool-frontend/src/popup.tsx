@@ -2,7 +2,7 @@ import * as React from 'react';
 import { render } from 'react-dom';
 
 import { ClientWsTransport } from '@testring/client-ws-transport';
-import { RecorderEvents, TestWorkerAction } from '@testring/types';
+import { DevtoolEvents, TestWorkerAction } from '@testring/types';
 
 
 async function init() {
@@ -12,7 +12,7 @@ async function init() {
     wsClient.connect();
     await wsClient.handshake(config.appId);
 
-    const runAction = (actionType) => wsClient.send(RecorderEvents.WORKER_ACTION, { actionType });
+    const runAction = (actionType) => wsClient.send(DevtoolEvents.WORKER_ACTION, { actionType });
 
     const btnStyle = {
         'height': '40px',

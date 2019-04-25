@@ -1,19 +1,7 @@
-export type ElementSummary = {
-    tagName: string;
-    attributes: {[name: string]: string};
-    innerText?: string;
-    value?: string;
-    children?: ElementSummary[];
-};
-
-export interface IExtensionNetworkConfig {
-    httpPort: number;
-    wsPort: number;
-    host: string;
-}
-
-export interface IExtensionApplicationConfig extends IExtensionNetworkConfig {
-    appId: string;
+export const enum DevtoolEvents {
+    HANDSHAKE_REQUEST = 'DevtoolEvents/HANDSHAKE_REQUEST',
+    HANDSHAKE_RESPONSE = 'DevtoolEvents/HANDSHAKE_RESPONSE',
+    WORKER_ACTION = 'DevtoolEvents/WORKER_ACTION',
 }
 
 export const enum ExtensionMessagingTransportEvents {
@@ -38,9 +26,3 @@ export const enum ClientWsTransportEvents {
     ERROR = 'ClientWsTransportEvents/CLOSE',
     MESSAGE = 'ClientWsTransportEvents/MESSAGE',
 }
-
-export interface IExtensionMessagingTransportMessage {
-    type: ExtensionMessagingTransportTypes;
-    payload: any;
-}
-

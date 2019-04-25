@@ -2,7 +2,7 @@ import {
     IConfig,
     IFile,
     IQueuedTest,
-    IRecorderRuntimeConfiguration,
+    IDevtoolRuntimeConfiguration,
     ITestQueuedTestRunData,
     ITestRunController,
     ITestWorker,
@@ -35,7 +35,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     constructor(
         private config: IConfig,
         private testWorker: ITestWorker,
-        private devtoolConfig: IRecorderRuntimeConfiguration | null = null,
+        private devtoolConfig: IDevtoolRuntimeConfiguration | null = null,
     ) {
         super([
             TestRunControllerPlugins.beforeRun,
@@ -200,7 +200,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             screenshotsEnabled = isRetryRun;
         }
 
-        let devtoolConfig: IRecorderRuntimeConfiguration | null = null;
+        let devtoolConfig: IDevtoolRuntimeConfiguration | null = null;
         if (devtool) {
             devtoolConfig = this.devtoolConfig;
         }

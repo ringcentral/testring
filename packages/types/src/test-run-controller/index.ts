@@ -1,6 +1,6 @@
 import { LogLevel } from '../logger/enums';
 import { IFile } from '../fs-reader';
-import { IRecorderRuntimeConfiguration } from '../recorder-backend';
+import { IDevtoolRuntimeConfiguration } from '../devtool-backend';
 
 export const enum TestRunControllerPlugins {
     beforeRun = 'beforeRun',
@@ -19,7 +19,7 @@ export interface ITestQueuedTestRunData {
     httpThrottle: number;
     screenshotsEnabled: boolean;
     isRetryRun: boolean;
-    devtool: IRecorderRuntimeConfiguration | null;
+    devtool: IDevtoolRuntimeConfiguration | null;
 }
 
 export interface IQueuedTest {

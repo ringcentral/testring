@@ -1,6 +1,6 @@
 import { IBrowserProxyPlugin } from '../browser-proxy';
 import { IBrowserProxyCommand } from '../browser-proxy/structs';
-import { IRecorderRuntimeConfiguration } from '../recorder-backend';
+import { IDevtoolRuntimeConfiguration } from '../devtool-backend';
 
 export interface IWebApplicationRegisterMessage {
     id: string;
@@ -46,7 +46,7 @@ export type IWebApplicationClient = {
 
 export interface IWebApplicationConfig {
     screenshotsEnabled: boolean;
-    devtool: null | IRecorderRuntimeConfiguration;
+    devtool: null | IDevtoolRuntimeConfiguration;
 }
 
 export type WindowFeatureBoolean = 'yes' | 'no';

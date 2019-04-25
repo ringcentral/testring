@@ -1,8 +1,8 @@
 import {
-    IRecorderWSMessage,
+    IDevtoolWSMessage,
     IServer,
-    RecorderEvents,
-    RecorderWSServerEvents,
+    DevtoolEvents,
+    DevtoolWSServerEvents,
 } from '@testring/types';
 
 import { EventEmitter } from 'events';
@@ -44,7 +44,7 @@ export class RecorderWSServer extends EventEmitter implements IServer {
         const connectionId = generateUniqId();
         this.connections.set(connectionId, ws);
 
-        this.emit(RecorderWSServerEvents.CONNECTION, {
+        this.emit(DevtoolWSServerEvents.CONNECTION, {
             connectionId,
         });
 
@@ -52,25 +52,25 @@ export class RecorderWSServer extends EventEmitter implements IServer {
             try {
                 const { type, payload } = JSON.parse(message);
 
-                const data: IRecorderWSMessage = {
+                const data: IDevtoolWSMessage = {
                     type,
                     payload,
                 };
 
-                this.emit(RecorderWSServerEvents.MESSAGE, data, { connectionId });
+                this.emit(DevtoolWSServerEvents.MESSAGE, data, { connectionId });
             } catch (e) {
-                this.emit(RecorderWSServerEvents.ERROR, e, { connectionId });
+                this.emit(DevtoolWSServerEvents.ERROR, e, { connectionId });
                 this.logger.warn(e);
             }
         });
 
         ws.on('close', () => {
-            this.emit(RecorderWSServerEvents.CLOSE, { connectionId });
+            this.emit(DevtoolWSServerEvents.CLOSE, { connectionId });
             this.connections.delete(connectionId);
         });
     }
 
-    public send(connectionId: string, type: RecorderEvents, payload: object) {
+    public send(connectionId: string, type: DevtoolEvents, payload: object) {
         const connection = this.connections.get(connectionId);
 
         if (connection) {
@@ -83,7 +83,7 @@ export class RecorderWSServer extends EventEmitter implements IServer {
         }
     }
 
-    public broadcast(eventType: RecorderEvents, payload: object) {
+    public broadcast(eventType: DevtoolEvents, payload: object) {
         for (let [connectionId] of this.connections) {
             this.send(connectionId, eventType, payload);
         }

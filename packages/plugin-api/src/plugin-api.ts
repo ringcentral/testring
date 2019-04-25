@@ -4,7 +4,7 @@ import { FSReaderAPI } from './modules/fs-reader';
 import { LoggerAPI } from './modules/logger';
 import { TestWorkerAPI } from './modules/test-worker';
 import { TestRunControllerAPI } from './modules/test-run-controller';
-import { RecorderAPI } from './modules/recorder';
+import { DevtoolAPI } from './modules/devtool';
 
 export class PluginAPI {
     constructor(private pluginName: string, private modules: IPluginModules) {
@@ -38,7 +38,7 @@ export class PluginAPI {
         return this.modules.httpClientInstance;
     }
 
-    getRecorder() {
-        return new RecorderAPI(this.pluginName, this.modules.recorder);
+    getDevtool() {
+        return new DevtoolAPI(this.pluginName, this.modules.devtool);
     }
 }
