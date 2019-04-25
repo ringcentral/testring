@@ -1,16 +1,14 @@
 import { IBrowserProxyPlugin } from '../browser-proxy';
 import { IBrowserProxyCommand } from '../browser-proxy/structs';
+import { IDevtoolRuntimeConfiguration } from '../devtool-backend';
 
-export const enum WebApplicationMessageType {
-    execute = 'WebApplication/execute',
-    response = 'WebApplication/response'
+export interface IWebApplicationRegisterMessage {
+    id: string;
 }
 
-export const enum WebApplicationControllerEventType {
-    execute = 'execute',
-    response = 'response',
-    afterResponse = 'afterResponse',
-    error = 'error'
+export interface IWebApplicationRegisterCompleteMessage {
+    id: string;
+    error: null | Error;
 }
 
 export interface IWebApplicationExecuteMessage {
@@ -46,6 +44,11 @@ export type IWebApplicationClient = {
     [K in keyof IBrowserProxyPlugin]: (...args: Array<any>) => Promise<any>
 };
 
+export interface IWebApplicationConfig {
+    screenshotsEnabled: boolean;
+    devtool: null | IDevtoolRuntimeConfiguration;
+}
+
 export type WindowFeatureBoolean = 'yes' | 'no';
 
 export type WindowFeaturesConfig = string | IWindowFeatures;
@@ -62,4 +65,6 @@ export interface IWindowFeatures {
     resizable?: WindowFeatureBoolean;
     scrollbars?: WindowFeatureBoolean;
 }
+
+export type WebApplicationDevtoolCallback = (err: null | Error) => void;
 

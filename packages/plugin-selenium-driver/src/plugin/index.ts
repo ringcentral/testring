@@ -1,10 +1,14 @@
-import * as deepmerge from 'deepmerge';
-import { IBrowserProxyPlugin, WindowFeaturesConfig } from '@testring/types';
-import { spawn } from '@testring/child-process';
-import { Config, Client, RawResult, remote } from 'webdriverio';
 import { SeleniumPluginConfig } from '../types';
+import { IBrowserProxyPlugin, WindowFeaturesConfig } from '@testring/types';
+
 import { ChildProcess } from 'child_process';
+
+import { Config, Client, RawResult, remote } from 'webdriverio';
+import * as deepmerge from 'deepmerge';
+
+import { spawn } from '@testring/child-process';
 import { loggerClient } from '@testring/logger';
+import { absoluteExtensionPath } from '@testring/devtool-extension';
 
 type browserClientItem = {
     client: Client<any>;
@@ -13,6 +17,7 @@ type browserClientItem = {
 };
 
 const DEFAULT_CONFIG: SeleniumPluginConfig = {
+    recorderExtension: false,
     deprecationWarnings: false,
     clientCheckInterval: 5 * 1000,
     clientTimeout: 15 * 60 * 1000,
@@ -23,7 +28,7 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
             args: [],
         },
         //please refer https://github.com/elgalu/docker-selenium/issues/201
-        'goog:chromeOptions': { // ffor RemoteWebdriver
+        'goog:chromeOptions': { // for RemoteWebdriver
             args: [],
         },
     },
@@ -65,18 +70,43 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     private config: SeleniumPluginConfig;
 
     constructor(config: Partial<SeleniumPluginConfig> = {}) {
-        this.config = deepmerge.all<SeleniumPluginConfig>([
-            DEFAULT_CONFIG,
-            config,
-        ], {
-            clone: true,
-        });
+        this.config = this.createConfig(config);
 
         if (this.config.host === undefined) {
             this.runLocalSelenium();
         }
 
         this.initIntervals();
+    }
+
+    private getDevelopmentConfigAdditions(): Partial<SeleniumPluginConfig> {
+        return {
+            desiredCapabilities: {
+                chromeOptions: {
+                    args: [
+                        `load-extension=${absoluteExtensionPath}`,
+                    ],
+                },
+            },
+        } as Partial<SeleniumPluginConfig>;
+    }
+
+    private createConfig(config: Partial<SeleniumPluginConfig>): SeleniumPluginConfig {
+        let mergedConfig = deepmerge.all<SeleniumPluginConfig>([
+            DEFAULT_CONFIG,
+            config,
+        ], {
+            clone: true,
+        });
+
+        if (mergedConfig.recorderExtension) {
+            mergedConfig = deepmerge.all<SeleniumPluginConfig>([
+                mergedConfig,
+                this.getDevelopmentConfigAdditions(),
+            ]);
+        }
+
+        return mergedConfig;
     }
 
     private initIntervals() {
@@ -157,17 +187,25 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     private async checkClientsTimeout() {
-        const timeLimit = Date.now() - this.config.clientTimeout;
-
-        for (let [applicant, clientData] of this.browserClients) {
-            if (clientData.initTime < timeLimit) {
-                this.logger.warn(`Session applicant ${applicant} marked as expired`);
+        if (this.config.clientTimeout === 0) {
+            for (let [applicant] of this.browserClients) {
                 try {
-                    await this.end(applicant);
-                } catch (e) {
-                    this.logger.error(`Session applicant ${applicant} failed to stop`, e);
+                    this.execute(applicant, '(function () {})()', []);
+                } catch (e) { /* ignore */ }
+            }
+        } else {
+            const timeLimit = Date.now() - this.config.clientTimeout;
+
+            for (let [applicant, clientData] of this.browserClients) {
+                if (clientData.initTime < timeLimit) {
+                    this.logger.warn(`Session applicant ${applicant} marked as expired`);
+                    try {
+                        await this.end(applicant);
+                    } catch (e) {
+                        this.logger.error(`Session applicant ${applicant} failed to stop`, e);
+                    }
+                    this.expiredBrowserClients.add(applicant);
                 }
-                this.expiredBrowserClients.add(applicant);
             }
         }
     }

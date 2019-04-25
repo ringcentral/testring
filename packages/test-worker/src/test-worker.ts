@@ -18,7 +18,7 @@ export class TestWorker extends PluggableModule implements ITestWorker {
         return this.callHook(TestWorkerPlugin.compile, source, filename);
     };
 
-    constructor(private transport: ITransport, private workerConfig: Partial<ITestWorkerConfig>) {
+    constructor(private transport: ITransport, private workerConfig: ITestWorkerConfig) {
         super([
             TestWorkerPlugin.beforeCompile,
             TestWorkerPlugin.compile,

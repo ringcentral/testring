@@ -1,0 +1,29 @@
+{
+  "name": "@testring/devtool-extension",
+  "version": "0.4.56",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack --config webpack.config.ts",
+    "build:watch": "webpack --config webpack.config.ts --watch --devtool inline-source-map"
+  },
+  "devDependencies": {
+    "@testring/client-ws-transport": "0.4.56",
+    "@testring/types": "0.4.56",
+    "@testring/utils": "0.4.56",
+    "@types/chrome": "0.0.69",
+    "@types/webpack": "4.4.22",
+    "chrome-launcher": "0.10.5",
+    "copy-webpack-plugin": "5.0.2",
+    "ts-loader": "5.3.3",
+    "ts-node": "7.0.1",
+    "webpack": "4.28.4",
+    "webpack-cli": "3.2.1"
+  }
+}

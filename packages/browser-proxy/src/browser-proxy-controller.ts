@@ -6,18 +6,13 @@ import {
     IBrowserProxyCommand,
     IBrowserProxyController,
     IBrowserProxyWorker,
+    IBrowserProxyWorkerConfig,
     ITransport,
 } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { loggerClient } from '@testring/logger';
 
 import { BrowserProxyWorker } from './browser-proxy-worker';
-
-
-type BrowserProxyWorkerConfig = {
-    plugin: string;
-    config: any;
-};
 
 
 const logger = loggerClient.withPrefix('[browser-proxy-controller]');
@@ -28,12 +23,12 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
     private applicantWorkerMap: Map<string, IBrowserProxyWorker> = new Map();
 
-    private defaultExternalPlugin: BrowserProxyWorkerConfig = {
+    private defaultExternalPlugin: IBrowserProxyWorkerConfig = {
         plugin: 'unknown',
         config: null,
     };
 
-    private externalPlugin: BrowserProxyWorkerConfig;
+    private externalPlugin: IBrowserProxyWorkerConfig;
 
     private lastWorkerIndex: number;
 
@@ -86,10 +81,18 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
     }
 
     public async execute(applicant: string, command: IBrowserProxyCommand): Promise<any> {
-        const worker = this.getWorker(applicant);
+        let worker;
 
         if (command.action === BrowserProxyActions.end) {
+            if (this.applicantWorkerMap.has(applicant)) {
+                worker = this.getWorker(applicant);
+            } else {
+                return true;
+            }
+
             this.applicantWorkerMap.delete(applicant);
+        } else {
+            worker = this.getWorker(applicant);
         }
 
         return worker.execute(applicant, command);

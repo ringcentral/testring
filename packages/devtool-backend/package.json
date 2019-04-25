@@ -1,0 +1,40 @@
+{
+  "name": "@testring/devtool-backend",
+  "version": "0.4.56",
+  "main": "./dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "scripts": {
+    "start": "ts-node src/test-server.ts",
+    "start:watch": "nodemon --watch 'src/**/*' -e ts,tsx --exec 'ts-node' ./src/index.ts"
+  },
+  "dependencies": {
+    "@testring/child-process": "0.4.56",
+    "@testring/logger": "0.4.56",
+    "@testring/pluggable-module": "0.4.56",
+    "@testring/devtool-extension": "0.4.56",
+    "@testring/devtool-frontend": "0.4.56",
+    "@testring/transport": "0.4.56",
+    "@testring/types": "0.4.56",
+    "@testring/utils": "0.4.56",
+    "@types/babel-traverse": "6.25.4",
+    "@types/express-serve-static-core": "4.16.2",
+    "@types/node": "10.5.6",
+    "@types/ws": "5.1.2",
+    "babel-traverse": "6.26.0",
+    "babel-types": "6.26.0",
+    "express": "4.16.4",
+    "redux": "4.0.1",
+    "ws": "6.0.0"
+  },
+  "devDependencies": {
+    "@testring/test-utils": "0.4.56",
+    "request": "2.87.0",
+    "request-promise": "4.2.2",
+    "ts-node": "7.0.1"
+  }
+}

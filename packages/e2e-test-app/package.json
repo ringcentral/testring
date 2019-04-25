@@ -12,7 +12,7 @@
   "scripts": {
     "test:selenium": "testring run --config ./test/selenium/config.js",
     "test:simple-run": "testring run --config test/simple/.testringrc --env-parameters.test 10 --rc.tags-list=#P0,#P1",
-    "test:run-and-record": "testring record --config test/simple/config.json --tests test/simple/*.spec.js",
+    "test:run-with-devtool": "testring run --config ./test/selenium/config.js --devtool",
     "e2e-simple": "npm run test:simple-run",
     "e2e": "npm run test:simple-run && npm run test:selenium"
   },

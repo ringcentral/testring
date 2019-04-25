@@ -1,14 +1,22 @@
 import * as url from 'url';
 import {
+    IWebApplicationConfig,
     IAssertionErrorMeta,
     IAssertionSuccessMeta,
     ITransport,
     WindowFeaturesConfig,
+    WebApplicationDevtoolActions,
+    IWebApplicationRegisterMessage,
+    IWebApplicationRegisterCompleteMessage,
+    WebApplicationDevtoolCallback,
 } from '@testring/types';
+
+import { asyncBreakpoints } from '@testring/async-breakpoints';
 import { loggerClient, LoggerClient } from '@testring/logger';
 import { generateUniqId } from '@testring/utils';
 import { PluggableModule } from '@testring/pluggable-module';
 import { createElementPath, ElementPath } from '@testring/element-path';
+
 import { createAssertion } from './assert';
 import { WebClient } from './web-client';
 import * as utils from './utils';
@@ -24,11 +32,17 @@ export class WebApplication extends PluggableModule {
 
     protected TICK_TIMEOUT: number = 100;
 
+    protected config: IWebApplicationConfig;
+
     private screenshotsEnabledManually: boolean = true;
 
     private isLogOpened: boolean = false;
 
     private mainTabID: number | null = null;
+
+    private isRegisteredInDevtool: boolean = false;
+
+    private applicationId: string = `webApp-${generateUniqId()}`;
 
     public assert = createAssertion({
         onSuccess: (meta) => this.successAssertionHandler(meta),
@@ -170,12 +184,18 @@ export class WebApplication extends PluggableModule {
     constructor(
         private testUID: string,
         protected transport: ITransport,
-        protected config: any = {
-            screenshotsEnabled: false,
-        },
+        config: Partial<IWebApplicationConfig> = {},
     ) {
         super();
+        this.config = this.getConfig(config);
         this.decorateMethods();
+    }
+
+    protected getConfig(userConfig: Partial<IWebApplicationConfig>): IWebApplicationConfig {
+        return Object.assign({}, {
+            screenshotsEnabled: false,
+            devtool: null,
+        }, userConfig);
     }
 
     protected decorateMethods() {
@@ -193,7 +213,7 @@ export class WebApplication extends PluggableModule {
                     const logFn = decorators[key];
 
                     // eslint-disable-next-line func-style
-                    const method = function decoratedMethod(...args) {
+                    const method = async function decoratedMethod(...args) {
                         const logger = this.logger;
                         const message = logFn.apply(this, args);
                         let result;
@@ -202,6 +222,11 @@ export class WebApplication extends PluggableModule {
                             logger.debug(message);
                             result = originMethod.apply(this, args);
                         } else {
+                            await asyncBreakpoints.waitBeforeInstructionBreakpoint((state) => {
+                                if (state) {
+                                    logger.debug('Debug: Stopped in breakpoint before instruction execution');
+                                }
+                            });
                             logger.startStep(message);
                             this.isLogOpened = true;
 
@@ -229,6 +254,12 @@ export class WebApplication extends PluggableModule {
 
                                 throw err;
                             }
+
+                            await asyncBreakpoints.waitAfterInstructionBreakpoint((state) => {
+                                if (state) {
+                                    logger.debug('Debug: Stopped in breakpoint after instruction execution');
+                                }
+                            });
                         }
 
                         return result;
@@ -1145,7 +1176,79 @@ export class WebApplication extends PluggableModule {
         return new Promise(resolve => setTimeout(resolve, timeout));
     }
 
-    public url(val?: string) {
+    private async registerAppInDevtool(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            const removeListener = this.transport.on(
+                WebApplicationDevtoolActions.registerComplete,
+                (message: IWebApplicationRegisterCompleteMessage) => {
+                    if (message.id === this.applicationId) {
+                        if (message.error === null || message.error === undefined) {
+                            resolve();
+                        } else {
+                            reject(message.error);
+                        }
+                        removeListener();
+                    }
+                });
+
+            const payload: IWebApplicationRegisterMessage = {
+                id: this.applicationId,
+            };
+
+            this.transport.broadcastUniversally(WebApplicationDevtoolActions.register, payload);
+        });
+    }
+
+    private async unregisterAppInDevtool(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            const removeListener = this.transport.on<IWebApplicationRegisterCompleteMessage>(
+                WebApplicationDevtoolActions.unregisterComplete,
+                (message) => {
+                    if (message.id === this.applicationId) {
+                        if (message.error === null || message.error === undefined) {
+                            resolve();
+                        } else {
+                            reject(message.error);
+                        }
+                        removeListener();
+                    }
+                });
+
+            const payload: IWebApplicationRegisterMessage = {
+                id: this.applicationId,
+            };
+
+            this.transport.broadcastUniversally(WebApplicationDevtoolActions.unregister, payload);
+        });
+    }
+
+    private async extensionHandshake() {
+        if (this.config.devtool !== null && !this.isRegisteredInDevtool) {
+            const id = this.applicationId;
+
+            this.logger.debug(`WebApplication ${id} devtool initial registration`);
+            await this.registerAppInDevtool();
+
+            const {
+                extensionId,
+                httpPort,
+                wsPort,
+                host,
+            } = this.config.devtool;
+            const url = `chrome-extension://${extensionId}/options.html?httpPort=${httpPort}&host=${host}&wsPort=${wsPort}&appId=${id}&page=handshake`;
+
+            await this.client.url(url);
+
+            await this.client.executeAsync(function (done: WebApplicationDevtoolCallback) {
+                (window as any).resolveWebApp = done;
+            });
+
+            this.isRegisteredInDevtool = true;
+        }
+    }
+
+    public async url(val?: string) {
+        await this.extensionHandshake();
         return this.client.url(val);
     }
 
@@ -1195,6 +1298,9 @@ export class WebApplication extends PluggableModule {
     }
 
     public async end() {
+        if (this.config.devtool !== null && this.isRegisteredInDevtool) {
+            await this.unregisterAppInDevtool();
+        }
         await this.client.end();
     }
 }

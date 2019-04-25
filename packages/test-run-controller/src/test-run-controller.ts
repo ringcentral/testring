@@ -2,6 +2,8 @@ import {
     IConfig,
     IFile,
     IQueuedTest,
+    IDevtoolRuntimeConfiguration,
+    ITestQueuedTestRunData,
     ITestRunController,
     ITestWorker,
     ITestWorkerCallbackMeta,
@@ -10,7 +12,7 @@ import {
 } from '@testring/types';
 import { loggerClient } from '@testring/logger';
 import { PluggableModule } from '@testring/pluggable-module';
-import { Queue, getMemoryReport } from '@testring/utils';
+import { Queue } from '@testring/utils';
 
 type TestQueue = Queue<IQueuedTest>;
 
@@ -32,7 +34,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
     constructor(
         private config: IConfig,
-        private testWorker: ITestWorker
+        private testWorker: ITestWorker,
+        private devtoolConfig: IDevtoolRuntimeConfiguration | null = null,
     ) {
         super([
             TestRunControllerPlugins.beforeRun,
@@ -46,32 +49,13 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         ]);
     }
 
-    public async pushTestIntoQueue(testString: string) {
-        const testQueueItem = this.prepareTest({
-            path: '',
-            content: testString,
-        });
-        if (Array.isArray(this.currentQueue)) {
-            this.currentQueue.push(testQueueItem);
-        } else {
-            this.currentQueue = new Queue([testQueueItem]);
-            this.currentRun = this.executeQueue(this.currentQueue);
-        }
-
-        return this.currentRun;
-    }
-
     public async runQueue(testSet: Array<IFile>): Promise<Error[] | null> {
         const testQueue = await this.prepareTests(testSet);
 
         this.logger.debug('Run controller: tests queue created.');
 
-        if (Array.isArray(this.currentQueue)) {
-            this.currentQueue.push(...testQueue);
-        } else {
-            this.currentQueue = testQueue;
-            this.currentRun = this.executeQueue(this.currentQueue);
-        }
+        this.currentQueue = testQueue;
+        this.currentRun = this.executeQueue(this.currentQueue);
 
         return this.currentRun;
     }
@@ -101,7 +85,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
             if (configWorkerLimit === 'local') {
                 await this.runLocalWorker(testQueue);
-            } else if (typeof configWorkerLimit === 'number') {
+            } else if (typeof configWorkerLimit === 'number' && configWorkerLimit > 0) {
                 const workerLimit = configWorkerLimit < testQueue.length ? configWorkerLimit : testQueue.length;
 
                 await this.runChildWorkers(testQueue, workerLimit);
@@ -125,9 +109,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
     private async runLocalWorker(testQueue: TestQueue): Promise<void> {
         this.logger.debug('Run controller: Local worker is used.');
-        this.logger.debug(`Parent process memory usage before execution. ${getMemoryReport()}`);
 
-        if (this.config.restartWorker === 'always') {
+        if (this.config.restartWorker) {
             this.logger.warn('Workers won`t be restarted on every test end.');
         }
 
@@ -138,8 +121,6 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             while (testQueue.length > 0) {
                 await this.executeWorker(worker, testQueue);
             }
-
-            this.logger.debug(`Parent process memory usage after test execution. ${getMemoryReport()}`);
         } catch (error) {
             throw error;
         } finally {
@@ -149,7 +130,6 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
     private async runChildWorkers(testQueue: TestQueue, workerLimit: number): Promise<void> {
         this.logger.debug(`Run controller: ${workerLimit} worker(s) created.`);
-        this.logger.debug(`Parent process memory usage before execution. ${getMemoryReport()}`);
 
         try {
             this.workers = this.createWorkers(workerLimit);
@@ -158,9 +138,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 this.workers.map(async (worker) => {
                     while (testQueue.length > 0) {
                         await this.executeWorker(worker, testQueue);
-                        this.logger.debug(`Parent process memory usage after test execution. ${getMemoryReport()}`);
 
-                        if (this.config.restartWorker === 'always') {
+                        if (this.config.restartWorker) {
                             await worker.kill();
                         }
                     }
@@ -210,8 +189,9 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         let isRetryRun = queueItem.retryCount > 0;
         const {
             debug,
-            logLevel,
             httpThrottle,
+            logLevel,
+            devtool,
         } = this.config;
 
         if (this.config.screenshots === 'enable') {
@@ -220,17 +200,25 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             screenshotsEnabled = isRetryRun;
         }
 
+        let devtoolConfig: IDevtoolRuntimeConfiguration | null = null;
+        if (devtool) {
+            devtoolConfig = this.devtoolConfig;
+        }
+
+        const runData: ITestQueuedTestRunData = {
+            debug,
+            logLevel,
+            httpThrottle,
+            screenshotsEnabled,
+            devtool: devtoolConfig,
+            isRetryRun,
+        };
+
         return {
             ...queueItem,
             parameters: {
                 ...queueItem.parameters,
-                runData: {
-                    debug,
-                    logLevel,
-                    httpThrottle,
-                    screenshotsEnabled,
-                    isRetryRun,
-                },
+                runData,
             },
         };
     }

@@ -1,34 +1,47 @@
+import {
+    ClientWsTransportEvents,
+    IDevtoolWSHandshakeResponseMessage,
+    DevtoolEvents,
+} from '@testring/types';
+
 import { EventEmitter } from 'events';
 import { Queue } from '@testring/utils';
-import { ClientWsTransportEvents, RecorderEvents } from '@testring/types';
-import { DEFAULT_RECORDER_HOST, DEFAULT_RECORDER_WS_PORT } from '@testring/constants';
+
 
 interface IQueuedMessage {
-    event: RecorderEvents;
+    type: DevtoolEvents;
     payload: any;
     resolve: () => any;
 }
 
 export class ClientWsTransport extends EventEmitter {
+    private url: string;
+
     constructor(
-        private url: string = `ws://${DEFAULT_RECORDER_HOST}:${DEFAULT_RECORDER_WS_PORT}`,
-        private shouldReconnect: boolean = false,
+        host: string,
+        port: number,
+        private shouldReconnect: boolean = true,
     ) {
         super();
+        this.url = this.getUrl(host, port);
     }
 
     private connection: WebSocket;
 
     private messagesQueue = new Queue<IQueuedMessage>();
 
+    private getUrl(host: string, port: number) {
+        return `ws://${host}:${port}`;
+    }
+
     private resolveQueue() {
         const queuedMessage = this.messagesQueue.getFirstElement();
 
         if (queuedMessage && this.getConnectionStatus()) {
-            const { event, payload, resolve } = queuedMessage;
+            const { type, payload, resolve } = queuedMessage;
 
             try {
-                this.wsSend(event, payload);
+                this.wsSend(type, payload);
 
                 resolve();
 
@@ -53,10 +66,22 @@ export class ClientWsTransport extends EventEmitter {
 
     private messageHandler(message: MessageEvent): void {
         const { data } = message;
+        let jsonData: any;
+
+        if (typeof data === 'string') {
+            try {
+                jsonData = JSON.parse(data);
+            } catch (e) {
+                jsonData = data;
+            }
+        } else {
+            jsonData = data;
+        }
+
 
         this.emit(
             ClientWsTransportEvents.MESSAGE,
-            data
+            jsonData,
         );
     }
 
@@ -77,12 +102,12 @@ export class ClientWsTransport extends EventEmitter {
         }
     }
 
-    private wsSend(event: RecorderEvents, payload: any): void {
+    private wsSend(type: DevtoolEvents, payload: any): void {
         if (!this.getConnectionStatus()) {
             throw new Error('WebSocket connection not OPEN');
         }
 
-        this.connection.send(JSON.stringify({ event, payload }));
+        this.connection.send(JSON.stringify({ type, payload }));
     }
 
     public connect(url: string = this.url): void {
@@ -114,18 +139,40 @@ export class ClientWsTransport extends EventEmitter {
         return this.connection && this.connection.readyState === 1;
     }
 
-    public send(event: RecorderEvents, payload: any): Promise<void> {
+    public async handshake(appId: string) {
+        return new Promise<void>((resolve, reject) => {
+            const handler = (data: IDevtoolWSHandshakeResponseMessage) => {
+                if (data.type === DevtoolEvents.HANDSHAKE_RESPONSE) {
+                    this.off(ClientWsTransportEvents.MESSAGE, handler);
+
+                    if (typeof data.payload.error === 'string') {
+                        reject(new Error(data.payload.error));
+                    } else {
+                        resolve();
+                    }
+                }
+            };
+
+            this.on(ClientWsTransportEvents.MESSAGE, handler);
+
+            this.send(DevtoolEvents.HANDSHAKE_REQUEST, {
+               appId,
+            });
+        });
+    }
+
+    public send<T>(type: DevtoolEvents, payload: T): Promise<void> {
         return new Promise((resolve) => {
             if (this.messagesQueue.length <= 0) {
                 try {
-                    this.wsSend(event, payload);
+                    this.wsSend(type, payload);
 
                     resolve();
                 } catch (e) {
-                    this.messagesQueue.push({ event, payload, resolve });
+                    this.messagesQueue.push({ type, payload, resolve });
                 }
             } else {
-                this.messagesQueue.push({ event, payload, resolve });
+                this.messagesQueue.push({ type, payload, resolve });
             }
         });
     }

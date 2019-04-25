@@ -1,13 +1,48 @@
+import { TestEvents } from '@testring/types';
+
 import { EventEmitter } from 'events';
 
+import { asyncBreakpoints } from '@testring/async-breakpoints';
+
+
+type BeforeRunCallback = () => any;
+type AfterRunCallback = () => any;
+
+
+export class BusEmitter extends EventEmitter {
+    private async addDelayToStack(): Promise<void> {
+        new Promise(resolve => setImmediate(resolve));
+    }
+
+    public async startedTest(): Promise<void> {
+        this.emit(TestEvents.started);
+        await this.addDelayToStack();
+    }
+
+    public async finishedTest(): Promise<void> {
+        this.emit(TestEvents.finished);
+        await this.addDelayToStack();
+    }
+
+    public async failedTest(error: Error): Promise<void> {
+        this.emit(TestEvents.failed, error);
+        await this.addDelayToStack();
+    }
+}
+
+
 export class TestAPIController {
-    private bus = new EventEmitter();
+    private bus = new BusEmitter();
 
     private testID: string = '';
 
     private testParameters: object = {};
 
     private environmentParameters: object = {};
+
+    private beforeRunCallbacks: BeforeRunCallback[] = [];
+
+    private afterRunCallbacks: AfterRunCallback[] = [];
 
     public getBus() {
         return this.bus;
@@ -35,6 +70,38 @@ export class TestAPIController {
 
     public getEnvironmentParameters(): object {
         return this.environmentParameters;
+    }
+
+    public registerBeforeRunCallback(callback: BeforeRunCallback) {
+        this.beforeRunCallbacks.push(callback);
+    }
+
+    public async flushBeforeRunCallbacks() {
+        await asyncBreakpoints.waitBeforeInstructionBreakpoint();
+
+        for (let callback of this.beforeRunCallbacks) {
+            await callback();
+        }
+
+        this.beforeRunCallbacks = [];
+
+        await asyncBreakpoints.waitAfterInstructionBreakpoint();
+    }
+
+    public registerAfterRunCallback(callback: AfterRunCallback) {
+        this.afterRunCallbacks.push(callback);
+    }
+
+    public async flushAfterRunCallbacks() {
+        await asyncBreakpoints.waitBeforeInstructionBreakpoint();
+
+        for (let callback of this.afterRunCallbacks) {
+            await callback();
+        }
+
+        this.afterRunCallbacks = [];
+
+        await asyncBreakpoints.waitAfterInstructionBreakpoint();
     }
 }
 

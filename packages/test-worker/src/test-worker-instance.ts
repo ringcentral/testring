@@ -27,16 +27,11 @@ const WORKER_ROOT = require.resolve(
 
 const WORKER_DEFAULT_CONFIG: ITestWorkerConfig = {
     screenshots: 'disable',
+    waitForRelease: false,
     localWorker: false,
-    debug: false,
 };
 
 const delay = (timeout: number) => new Promise<void>(resolve => setTimeout(resolve, timeout));
-
-const createConfig = (workerConfig: Partial<ITestWorkerConfig>): ITestWorkerConfig => ({
-    ...WORKER_DEFAULT_CONFIG,
-    ...workerConfig,
-});
 
 export class TestWorkerInstance implements ITestWorkerInstance {
 
@@ -88,7 +83,14 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         private beforeCompile: (paths: Array<string>, filePath: string, fileContent: string) => Promise<Array<string>>,
         workerConfig: Partial<ITestWorkerConfig> = {}
     ) {
-        this.config = createConfig(workerConfig);
+        this.config = this.createConfig(workerConfig);
+    }
+
+    private createConfig(workerConfig: Partial<ITestWorkerConfig>): ITestWorkerConfig {
+        return {
+            ...WORKER_DEFAULT_CONFIG,
+            ...workerConfig,
+        };
     }
 
     public async execute(file: IFile, parameters: any, envParameters: any): Promise<any> {
@@ -180,6 +182,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         }
 
         return {
+            waitForRelease: this.config.waitForRelease,
             ...compiledFile,
             dependencies,
             parameters,
@@ -306,9 +309,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     }
 
     private async createWorker(): Promise<IWorkerEmitter> {
-        const worker = await fork(WORKER_ROOT, [], {
-            debug: this.config.debug,
-        });
+        const worker = await fork(WORKER_ROOT, [], {});
 
         worker.stdout.on('data', (data) => {
             this.logger.log(`[${this.getWorkerID()}] [logged] ${data.toString().trim()}`);

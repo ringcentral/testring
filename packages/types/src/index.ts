@@ -4,7 +4,11 @@ export * from './test-run-controller';
 
 export * from './pluggable-module';
 
-export * from './recorder-backend';
+export * from './devtool-backend/enums';
+export * from './devtool-backend';
+
+export * from './devtool-extension/enums';
+export * from './devtool-extension';
 
 export * from './child-process';
 export * from './fs-reader';
@@ -33,12 +37,9 @@ export * from './config';
 
 export * from './plugin';
 
-export * from './recorder-extension';
-
-export * from './recorder';
-
 export * from './dependencies-builder';
 
 export * from './utils';
 
+export * from './web-application/enums';
 export * from './web-application';

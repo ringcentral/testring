@@ -24,6 +24,8 @@ export class BrowserProxy {
 
     private killed = false;
 
+    private logger = loggerClient.withPrefix('[browser-proxy]');
+
     constructor(
         private transportInstance: ITransport,
         pluginPath: string,
@@ -39,7 +41,7 @@ export class BrowserProxy {
         try {
             pluginFactory = resolvePlugin(pluginPath);
         } catch (error) {
-            loggerClient.debug(`Can't load plugin ${pluginPath}`, error);
+            this.logger.error(`Can't load plugin ${pluginPath}`, error);
         }
 
         if (pluginFactory) {

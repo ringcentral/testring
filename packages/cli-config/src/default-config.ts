@@ -4,8 +4,9 @@ import {
 } from '@testring/types';
 
 export const defaultConfiguration: IConfig = {
+    devtool: false,
     tests: './tests/**/*.js',
-    restartWorker: 'never',
+    restartWorker: false,
     screenshots: 'disable',
     config: '.testringrc',
     debug: false,

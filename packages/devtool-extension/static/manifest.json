@@ -1,0 +1,36 @@
+{
+  "manifest_version": 2,
+  "name": "TestRing",
+  "author": "RingCentral",
+  "description": "TestRing recording extension.",
+  "browser_action": {
+    "default_title": "TestRing",
+    "default_icon": "icon.png",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
+  "content_security_policy": "script-src 'self'; object-src 'self'",
+  "background": {
+    "scripts": [
+      "background.bundle.js"
+    ],
+    "persistent": true
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*/*"
+      ],
+      "js": [
+        "content.bundle.js"
+      ]
+    }
+  ],
+  "permissions": [
+    "webRequest",
+    "webRequestBlocking",
+    "activeTab",
+    "contextMenus",
+    "tabs"
+  ]
+}

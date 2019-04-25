@@ -1,6 +1,4 @@
 import { loggerClient } from '@testring/logger';
-import { TestEvents } from '@testring/types';
-import { getMemoryReport } from '@testring/utils';
 import { TestContext } from './test-context';
 import { testAPIController } from './test-api-controller';
 
@@ -17,6 +15,16 @@ function getValidCopyVmError(error) {
     return tmpError;
 }
 
+export function beforeRun(callback) {
+    testAPIController.registerBeforeRunCallback(callback);
+}
+
+
+export function afterRun(callback) {
+    testAPIController.registerAfterRunCallback(callback);
+}
+
+
 export async function run(...tests: Array<TestFunction>) {
     const testID = testAPIController.getTestID();
     const bus = testAPIController.getBus();
@@ -26,11 +34,20 @@ export async function run(...tests: Array<TestFunction>) {
     let passed = false;
     let catchedError;
 
+    afterRun(async () => {
+        try {
+            await api.end();
+        } catch (err) {
+            loggerClient.error(err);
+        }
+    });
+
     try {
-        bus.emit(TestEvents.started);
+        await bus.startedTest();
+
+        await testAPIController.flushBeforeRunCallbacks();
 
         loggerClient.startStep(testID);
-        loggerClient.debug('Worker process memory usage before run.', getMemoryReport());
 
         for (let test of tests) {
             await test.call(api, api);
@@ -40,27 +57,14 @@ export async function run(...tests: Array<TestFunction>) {
     } catch (error) {
         catchedError = getValidCopyVmError(error);
     } finally {
-        let exitError;
-        try {
-            await api.end();
-        } catch (error) {
-            exitError = error;
-        }
-
-        loggerClient.debug('Worker process memory usage after run.', getMemoryReport());
-
         if (passed) {
             loggerClient.endStep(testID, 'Test passed');
 
-            bus.emit(TestEvents.finished);
+            await bus.finishedTest();
         } else {
             loggerClient.endStep(testID, 'Test failed', catchedError);
 
-            bus.emit(TestEvents.failed, catchedError);
-        }
-
-        if (exitError) {
-            loggerClient.error(exitError);
+            await bus.failedTest(catchedError);
         }
     }
 }

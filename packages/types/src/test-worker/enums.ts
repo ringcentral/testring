@@ -16,6 +16,17 @@ export const enum TestStatus {
 }
 
 export const enum TestWorkerAction {
-    executeTest = 'executeTest',
-    executionComplete = 'executionComplete',
+    executeTest = 'TestWorkerAction/executeTest',
+    executionComplete = 'TestWorkerAction/executionComplete',
+
+    // devtool actions
+    register = 'TestWorkerAction/register',
+    updateExecutionState = 'TestWorkerAction/updateExecutionState',
+    unregister = 'TestWorkerAction/unregister',
+
+    evaluateCode = 'TestWorkerAction/evaluateCode',
+    releaseTest = 'TestWorkerAction/releaseTest',
+    pauseTestExecution = 'TestWorkerAction/pauseTestExecution',
+    resumeTestExecution = 'TestWorkerAction/resumeTestExecution',
+    runTillNextExecution = 'TestWorkerAction/runTillNextExecution',
 }

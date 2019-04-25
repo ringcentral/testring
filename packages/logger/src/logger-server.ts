@@ -1,7 +1,7 @@
 import { PluggableModule } from '@testring/pluggable-module';
 import { Queue } from '@testring/utils';
 import {
-    IConfig,
+    IConfigLogger,
     ITransport,
     ILogEntity,
     ILogQueue,
@@ -28,7 +28,7 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
     private status: LogQueueStatus = LogQueueStatus.EMPTY;
 
     constructor(
-        private config: IConfig,
+        private config: IConfigLogger,
         private transportInstance: ITransport,
         private stdout: NodeJS.WritableStream,
         private numberOfRetries: number = 0,
