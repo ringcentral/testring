@@ -1,10 +1,10 @@
 import { Express, Request, Response } from 'express-serve-static-core';
 import {
-    IRecorderHttpRoute,
-    IRecorderStaticRoutes,
+    IDevtoolHttpRoute,
+    IDevtoolStaticRoutes,
     IServer,
-    RecorderHttpContextResolver,
-    RecorderHttpRouteHandler,
+    DevtoolHttpContextResolver,
+    DevtoolHttpRouteHandler,
 } from '@testring/types';
 
 import * as express from 'express';
@@ -17,9 +17,9 @@ export class RecorderHttpServer implements IServer {
     constructor(
         private hostName: string,
         private port: number,
-        private routes: IRecorderHttpRoute[],
-        private staticRoutes: IRecorderStaticRoutes,
-        private contextResolver: RecorderHttpContextResolver,
+        private routes: IDevtoolHttpRoute[],
+        private staticRoutes: IDevtoolStaticRoutes,
+        private contextResolver: DevtoolHttpContextResolver,
     ) {
         this.server = express();
     }
@@ -60,7 +60,7 @@ export class RecorderHttpServer implements IServer {
         }
     }
 
-    private async routeHandler(req: Request, res: Response, handler: RecorderHttpRouteHandler, options: any) {
+    private async routeHandler(req: Request, res: Response, handler: DevtoolHttpRouteHandler, options: any) {
         try {
             const data = await this.contextResolver(req, res);
 

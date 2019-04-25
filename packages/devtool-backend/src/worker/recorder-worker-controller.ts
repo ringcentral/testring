@@ -1,17 +1,17 @@
 import {
-    IRecorderHttpRoute,
-    IRecorderProxyMessage,
-    IRecorderServerConfig,
-    IRecorderWebAppRegisterMessage,
+    IDevtoolHttpRoute,
+    IDevtoolProxyMessage,
+    IDevtoolServerConfig,
+    IDevtoolWebAppRegisterMessage,
     ITransport,
-    IRecorderProxyCleanedMessage,
-    RecorderProxyMessages,
-    RecorderWorkerMessages,
+    IDevtoolProxyCleanedMessage,
+    DevtoolProxyMessages,
+    DevtoolWorkerMessages,
     WebApplicationDevtoolMessageType,
-    RecorderWSServerEvents,
-    IRecorderWSMeta,
-    RecorderEvents,
-    IRecorderWSMessage,
+    DevtoolWSServerEvents,
+    IDevtoolWSMeta,
+    DevtoolEvents,
+    IDevtoolWSMessage,
 } from '@testring/types';
 import { Request } from 'express-serve-static-core';
 
@@ -39,10 +39,10 @@ export class RecorderWorkerController {
     private workerIdByWebAppId: Map<string, string> = new Map();
     private webAppIdByConnectionId: Map<string, string> = new Map();
 
-    private config: IRecorderServerConfig;
+    private config: IDevtoolServerConfig;
 
     constructor(private transport: ITransport) {
-        this.transport.on(RecorderWorkerMessages.START_SERVER, (config: IRecorderServerConfig) => {
+        this.transport.on(DevtoolWorkerMessages.START_SERVER, (config: IDevtoolServerConfig) => {
             this.init(config);
         });
 
@@ -126,7 +126,7 @@ export class RecorderWorkerController {
     }
 
     private addDevtoolMessageListeners() {
-        this.transport.on<IRecorderProxyMessage>(RecorderProxyMessages.TO_WORKER, async (message) => {
+        this.transport.on<IDevtoolProxyMessage>(DevtoolProxyMessages.TO_WORKER, async (message) => {
             try {
                 await this.handleProxiedMessages(message);
             } catch (e) {
@@ -135,7 +135,7 @@ export class RecorderWorkerController {
         });
     }
 
-    private async handleProxiedMessages(message: IRecorderProxyMessage) {
+    private async handleProxiedMessages(message: IDevtoolProxyMessage) {
         const {
             messageType,
             ...rest
@@ -143,18 +143,18 @@ export class RecorderWorkerController {
 
         switch (messageType) {
             case WebApplicationDevtoolMessageType.register:
-                await this.registerWebApplication(rest as IRecorderWebAppRegisterMessage);
+                await this.registerWebApplication(rest as IDevtoolWebAppRegisterMessage);
                 break;
             case WebApplicationDevtoolMessageType.unregister:
-                await this.unregisterWebApplication(rest as IRecorderWebAppRegisterMessage);
+                await this.unregisterWebApplication(rest as IDevtoolWebAppRegisterMessage);
                 break;
             default:
                 break;
         }
     }
 
-    private async sendProxiedMessage(messageType: string, message: IRecorderProxyCleanedMessage) {
-        this.transport.broadcastUniversally<IRecorderProxyMessage>(RecorderProxyMessages.FROM_WORKER, {
+    private async sendProxiedMessage(messageType: string, message: IDevtoolProxyCleanedMessage) {
+        this.transport.broadcastUniversally<IDevtoolProxyMessage>(DevtoolProxyMessages.FROM_WORKER, {
             ...message,
             messageType,
         });
@@ -163,14 +163,14 @@ export class RecorderWorkerController {
     private async sendToWorkerMessage(workerId: string, messageType: string, messageData: any) {
         const fromWorker = this.denormalizeWorkerId(workerId);
 
-        this.transport.broadcastUniversally<IRecorderProxyMessage>(RecorderProxyMessages.FROM_WORKER, {
+        this.transport.broadcastUniversally<IDevtoolProxyMessage>(DevtoolProxyMessages.FROM_WORKER, {
             messageData,
             fromWorker,
             messageType,
         });
     }
 
-    private async registerWebApplication(message: IRecorderWebAppRegisterMessage) {
+    private async registerWebApplication(message: IDevtoolWebAppRegisterMessage) {
         let error = null;
 
         try {
@@ -199,7 +199,7 @@ export class RecorderWorkerController {
         });
     }
 
-    private async unregisterWebApplication(message: IRecorderWebAppRegisterMessage) {
+    private async unregisterWebApplication(message: IDevtoolWebAppRegisterMessage) {
         let error = null;
 
         try {
@@ -244,7 +244,7 @@ export class RecorderWorkerController {
         return handlerExports;
     }
 
-    private getHttpRouter(): IRecorderHttpRoute[] {
+    private getHttpRouter(): IDevtoolHttpRoute[] {
         return this.config.router.map(route => ({
             ...route,
             handler: this.loadHandler(route.handler),
@@ -255,7 +255,7 @@ export class RecorderWorkerController {
         return this.config.staticRoutes;
     }
 
-    async init(config: IRecorderServerConfig) {
+    async init(config: IDevtoolServerConfig) {
         this.logger.info('Starting recorder servers');
         this.config = config;
 
@@ -263,9 +263,9 @@ export class RecorderWorkerController {
             await this.initHttpServer(config);
             await this.initWSServer(config);
 
-            this.transport.broadcastUniversally(RecorderWorkerMessages.START_SERVER_COMPLETE, null);
+            this.transport.broadcastUniversally(DevtoolWorkerMessages.START_SERVER_COMPLETE, null);
         } catch (err) {
-            this.transport.broadcastUniversally(RecorderWorkerMessages.START_SERVER_COMPLETE, err);
+            this.transport.broadcastUniversally(DevtoolWorkerMessages.START_SERVER_COMPLETE, err);
         }
     }
 
@@ -287,7 +287,7 @@ export class RecorderWorkerController {
         }
     }
 
-    async initHttpServer(config: IRecorderServerConfig) {
+    async initHttpServer(config: IDevtoolServerConfig) {
         this.httpServer = new RecorderHttpServer(
             config.host,
             config.httpPort,
@@ -299,7 +299,7 @@ export class RecorderWorkerController {
         this.logger.debug(`Http server listening: ${this.httpServer.getUrl()}`);
     }
 
-    async initWSServer(config: IRecorderServerConfig) {
+    async initWSServer(config: IDevtoolServerConfig) {
         this.wsServer = new RecorderWSServer(
             config.host,
             config.wsPort,
@@ -307,24 +307,24 @@ export class RecorderWorkerController {
         await this.wsServer.run();
 
         this.wsServer.on(
-            RecorderWSServerEvents.MESSAGE,
-            (data: IRecorderWSMessage, meta: IRecorderWSMeta) => this.WSSMessageHandler(data, meta),
+            DevtoolWSServerEvents.MESSAGE,
+            (data: IDevtoolWSMessage, meta: IDevtoolWSMeta) => this.WSSMessageHandler(data, meta),
         );
         this.wsServer.on(
-            RecorderWSServerEvents.CLOSE,
-            (meta: IRecorderWSMeta) => this.WSSConnectionHandler(meta),
+            DevtoolWSServerEvents.CLOSE,
+            (meta: IDevtoolWSMeta) => this.WSSConnectionHandler(meta),
         );
         this.logger.debug(`WS server listening: ${this.wsServer.getUrl()}`);
     }
 
-    private WSSConnectionHandler(meta: IRecorderWSMeta) {
+    private WSSConnectionHandler(meta: IDevtoolWSMeta) {
         this.webAppIdByConnectionId.delete(meta.connectionId);
     }
 
-    private WSSMessageHandler(data: IRecorderWSMessage, meta: IRecorderWSMeta) {
+    private WSSMessageHandler(data: IDevtoolWSMessage, meta: IDevtoolWSMeta) {
         const { connectionId } = meta;
 
-        if (data.type === RecorderEvents.HANDSHAKE_REQUEST) {
+        if (data.type === DevtoolEvents.HANDSHAKE_REQUEST) {
             const { appId } = data.payload;
             const payload = {
                 appId: data.payload.appId,
@@ -333,10 +333,10 @@ export class RecorderWorkerController {
             };
             this.webAppIdByConnectionId.set(connectionId, appId);
 
-            this.wsServer.send(meta.connectionId, RecorderEvents.HANDSHAKE_RESPONSE, payload);
+            this.wsServer.send(meta.connectionId, DevtoolEvents.HANDSHAKE_RESPONSE, payload);
         }
 
-        if (data.type === RecorderEvents.WORKER_ACTION) {
+        if (data.type === DevtoolEvents.WORKER_ACTION) {
             const appId = this.webAppIdByConnectionId.get(connectionId);
             const workerId = this.workerIdByWebAppId.get(appId as string);
             const actionType = data.payload.actionType;

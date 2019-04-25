@@ -1,14 +1,14 @@
 import {
-    IRecorderRuntimeConfiguration,
-    IRecorderServerConfig,
-    IRecorderServerController,
-    RecorderPlugins,
+    IDevtoolRuntimeConfiguration,
+    IDevtoolServerConfig,
+    IDevtoolServerController,
+    DevtoolPluginHooks,
     IChildProcessFork,
     ITransport,
-    RecorderWorkerMessages,
+    DevtoolWorkerMessages,
     WebApplicationDevtoolMessageType,
-    IRecorderProxyMessage,
-    RecorderProxyMessages,
+    IDevtoolProxyMessage,
+    DevtoolProxyMessages,
 } from '@testring/types';
 
 import * as path from 'path';
@@ -22,7 +22,7 @@ import { defaultRecorderConfig } from './default-recorder-config';
 import { extensionId } from '@testring/devtool-extension';
 
 
-export class RecorderServerController extends PluggableModule implements IRecorderServerController {
+export class RecorderServerController extends PluggableModule implements IDevtoolServerController {
 
     private workerID: string;
 
@@ -30,22 +30,22 @@ export class RecorderServerController extends PluggableModule implements IRecord
 
     private logger = loggerClient.withPrefix('[recorder-server]');
 
-    private config: IRecorderServerConfig;
+    private config: IDevtoolServerConfig;
 
     constructor(private transport: ITransport) {
         super([
-            RecorderPlugins.beforeStart,
-            RecorderPlugins.afterStart,
-            RecorderPlugins.beforeStop,
-            RecorderPlugins.afterStop,
+            DevtoolPluginHooks.beforeStart,
+            DevtoolPluginHooks.afterStart,
+            DevtoolPluginHooks.beforeStop,
+            DevtoolPluginHooks.afterStop,
         ]);
     }
 
-    private getConfig(): IRecorderServerConfig {
+    private getConfig(): IDevtoolServerConfig {
         return defaultRecorderConfig;
     }
 
-    public getRuntimeConfiguration(): IRecorderRuntimeConfiguration {
+    public getRuntimeConfiguration(): IDevtoolRuntimeConfiguration {
         if (this.config === undefined) {
             throw Error('Configuration is not initialized yet');
         } else {
@@ -96,7 +96,7 @@ export class RecorderServerController extends PluggableModule implements IRecord
 
     private addToServerProxyHandler(messageType) {
         const toServerHandler = (messageData, processID: string | null = null) => {
-            this.transport.send<IRecorderProxyMessage>(this.getWorkerID(), RecorderProxyMessages.TO_WORKER, {
+            this.transport.send<IDevtoolProxyMessage>(this.getWorkerID(), DevtoolProxyMessages.TO_WORKER, {
                 fromWorker: processID,
                 messageType,
                 messageData,
@@ -105,7 +105,7 @@ export class RecorderServerController extends PluggableModule implements IRecord
         this.transport.on(messageType, toServerHandler);
     }
 
-    private handleProxiedMessage(message: IRecorderProxyMessage) {
+    private handleProxiedMessage(message: IDevtoolProxyMessage) {
         if (message.fromWorker) {
             this.transport.send(message.fromWorker as string, message.messageType, message.messageData);
         } else {
@@ -119,17 +119,17 @@ export class RecorderServerController extends PluggableModule implements IRecord
             WebApplicationDevtoolMessageType.unregister,
         ].forEach((event) => this.addToServerProxyHandler(event));
 
-        this.transport.on<IRecorderProxyMessage>(RecorderProxyMessages.FROM_WORKER, (payload) => {
+        this.transport.on<IDevtoolProxyMessage>(DevtoolProxyMessages.FROM_WORKER, (payload) => {
             this.handleProxiedMessage(payload);
         });
     }
 
     public async init() {
-        this.config = await this.callHook<IRecorderServerConfig>(RecorderPlugins.beforeStart, this.getConfig());
+        this.config = await this.callHook<IDevtoolServerConfig>(DevtoolPluginHooks.beforeStart, this.getConfig());
 
         await this.startServer();
 
-        this.transport.send(this.getWorkerID(), RecorderWorkerMessages.START_SERVER, this.config);
+        this.transport.send(this.getWorkerID(), DevtoolWorkerMessages.START_SERVER, this.config);
 
         let caughtError = null;
         let pending = true;
@@ -138,7 +138,7 @@ export class RecorderServerController extends PluggableModule implements IRecord
             pending = false;
         };
 
-        this.transport.once(RecorderWorkerMessages.START_SERVER_COMPLETE, (error) => handler(error));
+        this.transport.once(DevtoolWorkerMessages.START_SERVER_COMPLETE, (error) => handler(error));
 
         await new Promise((resolve, reject) => {
             if (pending) {
@@ -157,14 +157,14 @@ export class RecorderServerController extends PluggableModule implements IRecord
         });
 
         await this.initMessagesProxy();
-        await this.callHook(RecorderPlugins.afterStart);
+        await this.callHook(DevtoolPluginHooks.afterStart);
     }
 
     public async kill() {
-        await this.callHook(RecorderPlugins.beforeStop);
+        await this.callHook(DevtoolPluginHooks.beforeStop);
 
         await this.stopServer();
 
-        await this.callHook(RecorderPlugins.afterStop);
+        await this.callHook(DevtoolPluginHooks.afterStop);
     }
 }

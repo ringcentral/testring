@@ -1,13 +1,13 @@
 import {
     Action,
 } from 'redux';
-import { IRecorderServerConfig } from '@testring/types';
+import { IDevtoolServerConfig } from '@testring/types';
 
 export enum recorderConfigActions {
     UPDATE = 'CONFIG@UPDATE_CONFIG',
 }
 
-interface IRecorderWebAppStore extends Partial<IRecorderServerConfig>{
+interface IRecorderWebAppStore extends Partial<IDevtoolServerConfig>{
     initialized: boolean;
 }
 
@@ -23,7 +23,7 @@ export function recorderConfigReducer(
 ) {
     switch (action.type) {
         case recorderConfigActions.UPDATE: {
-            const payload: IRecorderServerConfig = action.payload;
+            const payload: IDevtoolServerConfig = action.payload;
 
             return {
                 ...payload,
