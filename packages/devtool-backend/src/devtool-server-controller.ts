@@ -1,14 +1,15 @@
 import {
+    DevtoolPluginHooks,
+    DevtoolProxyMessages,
+    DevtoolWorkerMessages,
+    IChildProcessFork,
+    IDevtoolProxyMessage,
     IDevtoolRuntimeConfiguration,
     IDevtoolServerConfig,
     IDevtoolServerController,
-    DevtoolPluginHooks,
-    IChildProcessFork,
     ITransport,
-    DevtoolWorkerMessages,
-    WebApplicationDevtoolMessageType,
-    IDevtoolProxyMessage,
-    DevtoolProxyMessages,
+    TestWorkerAction,
+    WebApplicationDevtoolActions,
 } from '@testring/types';
 
 import * as path from 'path';
@@ -115,8 +116,13 @@ export class DevtoolServerController extends PluggableModule implements IDevtool
 
     private initMessagesProxy() {
         [
-            WebApplicationDevtoolMessageType.register,
-            WebApplicationDevtoolMessageType.unregister,
+            TestWorkerAction.register,
+            TestWorkerAction.updateExecutionState,
+            TestWorkerAction.unregister,
+
+            WebApplicationDevtoolActions.register,
+            WebApplicationDevtoolActions.unregister,
+
         ].forEach((event) => this.addToServerProxyHandler(event));
 
         this.transport.on<IDevtoolProxyMessage>(DevtoolProxyMessages.FROM_WORKER, (payload) => {

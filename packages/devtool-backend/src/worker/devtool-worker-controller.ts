@@ -7,11 +7,13 @@ import {
     IDevtoolProxyCleanedMessage,
     DevtoolProxyMessages,
     DevtoolWorkerMessages,
-    WebApplicationDevtoolMessageType,
+    WebApplicationDevtoolActions,
     DevtoolWSServerEvents,
     IDevtoolWSMeta,
     DevtoolEvents,
     IDevtoolWSMessage,
+    TestWorkerAction,
+    IDevtoolWorkerRegisterMessage,
 } from '@testring/types';
 import { Request } from 'express-serve-static-core';
 
@@ -142,13 +144,25 @@ export class DevtoolWorkerController {
         } = message;
 
         switch (messageType) {
-            case WebApplicationDevtoolMessageType.register:
+            case TestWorkerAction.register:
+                await this.registerWorker(message as IDevtoolWorkerRegisterMessage);
+                break;
+            case TestWorkerAction.updateExecutionState:
+                await this.updateExecutionState(message);
+                break;
+            case TestWorkerAction.unregister:
+                await this.unregisterWorker(message as IDevtoolWorkerRegisterMessage);
+                break;
+
+            case WebApplicationDevtoolActions.register:
                 await this.registerWebApplication(rest as IDevtoolWebAppRegisterMessage);
                 break;
-            case WebApplicationDevtoolMessageType.unregister:
+            case WebApplicationDevtoolActions.unregister:
                 await this.unregisterWebApplication(rest as IDevtoolWebAppRegisterMessage);
                 break;
+
             default:
+                this.logger.warn(`Unknown message type ${messageType}`);
                 break;
         }
     }
@@ -168,6 +182,36 @@ export class DevtoolWorkerController {
             source,
             messageType,
         });
+    }
+
+    private async registerWorker(message: IDevtoolWorkerRegisterMessage) {
+        const workerId = this.normalizeWorkerId(message.source);
+
+        await this.getOrRegisterStoreByWorkerId(workerId);
+
+    }
+
+    private async updateExecutionState(message) {
+        this.logger.log(message);
+    }
+
+    private async unregisterWorker(message: IDevtoolWorkerRegisterMessage) {
+        const workerId = this.normalizeWorkerId(message.source);
+        const workerStore = this.storesByWorkerId.get(workerId);
+
+        for (let [key, store] of this.storesByWebAppId) {
+            if (workerStore === store) {
+                this.storesByWebAppId.delete(key);
+            }
+        }
+
+        for (let [webAppKey, workerMappedId] of this.workerIdByWebAppId) {
+            if (workerMappedId === workerId) {
+                this.workerIdByWebAppId.delete(webAppKey);
+            }
+        }
+
+        this.storesByWorkerId.delete(workerId);
     }
 
     private async registerWebApplication(message: IDevtoolWebAppRegisterMessage) {
@@ -190,7 +234,7 @@ export class DevtoolWorkerController {
             error = e;
         }
 
-        this.sendProxiedMessage(WebApplicationDevtoolMessageType.registerComplete, {
+        this.sendProxiedMessage(WebApplicationDevtoolActions.registerComplete, {
             ...message,
             messageData: {
                 ...message.messageData,
@@ -224,7 +268,7 @@ export class DevtoolWorkerController {
 
         const workerId = this.denormalizeWorkerId(message.source);
 
-        this.sendProxiedMessage(WebApplicationDevtoolMessageType.unregisterComplete, {
+        this.sendProxiedMessage(WebApplicationDevtoolActions.unregisterComplete, {
             ...message,
             source: workerId,
             messageData: {
@@ -312,12 +356,12 @@ export class DevtoolWorkerController {
         );
         this.wsServer.on(
             DevtoolWSServerEvents.CLOSE,
-            (meta: IDevtoolWSMeta) => this.WSSConnectionHandler(meta),
+            (meta: IDevtoolWSMeta) => this.WSSDisconnectHandler(meta),
         );
         this.logger.debug(`WS server listening: ${this.wsServer.getUrl()}`);
     }
 
-    private WSSConnectionHandler(meta: IDevtoolWSMeta) {
+    private WSSDisconnectHandler(meta: IDevtoolWSMeta) {
         this.webAppIdByConnectionId.delete(meta.connectionId);
     }
 

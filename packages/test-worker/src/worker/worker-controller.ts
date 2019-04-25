@@ -3,9 +3,10 @@ import {
     ITestEvaluationMessage,
     ITestExecutionMessage,
     ITestExecutionCompleteMessage,
+    ITestControllerExecutionState,
     TestWorkerAction,
     TestStatus,
-    TestEvents, ITestControllerExecutionState,
+    TestEvents,
 } from '@testring/types';
 
 import * as process from 'process';
@@ -40,16 +41,27 @@ export class WorkerController {
         });
     }
 
+    private updateExecutionState(field: keyof ITestControllerExecutionState, state: boolean) {
+        if (this.executionState[field] !== state) {
+            this.executionState[field] = state;
+
+            this.transport.broadcastUniversally(
+                TestWorkerAction.updateExecutionState,
+                this.executionState,
+            );
+        }
+    }
+
     private setPendingState(state: boolean) {
-        this.executionState.pending = state;
+        this.updateExecutionState('pending', state);
     }
 
     private setPausedState(state: boolean) {
-        this.executionState.paused = state;
+        this.updateExecutionState('paused', state);
     }
 
     private setPausedTilNextState(state: boolean) {
-        this.executionState.pausedTilNext = state;
+        this.updateExecutionState('pausedTilNext', state);
     }
 
     private activatePauseMode() {
@@ -80,14 +92,19 @@ export class WorkerController {
 
 
     private async completeExecutionSuccessfully() {
+        this.releasePauseMode();
+
         try {
             await testAPIController.flushAfterRunCallbacks();
         } catch (e) {
             this.logger.error('Failed to release tests execution');
         }
-
-        this.releasePauseMode();
         Sandbox.clearCache();
+
+        this.transport.broadcastUniversally(
+            TestWorkerAction.unregister,
+            {}
+        );
 
         this.transport.broadcastUniversally<ITestExecutionCompleteMessage>(
             TestWorkerAction.executionComplete,
@@ -117,9 +134,26 @@ export class WorkerController {
                 error,
             }
         );
+
+        try {
+            await testAPIController.flushAfterRunCallbacks();
+        } catch (e) {
+            this.logger.error('Failed to release tests execution');
+        }
+        Sandbox.clearCache();
+
+        this.transport.broadcastUniversally(
+            TestWorkerAction.unregister,
+            this.executionState,
+        );
     }
 
     public async executeTest(message: ITestExecutionMessage): Promise<void> {
+        this.transport.broadcastUniversally(
+            TestWorkerAction.register,
+            this.executionState,
+        );
+
         try {
             if (message.waitForRelease) {
                 await this.setDevtoolListeners();

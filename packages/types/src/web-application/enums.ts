@@ -3,7 +3,7 @@ export const enum WebApplicationMessageType {
     response = 'WebApplication/response'
 }
 
-export const enum WebApplicationDevtoolMessageType {
+export const enum WebApplicationDevtoolActions {
     register = 'WebApplication/register',
     registerComplete = 'WebApplication/registerComplete',
     unregister = 'WebApplication/unregister',

@@ -20,6 +20,10 @@ export const enum TestWorkerAction {
     executionComplete = 'TestWorkerAction/executionComplete',
 
     // devtool actions
+    register = 'TestWorkerAction/register',
+    updateExecutionState = 'TestWorkerAction/updateExecutionState',
+    unregister = 'TestWorkerAction/unregister',
+
     evaluateCode = 'TestWorkerAction/evaluateCode',
     releaseTest = 'TestWorkerAction/releaseTest',
     pauseTestExecution = 'TestWorkerAction/pauseTestExecution',
