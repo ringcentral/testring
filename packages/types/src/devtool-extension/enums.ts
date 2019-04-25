@@ -2,6 +2,8 @@ export const enum DevtoolEvents {
     HANDSHAKE_REQUEST = 'DevtoolEvents/HANDSHAKE_REQUEST',
     HANDSHAKE_RESPONSE = 'DevtoolEvents/HANDSHAKE_RESPONSE',
     WORKER_ACTION = 'DevtoolEvents/WORKER_ACTION',
+    STORE_STATE = 'DevtoolEvents/STORE_STATE',
+    GET_STORE = 'DevtoolEvents/GET_STORE',
 }
 
 export const enum ExtensionMessagingTransportEvents {

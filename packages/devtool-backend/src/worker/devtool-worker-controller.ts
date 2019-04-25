@@ -1,19 +1,20 @@
 import {
+    DevtoolEvents,
+    DevtoolProxyMessages,
+    DevtoolWorkerMessages,
+    DevtoolWSServerEvents,
     IDevtoolHttpRoute,
+    IDevtoolProxyCleanedMessage,
     IDevtoolProxyMessage,
     IDevtoolServerConfig,
     IDevtoolWebAppRegisterMessage,
-    ITransport,
-    IDevtoolProxyCleanedMessage,
-    DevtoolProxyMessages,
-    DevtoolWorkerMessages,
-    WebApplicationDevtoolActions,
-    DevtoolWSServerEvents,
-    IDevtoolWSMeta,
-    DevtoolEvents,
-    IDevtoolWSMessage,
-    TestWorkerAction,
     IDevtoolWorkerRegisterMessage,
+    IDevtoolWSMessage,
+    IDevtoolWSMeta,
+    ITestControllerExecutionState,
+    ITransport,
+    TestWorkerAction,
+    WebApplicationDevtoolActions,
 } from '@testring/types';
 import { Request } from 'express-serve-static-core';
 
@@ -25,8 +26,9 @@ import { DevtoolWsServer } from './devtool-ws-server';
 import { initStore } from './store';
 
 
-import { IDevtoolWebAppRegisterData, devtoolWebAppAction } from '../reducers/web-applications-reducer';
+import { devtoolWebAppAction, IDevtoolWebAppRegisterData } from '../reducers/web-applications-reducer';
 import { devtoolConfigActions } from '../reducers/devtool-config-reducer';
+import { devtoolWorkerStateActions } from '../reducers/worker-state-reducer';
 
 
 export class DevtoolWorkerController {
@@ -39,7 +41,9 @@ export class DevtoolWorkerController {
     private storesByWorkerId: Map<string, Store> = new Map();
     private storesByWebAppId: Map<string, Store> = new Map();
     private workerIdByWebAppId: Map<string, string> = new Map();
+
     private webAppIdByConnectionId: Map<string, string> = new Map();
+    private handlersByConnectionId: Map<string, () => void> = new Map();
 
     private config: IDevtoolServerConfig;
 
@@ -184,15 +188,27 @@ export class DevtoolWorkerController {
         });
     }
 
+    private updateWorkerState(store: Store, payload: ITestControllerExecutionState) {
+        store.dispatch({
+            type: devtoolWorkerStateActions.UPDATE,
+            payload,
+        });
+    }
+
     private async registerWorker(message: IDevtoolWorkerRegisterMessage) {
         const workerId = this.normalizeWorkerId(message.source);
 
-        await this.getOrRegisterStoreByWorkerId(workerId);
+        const store = await this.getOrRegisterStoreByWorkerId(workerId);
 
+        this.updateWorkerState(store, message.messageData);
     }
 
     private async updateExecutionState(message) {
-        this.logger.log(message);
+        const workerId = this.normalizeWorkerId(message.source);
+
+        const store = await this.getOrRegisterStoreByWorkerId(workerId);
+
+        this.updateWorkerState(store, message.messageData);
     }
 
     private async unregisterWorker(message: IDevtoolWorkerRegisterMessage) {
@@ -362,31 +378,73 @@ export class DevtoolWorkerController {
     }
 
     private WSSDisconnectHandler(meta: IDevtoolWSMeta) {
-        this.webAppIdByConnectionId.delete(meta.connectionId);
+        const { connectionId } = meta;
+        const unsubscribe = this.handlersByConnectionId.get(connectionId);
+
+        if (unsubscribe) {
+            unsubscribe();
+            this.handlersByConnectionId.delete(connectionId);
+        }
+
+        this.webAppIdByConnectionId.delete(connectionId);
     }
 
     private WSSMessageHandler(data: IDevtoolWSMessage, meta: IDevtoolWSMeta) {
         const { connectionId } = meta;
 
-        if (data.type === DevtoolEvents.HANDSHAKE_REQUEST) {
-            const { appId } = data.payload;
-            const payload = {
-                appId: data.payload.appId,
-                connectionId,
-                error: null,
-            };
-            this.webAppIdByConnectionId.set(connectionId, appId);
+        switch (data.type) {
+            case DevtoolEvents.HANDSHAKE_REQUEST: {
+                const { appId } = data.payload;
+                const payload = {
+                    appId: data.payload.appId,
+                    connectionId,
+                    error: null,
+                };
+                this.webAppIdByConnectionId.set(connectionId, appId);
 
-            this.wsServer.send(meta.connectionId, DevtoolEvents.HANDSHAKE_RESPONSE, payload);
-        }
+                const store = this.storesByWebAppId.get(appId);
 
-        if (data.type === DevtoolEvents.WORKER_ACTION) {
-            const appId = this.webAppIdByConnectionId.get(connectionId);
-            const workerId = this.workerIdByWebAppId.get(appId as string);
-            const actionType = data.payload.actionType;
+                if (store) {
+                    const unsubscribe = store.subscribe(() => {
+                        this.wsServer.send(
+                            connectionId,
+                            DevtoolEvents.STORE_STATE,
+                            store.getState(),
+                        );
+                    });
+                    this.handlersByConnectionId.set(connectionId, unsubscribe);
+                }
 
-            if (workerId && actionType) {
-                this.sendToWorkerMessage(workerId, actionType, {});
+                this.wsServer.send(meta.connectionId, DevtoolEvents.HANDSHAKE_RESPONSE, payload);
+                // @TODO make error handler
+                break;
+            }
+
+            case DevtoolEvents.GET_STORE: {
+                const appId = this.webAppIdByConnectionId.get(connectionId);
+                const store = this.storesByWebAppId.get(appId as string);
+
+                if (store) {
+                    this.wsServer.send(
+                        meta.connectionId,
+                        DevtoolEvents.STORE_STATE,
+                        store.getState(),
+                    );
+                } else {
+                    // @TODO make error handler
+                }
+                break;
+            }
+
+            case DevtoolEvents.WORKER_ACTION: {
+                const appId = this.webAppIdByConnectionId.get(connectionId);
+                const workerId = this.workerIdByWebAppId.get(appId as string);
+                const actionType = data.payload.actionType;
+
+                if (workerId && actionType) {
+                    this.sendToWorkerMessage(workerId, actionType, {});
+                }
+                break;
             }
         }
     }
