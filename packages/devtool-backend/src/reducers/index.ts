@@ -1,9 +1,9 @@
-import { recorderConfigReducer } from './recorder-config-reducer';
+import { devtoolConfigReducer } from './devtool-config-reducer';
 import { webApplicationsReducer } from './web-applications-reducer';
 import { windowReducer } from './window-reducer';
 
 export default {
-    recorderConfig: recorderConfigReducer,
+    devtoolConfig: devtoolConfigReducer,
     webApplications: webApplicationsReducer,
     window: windowReducer,
 };

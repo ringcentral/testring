@@ -25,8 +25,8 @@ import { DevtoolWsServer } from './devtool-ws-server';
 import { initStore } from './store';
 
 
-import { IRecorderWebAppRegisterData, recorderWebAppAction } from '../reducers/web-applications-reducer';
-import { recorderConfigActions } from '../reducers/recorder-config-reducer';
+import { IDevtoolWebAppRegisterData, devtoolWebAppAction } from '../reducers/web-applications-reducer';
+import { devtoolConfigActions } from '../reducers/devtool-config-reducer';
 
 
 export class DevtoolWorkerController {
@@ -57,7 +57,7 @@ export class DevtoolWorkerController {
         const store = await initStore();
 
         store.dispatch({
-            type: recorderConfigActions.UPDATE,
+            type: devtoolConfigActions.UPDATE,
             payload: this.config,
         });
 
@@ -222,12 +222,12 @@ export class DevtoolWorkerController {
             const store = await this.getOrRegisterStoreByWorkerId(workerId);
             const id = message.messageData.id;
             await this.registerWebAppId(workerId, id);
-            const payload: IRecorderWebAppRegisterData = { id };
+            const payload: IDevtoolWebAppRegisterData = { id };
 
             this.logger.debug(`Register web app ${id}`);
 
             store.dispatch({
-                type: recorderWebAppAction.REGISTER,
+                type: devtoolWebAppAction.REGISTER,
                 payload,
             });
         } catch (e) {
@@ -251,12 +251,12 @@ export class DevtoolWorkerController {
 
             if (store) {
                 const id = message.messageData.id;
-                const payload: IRecorderWebAppRegisterData = { id };
+                const payload: IDevtoolWebAppRegisterData = { id };
 
                 await this.unregisterWebAppId(id);
 
                 store.dispatch({
-                    type: recorderWebAppAction.UNREGISTER,
+                    type: devtoolWebAppAction.UNREGISTER,
                     payload,
                 });
             } else {

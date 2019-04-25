@@ -36,8 +36,8 @@ const pageTemplate = (
 };
 
 export default function popupPage(req, res, store, webAppId) {
-    const { recorderConfig } = store.getState();
-    const { host, wsPort } = recorderConfig;
+    const { devtoolConfig } = store.getState();
+    const { host, wsPort } = devtoolConfig;
 
     res.send(pageTemplate(
         host,

@@ -2,40 +2,40 @@ import {
     Action,
 } from 'redux';
 
-export enum recorderWebAppAction {
+export enum devtoolWebAppAction {
     REGISTER = 'WEB_APP@REGISTER',
     UNREGISTER = 'WEB_APP@UNREGISTER',
 }
 
-interface IRecorderWebAppStore {
+interface IDevtoolWebAppStore {
     ids: string[];
 }
 
-interface IRecorderWebAppAction extends Action {
+interface IDevtoolWebAppAction extends Action {
     payload: any;
 }
 
-export interface IRecorderWebAppRegisterData {
+export interface IDevtoolWebAppRegisterData {
     id: string;
 }
 
 export function webApplicationsReducer(
-    state: IRecorderWebAppStore = {
+    state: IDevtoolWebAppStore = {
         ids: [],
     },
-    action: IRecorderWebAppAction,
+    action: IDevtoolWebAppAction,
 ) {
     switch (action.type) {
-        case recorderWebAppAction.REGISTER: {
-            const payload: IRecorderWebAppRegisterData = action.payload;
+        case devtoolWebAppAction.REGISTER: {
+            const payload: IDevtoolWebAppRegisterData = action.payload;
 
             return {
                 ...state,
                 ids: [...state.ids, payload.id],
             };
         }
-        case recorderWebAppAction.UNREGISTER: {
-            const payload: IRecorderWebAppRegisterData = action.payload;
+        case devtoolWebAppAction.UNREGISTER: {
+            const payload: IDevtoolWebAppRegisterData = action.payload;
 
             const ids = state.ids.filter((id) => id === payload.id);
 
