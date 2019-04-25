@@ -1,8 +1,13 @@
+import {
+    ClientWsTransportEvents,
+    DevtoolEvents,
+    ITestControllerExecutionState,
+    TestWorkerAction,
+} from '@testring/types';
 import * as React from 'react';
 import { render } from 'react-dom';
 
 import { ClientWsTransport } from '@testring/client-ws-transport';
-import { DevtoolEvents, TestWorkerAction } from '@testring/types';
 
 
 async function init() {
@@ -15,37 +20,91 @@ async function init() {
     const runAction = (actionType) => wsClient.send(DevtoolEvents.WORKER_ACTION, { actionType });
 
     const btnStyle = {
-        'height': '40px',
-        'margin': '30px 10px',
-        'display': 'inline-block',
+        width: '50px',
+        height: '50px',
+        border: '0px',
+        'textIndent': '200%',
+        'whitSpace': 'no-wrap',
+        backgroundColor: 'transparent',
+        backgroundPosition: 'center',
+        overflow: 'hidden',
+        margin: '25px 10px',
+        display: 'inline-block',
+        padding: 0,
     };
 
-    class ButtonsLayout extends React.Component {
-        render() {
+    const getButtonStyle = (base64: string, active: boolean = true) => {
+        return {
+            ...btnStyle,
+            backgroundImage: `url(${base64})`,
+            cursor: active ? 'pointer' : 'default',
+            opacity: active ? 1 : 0.6,
+        };
+    };
+
+    class ButtonsLayout extends React.Component <{workerState?: any}> {
+        componentDidMount(): void {
+            wsClient.on(ClientWsTransportEvents.MESSAGE, (data) => {
+                if (data.type === DevtoolEvents.STORE_STATE) {
+                    this.handleStoreUpdate(data.payload);
+                }
+            });
+            wsClient.send(DevtoolEvents.GET_STORE, {});
+        }
+
+        handleStoreUpdate(storeData: any = {}) {
+            const workerState = (storeData.workerState || {}) as any;
+
+            this.setState( {
+                ...this.state,
+                workerState,
+            });
+        }
+
+        renderButtons(workerState: ITestControllerExecutionState) {
             return (
-                <div style={{ 'textAlign': 'center' }}>
+                <div style={{ 'textAlign': 'center', 'verticalAlign': 'top' }}>
                     <button
-                        style={btnStyle}
+                        disabled={workerState.paused}
+                        style={getButtonStyle(require('./imgs/pause.png'), !workerState.paused)}
                         onClick={() => runAction(TestWorkerAction.pauseTestExecution)}>
                         Pause
                     </button>
                     <button
-                        style={btnStyle}
+                        style={getButtonStyle(require('./imgs/next.png'))}
                         onClick={() => runAction(TestWorkerAction.runTillNextExecution)}>
-                        Pause on Next
+                        Next
                     </button>
                     <button
-                        style={btnStyle}
+                        disabled={!(workerState.paused || workerState.pausedTilNext)}
+                        style={getButtonStyle(
+                            require('./imgs/play.png'),
+                            workerState.paused || workerState.pausedTilNext
+                        )}
                         onClick={() => runAction(TestWorkerAction.resumeTestExecution)}>
                         Resume
                     </button>
                     <button
-                        style={btnStyle}
+                        style={getButtonStyle(require('./imgs/stop.png'))}
                         onClick={() => runAction(TestWorkerAction.releaseTest)}>
                         Release
                     </button>
                 </div>
             );
+        }
+
+        render() {
+            const workerState = (this.state as any || {}).workerState;
+
+            if (workerState) {
+                return this.renderButtons(workerState);
+            } else {
+                return (
+                    <div style={{ 'textAlign': 'center' }}>
+                        Waiting for store initialization...
+                    </div>
+                );
+            }
         }
     }
 
