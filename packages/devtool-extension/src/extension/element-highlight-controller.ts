@@ -37,6 +37,40 @@ export class HighlightElement {
     }
 }
 
+function whichTransitionEvent(document: Document): string | null {
+    let el = document.createElement('fakeelement');
+
+    let transitions = {
+        'transition'      : 'transitionend',
+        'WebkitTransition': 'webkitTransitionEnd',
+    };
+
+    for (let key in transitions) {
+        if (el.style[key] !== undefined) {
+            return transitions[key];
+        }
+    }
+
+    return null;
+}
+
+function whichAnimationEvent(document: Document): string | null {
+    let el = document.createElement('fakeelement');
+
+    let animations = {
+        'animation'      : 'animationend',
+        'WebkitAnimation': 'webkitAnimationEnd',
+    };
+
+    for (let key in animations) {
+        if (el.style[key] !== undefined) {
+            return animations[key];
+        }
+    }
+
+    return null;
+}
+
 
 export class ElementHighlightController {
     private rootElement: HTMLElement;
@@ -90,12 +124,17 @@ export class ElementHighlightController {
     }
 
     private initObservers() {
+        const document = this.getDocument();
+        const animationEvent = whichAnimationEvent(document);
+        const transitionEvent = whichTransitionEvent(document);
+
         this.redrawHandler = throttle(() => this.redrawHighlights(), 50);
         this.checkElementsHandler = throttle(() => this.checkHtmlElements(), 150);
 
         this.window.addEventListener('resize', this.redrawHandler);
+        animationEvent && document.body.addEventListener(animationEvent, this.redrawHandler);
+        transitionEvent && document.body.addEventListener(transitionEvent, this.redrawHandler);
 
-        const document = this.getDocument();
         const config = {
             attributes: true,
             childList: true,
@@ -228,6 +267,8 @@ export class ElementHighlightController {
 
     public destroy(): void {
         const document = this.getDocument();
+        const animationEvent = whichAnimationEvent(document);
+        const transitionEvent = whichTransitionEvent(document);
 
         document.body.removeChild(this.rootElement);
 
@@ -238,6 +279,9 @@ export class ElementHighlightController {
 
         if (this.redrawHandler) {
             this.window.removeEventListener('resize', this.redrawHandler);
+            animationEvent && document.body.removeEventListener(animationEvent, this.redrawHandler);
+            transitionEvent && document.body.removeEventListener(transitionEvent, this.redrawHandler);
+
             delete this.redrawHandler;
         }
 
