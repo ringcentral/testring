@@ -1,41 +1,6 @@
 import { throttle } from '@testring/utils';
 
-export class HighlightElement {
-    private htmlBlock: HTMLElement;
-
-    constructor(private rootElement: ShadowRoot) {
-        this.createHighlightBlock();
-    }
-
-    private createHighlightBlock(): void {
-        this.htmlBlock = document.createElement('testring-highlight-block');
-
-        this.htmlBlock.setAttribute('class', 'highlight');
-
-        this.rootElement.appendChild(this.htmlBlock);
-    }
-
-    private render(node: HTMLElement): void {
-        const coords = node.getBoundingClientRect();
-        const width = node.offsetWidth;
-        const height = node.offsetHeight;
-
-        Object.assign(this.htmlBlock.style, {
-            left: `${coords.left}px`,
-            top: `${coords.top}px`,
-            width: `${width}px`,
-            height: `${height}px`,
-        });
-    }
-
-    public destroy() {
-        this.rootElement.removeChild(this.htmlBlock);
-    }
-
-    public update(node: HTMLElement) {
-        this.render(node);
-    }
-}
+import { HighlightElement } from './highlight-element';
 
 function whichTransitionEvent(document: Document): string | null {
     let el = document.createElement('fakeelement');
@@ -71,6 +36,36 @@ function whichAnimationEvent(document: Document): string | null {
     return null;
 }
 
+const ROOT_STYLES = {
+    position: 'fixed',
+    display: 'block',
+    padding: '0',
+    margin: '0',
+    top: '0px',
+    left: '0px',
+    height: '0px',
+    width: '0px',
+    outline: 'none',
+    'pointer-events': 'none',
+    background: 'none',
+    overflow: 'visible',
+    'z-index': '2147483647',
+};
+
+
+const ROOT_INNER_HTML = `
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+    
+    .highlight {
+        position: absolute;
+        outline: 3px solid orange;
+        display: block;
+    }
+</style>`;
 
 export class ElementHighlightController {
     private rootElement: HTMLElement;
@@ -87,36 +82,9 @@ export class ElementHighlightController {
 
     private checkElementsHandler?: () => void;
 
-    private rootStyle = {
-        position: 'fixed',
-        display: 'block',
-        padding: '0',
-        margin: '0',
-        top: '0px',
-        left: '0px',
-        height: '0px',
-        width: '0px',
-        outline: 'none',
-        'pointer-events': 'none',
-        background: 'none',
-        overflow: 'visible',
-        'z-index': '2147483647',
-    };
+    private rootStyle = ROOT_STYLES;
 
-    private rootInnerHtml = `
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-        }
-        
-        .highlight {
-            position: absolute;
-            outline: 3px solid orange;
-            display: block;
-        }
-    </style>
-    `;
+    private rootInnerHtml = ROOT_INNER_HTML;
 
     constructor(private window: Window) {
         this.initRootElements();
@@ -160,6 +128,7 @@ export class ElementHighlightController {
         const styles: string[] = [];
 
         for (let prop in rootStyle) {
+            // safety call on guest page browser
             if (Object.prototype.hasOwnProperty.call(rootStyle, prop)) {
                 styles.push(`${prop}: ${rootStyle[prop]} !important`);
             }
