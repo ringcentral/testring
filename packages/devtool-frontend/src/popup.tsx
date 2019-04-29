@@ -27,6 +27,8 @@ async function init() {
         'whitSpace': 'no-wrap',
         backgroundColor: 'transparent',
         backgroundPosition: 'center',
+        backgroundSize: '48px 48px',
+        backgroundRepeat: 'no-repeat',
         overflow: 'hidden',
         margin: '25px 10px',
         display: 'inline-block',
@@ -64,30 +66,36 @@ async function init() {
         renderButtons(workerState: ITestControllerExecutionState) {
             return (
                 <div style={{ 'textAlign': 'center', 'verticalAlign': 'top' }}>
+                    {
+                        (workerState.paused || workerState.pausedTilNext) ? (
+                            <button
+                                style={getButtonStyle(
+                                    require('./imgs/play.png'),
+                                    workerState.pending,
+                                )}
+                                onClick={() => runAction(TestWorkerAction.resumeTestExecution)}>
+                                Play
+                            </button>
+                        ) : (
+                            <button
+                                style={getButtonStyle(
+                                    require('./imgs/pause.png'),
+                                    workerState.pending,
+                                )}
+                                onClick={() => runAction(TestWorkerAction.pauseTestExecution)}>
+                                Pause
+                            </button>
+                        )
+                    }
                     <button
-                        disabled={workerState.paused}
-                        style={getButtonStyle(require('./imgs/pause.png'), !workerState.paused)}
-                        onClick={() => runAction(TestWorkerAction.pauseTestExecution)}>
-                        Pause
-                    </button>
-                    <button
-                        style={getButtonStyle(require('./imgs/next.png'))}
+                        style={getButtonStyle(require('./imgs/next.png'), workerState.pending)}
                         onClick={() => runAction(TestWorkerAction.runTillNextExecution)}>
                         Next
                     </button>
                     <button
-                        disabled={!(workerState.paused || workerState.pausedTilNext)}
-                        style={getButtonStyle(
-                            require('./imgs/play.png'),
-                            workerState.paused || workerState.pausedTilNext
-                        )}
-                        onClick={() => runAction(TestWorkerAction.resumeTestExecution)}>
-                        Resume
-                    </button>
-                    <button
-                        style={getButtonStyle(require('./imgs/stop.png'))}
+                        style={getButtonStyle(require('./imgs/forward.png'))}
                         onClick={() => runAction(TestWorkerAction.releaseTest)}>
-                        Release
+                        Forward
                     </button>
                 </div>
             );
