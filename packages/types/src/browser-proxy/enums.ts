@@ -65,4 +65,5 @@ export const enum BrowserProxyActions {
     waitForValue = 'waitForValue',
     waitForSelected = 'waitForSelected',
     waitUntil = 'waitUntil',
+    selectByAttribute = 'selectByAttribute',
 }

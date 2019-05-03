@@ -273,4 +273,8 @@ export class WebClient implements IWebApplicationClient {
     public waitUntil(condition, timeout, timeoutMsg, interval) {
         return this.makeRequest(BrowserProxyActions.waitUntil, [condition, timeout, timeoutMsg, interval]);
     }
+
+    public selectByAttribute(xpath, attribute, value) {
+        return this.makeRequest(BrowserProxyActions.selectByAttribute, [xpath, attribute, value]);
+    }
 }

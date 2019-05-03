@@ -203,6 +203,9 @@ export class WebApplication extends PluggableModule {
         waitUntil(condition, timeout: number = this.WAIT_TIMEOUT, timeoutMsg?: string, interval?: number) {
             return `Waiting by condition for ${timeout}`;
         },
+        selectByAttribute(xpath, attribute: string, value: string) {
+            return `Select by attribute ${attribute} with value ${value} from ${xpath}`;
+        },
     };
 
     constructor(
@@ -1394,5 +1397,21 @@ export class WebApplication extends PluggableModule {
         interval: number = 500
     ) {
         return await this.client.waitUntil(condition, timeout, timeoutMsg, interval);
+    }
+
+    public async selectByAttribute(xpath, attribute: string, value: string, timeout: number = this.WAIT_TIMEOUT) {
+        const logXpath = this.formatXpath(xpath);
+        const errorMessage = `Could not select by attribute "${attribute}" with value "${value}": ${logXpath}`;
+
+        xpath = this.normalizeSelector(xpath);
+
+        await this.waitForExist(xpath, timeout);
+
+        try {
+            return await this.client.selectByAttribute(xpath, attribute, value);
+        } catch (e) {
+            e.message = errorMessage;
+            throw e;
+        }
     }
 }

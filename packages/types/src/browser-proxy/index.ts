@@ -129,4 +129,6 @@ export interface IBrowserProxyPlugin {
               timeout?: number,
               timeoutMsg?: string,
               interval?: number): Promise<any>;
+
+    selectByAttribute(applicant: string, xpath: string, attribute: string, value: string): Promise<any>;
 }
