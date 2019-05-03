@@ -265,4 +265,8 @@ export class WebClient implements IWebApplicationClient {
     public waitForValue(xpath, timeout, reverse) {
         return this.makeRequest(BrowserProxyActions.waitForValue, [xpath, timeout, reverse]);
     }
+
+    public waitForSelected(xpath, timeout, reverse) {
+        return this.makeRequest(BrowserProxyActions.waitForSelected, [xpath, timeout, reverse]);
+    }
 }

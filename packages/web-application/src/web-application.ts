@@ -193,6 +193,13 @@ export class WebApplication extends PluggableModule {
                 return `Waiting for any value of ${this.formatXpath(xpath)} for ${timeout}`;
             }
         },
+        waitForSelected(xpath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean) {
+            if (reverse) {
+                return `Waiting for element ${this.formatXpath(xpath)} isn't selected for ${timeout}`;
+            } else {
+                return `Waiting for element ${this.formatXpath(xpath)} is selected for ${timeout}`;
+            }
+        },
     };
 
     constructor(
@@ -1370,5 +1377,10 @@ export class WebApplication extends PluggableModule {
     public async waitForValue(xpath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean = false) {
         xpath = this.normalizeSelector(xpath);
         return await this.client.waitForValue(xpath, timeout, reverse);
+    }
+
+    public async waitForSelected(xpath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean = false) {
+        xpath = this.normalizeSelector(xpath);
+        return await this.client.waitForSelected(xpath, timeout, reverse);
     }
 }

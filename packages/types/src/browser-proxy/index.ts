@@ -121,4 +121,6 @@ export interface IBrowserProxyPlugin {
     isExisting(applicant: string, xpath: string): Promise<any>;
 
     waitForValue(applicant: string, xpath: string, timeout: number, reverse: boolean): Promise<any>;
+
+    waitForSelected(applicant: string, xpath: string, timeout: number, reverse: boolean): Promise<any>;
 }
