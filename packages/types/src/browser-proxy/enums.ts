@@ -60,4 +60,5 @@ export const enum BrowserProxyActions {
     end = 'end',
     kill = 'kill',
     getCssProperty = 'getCssProperty',
+    getSource = 'getSource',
 }

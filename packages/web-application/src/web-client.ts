@@ -253,4 +253,8 @@ export class WebClient implements IWebApplicationClient {
     public getCssProperty(xpath, cssProperty) {
         return this.makeRequest(BrowserProxyActions.getCssProperty, [xpath, cssProperty]);
     }
+
+    public getSource() {
+        return this.makeRequest(BrowserProxyActions.getSource, []);
+    }
 }

@@ -183,6 +183,9 @@ export class WebApplication extends PluggableModule {
         getCssProperty(xpath, cssProperty) {
             return `Get CSS property ${cssProperty} from ${this.formatXpath(xpath)}`;
         },
+        getSource() {
+            return 'Get source of current page';
+        },
     };
 
     constructor(
@@ -1346,5 +1349,9 @@ export class WebApplication extends PluggableModule {
 
         xpath = this.normalizeSelector(xpath);
         return await this.client.getCssProperty(xpath, cssProperty);
+    }
+
+    public async getSource() {
+        return await this.client.getSource();
     }
 }
