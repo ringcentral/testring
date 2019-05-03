@@ -123,4 +123,10 @@ export interface IBrowserProxyPlugin {
     waitForValue(applicant: string, xpath: string, timeout: number, reverse: boolean): Promise<any>;
 
     waitForSelected(applicant: string, xpath: string, timeout: number, reverse: boolean): Promise<any>;
+
+    waitUntil(applicant: string,
+              condition: () => boolean | Promise<boolean>,
+              timeout?: number,
+              timeoutMsg?: string,
+              interval?: number): Promise<any>;
 }

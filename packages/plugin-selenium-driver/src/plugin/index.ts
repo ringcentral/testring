@@ -772,6 +772,22 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             return this.wrapWithPromise(client.waitForSelected(xpath, timeout, reverse));
         }
     }
+
+    public async waitUntil(
+        applicant: string,
+        condition: () => boolean | Promise<boolean> | Client<RawResult<any>> & RawResult<any>,
+        timeout?: number,
+        timeoutMsg?: string,
+        interval?: number
+    ): Promise<Client<boolean> & any> {
+
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.waitUntil(condition, timeout, timeoutMsg, interval));
+        }
+    }
 }
 
 export default function seleniumProxy(config: Config) {

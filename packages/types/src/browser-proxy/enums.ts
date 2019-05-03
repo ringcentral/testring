@@ -64,4 +64,5 @@ export const enum BrowserProxyActions {
     isExisting = 'isExisting',
     waitForValue = 'waitForValue',
     waitForSelected = 'waitForSelected',
+    waitUntil = 'waitUntil',
 }

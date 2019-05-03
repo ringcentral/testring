@@ -200,6 +200,9 @@ export class WebApplication extends PluggableModule {
                 return `Waiting for element ${this.formatXpath(xpath)} is selected for ${timeout}`;
             }
         },
+        waitUntil(condition, timeout: number = this.WAIT_TIMEOUT, timeoutMsg?: string, interval?: number) {
+            return `Waiting by condition for ${timeout}`;
+        },
     };
 
     constructor(
@@ -1382,5 +1385,14 @@ export class WebApplication extends PluggableModule {
     public async waitForSelected(xpath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean = false) {
         xpath = this.normalizeSelector(xpath);
         return await this.client.waitForSelected(xpath, timeout, reverse);
+    }
+
+    public async waitUntil(
+        condition: () => boolean | Promise<boolean>,
+        timeout: number = this.WAIT_TIMEOUT,
+        timeoutMsg: string = 'Wait by condition failed!',
+        interval: number = 500
+    ) {
+        return await this.client.waitUntil(condition, timeout, timeoutMsg, interval);
     }
 }
