@@ -261,4 +261,8 @@ export class WebClient implements IWebApplicationClient {
     public isExisting(xpath) {
         return this.makeRequest(BrowserProxyActions.isExisting, [xpath]);
     }
+
+    public waitForValue(xpath, timeout, reverse) {
+        return this.makeRequest(BrowserProxyActions.waitForValue, [xpath, timeout, reverse]);
+    }
 }

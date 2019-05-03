@@ -186,6 +186,13 @@ export class WebApplication extends PluggableModule {
         getSource() {
             return 'Get source of current page';
         },
+        waitForValue(xpath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean) {
+            if (reverse) {
+                return `Waiting for element ${this.formatXpath(xpath)} doesn't has value for ${timeout}`;
+            } else {
+                return `Waiting for any value of ${this.formatXpath(xpath)} for ${timeout}`;
+            }
+        },
     };
 
     constructor(
@@ -1358,5 +1365,10 @@ export class WebApplication extends PluggableModule {
     public async isExisting(xpath) {
         xpath = this.normalizeSelector(xpath);
         return await this.client.isExisting(xpath);
+    }
+
+    public async waitForValue(xpath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean = false) {
+        xpath = this.normalizeSelector(xpath);
+        return await this.client.waitForValue(xpath, timeout, reverse);
     }
 }

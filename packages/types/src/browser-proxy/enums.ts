@@ -62,4 +62,5 @@ export const enum BrowserProxyActions {
     getCssProperty = 'getCssProperty',
     getSource = 'getSource',
     isExisting = 'isExisting',
+    waitForValue = 'waitForValue',
 }
