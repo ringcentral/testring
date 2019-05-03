@@ -131,4 +131,8 @@ export interface IBrowserProxyPlugin {
               interval?: number): Promise<any>;
 
     selectByAttribute(applicant: string, xpath: string, attribute: string, value: string): Promise<any>;
+
+    getGridNodeDetails(applicant: string): Promise<any>;
+
+    gridTestSession(applicant: string): Promise<any>;
 }

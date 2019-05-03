@@ -66,4 +66,6 @@ export const enum BrowserProxyActions {
     waitForSelected = 'waitForSelected',
     waitUntil = 'waitUntil',
     selectByAttribute = 'selectByAttribute',
+    getGridNodeDetails = 'getGridNodeDetails',
+    gridTestSession = 'gridTestSession',
 }

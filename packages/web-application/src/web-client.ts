@@ -277,4 +277,12 @@ export class WebClient implements IWebApplicationClient {
     public selectByAttribute(xpath, attribute, value) {
         return this.makeRequest(BrowserProxyActions.selectByAttribute, [xpath, attribute, value]);
     }
+
+    public getGridNodeDetails() {
+        return this.makeRequest(BrowserProxyActions.getGridNodeDetails, []);
+    }
+
+    public gridTestSession() {
+        return this.makeRequest(BrowserProxyActions.gridTestSession, []);
+    }
 }

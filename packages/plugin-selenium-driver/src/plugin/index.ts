@@ -797,6 +797,24 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             return this.wrapWithPromise(client.selectByAttribute(xpath, attribute, value));
         }
     }
+
+    public async getGridNodeDetails(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.getGridNodeDetails());
+        }
+    }
+
+    public async gridTestSession(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.gridTestSession());
+        }
+    }
 }
 
 export default function seleniumProxy(config: Config) {
