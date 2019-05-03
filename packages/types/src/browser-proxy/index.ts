@@ -117,4 +117,6 @@ export interface IBrowserProxyPlugin {
     getCssProperty(applicant: string, xpath: string, cssProperty: string): Promise<any>;
 
     getSource(applicant: string): Promise<any>;
+
+    isExisting(applicant: string, xpath: string): Promise<any>;
 }

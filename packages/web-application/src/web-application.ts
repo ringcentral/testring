@@ -1354,4 +1354,9 @@ export class WebApplication extends PluggableModule {
     public async getSource() {
         return await this.client.getSource();
     }
+
+    public async isExisting(xpath) {
+        xpath = this.normalizeSelector(xpath);
+        return await this.client.isExisting(xpath);
+    }
 }

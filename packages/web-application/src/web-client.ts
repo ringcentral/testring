@@ -257,4 +257,8 @@ export class WebClient implements IWebApplicationClient {
     public getSource() {
         return this.makeRequest(BrowserProxyActions.getSource, []);
     }
+
+    public isExisting(xpath) {
+        return this.makeRequest(BrowserProxyActions.isExisting, [xpath]);
+    }
 }
