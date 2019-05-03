@@ -180,6 +180,9 @@ export class WebApplication extends PluggableModule {
         clearElement(xpath) {
             return `Clear element ${this.formatXpath(xpath)}`;
         },
+        getCssProperty(xpath, cssProperty) {
+            return `Get CSS property ${cssProperty} from ${this.formatXpath(xpath)}`;
+        },
     };
 
     constructor(
@@ -1336,5 +1339,12 @@ export class WebApplication extends PluggableModule {
             await this.unregisterAppInDevtool();
         }
         await this.client.end();
+    }
+
+    public async getCssProperty(xpath, cssProperty: string, timeout: number = this.WAIT_TIMEOUT): Promise<any> {
+        await this.waitForExist(xpath, timeout);
+
+        xpath = this.normalizeSelector(xpath);
+        return await this.client.getCssProperty(xpath, cssProperty);
     }
 }

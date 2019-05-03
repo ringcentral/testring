@@ -113,4 +113,6 @@ export interface IBrowserProxyPlugin {
     makeScreenshot(applicant: string): Promise<string | void>;
 
     uploadFile(applicant: string, filePath: string): Promise<string | void>;
+
+    getCssProperty(applicant: string, xpath: string, cssProperty: string): Promise<any>;
 }

@@ -249,4 +249,8 @@ export class WebClient implements IWebApplicationClient {
     public kill() {
         return this.makeRequest(BrowserProxyActions.kill);
     }
+
+    public getCssProperty(xpath, cssProperty) {
+        return this.makeRequest(BrowserProxyActions.getCssProperty, [xpath, cssProperty]);
+    }
 }

@@ -727,6 +727,15 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             return this.wrapWithPromise(client.uploadFile(filePath));
         }
     }
+
+    public async getCssProperty(applicant: string, xpath: string, cssProperty: string): Promise<any> {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.getCssProperty(xpath, cssProperty));
+        }
+    }
 }
 
 export default function seleniumProxy(config: Config) {
