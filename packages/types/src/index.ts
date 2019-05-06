@@ -4,6 +4,8 @@ export * from './test-run-controller';
 
 export * from './pluggable-module';
 
+export * from './client-ws-transport';
+
 export * from './devtool-backend/enums';
 export * from './devtool-backend';
 
