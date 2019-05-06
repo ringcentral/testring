@@ -438,11 +438,15 @@ export class DevtoolWorkerController {
 
             case DevtoolEvents.WORKER_ACTION: {
                 const appId = this.webAppIdByConnectionId.get(connectionId);
-                const workerId = this.workerIdByWebAppId.get(appId as string);
-                const actionType = data.payload.actionType;
+                if (typeof appId === 'string') {
+                    const workerId = this.workerIdByWebAppId.get(appId);
+                    const actionType = data.payload.actionType;
 
-                if (workerId && actionType) {
-                    this.sendToWorkerMessage(workerId, actionType, {});
+                    if (workerId && actionType) {
+                        this.sendToWorkerMessage(workerId, actionType, {});
+                    }
+                } else {
+                    // @TODO make error handler
                 }
                 break;
             }

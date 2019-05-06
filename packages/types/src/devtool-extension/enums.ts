@@ -25,7 +25,7 @@ export const enum ExtensionMessagingTransportTypes {
 export const enum ClientWsTransportEvents {
     OPEN = 'ClientWsTransportEvents/OPEN',
     CLOSE = 'ClientWsTransportEvents/CLOSE',
-    ERROR = 'ClientWsTransportEvents/CLOSE',
+    ERROR = 'ClientWsTransportEvents/ERROR',
     MESSAGE = 'ClientWsTransportEvents/MESSAGE',
 }
 

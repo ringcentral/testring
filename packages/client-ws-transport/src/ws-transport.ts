@@ -1,5 +1,6 @@
 import {
     ClientWsTransportEvents,
+    IClientWsTransport,
     IDevtoolWSHandshakeResponseMessage,
     DevtoolEvents,
 } from '@testring/types';
@@ -14,7 +15,7 @@ interface IQueuedMessage {
     resolve: () => any;
 }
 
-export class ClientWsTransport extends EventEmitter {
+export class ClientWsTransport extends EventEmitter implements IClientWsTransport {
     private url: string;
 
     constructor(
@@ -161,7 +162,7 @@ export class ClientWsTransport extends EventEmitter {
         });
     }
 
-    public send<T>(type: DevtoolEvents, payload: T): Promise<void> {
+    public send(type: DevtoolEvents, payload: any): Promise<void> {
         return new Promise((resolve) => {
             if (this.messagesQueue.length <= 0) {
                 try {

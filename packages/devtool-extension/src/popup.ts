@@ -8,7 +8,7 @@ function renderPopup(config: IExtensionApplicationConfig) {
 
     Object.assign(iframe.style, {
         height: '100px',
-        width: '400px',
+        width: '250px',
         border: 0,
     });
 
