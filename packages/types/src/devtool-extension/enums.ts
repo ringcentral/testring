@@ -28,3 +28,9 @@ export const enum ClientWsTransportEvents {
     ERROR = 'ClientWsTransportEvents/ERROR',
     MESSAGE = 'ClientWsTransportEvents/MESSAGE',
 }
+
+export const enum ExtensionPostMessageTypes {
+    CLEAR_HIGHLIGHTS = 'ExtensionPostMessageTypes/CLEAR_HIGHLIGHTS',
+    ADD_XPATH_HIGHLIGHT = 'ExtensionPostMessageTypes/ADD_XPATH_HIGHLIGHT',
+    REMOVE_XPATH_HIGHLIGHT = 'ExtensionPostMessageTypes/REMOVE_XPATH_HIGHLIGHT',
+}

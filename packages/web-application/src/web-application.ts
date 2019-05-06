@@ -9,6 +9,7 @@ import {
     IWebApplicationRegisterMessage,
     IWebApplicationRegisterCompleteMessage,
     WebApplicationDevtoolCallback,
+    ExtensionPostMessageTypes,
 } from '@testring/types';
 
 import { asyncBreakpoints } from '@testring/async-breakpoints';
@@ -368,11 +369,36 @@ export class WebApplication extends PluggableModule {
         this.logger.error(error);
     }
 
+    protected async devtoolHighlight(xpath: string | ElementPath | null, multiple: boolean = false): Promise<void> {
+        const normalizedXPath = (xpath !== null) ? this.normalizeSelector(xpath, multiple) : null;
+
+        if (this.config.devtool) {
+            try {
+                await this.client.execute((addHighlightXpath) => {
+                    window.postMessage({
+                        type: ExtensionPostMessageTypes.CLEAR_HIGHLIGHTS,
+                    }, '*');
+
+                    if (addHighlightXpath) {
+                        window.postMessage({
+                            type: ExtensionPostMessageTypes.ADD_XPATH_HIGHLIGHT,
+                            xpath: addHighlightXpath,
+                        }, '*');
+                    }
+                }, normalizedXPath);
+            } catch (e) {
+                this.logger.error('Failed to highlight element:', e);
+            }
+        }
+    }
+
     public getSoftAssertionErrors() {
         return [...this.softAssert._errorMessages];
     }
 
     public async waitForExist(xpath, timeout: number = this.WAIT_TIMEOUT, skipMoveToObject: boolean = false) {
+        await this.devtoolHighlight(xpath);
+
         const normalizedXPath = this.normalizeSelector(xpath);
         const exists = await this.client.waitForExist(
             normalizedXPath,
@@ -389,7 +415,9 @@ export class WebApplication extends PluggableModule {
     }
 
     public async waitForRoot(timeout: number = this.WAIT_TIMEOUT) {
-        return this.client.waitForExist(this.getRootSelector().toString(), timeout);
+        const xpath = this.getRootSelector().toString();
+
+        return this.client.waitForExist(xpath, timeout);
     }
 
     // TODO (flops) remove it and make extension via initCustomApp
@@ -532,10 +560,10 @@ export class WebApplication extends PluggableModule {
     }
 
     public async isBecomeVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXpath = this.normalizeSelector(xpath);
 
         try {
-            await this.client.waitForVisible(xpath, timeout);
+            await this.client.waitForVisible(normalizedXpath, timeout);
             return true;
         } catch {
             return false;
@@ -544,10 +572,10 @@ export class WebApplication extends PluggableModule {
 
     public async isBecomeHidden(xpath, timeout: number = this.WAIT_TIMEOUT) {
         const expires = Date.now() + timeout;
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXpath = this.normalizeSelector(xpath);
 
         while (expires - Date.now() >= 0) {
-            const visible = await this.client.isVisible(xpath);
+            const visible = await this.client.isVisible(normalizedXpath);
 
             if (!visible) {
                 return true;
@@ -962,8 +990,12 @@ export class WebApplication extends PluggableModule {
         return this.client.dragAndDrop(xpathSource, xpathDestination);
     }
 
-    public elements(xpath) {
-        return this.client.elements(this.normalizeSelector(xpath, true));
+    public async elements(xpath) {
+        await this.devtoolHighlight(xpath, true);
+
+        const normalizedXpath = this.normalizeSelector(xpath, true);
+
+        return this.client.elements(normalizedXpath);
     }
 
     public async getElementsCount(xpath, timeout: number = this.WAIT_TIMEOUT) {
@@ -1148,9 +1180,11 @@ export class WebApplication extends PluggableModule {
     }
 
     private async getTextsInternal(xpath, trim, allowMultipleNodesInResult = false) {
-        xpath = this.normalizeSelector(xpath, allowMultipleNodesInResult);
+        await this.devtoolHighlight(xpath, allowMultipleNodesInResult);
 
-        const elements: any = await this.client.elements(xpath);
+        const normalizedXpath = this.normalizeSelector(xpath, allowMultipleNodesInResult);
+
+        const elements: any = await this.client.elements(normalizedXpath);
         const result: Array<string> = [];
 
         for (const item of elements) {

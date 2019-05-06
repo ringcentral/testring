@@ -21,3 +21,7 @@ export {
     getMemoryReport,
     getHeapReport,
 } from './memory-usage';
+
+export {
+    throttle,
+} from './throttle';
