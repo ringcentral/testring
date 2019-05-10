@@ -6,7 +6,7 @@ import { ClientWsTransport } from '@testring/client-ws-transport';
 import { PopupWsProvider } from './containers/popup-ws-provider';
 
 async function init() {
-    const config = (window as any).rcRecorderConfig;
+    const config = (window as any).testRingDevtoolConfig;
 
     const wsClient = new ClientWsTransport(config.host, config.wsPort);
     wsClient.connect();
@@ -15,7 +15,7 @@ async function init() {
 
     render(
         <PopupWsProvider wsClient={wsClient} />,
-        document.getElementById('rcRecorderApp'),
+        document.getElementById('popupBlock'),
     );
 }
 

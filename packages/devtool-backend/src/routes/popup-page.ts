@@ -1,7 +1,7 @@
 const pageTemplate = (
     host: string,
     wsPort: number,
-    webAppId: string,
+    appId: string,
     staticHost: string,
 ) => {
     return `
@@ -20,29 +20,29 @@ const pageTemplate = (
         }
     </style>
     <script>
-        window.rcRecorderConfig = {
-            appId: '${ webAppId }',
+        window.testRingDevtoolConfig = {
+            appId: '${ appId }',
             host: '${ host }',
             wsPort: ${ wsPort },
         };
     </script>
 </head>
 <body>
-    <div id="rcRecorderApp" style="width: 100%; height: 100%;">Waiting for initialize</div>
+    <div id="popupBlock" style="width: 100%; height: 100%;"></div>
     <script src="${staticHost}/popup.bundle.js" ></script>
 </body>
 </html>
     `;
 };
 
-export default function popupPage(req, res, store, webAppId) {
+export default function popupPage(req, res, store, appId) {
     const { devtoolConfig } = store.getState();
     const { host, wsPort } = devtoolConfig;
 
     res.send(pageTemplate(
         host,
         wsPort,
-        webAppId,
+        appId,
         '/static',
     ));
 }

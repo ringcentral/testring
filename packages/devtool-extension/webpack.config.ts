@@ -44,6 +44,7 @@ const config: webpack.Configuration = {
         content: './src/content.ts',
         popup: './src/popup.ts',
         options: './src/options.ts',
+        devtools: './src/devtools.ts',
     },
 
     output: {

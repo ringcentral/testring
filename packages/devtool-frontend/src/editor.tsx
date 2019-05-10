@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { render } from 'react-dom';
 
-import { EditorLayout } from './components/EditorLayout';
+import { EditorLayout } from './components/editor-layout';
 
 render(
     <EditorLayout />,
-    document.getElementById('rcRecorderApp'),
+    document.getElementById('editorBlock'),
 );

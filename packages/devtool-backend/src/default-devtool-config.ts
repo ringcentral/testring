@@ -18,11 +18,6 @@ export const defaultDevtoolConfig: IDevtoolServerConfig = {
     router: [
         {
             method: 'get',
-            mask: '/',
-            handler: getRouterPath('index-page'),
-        },
-        {
-            method: 'get',
             mask: '/editor',
             handler: getRouterPath('editor-page'),
         },

@@ -1,6 +1,7 @@
 const pageTemplate = (
     host: string,
     wsPort: number,
+    appId: string,
     staticHost: string,
 ) => {
     return `
@@ -19,27 +20,31 @@ const pageTemplate = (
         }
     </style>
     <script>
-        window.rcRecorderConfig = {
+        window.testRingDevtoolConfig = {
+            appId: '${appId}',
             host: '${ host }',
             wsport: ${ wsPort },
         };
     </script>
 </head>
 <body>
-    <div id="rcRecorderApp" style="width: 100%; height: 100%;"></div>
+    <div id="editorBlock" style="width: 100%; height: 100%;">
+        <p style="margin: 20px">Waiting&nbsp;for&nbsp;initialization</p>
+    </div>
     <script src="${staticHost}/editor.bundle.js" ></script>
 </body>
 </html>
     `;
 };
 
-export default function editorPage(req, res, store) {
+export default function editorPage(req, res, store, appId) {
     const { devtoolConfig } = store.getState();
     const { host, wsPort } = devtoolConfig;
 
     res.send(pageTemplate(
         host,
         wsPort,
+        appId,
         '/static',
     ));
 }
