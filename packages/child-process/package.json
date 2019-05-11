@@ -12,5 +12,8 @@
     "@testring/utils": "0.5.2"
   },
   "author": "RingCentral",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "4.2.0"
+  }
 }

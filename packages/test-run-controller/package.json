@@ -16,6 +16,7 @@
     "@testring/utils": "0.5.2"
   },
   "devDependencies": {
-    "@testring/test-utils": "0.5.2"
+    "@testring/test-utils": "0.5.2",
+    "chai": "4.2.0"
   }
 }

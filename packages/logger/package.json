@@ -20,6 +20,8 @@
     "chalk": "2.4.1"
   },
   "devDependencies": {
-    "@testring/test-utils": "0.5.2"
+    "@testring/test-utils": "0.5.2",
+    "chai": "4.2.0",
+    "sinon": "7.3.2"
   }
 }

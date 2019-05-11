@@ -21,5 +21,8 @@
     "@types/tough-cookie": "2.3.3",
     "request-promise-native": "1.0.7",
     "tough-cookie": "2.4.3"
+  },
+  "devDependencies": {
+    "chai": "4.2.0"
   }
 }

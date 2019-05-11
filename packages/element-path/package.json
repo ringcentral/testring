@@ -8,5 +8,8 @@
     "url": "https://github.com/ringcentral/testring.git"
   },
   "author": "RingCentral",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "4.2.0"
+  }
 }
