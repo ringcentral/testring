@@ -1,7 +1,7 @@
 {
   "name": "@testring/test-utils",
   "version": "0.5.2",
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
     "type": "git",
