@@ -20,15 +20,17 @@ import { Request } from 'express-serve-static-core';
 
 import { Store } from 'redux';
 import { loggerClient } from '@testring/logger';
+import {
+    initStore,
+    devtoolWebAppAction,
+    IDevtoolWebAppRegisterData,
+    devtoolConfigActions,
+    devtoolWorkerStateActions,
+} from '@testring/devtool-store';
+
 
 import { DevtoolHttpServer } from './devtool-http-server';
 import { DevtoolWsServer } from './devtool-ws-server';
-import { initStore } from './store';
-
-
-import { devtoolWebAppAction, IDevtoolWebAppRegisterData } from '../reducers/web-applications-reducer';
-import { devtoolConfigActions } from '../reducers/devtool-config-reducer';
-import { devtoolWorkerStateActions } from '../reducers/worker-state-reducer';
 
 
 export class DevtoolWorkerController {

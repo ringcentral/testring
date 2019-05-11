@@ -1,0 +1,18 @@
+{
+  "name": "@testring/devtool-store",
+  "version": "0.5.2",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "dependencies": {
+    "@testring/types": "0.5.2",
+    "redux": "4.0.1"
+  },
+  "devDependencies": {
+  }
+}
