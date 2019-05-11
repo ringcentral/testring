@@ -58,8 +58,11 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
                 apply: (target, thisArg, argumentsList) => {
                     if (thisArg === proxy) {
                         return Reflect.get(ctx, key).apply(instance, argumentsList);
-                    } else if (thisArg instanceof instance.constructor && typeof thisArg.__getInstance === 'function') {
-                        return Reflect.get(ctx, key).apply(thisArg.__getInstance(), argumentsList);
+                    } else if (
+                        thisArg instanceof instance.constructor
+                        && typeof (thisArg as any).__getInstance === 'function'
+                    ) {
+                        return Reflect.get(ctx, key).apply((thisArg as any).__getInstance(), argumentsList);
                     } else {
                         return Reflect.get(ctx, key).apply(thisArg, argumentsList);
                     }

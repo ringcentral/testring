@@ -7,7 +7,7 @@
       "experimentalObjectRestSpread": true
     }
   },
-  "parser": "typescript-eslint-parser",
+  "parser": "@typescript-eslint/parser",
   "plugins": ["typescript"],
   "env": {
     "es6": true,
