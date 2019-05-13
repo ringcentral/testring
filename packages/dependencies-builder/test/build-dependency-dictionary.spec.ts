@@ -13,16 +13,22 @@ describe('buildDependencyDictionary', () => {
         const indexContent = await fixtureReader('index.js');
 
         const file = {
-            content: indexContent,
+            transpiledSource: indexContent,
+            source: indexContent,
             path: indexPath,
         };
 
-        const dictionary = await buildDependencyDictionary(file, (filePath) => fixtureReader(filePath));
+        const dictionary = await buildDependencyDictionary(file, async (filePath) => {
+            return {
+                source: await fixtureReader(filePath),
+                transpiledSource: await fixtureReader(filePath),
+            };
+        });
 
         chai.expect(dictionary).to.have.all.keys(
             fixtureResolver('index.js'),
             fixtureResolver('dependency-1.js'),
-            fixtureResolver('dependency-2.js')
+            fixtureResolver('dependency-2.js'),
         );
     });
 });

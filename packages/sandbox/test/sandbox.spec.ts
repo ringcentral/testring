@@ -189,13 +189,15 @@ describe('Sandbox', () => {
                 [filePath1]: {
                     [sourceName2]: {
                         path: filePath2,
-                        content: source2,
+                        source: source2,
+                        transpiledSource: source2,
                     },
                 },
                 [filePath2]: {
                     [sourceName1]: {
                         path: filePath1,
-                        content: source1,
+                        source: source1,
+                        transpiledSource: source1,
                     },
                 },
             });
@@ -229,7 +231,8 @@ describe('Sandbox', () => {
                     [filePath1]: {
                         [sourceName2]: {
                             path: filePath2,
-                            content: source2,
+                            source: source2,
+                            transpiledSource: source2,
                         },
                     },
                 });

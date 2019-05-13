@@ -5,7 +5,7 @@ export const enum FSReaderPlugins {
 
 export interface IFile {
     path: string;
-    content: string;
+    source: string;
 }
 
 export interface IFSReader {

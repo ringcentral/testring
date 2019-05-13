@@ -16,8 +16,13 @@ class Sandbox {
 
     public exports = {};
 
-    constructor(private source: string, private filename: string, private dependencies: DependencyDict) {
-        this.context = this.createContext(this.filename, this.dependencies);
+    constructor(
+        private source: string,
+        private filename: string,
+        private dependencies: DependencyDict,
+        private isTranspiled: boolean = false,
+    ) {
+        this.context = this.createContext(this.filename);
         Sandbox.modulesCache.set(filename, this);
     }
 
@@ -33,9 +38,15 @@ class Sandbox {
         this.isCompiling = true;
 
         const context = vm.createContext(this.getContext());
-        const script = new Script(this.source, this.filename);
+
+        /*
+            Giving a time for node to load sourcemaps and only then set breakpoints
+            in that case breakpoints won't fire on source file
+         */
+        const filename = this.isTranspiled ? `${this.filename}$` : this.filename;
 
         try {
+            const script = new Script(this.source, filename);
             this.runInContext(script, context);
         } finally {
             this.isCompiled = true;
@@ -61,14 +72,14 @@ class Sandbox {
         Sandbox.modulesCache.clear();
     }
 
-    public static async evaluateScript(filename: string, code: string): Promise<any> {
+    public static async evaluateScript(filename: string, source: string): Promise<any> {
         if (!Sandbox.modulesCache.has(filename)) {
             throw new Error(`Sandbox ${filename} is not created`);
         }
 
         const sandbox = Sandbox.modulesCache.get(filename) as Sandbox;
         const context = vm.createContext(sandbox.getContext());
-        const script = new Script(code, filename);
+        const script = new Script(source, filename);
 
         sandbox.isCompiled = false;
         sandbox.isCompiling = true;
@@ -95,14 +106,16 @@ class Sandbox {
             dependencies &&
             dependencies[requestPath]
         ) {
-            const { content, path } = dependencies[requestPath];
+            const { source, transpiledSource, path } = dependencies[requestPath];
 
             let dependencySandbox;
 
             if (Sandbox.modulesCache.has(path)) {
                 dependencySandbox = Sandbox.modulesCache.get(path);
             } else {
-                dependencySandbox = new Sandbox(content, path, this.dependencies);
+                const isTranspiled = source === transpiledSource;
+
+                dependencySandbox = new Sandbox(transpiledSource, path, this.dependencies, isTranspiled);
 
                 Sandbox.modulesCache.set(path, dependencySandbox);
             }
@@ -113,7 +126,7 @@ class Sandbox {
         return requirePackage(requestPath, this.filename);
     }
 
-    private createContext(filename: string, dependencies) {
+    private createContext(filename: string) {
         const moduleObject = {
             filename: filename,
             id: filename,

@@ -12,6 +12,7 @@ module.exports = async (config) =>  ({
             presets: [
                 'es2015',
             ],
+            sourceMaps: config.devtool ? 'inline' : false,
         }],
     ],
 });

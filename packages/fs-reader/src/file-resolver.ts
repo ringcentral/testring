@@ -18,7 +18,7 @@ export function readFile(file: string): Promise<IFile | null> {
 
                 return resolve({
                     path: filePath,
-                    content: data.toString(),
+                    source: data.toString(),
                 });
             });
         } else {

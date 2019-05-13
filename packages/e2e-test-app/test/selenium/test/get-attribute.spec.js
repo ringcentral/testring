@@ -1,4 +1,5 @@
 import { run } from 'testring';
+import '../import-file';
 
 run(async (api) => {
     await api.application.url('https://service.ringcentral.com/');

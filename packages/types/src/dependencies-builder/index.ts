@@ -1,12 +1,17 @@
 import { IFile } from '../index';
 
-export type DependencyFileReader = (filePath: string) => Promise<string>;
+export type DependencyFileReaderResult = { source: string; transpiledSource: string };
+
+export type DependencyFileReader = (filePath: string) =>
+    DependencyFileReaderResult | Promise<DependencyFileReaderResult>;
 
 export interface IDependencyDictionary<T> {
     [key: string]: T;
 }
 
-export interface IDependencyDictionaryNode extends IFile {}
+export interface IDependencyDictionaryNode extends IFile {
+    transpiledSource: string;
+}
 
 export interface IDependencyTreeNode extends IDependencyDictionaryNode {
     nodes: IDependencyDictionary<IDependencyTreeNode> | null;

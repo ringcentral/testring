@@ -2,7 +2,6 @@ import { parse } from 'babylon';
 import { CallExpression, Identifier } from 'babel-types';
 import traverse, { NodePath } from 'babel-traverse';
 import {
-    IFile,
     IDependencyDictionary,
     IDependencyDictionaryNode,
     IDependencyTreeNode,
@@ -48,23 +47,27 @@ function getDependencies(absolutePath: string, content: string): Array<string> {
 
 function createTreeNode(
     path: string,
-    content: string,
-    nodes: IDependencyDictionary<IDependencyTreeNode> | null
+    source: string,
+    transpiledSource: string,
+    nodes: IDependencyDictionary<IDependencyTreeNode> | null,
 ): IDependencyTreeNode {
     return {
-        content,
+        transpiledSource,
+        source,
         path,
         nodes,
     };
 }
 
 
-function createDictionaryNode(path: string, content: string): IDependencyDictionaryNode {
+function createDictionaryNode(path: string, source: string, transpiledSource: string): IDependencyDictionaryNode {
     return {
-        content,
+        transpiledSource,
+        source,
         path,
     };
 }
+
 
 async function buildNodes(
     parentPath: string,
@@ -109,11 +112,12 @@ async function buildNodes(
             continue;
         }
 
-        const fileContent = await readFile(dependencyAbsolutePath);
+        const file = await readFile(dependencyAbsolutePath);
 
         node = createTreeNode(
             dependencyAbsolutePath,
-            fileContent,
+            file.source,
+            file.transpiledSource,
             null
         );
 
@@ -121,29 +125,10 @@ async function buildNodes(
         nodesCache[dependencyAbsolutePath] = node;
         resultNodes[dependency] = node;
 
-        node.nodes = await buildNodes(dependencyAbsolutePath, fileContent, nodesCache, readFile);
+        node.nodes = await buildNodes(dependencyAbsolutePath, file.transpiledSource, nodesCache, readFile);
     }
 
     return resultNodes;
-}
-
-export async function buildDependencyGraph(
-    file: IFile,
-    readFile: DependencyFileReader
-): Promise<IDependencyTreeNode> {
-    const tree: IDependencyTreeNode = createTreeNode(
-        file.path,
-        file.content,
-        null
-    );
-
-    const nodesCache = {
-        [file.path]: tree,
-    };
-
-    tree.nodes = await buildNodes(file.path, file.content, nodesCache, readFile);
-
-    return tree;
 }
 
 
@@ -157,19 +142,22 @@ function getNodeDependencies(node: IDependencyTreeNode) {
     for (let request in node.nodes) {
         nodes[request] = createDictionaryNode(
             node.nodes[request].path,
-            node.nodes[request].content
+            node.nodes[request].source,
+            node.nodes[request].transpiledSource,
         );
     }
 
     return nodes;
 }
 
-export async function buildDependencyDictionary(file: IFile, readFile: DependencyFileReader) {
+
+export async function buildDependencyDictionary(file: IDependencyDictionaryNode, readFile: DependencyFileReader) {
     const dictionary: DependencyDict = {};
 
     const tree: IDependencyTreeNode = createTreeNode(
         file.path,
-        file.content,
+        file.source,
+        file.transpiledSource,
         null
     );
 
@@ -177,7 +165,7 @@ export async function buildDependencyDictionary(file: IFile, readFile: Dependenc
         [file.path]: tree,
     };
 
-    tree.nodes = await buildNodes(file.path, file.content, nodesCache, readFile);
+    tree.nodes = await buildNodes(file.path, file.transpiledSource, nodesCache, readFile);
 
     for (let key in nodesCache) {
         dictionary[key] = getNodeDependencies(nodesCache[key]);

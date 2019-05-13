@@ -18,7 +18,8 @@ describe('TestWorkerInstance', () => {
     context('test execution', () => {
         it('should run sync test', async () => {
             const file = {
-                content: defaultSyncTestContent,
+                source: defaultSyncTestContent,
+                transpiledSource: defaultSyncTestContent,
                 path: defaultFilename,
             };
 
@@ -36,8 +37,10 @@ describe('TestWorkerInstance', () => {
         });
 
         it('should fail sync test correctly', (callback) => {
+            const source = 'throw new Error("Something happened")';
             const file = {
-                content: 'throw new Error("Something happened")',
+                source,
+                transpiledSource: source,
                 path: defaultFilename,
             };
 
@@ -61,7 +64,8 @@ describe('TestWorkerInstance', () => {
 
     it('should success execution, if process was killed by user during execution', () => {
         const file = {
-            content: defaultSyncTestContent,
+            source: defaultSyncTestContent,
+            transpiledSource: defaultSyncTestContent,
             path: defaultFilename,
         };
 
@@ -79,7 +83,8 @@ describe('TestWorkerInstance', () => {
     context('compilation', () => {
         it('should compile source without errors', (callback) => {
             const file = {
-                content: defaultSyncTestContent,
+                source: defaultSyncTestContent,
+                transpiledSource: defaultSyncTestContent,
                 path: defaultFilename,
             };
 
@@ -108,7 +113,8 @@ describe('TestWorkerInstance', () => {
 
         it('should handle compilation exception', (callback) => {
             const file = {
-                content: defaultSyncTestContent,
+                source: defaultSyncTestContent,
+                transpiledSource: defaultSyncTestContent,
                 path: defaultFilename,
             };
 

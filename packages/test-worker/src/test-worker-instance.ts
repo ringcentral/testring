@@ -19,6 +19,8 @@ import {
     FileCompiler,
     TestStatus,
     IWorkerEmitter,
+    IDependencyDictionaryNode,
+    DependencyFileReaderResult,
 } from '@testring/types';
 
 const WORKER_ROOT = require.resolve(
@@ -51,7 +53,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private workerID = `worker/${generateUniqId()}`;
 
-    private logger = loggerClient;
+    private logger = loggerClient.withPrefix('[test-worker-instance]');
 
     private workerExitHandler = (exitCode) => {
         this.clearWorkerHandlers();
@@ -158,24 +160,33 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         parameters: any,
         envParameters: any,
     ) {
-        const additionalFiles = await this.beforeCompile([], file.path, file.content);
+        const additionalFiles = await this.beforeCompile([], file.path, file.source);
 
         // Calling external hooks to compile source
-        const compiledSource = await this.compileSource(file.content, file.path);
+        const transpiledSource = await this.compileSource(file.source, file.path);
         // TODO implement code instrumentation here
 
-        const compiledFile = {
+        const transpiledFile: IDependencyDictionaryNode = {
+            transpiledSource,
             path: file.path,
-            content: compiledSource,
+            source: file.source,
         };
 
-        let dependencies = await buildDependencyDictionary(compiledFile, this.readDependency.bind(this));
+        let dependencies = await buildDependencyDictionary(transpiledFile, this.readDependency.bind(this));
 
         for (let i = 0, len = additionalFiles.length; i < len; i++) {
             const file = await this.fsReader.readFile(additionalFiles[i]);
 
             if (file) {
-                const additionalDependencies = await buildDependencyDictionary(file, this.readDependency.bind(this));
+                const dependencyNode: IDependencyDictionaryNode = {
+                    transpiledSource: await this.compileSource(file.source, file.path),
+                    ...file,
+                };
+
+                const additionalDependencies = await buildDependencyDictionary(
+                    dependencyNode,
+                    this.readDependency.bind(this)
+                );
 
                 dependencies = await mergeDependencyDictionaries(dependencies, additionalDependencies);
             }
@@ -183,7 +194,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         return {
             waitForRelease: this.config.waitForRelease,
-            ...compiledFile,
+            ...transpiledFile,
             dependencies,
             parameters,
             envParameters,
@@ -329,11 +340,14 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         return worker;
     }
 
-    private async readDependency(dependencyPath: string): Promise<string> {
+    private async readDependency(dependencyPath: string): Promise<DependencyFileReaderResult> {
         const rawFile = await this.fsReader.readFile(dependencyPath);
-        const rawContent = rawFile ? rawFile.content : '';
+        const source = rawFile ? rawFile.source : '';
 
-        return this.compile(rawContent, dependencyPath);
+        return {
+            source,
+            transpiledSource: await this.compile(source, dependencyPath),
+        };
     }
 
     private clearWorkerHandlers() {

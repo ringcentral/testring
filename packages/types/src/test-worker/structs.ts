@@ -1,10 +1,9 @@
-import { IFile } from '../fs-reader';
 import { TestStatus } from './enums';
-import { DependencyDict } from '../dependencies-builder';
+import { DependencyDict, IDependencyDictionaryNode } from '../dependencies-builder';
 
 export type FileCompiler = (source: string, filename: string) => Promise<string>;
 
-export interface ITestExecutionMessage extends IFile {
+export interface ITestExecutionMessage extends IDependencyDictionaryNode {
     waitForRelease: boolean;
     dependencies: DependencyDict;
     // TODO move types here
@@ -12,9 +11,7 @@ export interface ITestExecutionMessage extends IFile {
     envParameters: any;
 }
 
-export interface ITestEvaluationMessage extends IFile {
-
-}
+export interface ITestEvaluationMessage extends IDependencyDictionaryNode {}
 
 export interface ITestExecutionCompleteMessage {
     status: TestStatus;

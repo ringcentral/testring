@@ -7,7 +7,8 @@ const DEFAULT_TIMEOUT = 60 * 1000;
 
 const generateTestFile = (index: number) => ({
     path: `qwerty-${index}.js`,
-    content: `console.log(${index})`,
+    source: `console.log(${index})`,
+    transpiledSource: `console.log(${index})`,
     meta: {},
 });
 

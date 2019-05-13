@@ -167,7 +167,11 @@ export class WorkerController {
                 await this.completeExecutionSuccessfully();
             }
         } catch (error) {
-            if (!message.waitForRelease) {
+            if (message.waitForRelease) {
+                if (!(error instanceof BreakStackError)) {
+                    this.logger.error(error);
+                }
+            } else {
                 if (error instanceof BreakStackError) {
                     await this.completeExecutionSuccessfully();
                 } else {
@@ -179,7 +183,7 @@ export class WorkerController {
 
     private evaluateCode(message: ITestEvaluationMessage) {
         this.setPendingState(true);
-        Sandbox.evaluateScript(message.path, message.content);
+        Sandbox.evaluateScript(message.path, message.source);
         this.setPendingState(false);
     }
 
@@ -214,8 +218,9 @@ export class WorkerController {
     private async runTest(message: ITestExecutionMessage): Promise<void> {
         // TODO pass message.parameters somewhere inside web application
         const testID = path.relative(process.cwd(), message.path);
+        const isTranspiled = message.source === message.transpiledSource;
 
-        const sandbox = new Sandbox(message.content, message.path, message.dependencies);
+        const sandbox = new Sandbox(message.transpiledSource, message.path, message.dependencies, isTranspiled);
         const bus = this.testAPI.getBus();
 
         this.testAPI.setEnvironmentParameters(message.envParameters);
