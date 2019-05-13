@@ -125,8 +125,14 @@ export interface IDevtoolWSGetStoreStateMessage {
 }
 
 
-export interface IDevtoolWSUpdateStoreStateMessage {
+export interface IDevtoolWSStoreStateMessage {
     type: DevtoolEvents.STORE_STATE;
+    // @TODO put here store state
+    payload: any;
+}
+
+export interface IDevtoolWSDiffStoreStateMessage {
+    type: DevtoolEvents.STORE_STATE_DIFF;
     // @TODO put here store state
     payload: any;
 }
@@ -141,8 +147,8 @@ export interface IDevtoolWSCallWorkerAction {
 export type IDevtoolWSMessage = IDevtoolWSHandshakeResponseMessage
     | IDevtoolWSHandshakeRequestMessage
     | IDevtoolWSGetStoreStateMessage
-    | IDevtoolWSGetStoreStateMessage
-    | IDevtoolWSUpdateStoreStateMessage
+    | IDevtoolWSStoreStateMessage
+    | IDevtoolWSDiffStoreStateMessage
     | IDevtoolWSCallWorkerAction;
 
 

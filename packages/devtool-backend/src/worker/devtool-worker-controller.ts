@@ -407,12 +407,25 @@ export class DevtoolWorkerController {
                 const store = this.storesByWebAppId.get(appId);
 
                 if (store) {
+                    let previousState = store.getState();
+
                     const unsubscribe = store.subscribe(() => {
+                        const currentState = store.getState();
+                        const diffState = {};
+
+                        for (let key in currentState) {
+                            if (previousState[key] !== currentState[key]) {
+                                diffState[key] = currentState[key];
+                            }
+                        }
+
                         this.wsServer.send(
                             connectionId,
-                            DevtoolEvents.STORE_STATE,
-                            store.getState(),
+                            DevtoolEvents.STORE_STATE_DIFF,
+                            diffState,
                         );
+
+                        previousState = currentState;
                     });
                     this.handlersByConnectionId.set(connectionId, unsubscribe);
                 }

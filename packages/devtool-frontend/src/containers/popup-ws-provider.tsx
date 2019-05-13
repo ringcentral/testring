@@ -41,6 +41,8 @@ export class PopupWsProvider extends Component<IPopupWsProviderProps, IPopupWsPr
         this.wsMessageHandler = (data: IDevtoolWSMessage) => {
             if (data.type === DevtoolEvents.STORE_STATE) {
                 this.handleStoreUpdate(data.payload.workerState);
+            } else if (data.type === DevtoolEvents.STORE_STATE_DIFF && data.payload.workerState) {
+                this.handleStoreUpdate(data.payload.workerState);
             }
         };
 
