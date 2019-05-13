@@ -50,7 +50,10 @@ class RunCommand implements ICLICommand {
         const devtoolEnabled = this.config.devtool;
 
         if (devtoolEnabled) {
-            this.devtoolServerController = await this.initDevtoolServer();
+            this.logger.info('Recorder Server is enabled');
+
+            this.devtoolServerController = new DevtoolServerController(this.transport);
+            await this.devtoolServerController.init();
         }
 
         const testWorker = new TestWorker(this.transport, {
@@ -113,15 +116,6 @@ class RunCommand implements ICLICommand {
         } else {
             this.logger.info(`Tests done: ${tests.length}/${tests.length}.`);
         }
-    }
-
-    async initDevtoolServer() {
-        this.logger.info('Recorder Server is enabled');
-
-        const devtoolServerController = new DevtoolServerController(this.transport);
-        await devtoolServerController.init();
-
-        return devtoolServerController;
     }
 
     async shutdown() {

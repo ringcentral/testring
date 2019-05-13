@@ -30,8 +30,15 @@ export class DevtoolHttpServer implements IServer {
         this.initRoutes();
         this.initStaticRoutes();
 
-        this.waitForStart = new Promise((resolve) => {
-            this.server.listen(this.port, this.hostName, () => resolve());
+        this.waitForStart = new Promise((resolve, reject) => {
+            const errorHandler = (error) => reject(error);
+
+            this.server
+                .listen(this.port, this.hostName, () => {
+                    this.server.removeListener('error', errorHandler);
+                    resolve();
+                })
+                .on('error', errorHandler);
         });
 
         await this.waitForStart;

@@ -27,14 +27,16 @@ export class DevtoolWsServer extends EventEmitter implements IServer {
 
     public async run(): Promise<void> {
         await new Promise((resolve, reject) => {
-            try {
-                this.server = new WSS({
-                    host: this.hostName,
-                    port: this.port,
-                }, resolve);
-            } catch (e) {
-                reject(e);
-            }
+            const errorHandler = (error) => reject(error);
+            this.server = new WSS({
+                host: this.hostName,
+                port: this.port,
+            }, () => {
+                this.server.removeListener('error', errorHandler);
+                resolve();
+            });
+
+            this.server.on('error', errorHandler);
 
             this.server.on('connection', (socket: WebSocket) => this.registerConnection(socket));
         });

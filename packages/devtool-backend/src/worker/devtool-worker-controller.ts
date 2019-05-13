@@ -460,7 +460,8 @@ export class DevtoolWorkerController {
             try {
                 await this.httpServer.stop();
             } catch (err) {
-                this.logger.warn(err);
+                // eslint-disable-next-line no-console
+                console.error(err);
             }
         }
 
@@ -468,7 +469,8 @@ export class DevtoolWorkerController {
             try {
                 await this.wsServer.stop();
             } catch (err) {
-                this.logger.warn(err);
+                // eslint-disable-next-line no-console
+                console.error(err);
             }
         }
     }
