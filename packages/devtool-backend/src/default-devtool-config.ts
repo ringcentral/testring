@@ -4,6 +4,7 @@ import {
     DEFAULT_RECORDER_WS_PORT,
 } from './constants';
 import { IDevtoolServerConfig } from '@testring/types';
+import { getAvailablePort } from '@testring/utils';
 
 import * as path from 'path';
 
@@ -34,3 +35,30 @@ export const defaultDevtoolConfig: IDevtoolServerConfig = {
         },
     },
 };
+
+export async function getDevtoolConfig(
+    host: string = 'localhost',
+    _httpPort?: number,
+    _wsPort?: number,
+): Promise<IDevtoolServerConfig> {
+    let httpPort: number;
+    let wsPort: number;
+
+    if (typeof _httpPort === 'number') {
+        httpPort = _httpPort;
+    } else {
+        httpPort = await getAvailablePort([DEFAULT_RECORDER_HTTP_PORT], host);
+    }
+
+    if (typeof _wsPort === 'number') {
+        wsPort = _wsPort;
+    } else {
+        wsPort = await getAvailablePort([DEFAULT_RECORDER_WS_PORT], host);
+    }
+
+    return {
+        ...defaultDevtoolConfig,
+        httpPort,
+        wsPort,
+    };
+}

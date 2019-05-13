@@ -20,7 +20,11 @@ class RunCommand implements ICLICommand {
     private httpServer: HttpServer;
     private devtoolServerController: DevtoolServerController;
 
-    constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {}
+    constructor(
+        private config: IConfig,
+        private transport: ITransport,
+        private loggerServer: LoggerServer,
+    ) {}
 
     formatJSON(obj: object) {
         const separator = '⋅';
@@ -47,6 +51,8 @@ class RunCommand implements ICLICommand {
     }
 
     async execute() {
+        this.logger.info('User config:\n', this.formatJSON(this.config));
+
         const devtoolEnabled = this.config.devtool;
 
         if (devtoolEnabled) {
@@ -73,14 +79,13 @@ class RunCommand implements ICLICommand {
 
         this.webApplicationController = new WebApplicationController(this.browserProxyController, this.transport);
 
-        const loggerServer = new LoggerServer(this.config, this.transport, this.stdout);
         const fsReader = new FSReader();
         const httpClient = new HttpClient(this.transport, {
             httpThrottle: this.config.httpThrottle,
         });
 
         applyPlugins({
-            logger: loggerServer,
+            logger: this.loggerServer,
             fsReader: fsReader,
             testWorker: testWorker,
             browserProxy: this.browserProxyController,
@@ -88,8 +93,6 @@ class RunCommand implements ICLICommand {
             httpClientInstance: httpClient,
             devtool: this.devtoolServerController,
         }, this.config);
-
-        this.logger.info('User config:\n', this.formatJSON(this.config));
 
         const tests = await fsReader.find(this.config.tests);
 
@@ -123,7 +126,7 @@ class RunCommand implements ICLICommand {
         const testRunController = this.testRunController;
         const browserProxyController = this.browserProxyController;
         const webApplicationController = this.webApplicationController;
-        const devtoolServer = this.devtoolServerController;
+        const devtoolServerController = this.devtoolServerController;
 
         this.httpServer = (null as any);
         this.testRunController = (null as any);
@@ -135,15 +138,15 @@ class RunCommand implements ICLICommand {
         webApplicationController && webApplicationController.kill();
         testRunController && await testRunController.kill();
         browserProxyController && await browserProxyController.kill();
-        devtoolServer && await devtoolServer.kill();
+        devtoolServerController && await devtoolServerController.kill();
     }
 }
 
-export function runTests(config, transport, stdout) {
+export function runTests(config, transport, loggerServer) {
     if (typeof config.tests !== 'string') {
         throw new Error('required field --tests in arguments or config');
     }
 
-    return new RunCommand(config, transport, stdout);
+    return new RunCommand(config, transport, loggerServer);
 }
 

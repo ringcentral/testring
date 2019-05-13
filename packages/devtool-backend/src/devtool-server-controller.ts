@@ -18,7 +18,7 @@ import { fork } from '@testring/child-process';
 import { generateUniqId } from '@testring/utils';
 import { PluggableModule } from '@testring/pluggable-module';
 import { loggerClient } from '@testring/logger';
-import { defaultDevtoolConfig } from './default-devtool-config';
+import { getDevtoolConfig } from './default-devtool-config';
 
 import { extensionId } from '@testring/devtool-extension';
 
@@ -40,10 +40,6 @@ export class DevtoolServerController extends PluggableModule implements IDevtool
             DevtoolPluginHooks.beforeStop,
             DevtoolPluginHooks.afterStop,
         ]);
-    }
-
-    private getConfig(): IDevtoolServerConfig {
-        return defaultDevtoolConfig;
     }
 
     public getRuntimeConfiguration(): IDevtoolRuntimeConfiguration {
@@ -131,7 +127,9 @@ export class DevtoolServerController extends PluggableModule implements IDevtool
     }
 
     public async init() {
-        this.config = await this.callHook<IDevtoolServerConfig>(DevtoolPluginHooks.beforeStart, this.getConfig());
+        const config = await getDevtoolConfig();
+
+        this.config = await this.callHook<IDevtoolServerConfig>(DevtoolPluginHooks.beforeStart, config);
 
         await this.startServer();
 

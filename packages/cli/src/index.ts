@@ -73,6 +73,10 @@ createField('devtool', {
 
 // CLI entry point, it makes all initialization job and
 // handles all errors, that was not cached inside command
+let loggerServer: LoggerServer | null = null;
+const getLoggerServer = (config: IConfig) => {
+    return loggerServer ? loggerServer : new LoggerServer(config, transport, process.stdout);
+};
 
 export const runCLI = async (argv: Array<string>) => {
     const args = yargs.parse(argv);
@@ -85,7 +89,7 @@ export const runCLI = async (argv: Array<string>) => {
     switch (command) {
         case undefined:
         case 'run':
-            commandExecution = runTests(config, transport, process.stdout);
+            commandExecution = runTests(config, transport, getLoggerServer(config));
             break;
 
         default:
@@ -125,7 +129,7 @@ export const runCLI = async (argv: Array<string>) => {
 
         isExitHandling = true;
 
-        new LoggerServer(config, transport, process.stdout);
+        getLoggerServer(config);
 
         loggerClient.error(exception);
 
