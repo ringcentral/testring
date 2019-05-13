@@ -9,6 +9,7 @@ type Monaco = typeof monacoEditor;
 type IStandaloneCodeEditor = monacoEditor.editor.IStandaloneCodeEditor;
 
 type EditorState = {
+    language: string;
     code: string;
     editor: null | IStandaloneCodeEditor;
     monaco: null | Monaco;
@@ -22,6 +23,7 @@ const isEditor = (obj: IStandaloneCodeEditor | null): obj is IStandaloneCodeEdit
 
 export class Editor extends React.Component<{}, EditorState> {
     state = {
+        language: 'javascript',
         code: '// type your code...',
         editor: null,
         monaco: null,
@@ -67,7 +69,7 @@ export class Editor extends React.Component<{}, EditorState> {
     }
 
     render() {
-        const { code } = this.state;
+        const { code, language } = this.state;
 
         const options = {
             selectOnLineNumbers: true,
@@ -79,7 +81,8 @@ export class Editor extends React.Component<{}, EditorState> {
                 onClick={this.onChange.bind(this)}
                 onKeyUp={this.onChange.bind(this)}>
                 <MonacoEditor
-                    language="javascript"
+                    theme="vs"
+                    language={language}
                     value={code}
                     options={options}
                     editorDidMount={this.editorDidMountHandler}

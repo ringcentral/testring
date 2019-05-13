@@ -2,6 +2,9 @@ import * as path from 'path';
 import * as webpack from 'webpack';
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin';
 
+const APP_DIR = path.resolve(__dirname, './src');
+const MONACO_DIR = path.resolve(__dirname, './node_modules/monaco-editor');
+
 const config: webpack.Configuration = {
     mode: 'development',
     entry: {
@@ -9,6 +12,7 @@ const config: webpack.Configuration = {
         popup: './src/popup.tsx',
     },
     output: {
+        publicPath: '/static/',
         path: path.resolve(__dirname, 'dist'),
         filename: '[name].bundle.js',
     },
@@ -17,7 +21,7 @@ const config: webpack.Configuration = {
     },
     plugins: [
         new MonacoWebpackPlugin({
-            languages: ['javascript'],
+            languages: ['javascript', 'typescript', 'json'],
         }),
     ],
     module: {
@@ -28,7 +32,7 @@ const config: webpack.Configuration = {
             },
             {
                 test: /\.css$/,
-                exclude: /node_modules/,
+                include: APP_DIR,
                 use: [
                     {
                         loader: 'style-loader',
@@ -44,7 +48,7 @@ const config: webpack.Configuration = {
             },
             {
                 test: /\.css$/,
-                include: /node_modules/,
+                include: MONACO_DIR,
                 use: [
                     {
                         loader: 'style-loader',
