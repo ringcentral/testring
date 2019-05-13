@@ -22,10 +22,12 @@ export class HighlightElement {
         const coords = node.getBoundingClientRect();
         const width = node.offsetWidth;
         const height = node.offsetHeight;
+        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
         Object.assign(this.htmlBlock.style, {
-            left: `${coords.left}px`,
-            top: `${coords.top}px`,
+            left: `${coords.left + scrollLeft}px`,
+            top: `${coords.top + scrollTop}px`,
             width: `${width}px`,
             height: `${height}px`,
         });

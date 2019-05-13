@@ -2,42 +2,39 @@ import { throttle } from '@testring/utils';
 
 import { HighlightElement } from './highlight-element';
 
-function whichTransitionEvent(document: Document): string | null {
+function whichEvent(eventsObject: { [key: string]: string }, document: Document): string | null {
     let el = document.createElement('fakeelement');
 
-    let transitions = {
-        'transition'      : 'transitionend',
-        'WebkitTransition': 'webkitTransitionEnd',
-    };
-
-    for (let key in transitions) {
+    for (let key in eventsObject) {
         if (el.style[key] !== undefined) {
-            return transitions[key];
+            return eventsObject[key];
         }
     }
 
     return null;
 }
 
-function whichAnimationEvent(document: Document): string | null {
-    let el = document.createElement('fakeelement');
+const whichTransitionCancelEvent = whichEvent.bind(this, {
+    'transitioncancel': 'transitioncancel',
+});
 
-    let animations = {
-        'animation'      : 'animationend',
-        'WebkitAnimation': 'webkitAnimationEnd',
-    };
+const whichTransitionEndEvent = whichEvent.bind(this, {
+    'transition'      : 'transitionend',
+    'WebkitTransition': 'webkitTransitionEnd',
+});
 
-    for (let key in animations) {
-        if (el.style[key] !== undefined) {
-            return animations[key];
-        }
-    }
+const whichAnimationIterationEvent = whichEvent.bind(this, {
+    'animationiteration': 'animationiteration',
+    'webkitAnimationIteration': 'webkitAnimationIteration',
+});
 
-    return null;
-}
+const whichAnimationEndEvent = whichEvent.bind(this, {
+    'animation'      : 'animationend',
+    'WebkitAnimation': 'webkitAnimationEnd',
+});
 
 const ROOT_STYLES = {
-    position: 'fixed',
+    position: 'absolute',
     display: 'block',
     padding: '0',
     margin: '0',
@@ -93,15 +90,19 @@ export class ElementHighlightController {
 
     private initObservers() {
         const document = this.getDocument();
-        const animationEvent = whichAnimationEvent(document);
-        const transitionEvent = whichTransitionEvent(document);
+        const transitionCancelEvent = whichTransitionCancelEvent(document);
+        const transitionEndEvent = whichTransitionEndEvent(document);
+        const animationIterationEvent = whichAnimationIterationEvent(document);
+        const animationEndEvent = whichAnimationEndEvent(document);
 
         this.redrawHandler = throttle(() => this.redrawHighlights(), 50);
         this.checkElementsHandler = throttle(() => this.checkHtmlElements(), 150);
 
         this.window.addEventListener('resize', this.redrawHandler);
-        animationEvent && document.body.addEventListener(animationEvent, this.redrawHandler);
-        transitionEvent && document.body.addEventListener(transitionEvent, this.redrawHandler);
+        transitionCancelEvent && document.body.addEventListener(transitionCancelEvent, this.redrawHandler);
+        transitionEndEvent && document.body.addEventListener(transitionEndEvent, this.redrawHandler);
+        animationIterationEvent && document.body.addEventListener(animationIterationEvent, this.redrawHandler);
+        animationEndEvent && document.body.addEventListener(animationEndEvent, this.redrawHandler);
 
         const config = {
             attributes: true,
@@ -236,8 +237,11 @@ export class ElementHighlightController {
 
     public destroy(): void {
         const document = this.getDocument();
-        const animationEvent = whichAnimationEvent(document);
-        const transitionEvent = whichTransitionEvent(document);
+
+        const transitionCancelEvent = whichTransitionCancelEvent(document);
+        const transitionEndEvent = whichTransitionEndEvent(document);
+        const animationIterationEvent = whichAnimationIterationEvent(document);
+        const animationEndEvent = whichAnimationEndEvent(document);
 
         document.body.removeChild(this.rootElement);
 
@@ -248,8 +252,10 @@ export class ElementHighlightController {
 
         if (this.redrawHandler) {
             this.window.removeEventListener('resize', this.redrawHandler);
-            animationEvent && document.body.removeEventListener(animationEvent, this.redrawHandler);
-            transitionEvent && document.body.removeEventListener(transitionEvent, this.redrawHandler);
+            transitionCancelEvent && document.body.removeEventListener(transitionCancelEvent, this.redrawHandler);
+            transitionEndEvent && document.body.removeEventListener(transitionEndEvent, this.redrawHandler);
+            animationIterationEvent && document.body.removeEventListener(animationIterationEvent, this.redrawHandler);
+            animationEndEvent && document.body.removeEventListener(animationEndEvent, this.redrawHandler);
 
             delete this.redrawHandler;
         }
