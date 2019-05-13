@@ -1,3 +1,5 @@
+import * as path from 'path';
+
 import { parse } from 'babylon';
 import { CallExpression, Identifier } from 'babel-types';
 import traverse, { NodePath } from 'babel-traverse';
@@ -9,6 +11,25 @@ import {
     DependencyFileReader,
 } from '@testring/types';
 import { resolveAbsolutePath } from './absolute-path-resolver';
+
+const NODE_MODULES_DIRS: string[] = [];
+// Collecting all node_modules dirs for process.cwd()
+process.cwd().split(path.sep).forEach((part, i, pathArr) => {
+    NODE_MODULES_DIRS.push(path.join('/', ...pathArr.slice(0, i + 1), 'node_modules'));
+});
+// Collecting all paths defined in require.main.paths
+(require.main || { paths: [] }).paths.forEach((importPath) => {
+    if (!NODE_MODULES_DIRS.includes(importPath)) {
+        NODE_MODULES_DIRS.push(importPath);
+    }
+});
+// Excluding env passed paths
+(require.resolve.paths(__filename) || []).forEach((importPath) => {
+    if (!NODE_MODULES_DIRS.includes(importPath)) {
+        NODE_MODULES_DIRS.push(importPath);
+    }
+});
+
 
 function getDependencies(absolutePath: string, content: string): Array<string> {
     const requests: Array<string> = [];
@@ -102,13 +123,8 @@ async function buildNodes(
         }
 
         // Do not bundle node_modules, only user dependencies
-        // TODO check, if this hardcode can break some cases
-        if (
-            dependencyAbsolutePath.includes('node_modules') ||
-            // Fix for local e2e tests running (lerna makes symlink and resolver eats it as path for real file)
-            // require 'node_modules/testring' = require 'packages/testring/dist'
-            dependencyAbsolutePath.includes('testring/dist')
-        ) {
+        // Ignoring all node_modules imports
+        if (NODE_MODULES_DIRS.findIndex((dir) => dependencyAbsolutePath.startsWith(dir)) > -1) {
             continue;
         }
 
