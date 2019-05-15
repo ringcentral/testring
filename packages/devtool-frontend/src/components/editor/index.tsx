@@ -10,7 +10,6 @@ type IStandaloneCodeEditor = monacoEditor.editor.IStandaloneCodeEditor;
 
 type EditorState = {
     language: string;
-    code: string;
     editor: null | IStandaloneCodeEditor;
     monaco: null | Monaco;
 };
@@ -21,10 +20,9 @@ type EditorDidMountHandler = (editor: IStandaloneCodeEditor, monaco: Monaco) => 
 const isEditor = (obj: IStandaloneCodeEditor | null): obj is IStandaloneCodeEditor => obj !== null;
 
 
-export class Editor extends React.Component<{}, EditorState> {
+export class Editor extends React.Component<{ source: string }, EditorState> {
     state = {
         language: 'javascript',
-        code: '// type your code...',
         editor: null,
         monaco: null,
     };
@@ -69,7 +67,8 @@ export class Editor extends React.Component<{}, EditorState> {
     }
 
     render() {
-        const { code, language } = this.state;
+        const { source } = this.props;
+        const { language } = this.state;
 
         const options = {
             selectOnLineNumbers: true,
@@ -83,7 +82,7 @@ export class Editor extends React.Component<{}, EditorState> {
                 <MonacoEditor
                     theme="vs"
                     language={language}
-                    value={code}
+                    value={source}
                     options={options}
                     editorDidMount={this.editorDidMountHandler}
                 />

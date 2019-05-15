@@ -41,6 +41,13 @@ export class WorkerController {
         });
     }
 
+    private updateDependencies(dependencies) {
+        this.transport.broadcastUniversally(
+            TestWorkerAction.updateDependencies,
+            dependencies,
+        );
+    }
+
     private updateExecutionState(field: keyof ITestControllerExecutionState, state: boolean) {
         if (this.executionState[field] !== state) {
             this.executionState[field] = state;
@@ -158,6 +165,12 @@ export class WorkerController {
             if (message.waitForRelease) {
                 await this.setDevtoolListeners();
             }
+            this.updateDependencies({
+                path: message.path,
+                source: message.source,
+                transpiledSource: message.transpiledSource,
+                dependencies: message.dependencies,
+            });
 
             this.setPendingState(true);
             await this.runTest(message);

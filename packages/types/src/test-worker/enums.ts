@@ -23,6 +23,7 @@ export const enum TestWorkerAction {
     register = 'TestWorkerAction/register',
     updateExecutionState = 'TestWorkerAction/updateExecutionState',
     unregister = 'TestWorkerAction/unregister',
+    updateDependencies = 'TestWorkerAction/updateDependencies',
 
     evaluateCode = 'TestWorkerAction/evaluateCode',
     releaseTest = 'TestWorkerAction/releaseTest',

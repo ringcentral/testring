@@ -9,6 +9,8 @@ import {
     IDevtoolServerConfig,
     IDevtoolWebAppRegisterMessage,
     IDevtoolWorkerRegisterMessage,
+    IDevtoolWorkerUpdateDependenciesMessage,
+    IDevtoolWorkerUpdateStateMessage,
     IDevtoolWSMessage,
     IDevtoolWSMeta,
     ITestControllerExecutionState,
@@ -26,6 +28,7 @@ import {
     IDevtoolWebAppRegisterData,
     devtoolConfigActions,
     devtoolWorkerStateActions,
+    devtoolDependenciesActions,
 } from '@testring/devtool-store';
 
 
@@ -156,6 +159,9 @@ export class DevtoolWorkerController {
             case TestWorkerAction.updateExecutionState:
                 await this.updateExecutionState(message);
                 break;
+            case TestWorkerAction.updateDependencies:
+                await this.updateDependencies(message as IDevtoolWorkerUpdateStateMessage);
+                break;
             case TestWorkerAction.unregister:
                 await this.unregisterWorker(message as IDevtoolWorkerRegisterMessage);
                 break;
@@ -205,12 +211,23 @@ export class DevtoolWorkerController {
         this.updateWorkerState(store, message.messageData);
     }
 
-    private async updateExecutionState(message) {
+    private async updateExecutionState(message: IDevtoolWorkerUpdateStateMessage) {
         const workerId = this.normalizeWorkerId(message.source);
 
         const store = await this.getOrRegisterStoreByWorkerId(workerId);
 
         this.updateWorkerState(store, message.messageData);
+    }
+
+    private async updateDependencies(message: IDevtoolWorkerUpdateDependenciesMessage) {
+        const workerId = this.normalizeWorkerId(message.source);
+
+        const store = await this.getOrRegisterStoreByWorkerId(workerId);
+
+        store.dispatch({
+            type: devtoolDependenciesActions.UPDATE,
+            payload: message.messageData,
+        });
     }
 
     private async unregisterWorker(message: IDevtoolWorkerRegisterMessage) {

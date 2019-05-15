@@ -23,7 +23,7 @@ const pageTemplate = (
         window.testRingDevtoolConfig = {
             appId: '${appId}',
             host: '${ host }',
-            wsport: ${ wsPort },
+            wsPort: ${ wsPort },
         };
     </script>
 </head>

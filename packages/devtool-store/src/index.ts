@@ -1,3 +1,4 @@
+export * from './reducers/dependencies-reducer';
 export * from './reducers/devtool-config-reducer';
 export * from './reducers/web-applications-reducer';
 export * from './reducers/window-reducer';

@@ -115,6 +115,7 @@ export class DevtoolServerController extends PluggableModule implements IDevtool
             TestWorkerAction.register,
             TestWorkerAction.updateExecutionState,
             TestWorkerAction.unregister,
+            TestWorkerAction.updateDependencies,
 
             WebApplicationDevtoolActions.register,
             WebApplicationDevtoolActions.unregister,

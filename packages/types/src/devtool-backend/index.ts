@@ -91,6 +91,9 @@ export interface IDevtoolWorkerUpdateStateMessage extends IDevtoolProxyCleanedMe
     messageData: ITestControllerExecutionState;
 }
 
+export interface IDevtoolWorkerUpdateDependenciesMessage extends IDevtoolProxyCleanedMessage {
+}
+
 export interface IDevtoolWebAppRegisterMessage extends IDevtoolProxyCleanedMessage {
     messageData: IWebApplicationRegisterMessage;
 }
