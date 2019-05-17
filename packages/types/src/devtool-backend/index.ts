@@ -3,6 +3,8 @@ import {
     IWebApplicationRegisterMessage,
 } from '../web-application';
 import { ITestControllerExecutionState } from '../test-worker/structs';
+import { TestWorkerAction } from '../test-worker/enums';
+
 import { DevtoolEvents } from '../devtool-extension/enums';
 
 interface IDevtoolRoute {
@@ -101,16 +103,46 @@ export interface IDevtoolWSMeta {
     connectionId: string;
 }
 
-export interface IDevtoolWSMessage {
-    type: DevtoolEvents;
-    payload: any;
-}
-
-export interface IDevtoolWSHandshakeResponseMessage extends IDevtoolWSMessage {
+export interface IDevtoolWSHandshakeResponseMessage {
     type: DevtoolEvents.HANDSHAKE_RESPONSE;
     payload: {
         appId: string;
         connectionId: string;
-        error: null | Error;
+        error: null | Error | string;
     };
 }
+
+export interface IDevtoolWSHandshakeRequestMessage {
+    type: DevtoolEvents.HANDSHAKE_REQUEST;
+    payload: {
+        appId: string;
+    };
+}
+
+export interface IDevtoolWSGetStoreStateMessage {
+    type: DevtoolEvents.GET_STORE;
+    payload: void;
+}
+
+
+export interface IDevtoolWSUpdateStoreStateMessage {
+    type: DevtoolEvents.STORE_STATE;
+    // @TODO put here store state
+    payload: any;
+}
+
+export interface IDevtoolWSCallWorkerAction {
+    type: DevtoolEvents.WORKER_ACTION;
+    payload: {
+        actionType: TestWorkerAction;
+    };
+}
+
+export type IDevtoolWSMessage = IDevtoolWSHandshakeResponseMessage
+    | IDevtoolWSHandshakeRequestMessage
+    | IDevtoolWSGetStoreStateMessage
+    | IDevtoolWSGetStoreStateMessage
+    | IDevtoolWSUpdateStoreStateMessage
+    | IDevtoolWSCallWorkerAction;
+
+
