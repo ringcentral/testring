@@ -35,10 +35,14 @@ describe('WorkerController', () => {
 
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
             waitForRelease: false,
-            source,
-            transpiledSource: source,
-            path: 'test.js',
-            dependencies: {},
+            entryPath: 'test.js',
+            dependencies: {
+                'test.js': {
+                    source,
+                    transpiledSource: source,
+                    dependencies: {},
+                },
+            },
             parameters: {},
             envParameters: null,
         });
@@ -64,10 +68,14 @@ describe('WorkerController', () => {
 
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
             waitForRelease: false,
-            source,
-            transpiledSource: source,
-            path: 'test.js',
-            dependencies: {},
+            entryPath: 'test.js',
+            dependencies: {
+                'test.js': {
+                    source,
+                    transpiledSource: source,
+                    dependencies: {},
+                },
+            },
             parameters: {},
             envParameters: null,
         });
@@ -112,10 +120,14 @@ describe('WorkerController', () => {
 
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
             waitForRelease: false,
-            source,
-            transpiledSource: source,
-            path: 'test.js',
-            dependencies: {},
+            entryPath: 'test.js',
+            dependencies: {
+                'test.js': {
+                    source,
+                    transpiledSource: source,
+                    dependencies: {},
+                },
+            },
             parameters: {},
             envParameters: null,
         });
@@ -164,10 +176,14 @@ describe('WorkerController', () => {
 
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
             waitForRelease: false,
-            source,
-            transpiledSource: source,
-            path: 'test.js',
-            dependencies: {},
+            entryPath: 'test.js',
+            dependencies: {
+                'test.js': {
+                    source,
+                    transpiledSource: source,
+                    dependencies: {},
+                },
+            },
             parameters: {},
             envParameters: null,
         });
@@ -213,10 +229,14 @@ describe('WorkerController', () => {
 
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
             waitForRelease: false,
-            source,
-            transpiledSource: source,
-            path: 'test.js',
-            dependencies: {},
+            entryPath: 'test.js',
+            dependencies: {
+                'test.js': {
+                    source,
+                    transpiledSource: source,
+                    dependencies: {},
+                },
+            },
             parameters: {},
             envParameters: null,
         });

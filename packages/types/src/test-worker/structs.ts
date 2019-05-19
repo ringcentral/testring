@@ -1,9 +1,10 @@
 import { TestStatus } from './enums';
-import { DependencyDict, IDependencyDictionaryNode } from '../dependencies-builder';
+import { DependencyDict } from '../dependencies-builder';
 
 export type FileCompiler = (source: string, filename: string) => Promise<string>;
 
-export interface ITestExecutionMessage extends IDependencyDictionaryNode {
+export interface ITestExecutionMessage {
+    entryPath: string;
     waitForRelease: boolean;
     dependencies: DependencyDict;
     // TODO move types here
@@ -11,7 +12,10 @@ export interface ITestExecutionMessage extends IDependencyDictionaryNode {
     envParameters: any;
 }
 
-export interface ITestEvaluationMessage extends IDependencyDictionaryNode {}
+export interface ITestEvaluationMessage {
+    entryPath: string;
+    source: string;
+}
 
 export interface ITestExecutionCompleteMessage {
     status: TestStatus;

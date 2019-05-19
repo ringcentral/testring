@@ -1,7 +1,7 @@
 import * as vm from 'vm';
 import * as path from 'path';
 import { DependencyDict } from '@testring/types';
-import { requirePackage } from '@testring/utils';
+import { requirePackage, resolvePackage } from '@testring/utils';
 import { Script } from './script';
 
 class Sandbox {
@@ -17,12 +17,10 @@ class Sandbox {
     public exports = {};
 
     constructor(
-        private source: string,
         private filename: string,
         private dependencies: DependencyDict,
-        private isTranspiled: boolean = false,
     ) {
-        this.context = this.createContext(this.filename);
+        this.context = this.createContext();
         Sandbox.modulesCache.set(filename, this);
     }
 
@@ -43,10 +41,17 @@ class Sandbox {
             Giving a time for node to load sourcemaps and only then set breakpoints
             in that case breakpoints won't fire on source file
          */
-        const filename = this.isTranspiled ? `${this.filename}$` : this.filename;
 
         try {
-            const script = new Script(this.source, filename);
+            const {
+                source,
+                transpiledSource,
+            } = this.dependencies[this.filename];
+            const isTranspiled = source === transpiledSource;
+            const filename = isTranspiled ? `${this.filename}$` : this.filename;
+
+            const script = new Script(transpiledSource, filename);
+
             this.runInContext(script, context);
         } finally {
             this.isCompiled = true;
@@ -99,34 +104,40 @@ class Sandbox {
 
     private static modulesCache: Map<string, Sandbox> = new Map();
 
+    private getSandbox(absolutePath) {
+        let dependencySandbox;
+
+        if (Sandbox.modulesCache.has(absolutePath)) {
+            dependencySandbox = Sandbox.modulesCache.get(absolutePath);
+        } else {
+            dependencySandbox = new Sandbox(absolutePath, this.dependencies);
+
+            Sandbox.modulesCache.set(absolutePath, dependencySandbox);
+        }
+
+        return dependencySandbox.execute();
+    }
+
     private require(requestPath) {
-        const dependencies = this.dependencies[this.filename];
+        const dependenciesMap = this.dependencies[this.filename].dependencies;
 
-        if (
-            dependencies &&
-            dependencies[requestPath]
-        ) {
-            const { source, transpiledSource, path } = dependencies[requestPath];
+        // Parsed dependency by key
+        if ( dependenciesMap[requestPath] ) {
+            const absolutePath = dependenciesMap[requestPath];
 
-            let dependencySandbox;
+            return this.getSandbox(absolutePath);
+        // Load sandbox if dependency is not parsed but we still have it in our dependency list
+        } else if ( this.dependencies.hasOwnProperty(resolvePackage(requestPath)) ) {
+            const absolutePath = this.dependencies[resolvePackage(requestPath)];
 
-            if (Sandbox.modulesCache.has(path)) {
-                dependencySandbox = Sandbox.modulesCache.get(path);
-            } else {
-                const isTranspiled = source === transpiledSource;
-
-                dependencySandbox = new Sandbox(transpiledSource, path, this.dependencies, isTranspiled);
-
-                Sandbox.modulesCache.set(path, dependencySandbox);
-            }
-
-            return dependencySandbox.execute();
+            return this.getSandbox(absolutePath);
         }
 
         return requirePackage(requestPath, this.filename);
     }
 
-    private createContext(filename: string) {
+    private createContext() {
+        const filename = this.filename;
         const moduleObject = {
             filename: filename,
             id: filename,

@@ -157,10 +157,10 @@ export class DevtoolWorkerController {
                 await this.registerWorker(message as IDevtoolWorkerRegisterMessage);
                 break;
             case TestWorkerAction.updateExecutionState:
-                await this.updateExecutionState(message);
+                await this.updateExecutionState(message as IDevtoolWorkerUpdateStateMessage);
                 break;
             case TestWorkerAction.updateDependencies:
-                await this.updateDependencies(message as IDevtoolWorkerUpdateStateMessage);
+                await this.updateDependencies(message as IDevtoolWorkerUpdateDependenciesMessage);
                 break;
             case TestWorkerAction.unregister:
                 await this.unregisterWorker(message as IDevtoolWorkerRegisterMessage);

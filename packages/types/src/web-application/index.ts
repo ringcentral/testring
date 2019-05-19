@@ -1,6 +1,7 @@
 import { IBrowserProxyPlugin } from '../browser-proxy';
 import { IBrowserProxyCommand } from '../browser-proxy/structs';
 import { IDevtoolRuntimeConfiguration } from '../devtool-backend';
+import { DependencyDict } from '../dependencies-builder';
 
 export interface IWebApplicationRegisterMessage {
     id: string;
@@ -21,6 +22,11 @@ export interface IWebApplicationResponseMessage {
     uid: string;
     response: any;
     error: Error | null;
+}
+
+export interface IWebApplicationDependencyUpdateMessage {
+    entryPath: string;
+    dependencies: DependencyDict;
 }
 
 export interface IAssertionSuccessMeta {

@@ -10,18 +10,13 @@ const fixtureResolver = fileResolverFactory(__dirname, './fixtures');
 describe('buildDependencyDictionary', () => {
     it('should build correct dictionary', async () => {
         const indexPath = await fixtureResolver('index.js');
-        const indexContent = await fixtureReader('index.js');
 
-        const file = {
-            transpiledSource: indexContent,
-            source: indexContent,
-            path: indexPath,
-        };
+        const dictionary = await buildDependencyDictionary(indexPath, async (filePath) => {
+            const source = await fixtureReader(filePath);
 
-        const dictionary = await buildDependencyDictionary(file, async (filePath) => {
             return {
-                source: await fixtureReader(filePath),
-                transpiledSource: await fixtureReader(filePath),
+                source,
+                transpiledSource: source,
             };
         });
 

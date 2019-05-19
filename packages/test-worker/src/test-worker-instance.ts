@@ -5,8 +5,8 @@ import { fork } from '@testring/child-process';
 import { generateUniqId } from '@testring/utils';
 import { TestWorkerLocal } from './test-worker-local';
 import {
-    buildDependencyDictionary,
-    mergeDependencyDictionaries,
+    buildDependencyDictionary, buildDependencyDictionaryFromFile,
+    mergeDependencyDict,
 } from '@testring/dependencies-builder';
 import {
     IFile,
@@ -19,7 +19,6 @@ import {
     FileCompiler,
     TestStatus,
     IWorkerEmitter,
-    IDependencyDictionaryNode,
     DependencyFileReaderResult,
 } from '@testring/types';
 
@@ -159,42 +158,32 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         file: IFile,
         parameters: any,
         envParameters: any,
-    ) {
+    ): Promise<ITestExecutionMessage> {
         const additionalFiles = await this.beforeCompile([], file.path, file.source);
 
-        // Calling external hooks to compile source
-        const transpiledSource = await this.compileSource(file.source, file.path);
-        // TODO implement code instrumentation here
-
-        const transpiledFile: IDependencyDictionaryNode = {
-            transpiledSource,
-            path: file.path,
-            source: file.source,
-        };
-
-        let dependencies = await buildDependencyDictionary(transpiledFile, this.readDependency.bind(this));
+        this.logger.debug(`Compile source file ${file.path}`);
+        let dependencies = await buildDependencyDictionaryFromFile({
+            ...file,
+            transpiledSource: await this.compileSource(file.source, file.path),
+        }, this.readDependency.bind(this));
 
         for (let i = 0, len = additionalFiles.length; i < len; i++) {
-            const file = await this.fsReader.readFile(additionalFiles[i]);
+            const filepath = additionalFiles[i];
 
-            if (file) {
-                const dependencyNode: IDependencyDictionaryNode = {
-                    transpiledSource: await this.compileSource(file.source, file.path),
-                    ...file,
-                };
-
+            if (filepath) {
                 const additionalDependencies = await buildDependencyDictionary(
-                    dependencyNode,
-                    this.readDependency.bind(this)
+                    filepath,
+                    this.readDependency.bind(this),
+                    dependencies
                 );
 
-                dependencies = await mergeDependencyDictionaries(dependencies, additionalDependencies);
+                dependencies = await mergeDependencyDict(dependencies, additionalDependencies);
             }
         }
 
         return {
+            entryPath: file.path,
             waitForRelease: this.config.waitForRelease,
-            ...transpiledFile,
             dependencies,
             parameters,
             envParameters,
@@ -269,8 +258,6 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         }
 
         try {
-            this.logger.debug(`Compile source file ${filename}`);
-
             const compiledSource = await this.compile(source, filename);
 
             this.compileCache.set(source, compiledSource);
@@ -346,7 +333,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         return {
             source,
-            transpiledSource: await this.compile(source, dependencyPath),
+            transpiledSource: await this.compileSource(source, dependencyPath),
         };
     }
 

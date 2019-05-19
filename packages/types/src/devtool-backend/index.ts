@@ -1,4 +1,5 @@
 import {
+    IWebApplicationDependencyUpdateMessage,
     IWebApplicationRegisterCompleteMessage,
     IWebApplicationRegisterMessage,
 } from '../web-application';
@@ -92,6 +93,7 @@ export interface IDevtoolWorkerUpdateStateMessage extends IDevtoolProxyCleanedMe
 }
 
 export interface IDevtoolWorkerUpdateDependenciesMessage extends IDevtoolProxyCleanedMessage {
+    messageData: IWebApplicationDependencyUpdateMessage;
 }
 
 export interface IDevtoolWebAppRegisterMessage extends IDevtoolProxyCleanedMessage {

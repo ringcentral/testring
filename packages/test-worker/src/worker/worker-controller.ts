@@ -7,6 +7,7 @@ import {
     TestWorkerAction,
     TestStatus,
     TestEvents,
+    IWebApplicationDependencyUpdateMessage,
 } from '@testring/types';
 
 import * as process from 'process';
@@ -41,10 +42,10 @@ export class WorkerController {
         });
     }
 
-    private updateDependencies(dependencies) {
-        this.transport.broadcastUniversally(
+    private updateDependencies(dependencyMessage: IWebApplicationDependencyUpdateMessage) {
+        this.transport.broadcastUniversally<IWebApplicationDependencyUpdateMessage>(
             TestWorkerAction.updateDependencies,
-            dependencies,
+            dependencyMessage,
         );
     }
 
@@ -166,9 +167,7 @@ export class WorkerController {
                 await this.setDevtoolListeners();
             }
             this.updateDependencies({
-                path: message.path,
-                source: message.source,
-                transpiledSource: message.transpiledSource,
+                entryPath: message.entryPath,
                 dependencies: message.dependencies,
             });
 
@@ -196,7 +195,7 @@ export class WorkerController {
 
     private evaluateCode(message: ITestEvaluationMessage) {
         this.setPendingState(true);
-        Sandbox.evaluateScript(message.path, message.source);
+        Sandbox.evaluateScript(message.entryPath, message.source);
         this.setPendingState(false);
     }
 
@@ -230,10 +229,11 @@ export class WorkerController {
 
     private async runTest(message: ITestExecutionMessage): Promise<void> {
         // TODO pass message.parameters somewhere inside web application
-        const testID = path.relative(process.cwd(), message.path);
-        const isTranspiled = message.source === message.transpiledSource;
+        const testID = path.relative(process.cwd(), message.entryPath);
 
-        const sandbox = new Sandbox(message.transpiledSource, message.path, message.dependencies, isTranspiled);
+        const { entryPath, dependencies } = message;
+
+        const sandbox = new Sandbox(entryPath, dependencies);
         const bus = this.testAPI.getBus();
 
         this.testAPI.setEnvironmentParameters(message.envParameters);
