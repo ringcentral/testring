@@ -5,8 +5,8 @@ export type FileCompiler = (source: string, filename: string) => Promise<string>
 
 export interface ITestExecutionMessage {
     entryPath: string;
-    waitForRelease: boolean;
     dependencies: DependencyDict;
+    devtoolEnabled: boolean;
     // TODO move types here
     parameters: any;
     envParameters: any;

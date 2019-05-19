@@ -163,7 +163,7 @@ export class WorkerController {
         );
 
         try {
-            if (message.waitForRelease) {
+            if (message.devtoolEnabled) {
                 await this.setDevtoolListeners();
             }
             this.updateDependencies({
@@ -175,11 +175,11 @@ export class WorkerController {
             await this.runTest(message);
             this.setPendingState(false);
 
-            if (!message.waitForRelease) {
+            if (!message.devtoolEnabled) {
                 await this.completeExecutionSuccessfully();
             }
         } catch (error) {
-            if (message.waitForRelease) {
+            if (message.devtoolEnabled) {
                 if (!(error instanceof BreakStackError)) {
                     this.logger.error(error);
                 }

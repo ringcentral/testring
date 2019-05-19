@@ -34,7 +34,7 @@ describe('WorkerController', () => {
         });
 
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
-            waitForRelease: false,
+            devtoolEnabled: false,
             entryPath: 'test.js',
             dependencies: {
                 'test.js': {
@@ -67,7 +67,7 @@ describe('WorkerController', () => {
         });
 
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
-            waitForRelease: false,
+            devtoolEnabled: false,
             entryPath: 'test.js',
             dependencies: {
                 'test.js': {
@@ -119,7 +119,7 @@ describe('WorkerController', () => {
         });
 
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
-            waitForRelease: false,
+            devtoolEnabled: false,
             entryPath: 'test.js',
             dependencies: {
                 'test.js': {
@@ -175,7 +175,7 @@ describe('WorkerController', () => {
         });
 
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
-            waitForRelease: false,
+            devtoolEnabled: false,
             entryPath: 'test.js',
             dependencies: {
                 'test.js': {
@@ -228,7 +228,7 @@ describe('WorkerController', () => {
         });
 
         transportMock.broadcast<ITestExecutionMessage>(TestWorkerAction.executeTest, {
-            waitForRelease: false,
+            devtoolEnabled: false,
             entryPath: 'test.js',
             dependencies: {
                 'test.js': {

@@ -28,7 +28,7 @@ const WORKER_ROOT = require.resolve(
 
 const WORKER_DEFAULT_CONFIG: ITestWorkerConfig = {
     screenshots: 'disable',
-    waitForRelease: false,
+    devtoolEnabled: false,
     localWorker: false,
 };
 
@@ -183,7 +183,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         return {
             entryPath: file.path,
-            waitForRelease: this.config.waitForRelease,
+            devtoolEnabled: this.config.devtoolEnabled,
             dependencies,
             parameters,
             envParameters,

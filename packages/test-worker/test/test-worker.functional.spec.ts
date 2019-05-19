@@ -11,7 +11,7 @@ describe('TestWorkerInstance', () => {
 
     const defaultConfig = {
         screenshots: 'disable' as ScreenshotsConfig,
-        waitForRelease: false,
+        devtoolEnabled: false,
         localWorker: false,
     };
 

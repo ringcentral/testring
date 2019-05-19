@@ -63,7 +63,7 @@ class RunCommand implements ICLICommand {
         }
 
         const testWorker = new TestWorker(this.transport, {
-            waitForRelease: devtoolEnabled,
+            devtoolEnabled,
             localWorker: this.config.workerLimit === 'local',
             screenshots: this.config.screenshots,
         });

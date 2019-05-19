@@ -16,7 +16,7 @@ export interface ITestWorkerCallbackMeta {
 
 export interface ITestWorkerConfig {
     screenshots: ScreenshotsConfig;
-    waitForRelease: boolean;
+    devtoolEnabled: boolean;
     localWorker: boolean;
 }
 
