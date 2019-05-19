@@ -13,6 +13,13 @@ interface IEditorWsProviderProps {
     wsClient: IClientWsTransport;
 }
 
+type DependencyUpdateMessage = {
+    dependencies: {
+        [key: string]: { source: string };
+    };
+    entryPath: string;
+};
+
 export class EditorLayout extends React.Component<IEditorWsProviderProps, { source: null | string }> {
     state = {
         source: null,
@@ -31,7 +38,7 @@ export class EditorLayout extends React.Component<IEditorWsProviderProps, { sour
         this.wsMessageHandler = (data: IDevtoolWSMessage) => {
             if (data.type === DevtoolEvents.STORE_STATE) {
                 this.handleStoreUpdate(data.payload.dependencies);
-            } else if (data.type === DevtoolEvents.STORE_STATE_DIFF && data.payload.workerState) {
+            } else if (data.type === DevtoolEvents.STORE_STATE_DIFF && data.payload.dependencies) {
                 this.handleStoreUpdate(data.payload.dependencies);
             }
         };
@@ -42,10 +49,15 @@ export class EditorLayout extends React.Component<IEditorWsProviderProps, { sour
 
     private wsMessageHandler?: (data: IDevtoolWSMessage) => void;
 
-    handleStoreUpdate(dependencies: { data: { source: string } }) {
+    handleStoreUpdate(dependencies: DependencyUpdateMessage) {
+        let source = '';
+        if (dependencies.dependencies[dependencies.entryPath].source) {
+            source = dependencies.dependencies[dependencies.entryPath].source;
+        }
+
         this.setState({
             ...this.state,
-            source: dependencies.data.source,
+            source,
         });
     }
 

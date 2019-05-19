@@ -1,3 +1,4 @@
+import { DependencyDict } from '@testring/types';
 import {
     Action,
 } from 'redux';
@@ -7,27 +8,29 @@ export enum devtoolDependenciesActions {
 }
 
 interface IDevtoolDependenciesStore {
-    data: any;
+    entryPath: string;
+    dependencies: DependencyDict;
 }
 
 interface IDevtoolDependenciesAction extends Action {
     type: devtoolDependenciesActions;
-    payload: any;
+    payload: IDevtoolDependenciesStore;
 }
 
 export function dependenciesReducer(
     state: IDevtoolDependenciesStore = {
-        data: [],
+        entryPath: '',
+        dependencies: {},
     },
     action: IDevtoolDependenciesAction,
 ) {
     switch (action.type) {
         case devtoolDependenciesActions.UPDATE:
-            const payload: any = action.payload;
+            const payload: any = action.payload as IDevtoolDependenciesStore;
 
             return {
                 ...state,
-                data: payload,
+                ...payload,
             };
         default:
             return state;
