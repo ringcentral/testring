@@ -19,6 +19,7 @@
   "dependencies": {
     "@testring/plugin-babel": "0.5.2",
     "@testring/plugin-selenium-driver": "0.5.2",
+    "@testring/devtool-execution-wrapper": "0.5.2",
     "babel-preset-es2015": "6.24.1",
     "testring": "0.5.2"
   }

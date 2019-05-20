@@ -1,13 +1,3 @@
-import * as path from 'path';
-import { loggerClient } from '@testring/logger';
-import { FSReader } from '@testring/fs-reader';
-import { fork } from '@testring/child-process';
-import { generateUniqId } from '@testring/utils';
-import { TestWorkerLocal } from './test-worker-local';
-import {
-    buildDependencyDictionary, buildDependencyDictionaryFromFile,
-    mergeDependencyDict,
-} from '@testring/dependencies-builder';
 import {
     IFile,
     ITransport,
@@ -21,6 +11,22 @@ import {
     IWorkerEmitter,
     DependencyFileReaderResult,
 } from '@testring/types';
+
+import * as path from 'path';
+
+import { loggerClient } from '@testring/logger';
+import { FSReader } from '@testring/fs-reader';
+import { fork } from '@testring/child-process';
+import { generateUniqId } from '@testring/utils';
+
+import { TestWorkerLocal } from './test-worker-local';
+import { devtoolExecutionWrapper } from '@testring/devtool-execution-wrapper';
+import {
+    buildDependencyDictionary,
+    buildDependencyDictionaryFromFile,
+    mergeDependencyDict,
+} from '@testring/dependencies-builder';
+
 
 const WORKER_ROOT = require.resolve(
     path.resolve(__dirname, 'worker')
@@ -258,6 +264,10 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         }
 
         try {
+            if (this.config.devtoolEnabled) {
+                source = await devtoolExecutionWrapper(source, filename);
+            }
+
             const compiledSource = await this.compile(source, filename);
 
             this.compileCache.set(source, compiledSource);

@@ -11,6 +11,7 @@ import * as path from 'path';
 import { parse } from 'babylon';
 import traverse, { NodePath } from 'babel-traverse';
 import { resolveAbsolutePath } from './absolute-path-resolver';
+import { IMPORT_PATH } from '@testring/devtool-execution-wrapper';
 
 
 const NODE_MODULES_DIRS: string[] = [];
@@ -30,6 +31,8 @@ process.cwd().split(path.sep).forEach((part, i, pathArr) => {
         NODE_MODULES_DIRS.push(importPath);
     }
 });
+// Exclude dependency builder
+NODE_MODULES_DIRS.push(IMPORT_PATH);
 
 
 function getDependencies(content: string): Array<string> {

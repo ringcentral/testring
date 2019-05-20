@@ -75,6 +75,27 @@ export interface IServer {
     getUrl: () => string;
 }
 
+export interface IDevtoolStartScope {
+    filename: string;
+    id: string;
+    coordinates: {
+        start: {
+            col: number;
+            line: number;
+        };
+        end: {
+            col: number;
+            line: number;
+        };
+    };
+    meta: any;
+}
+
+export interface IDevtoolEndScope {
+    filename: string;
+    id: string;
+}
+
 export interface IDevtoolProxyCleanedMessage {
     source: null | string;
     messageData: any;
@@ -102,6 +123,14 @@ export interface IDevtoolWebAppRegisterMessage extends IDevtoolProxyCleanedMessa
 
 export interface IDevtoolWebAppRegisterCompleteMessage extends IDevtoolProxyCleanedMessage {
     messageData: IWebApplicationRegisterCompleteMessage;
+}
+
+export interface IDevtoolWorkerRegisterScopeMessage extends IDevtoolProxyCleanedMessage {
+    messageData: IDevtoolStartScope;
+}
+
+export interface IDevtoolWorkerUnregisterScopeMessage extends IDevtoolProxyCleanedMessage {
+    messageData: IDevtoolEndScope;
 }
 
 export interface IDevtoolWSMeta {

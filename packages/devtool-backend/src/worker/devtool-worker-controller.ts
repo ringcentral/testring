@@ -8,7 +8,7 @@ import {
     IDevtoolProxyMessage,
     IDevtoolServerConfig,
     IDevtoolWebAppRegisterMessage,
-    IDevtoolWorkerRegisterMessage,
+    IDevtoolWorkerRegisterMessage, IDevtoolWorkerRegisterScopeMessage, IDevtoolWorkerUnregisterScopeMessage,
     IDevtoolWorkerUpdateDependenciesMessage,
     IDevtoolWorkerUpdateStateMessage,
     IDevtoolWSMessage,
@@ -175,6 +175,12 @@ export class DevtoolWorkerController {
             case WebApplicationDevtoolActions.unregister:
                 await this.unregisterWebApplication(rest as IDevtoolWebAppRegisterMessage);
                 break;
+            case TestWorkerAction.startScope:
+                await  this.registerScopeExecution(message as IDevtoolWorkerRegisterScopeMessage);
+                break;
+            case TestWorkerAction.endScope:
+                await  this.unregisterScopeExecution(message as IDevtoolWorkerUnregisterScopeMessage);
+                break;
 
             default:
                 this.logger.warn(`Unknown message type ${messageType}`);
@@ -203,6 +209,28 @@ export class DevtoolWorkerController {
         store.dispatch({
             type: devtoolWorkerStateActions.UPDATE,
             payload,
+        });
+    }
+
+    private async registerScopeExecution(message: IDevtoolWorkerRegisterScopeMessage) {
+        const workerId = this.normalizeWorkerId(message.source);
+
+        const store = await this.getOrRegisterStoreByWorkerId(workerId);
+
+        store.dispatch({
+            type: devtoolDependenciesActions.ADD_HIGHLIGHT,
+            payload: message.messageData,
+        });
+    }
+
+    private async unregisterScopeExecution(message: IDevtoolWorkerUnregisterScopeMessage) {
+        const workerId = this.normalizeWorkerId(message.source);
+
+        const store = await this.getOrRegisterStoreByWorkerId(workerId);
+
+        store.dispatch({
+            type: devtoolDependenciesActions.REMOVE_HIGHLIGHT,
+            payload: message.messageData,
         });
     }
 

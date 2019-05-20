@@ -24,6 +24,8 @@ export const enum TestWorkerAction {
     updateExecutionState = 'TestWorkerAction/updateExecutionState',
     unregister = 'TestWorkerAction/unregister',
     updateDependencies = 'TestWorkerAction/updateDependencies',
+    startScope = 'TestWorkerAction/startScope',
+    endScope = 'TestWorkerAction/endScope',
 
     evaluateCode = 'TestWorkerAction/evaluateCode',
     releaseTest = 'TestWorkerAction/releaseTest',

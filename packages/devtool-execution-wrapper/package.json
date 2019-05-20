@@ -1,0 +1,21 @@
+{
+  "name": "@testring/devtool-execution-wrapper",
+  "version": "0.5.2",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/core": "7.4.4",
+    "@babel/template": "7.4.4",
+    "@babel/types": "7.4.4",
+    "@testring/transport": "0.5.2",
+    "@testring/types": "0.5.2",
+    "@types/babel-types": "7.0.7"
+  },
+  "devDependencies": {}
+}
