@@ -34,6 +34,7 @@ import {
 
 import { DevtoolHttpServer } from './devtool-http-server';
 import { DevtoolWsServer } from './devtool-ws-server';
+import { FsWatcher } from './fs-watcher';
 
 
 export class DevtoolWorkerController {
@@ -42,6 +43,8 @@ export class DevtoolWorkerController {
     private httpServer: DevtoolHttpServer;
 
     private wsServer: DevtoolWsServer;
+
+    private fsWatcher: FsWatcher = new FsWatcher();
 
     private storesByWorkerId: Map<string, Store> = new Map();
     private storesByWebAppId: Map<string, Store> = new Map();
@@ -209,6 +212,24 @@ export class DevtoolWorkerController {
         const store = await this.getOrRegisterStoreByWorkerId(workerId);
 
         this.updateWorkerState(store, message.messageData);
+
+        this.fsWatcher.addListenerWithKey(workerId, (filename, source) => {
+            this.updateDependencyList(store, filename, source);
+        });
+    }
+
+    private async updateDependencyList(store, filename, source) {
+        const state = store.getState();
+
+        if (state.dependencies && state.dependencies.dependencies[filename]) {
+            store.dispatch({
+                type: devtoolDependenciesActions.CHANGE,
+                payload: {
+                    filename,
+                    source,
+                },
+            });
+        }
     }
 
     private async updateExecutionState(message: IDevtoolWorkerUpdateStateMessage) {
@@ -228,6 +249,12 @@ export class DevtoolWorkerController {
             type: devtoolDependenciesActions.UPDATE,
             payload: message.messageData,
         });
+
+        const { dependencies } = message.messageData;
+
+        for (let [filepath, dependency] of Object.entries(dependencies)) {
+            this.fsWatcher.watch(filepath, dependency.source);
+        }
     }
 
     private async unregisterWorker(message: IDevtoolWorkerRegisterMessage) {
@@ -247,6 +274,8 @@ export class DevtoolWorkerController {
         }
 
         this.storesByWorkerId.delete(workerId);
+
+        this.fsWatcher.removeAllListenerByKey(workerId);
     }
 
     private async registerWebApplication(message: IDevtoolWebAppRegisterMessage) {
@@ -259,7 +288,7 @@ export class DevtoolWorkerController {
             await this.registerWebAppId(workerId, id);
             const payload: IDevtoolWebAppRegisterData = { id };
 
-            this.logger.debug(`Register web app ${id}`);
+            this.logger.debug(`Register web app ${this.httpServer.getEditorUrl(id)}`);
 
             store.dispatch({
                 type: devtoolWebAppAction.REGISTER,

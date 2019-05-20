@@ -59,6 +59,10 @@ export class DevtoolHttpServer implements IServer {
         return `http://${this.hostName}:${this.port}`;
     }
 
+    public getEditorUrl(appId) {
+        return `${this.getUrl()}/editor?appId=${appId}`;
+    }
+
     private initStaticRoutes() {
         for (let key in this.staticRoutes) {
             let route = this.staticRoutes[key];

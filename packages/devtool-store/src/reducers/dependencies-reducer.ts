@@ -4,7 +4,8 @@ import {
 } from 'redux';
 
 export enum devtoolDependenciesActions {
-    UPDATE = 'DEPENDENCIES@UPDATE_DEPENDENCIES',
+    UPDATE = 'DEPENDENCIES@UPDATE',
+    CHANGE = 'DEPENDENCIES@CHANGE',
 }
 
 interface IDevtoolDependenciesStore {
@@ -12,9 +13,16 @@ interface IDevtoolDependenciesStore {
     dependencies: DependencyDict;
 }
 
+interface IDevtoolDependenciesUpdatePayload extends IDevtoolDependenciesStore {}
+
+interface IDevtoolDependenciesChangePayload {
+    filename: string;
+    source: string;
+}
+
 interface IDevtoolDependenciesAction extends Action {
     type: devtoolDependenciesActions;
-    payload: IDevtoolDependenciesStore;
+    payload: IDevtoolDependenciesUpdatePayload | IDevtoolDependenciesChangePayload;
 }
 
 export function dependenciesReducer(
@@ -25,13 +33,30 @@ export function dependenciesReducer(
     action: IDevtoolDependenciesAction,
 ) {
     switch (action.type) {
-        case devtoolDependenciesActions.UPDATE:
-            const payload: any = action.payload as IDevtoolDependenciesStore;
+        case devtoolDependenciesActions.UPDATE: {
+            const payload = action.payload as IDevtoolDependenciesUpdatePayload;
 
             return {
                 ...state,
                 ...payload,
             };
+        }
+        case devtoolDependenciesActions.CHANGE: {
+            const { filename, source } = action.payload as IDevtoolDependenciesChangePayload;
+            let dependencies;
+
+            dependencies = {
+                [filename]: {
+                    ...(state.dependencies[filename] || {}),
+                    source,
+                },
+            };
+
+            return {
+                ...state,
+                dependencies,
+            };
+        }
         default:
             return state;
     }
