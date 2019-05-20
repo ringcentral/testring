@@ -1,7 +1,7 @@
 import { run } from 'testring';
 import '../import-file';
 
-run(async (api) => {
+async function test(api) {
     await api.application.url('https://service.ringcentral.com/');
 
     await api.application.setValue(api.application.root.credential.input, '1111111111');
@@ -22,4 +22,6 @@ run(async (api) => {
     );
 
     await api.application.assert.equal(attr, 'submit');
-});
+}
+
+run(test);

@@ -4,11 +4,13 @@ import React from 'react';
 import MonacoEditor from 'react-monaco-editor';
 
 import style from './style.css';
+import { IDevtoolStartScope } from '@testring/types';
 
 type Monaco = typeof monacoEditor;
 type IStandaloneCodeEditor = monacoEditor.editor.IStandaloneCodeEditor;
 
 type EditorProps = {
+    highlights: Array<IDevtoolStartScope>;
     source: string;
     onChange: (value) => void;
 };
@@ -36,6 +38,12 @@ export class Editor extends React.Component<EditorProps, EditorState> {
         window.addEventListener('resize', this.resizeHandler);
     }
 
+    componentWillReceiveProps(nextProps: Readonly<EditorProps>, nextContext: any): void {
+        if (nextProps.highlights !== this.props.highlights) {
+            this.renderHighlights(nextProps.highlights);
+        }
+    }
+
     componentWillUnmount(): void {
         window.removeEventListener('resize', this.resizeHandler);
     }
@@ -50,7 +58,7 @@ export class Editor extends React.Component<EditorProps, EditorState> {
         this.setState({
             editor,
             monaco,
-        });
+        }, () => this.renderHighlights(this.props.highlights));
     }
 
 
@@ -67,6 +75,50 @@ export class Editor extends React.Component<EditorProps, EditorState> {
 
         if (isEditor(editor)) {
             editor.layout();
+        }
+    }
+
+    private previousDecorations: string[] = [];
+
+    getInlineHighlightClass(i: number) {
+        return style[`highlightTextInline${i % 2}`];
+    }
+
+    getColumnHighlightClass(i: number) {
+        return style[`highlightColumn${i % 2}`];
+    }
+
+    renderHighlights(highlights: Array<IDevtoolStartScope>) {
+        const editor = this.state.editor;
+        const monaco = this.state.monaco;
+
+        if (editor !== null && monaco !== null) {
+            let decorations: any[] = [];
+
+            for (let i = 0, len = highlights.length; i < len; i++) {
+                const highlight = highlights[i];
+                const c = highlight.coordinates;
+                let options: any;
+
+                if (c.start.line === c.end.line) {
+                    options = {
+                        inlineClassName: this.getInlineHighlightClass(i),
+                    };
+                } else {
+                    options = {
+                        isWholeLine: true,
+                        linesDecorationsClassName: this.getColumnHighlightClass(i),
+                    };
+                }
+
+                decorations.push({
+                    range: new (monaco as any).Range(c.start.line, c.start.col + 1, c.end.line, c.end.col + 1),
+                    options,
+                });
+            }
+
+            this.previousDecorations = (editor as IStandaloneCodeEditor)
+                .deltaDecorations(this.previousDecorations, decorations);
         }
     }
 

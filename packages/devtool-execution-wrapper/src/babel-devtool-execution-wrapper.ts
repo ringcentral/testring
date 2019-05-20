@@ -1,5 +1,3 @@
-// import * as path from 'path';
-
 import {
     Statement,
     ImportDeclaration,
@@ -93,12 +91,12 @@ const isInCurrentFunctionScope = (scopeId: number, path: NodePath<BaseNode>) => 
     }
 };
 
-export function devToolExecutionWrapper(babel) {
+export function devToolExecutionWrapper() {
     let importName: Identifier;
     let beginWrapper;
     let endWrapper;
 
-    const returnScopeTraverse = (id: string, body: NodePath<BaseNode>, path: NodePath<BaseNode>) => {
+    const returnScopeTraverse = (id: string, body: NodePath<BaseNode>) => {
         body.traverse({
             ReturnStatement(path) {
                 if (isInCurrentFunctionScope(body.scope.uid, path)) {
@@ -112,7 +110,7 @@ export function devToolExecutionWrapper(babel) {
         const body = path.get('body');
         const id = generateId();
 
-        returnScopeTraverse(id, body, path);
+        returnScopeTraverse(id, body);
 
         body.unshiftContainer('body', beginWrapper(id, body.node));
         body.pushContainer('body', endWrapper(id));
@@ -122,9 +120,9 @@ export function devToolExecutionWrapper(babel) {
         const body = path.get('body');
         const id = generateId();
 
-        returnScopeTraverse(id, body, path);
-
         if (body.node.type === 'BlockStatement') {
+            returnScopeTraverse(id, body);
+
             body.unshiftContainer('body', beginWrapper(id, body.node));
             body.pushContainer('body', endWrapper(id));
         }
@@ -181,6 +179,7 @@ export function devToolExecutionWrapper(babel) {
             FunctionExpression: functionWrapper,
             ArrowFunctionExpression: arrowFunctionWrapper,
             ExpressionStatement: expressionWrapper,
+            VariableDeclaration: expressionWrapper,
         },
     };
 }

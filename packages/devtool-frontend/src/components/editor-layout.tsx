@@ -3,6 +3,7 @@ import {
     DependencyDict,
     DevtoolEvents,
     IClientWsTransport,
+    IDevtoolStartScope,
     IDevtoolWSMessage,
 } from '@testring/types';
 
@@ -16,6 +17,7 @@ type EditorWsProviderProps = {
 }
 
 type EditorWsProvideState = {
+    highlights: Array<IDevtoolStartScope>;
     filename: null | string;
     source: null | string;
     dependencies: null | DependencyDict;
@@ -23,12 +25,14 @@ type EditorWsProvideState = {
 
 
 type DependencyUpdateMessage = {
+    highlights: Array<IDevtoolStartScope>;
     dependencies: DependencyDict;
     entryPath: string;
 };
 
 export class EditorLayout extends React.Component<EditorWsProviderProps, EditorWsProvideState> {
     state = {
+        highlights: [],
         filename: null,
         source: null,
         dependencies: null,
@@ -84,9 +88,18 @@ export class EditorLayout extends React.Component<EditorWsProviderProps, EditorW
             source = dependenciesMessage.dependencies[filename].source;
         }
 
+        let highlights: Array<IDevtoolStartScope> = this.state.highlights;
+
+        if (dependenciesMessage.highlights) {
+            highlights = dependenciesMessage.highlights.filter((highlight) => {
+                return highlight.filename === filename;
+            });
+        }
+
         this.setState({
             ...this.state,
             dependencies: dependenciesMessage.dependencies,
+            highlights,
             filename,
             source,
         });
@@ -97,7 +110,8 @@ export class EditorLayout extends React.Component<EditorWsProviderProps, EditorW
             return (<p style={{ 'margin': '20px' }}>Waiting for store initialization...</p>);
         } else {
             const source = (this.state as any).source;
-            return (<Editor source={source} onChange={this.changeHandler} />);
+
+            return (<Editor highlights={this.state.highlights} source={source} onChange={this.changeHandler} />);
         }
     }
 }
