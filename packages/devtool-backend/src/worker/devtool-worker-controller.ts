@@ -23,12 +23,12 @@ import { Request } from 'express-serve-static-core';
 import { Store } from 'redux';
 import { loggerClient } from '@testring/logger';
 import {
-    initStore,
-    devtoolWebAppAction,
-    IDevtoolWebAppRegisterData,
     devtoolConfigActions,
-    devtoolWorkerStateActions,
     devtoolDependenciesActions,
+    devtoolWebAppAction,
+    devtoolWorkerStateActions,
+    IDevtoolWebAppRegisterData,
+    initStore,
 } from '@testring/devtool-store';
 
 
@@ -493,6 +493,15 @@ export class DevtoolWorkerController {
                     );
                 } else {
                     // @TODO make error handler
+                }
+                break;
+            }
+
+            case DevtoolEvents.WRITE_FILE: {
+                try {
+                    this.fsWatcher.write(data.payload.filename, data.payload.source);
+                } catch (e) {
+                    this.logger.error(e);
                 }
                 break;
             }

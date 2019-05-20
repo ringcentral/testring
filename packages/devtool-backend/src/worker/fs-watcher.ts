@@ -57,6 +57,10 @@ export class FsWatcher extends EventEmitter {
 
         if (!skipWrite && this.filesMap.has(filename)) {
             await writeFile(filename, source);
+            this.emit('change', {
+                filename,
+                source,
+            });
         }
     }
 

@@ -5,6 +5,7 @@ export const enum DevtoolEvents {
     STORE_STATE_DIFF = 'DevtoolEvents/STORE_STATE_DIFF',
     GET_STORE = 'DevtoolEvents/GET_STORE',
     STORE_STATE = 'DevtoolEvents/STORE_STATE',
+    WRITE_FILE = 'DevtoolEvents/WRITE_FILE',
 }
 
 export const enum ExtensionMessagingTransportEvents {

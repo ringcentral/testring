@@ -8,6 +8,11 @@ import style from './style.css';
 type Monaco = typeof monacoEditor;
 type IStandaloneCodeEditor = monacoEditor.editor.IStandaloneCodeEditor;
 
+type EditorProps = {
+    source: string;
+    onChange: (value) => void;
+};
+
 type EditorState = {
     language: string;
     editor: null | IStandaloneCodeEditor;
@@ -20,7 +25,7 @@ type EditorDidMountHandler = (editor: IStandaloneCodeEditor, monaco: Monaco) => 
 const isEditor = (obj: IStandaloneCodeEditor | null): obj is IStandaloneCodeEditor => obj !== null;
 
 
-export class Editor extends React.Component<{ source: string }, EditorState> {
+export class Editor extends React.Component<EditorProps, EditorState> {
     state = {
         language: 'javascript',
         editor: null,
@@ -53,8 +58,7 @@ export class Editor extends React.Component<{ source: string }, EditorState> {
         const { editor } = this.state;
 
         if (isEditor(editor)) {
-            // eslint-disable-next-line no-console
-            console.log(editor.getPosition(), editor.getSelections());
+            this.props.onChange(editor.getValue());
         }
     }
 

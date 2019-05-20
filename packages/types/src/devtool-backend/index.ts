@@ -149,11 +149,20 @@ export interface IDevtoolWSCallWorkerAction {
     };
 }
 
+export interface IDevtoolWSWriteFileAction {
+    type: DevtoolEvents.WRITE_FILE;
+    payload: {
+        filename: string;
+        source: string;
+    };
+}
+
 export type IDevtoolWSMessage = IDevtoolWSHandshakeResponseMessage
     | IDevtoolWSHandshakeRequestMessage
     | IDevtoolWSGetStoreStateMessage
     | IDevtoolWSStoreStateMessage
     | IDevtoolWSDiffStoreStateMessage
-    | IDevtoolWSCallWorkerAction;
+    | IDevtoolWSCallWorkerAction
+    | IDevtoolWSWriteFileAction;
 
 
