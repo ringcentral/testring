@@ -5,20 +5,31 @@ import { TestWorkerAction, IDevtoolStartScope, IDevtoolEndScope } from '@testrin
 export function broadcastStartScope(
     filename: string,
     id: string,
-    coordinates: IDevtoolStartScope['coordinates'],
+    coordinates: [number, number, number, number],
     meta: any
 ) {
     transport.broadcastUniversally<IDevtoolStartScope>(TestWorkerAction.startScope, {
         filename,
         id,
-        coordinates,
+        coordinates: {
+            start: {
+                line: coordinates[0],
+                col: coordinates[1],
+            },
+            end: {
+                line: coordinates[2],
+                col: coordinates[3],
+            },
+        },
         meta,
     });
 }
 
-export function broadcastStopScope(filename: string, id: string) {
-    transport.broadcastUniversally<IDevtoolEndScope>(TestWorkerAction.endScope, {
-        filename,
-        id,
-    });
+export function broadcastStopScope(filename: string, ids: string[]) {
+    for (let id of ids) {
+        transport.broadcastUniversally<IDevtoolEndScope>(TestWorkerAction.endScope, {
+            filename,
+            id,
+        });
+    }
 }

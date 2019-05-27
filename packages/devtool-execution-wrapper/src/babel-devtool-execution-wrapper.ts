@@ -1,5 +1,4 @@
 import {
-    Statement,
     ImportDeclaration,
     Program,
     FunctionDeclaration,
@@ -8,39 +7,46 @@ import {
     FunctionExpression,
     ArrowFunctionExpression,
     ExpressionStatement,
+    Statement,
+    VariableDeclaration,
+    ReturnStatement,
+    IfStatement,
+    Node,
 } from '@babel/types';
+import { NodePath } from '@babel/traverse';
 
 import * as t from '@babel/types';
 import template from '@babel/template';
-import { NodePath } from '@babel/traverse';
-
 
 export const IMPORT_PATH = '@testring/devtool-execution-wrapper';
 
 const buildRequireTemplate = template(`
     var %%importName%% = null;
-    try { %%importName%% = require("${IMPORT_PATH}"); } catch (err) { };
+    try { %%importName%% = require("${IMPORT_PATH}"); } catch (err) { }
 `);
 
+const scopeWrapper = (callStatement: string) => `if (%%importName%%) { ${callStatement} }`;
 
-const buildStartScopeTemplate = template(`
-    if (%%importName%%) {
-        %%importName%%.broadcastStartScope(%%filename%%, %%id%%, {
-            start: {
-                line: %%startLine%%,
-                col: %%startColumn%%,
-            },
-            end: {
-                line: %%endLine%%,
-                col: %%endColumn%%,
-            },
-        });
+const isScopeWrapper = (importName: Identifier, path: NodePath<Statement>): boolean => {
+    if (path.isIfStatement()) {
+        const testStatement = path.get('test');
+        return testStatement.isIdentifier() && testStatement.node.name === importName.name;
     }
-`);
 
-const buildEndScopeTemplate = template(
-    'if (%%importName%%) { %%importName%%.broadcastStopScope(%%filename%%, %%id%%) }'
-);
+    return false;
+};
+
+const buildStartScopeTemplate = template(scopeWrapper(
+'%%importName%%.broadcastStartScope(' +
+    '%%filename%%, ' +
+    '%%id%%, ' +
+    '[%%startLine%%, %%startColumn%%, %%endLine%%, %%endColumn%%],' +
+')'
+));
+
+const buildEndScopeTemplate = template(scopeWrapper('%%importName%%.broadcastStopScope(%%filename%%, %%id%%)'));
+
+const arrowFunctionBodyTemplate = template('{ return %%statement%% }');
 
 const getStartScopeTemplateByNode = (filename: string | null, importName: Identifier, id: string, node: BaseNode) => {
     if (node.loc) {
@@ -61,88 +67,166 @@ const getStartScopeTemplateByNode = (filename: string | null, importName: Identi
     }
 };
 
-const getEndScopeTemplateById = (filename: string | null, importName: Identifier, id: string) => {
+const getEndScopeTemplateById = (filename: string | null, importName: Identifier, ids: string[]) => {
+    const idLiterals = ids.map((id) => t.stringLiteral(id));
+
     return buildEndScopeTemplate({
         filename: filename ? t.stringLiteral(filename) : t.nullLiteral(),
         importName,
-        id: t.stringLiteral(id),
+        id: t.arrayExpression(idLiterals),
     });
 };
 
-let uniqId = 0;
-const generateId = () => {
-    uniqId++;
-
-    return `scope_${uniqId}`;
+const unshiftContainer = (path: NodePath<Statement> | NodePath<Program>, statements: Statement | Statement[]): void => {
+    (path as any).unshiftContainer('body', statements);
 };
 
-const isInCurrentFunctionScope = (scopeId: number, path: NodePath<BaseNode>) => {
-    const block = path.scope.block;
-    const type = block.type;
+const pushContainer = (path: NodePath<Statement> | NodePath<Program>, statements: Statement | Statement[]): void => {
+    (path as any).pushContainer('body', statements);
+};
 
-    if (type === 'FunctionDeclaration' || type === 'FunctionExpression' || type === 'ArrowFunctionExpression') {
-        return path.scope.uid === scopeId;
+const findParentsWithScope = (path: NodePath<Node>, memo: string[] = []): string[] => {
+    if (path.state && path.state.scopeId) {
+        memo.push(path.state.scopeId);
+    }
+
+    if (
+        path.isArrowFunctionExpression() || path.isFunctionDeclaration()
+        || path.isFunctionExpression() || path.isProgram()
+    ) {
+        return Array.from(new Set(memo));
+    } else if (path.parentPath) {
+        return findParentsWithScope(path.parentPath, memo);
     } else {
-        if (path.scope && path.scope.parent) {
-            return isInCurrentFunctionScope(scopeId, path.scope.parent.path);
-        } else {
-            return false;
-        }
+        return Array.from(new Set(memo));
     }
 };
 
 export function devToolExecutionWrapper() {
     let importName: Identifier;
+
     let beginWrapper;
     let endWrapper;
+    let isWrapper;
 
-    const returnScopeTraverse = (id: string, body: NodePath<BaseNode>) => {
-        body.traverse({
-            ReturnStatement(path) {
-                if (isInCurrentFunctionScope(body.scope.uid, path)) {
-                    path.insertBefore(endWrapper(id));
-                }
-            },
-        });
+    let uniqId = 0;
+    const generateId = () => {
+        uniqId++;
+
+        return `scope_${uniqId}`;
     };
 
-    const functionWrapper = (path: NodePath<FunctionDeclaration | FunctionExpression>) => {
-        const body = path.get('body');
-        const id = generateId();
+    const returnStatementWrapper = (path: NodePath<ReturnStatement>): void => {
+        const scopeIds = findParentsWithScope(path);
 
-        returnScopeTraverse(id, body);
-
-        body.unshiftContainer('body', beginWrapper(id, body.node));
-        body.pushContainer('body', endWrapper(id));
-    };
-
-    const arrowFunctionWrapper = (path: NodePath<ArrowFunctionExpression>) => {
-        const body = path.get('body');
-        const id = generateId();
-
-        if (body.node.type === 'BlockStatement') {
-            returnScopeTraverse(id, body);
-
-            body.unshiftContainer('body', beginWrapper(id, body.node));
-            body.pushContainer('body', endWrapper(id));
+        if (scopeIds.length > 0) {
+            path.insertBefore(endWrapper(scopeIds));
         }
     };
 
-    const expressionWrapper = (path: NodePath<ExpressionStatement>) => {
+    const functionWrapper = (path: NodePath<FunctionDeclaration | FunctionExpression>): void  => {
+        const body = path.get('body');
+        const scopeId = generateId();
+
+        path.state = {
+            scopeId,
+        };
+
+        unshiftContainer(body, beginWrapper(scopeId, body.node));
+        pushContainer(body, endWrapper([scopeId]));
+    };
+
+    const arrowFunctionWrapper = (path: NodePath<ArrowFunctionExpression>): void => {
+        let body = path.get('body');
+        const scopeId = generateId();
+
+        if (!body.isBlockStatement()) {
+            const replaceStatement = arrowFunctionBodyTemplate({ statement: body.node }) as Statement;
+
+            body.replaceWith(replaceStatement);
+            body = path.get('body');
+        }
+
+        if (body.isBlockStatement()) {
+            path.state = {
+                scopeId,
+            };
+
+            unshiftContainer(body, beginWrapper(scopeId, body.node));
+            pushContainer(body, endWrapper([scopeId]));
+        }
+    };
+
+    const expressionWrapper = (path: NodePath<VariableDeclaration | ExpressionStatement>): void => {
         const id = generateId();
-        const expression = path.get('expression');
 
+        path.insertBefore(beginWrapper(id, path.node));
+        path.insertAfter(endWrapper([id]));
 
-        if (
-            expression.node && expression.node.type === 'CallExpression'
-            && expression.node.callee && expression.node.callee.object
-            && expression.node.callee.object.name === importName.name
-        ) {
-            return false;
+        path.skip();
+    };
+
+    const ifStatementWrapper = (path: NodePath<IfStatement>, state): void => {
+        if (isWrapper(path)) {
+            path.skip();
         } else {
-            path.insertBefore(beginWrapper(id, path.node));
-            path.insertAfter(endWrapper(id));
+            const consequent = path.get('consequent');
+            const consequentScopeId = generateId();
+
+            if (consequent.isBlockStatement()) {
+                consequent.state = {
+                    scopeId: consequentScopeId,
+                };
+
+                unshiftContainer(consequent, beginWrapper(consequentScopeId, consequent.node));
+                pushContainer(consequent, endWrapper([consequentScopeId]));
+
+                // eslint-disable-next-line no-use-before-define
+                subTraverseWithChildren(consequent, state);
+            }
+
+
+            const alternate = path.get('alternate');
+            if (alternate.isBlockStatement()) {
+                const alternateScopeId = generateId();
+                alternate.state = {
+                    scopeId: alternateScopeId,
+                };
+
+                unshiftContainer(alternate, beginWrapper(alternateScopeId, alternate.node));
+                pushContainer(alternate, endWrapper([alternateScopeId]));
+
+                // eslint-disable-next-line no-use-before-define
+                subTraverseWithChildren(alternate, state);
+            } else if (alternate.isIfStatement()) {
+                // eslint-disable-next-line no-use-before-define
+                subTravers(alternate, state);
+            }
+
+            path.skip();
         }
+    };
+
+    const visitors = {
+        FunctionDeclaration: functionWrapper,
+        FunctionExpression: functionWrapper,
+        ArrowFunctionExpression: arrowFunctionWrapper,
+        ExpressionStatement: expressionWrapper,
+        VariableDeclaration: expressionWrapper,
+        IfStatement: ifStatementWrapper,
+        ReturnStatement: returnStatementWrapper,
+    };
+
+
+    const subTravers = (subPath: NodePath<Node>, state): void => {
+        const visitorsCopy = { ...visitors };
+
+        visitorsCopy[subPath.node.type] && visitorsCopy[subPath.node.type](subPath, state);
+    };
+
+    const subTraverseWithChildren = (subPath: NodePath<Node>, state): void => {
+        subTravers(subPath, state);
+        subPath.traverse({ ...visitors }, state);
     };
 
     return {
@@ -153,33 +237,53 @@ export function devToolExecutionWrapper() {
                 importName = path.scope.generateUidIdentifier('$babelDevtoolExecutionWrapper');
                 const importStatement = buildRequireTemplate({
                     importName,
-                });
+                }) as Statement[];
 
-                let lastImport: NodePath<Statement> | null = null;
+                let lastImport: NodePath<ImportDeclaration> | undefined;
 
                 path.get('body').forEach((node) => {
-                    if (node.type === 'ImportDeclaration') {
+                    if (node.isImportDeclaration()) {
                         lastImport = node;
                     }
                 });
 
-
-                if (lastImport) {
-                    (lastImport as NodePath<ImportDeclaration>).insertAfter(importStatement);
-                } else {
-                    (path as any).unshiftContainer('body', importStatement);
-                }
-
+                const importStatementCount = importStatement.length;
                 const filename = state.file.opts.filename;
 
                 beginWrapper = getStartScopeTemplateByNode.bind(null, filename, importName);
                 endWrapper = getEndScopeTemplateById.bind(null, filename, importName);
+                isWrapper = isScopeWrapper.bind(null, importName);
+
+
+                if (lastImport !== undefined) {
+                    lastImport.insertAfter(importStatement);
+                    visitors[lastImport.node.type] && visitors[lastImport.node.type](lastImport, state);
+
+                    const nextSiblings = lastImport.getAllNextSiblings();
+                    for (let i = 0; i < nextSiblings.length; i++) {
+                        if (i >= importStatementCount) {
+                            const subPath = nextSiblings[i];
+                            subTraverseWithChildren(subPath, state);
+                        }
+                    }
+
+                    const prevSiblings = lastImport.getAllPrevSiblings();
+                    for (let i = 0; i < prevSiblings.length; i++) {
+                        const subPath = prevSiblings[i];
+                        subTraverseWithChildren(subPath, state);
+                    }
+                } else {
+                    unshiftContainer(path, importStatement);
+
+                    path.get('body').forEach((subPath, i) => {
+                        if (i >= importStatementCount) {
+                            subTraverseWithChildren(subPath, state);
+                        }
+                    });
+                }
+
+                path.stop();
             },
-            FunctionDeclaration: functionWrapper,
-            FunctionExpression: functionWrapper,
-            ArrowFunctionExpression: arrowFunctionWrapper,
-            ExpressionStatement: expressionWrapper,
-            VariableDeclaration: expressionWrapper,
         },
     };
 }

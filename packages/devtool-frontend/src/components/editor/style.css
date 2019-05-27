@@ -7,34 +7,34 @@
 }
 
 .highlightTextInline0 {
-    background-color: rgba(255, 0, 0, 0.5);
+    background-color: #845EC2;
     font-style: oblique;
 }
 
 .highlightTextInline1 {
-    background-color: rgba(0, 255, 0, 0.5);
+    background-color: #D65DB1;
     font-style: oblique;
 }
 
 .highlightTextInline2 {
-    background-color: rgba(0, 0, 255, 0.5);
+    background-color: #FF6F91;
     font-style: oblique;
 }
 
 .highlightColumn0 {
-    background-color: rgba(255, 0, 0);
+    background-color: #FF9671;
     width: 5px !important;
     margin-left: 3px;
 }
 
 .highlightColumn1 {
-    background-color: rgba(0, 255, 0);
+    background-color: #FFC75F;
     width: 5px !important;
-    margin-left: 3px;
+    margin-left: 8px;
 }
 
 .highlightColumn2 {
-    background-color: rgba(0, 0, 255);
+    background-color: #F9F871;
     width: 5px !important;
-    margin-left: 3px;
+    margin-left: 13px;
 }

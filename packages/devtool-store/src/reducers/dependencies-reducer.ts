@@ -86,19 +86,23 @@ export function dependenciesReducer(
             };
         }
         case devtoolDependenciesActions.ADD_HIGHLIGHT: {
+            const highlights = [...state.highlights, action.payload];
+
             return {
                 ...state,
-                highlights: [...state.highlights, action.payload],
+                highlights,
             };
         }
         case devtoolDependenciesActions.REMOVE_HIGHLIGHT: {
             const payload = action.payload;
+            const highlights = state.highlights.filter((item) => {
+                return !(item.filename === payload.filename && item.id === payload.id);
+            });
+
 
             return {
                 ...state,
-                highlights: state.highlights.filter((item) => {
-                    return item.filename !== payload.filename && item.id !== payload.id;
-                }),
+                highlights,
             };
         }
 

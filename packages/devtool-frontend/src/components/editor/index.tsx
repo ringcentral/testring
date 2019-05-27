@@ -118,7 +118,7 @@ export class Editor extends React.Component<EditorProps, EditorState> {
             }
 
             this.previousDecorations = (editor as IStandaloneCodeEditor)
-                .deltaDecorations(this.previousDecorations, decorations);
+                .deltaDecorations(this.previousDecorations, decorations.reverse());
         }
     }
 
