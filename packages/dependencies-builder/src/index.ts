@@ -11,7 +11,7 @@ import * as path from 'path';
 import { parse } from 'babylon';
 import traverse, { NodePath } from 'babel-traverse';
 import { resolveAbsolutePath } from './absolute-path-resolver';
-import { IMPORT_PATH } from '@testring/devtool-execution-plugin';
+import { IMPORT_PATH as DEVTOOL_IMPORT_PATH } from '@testring/devtool-execution-plugin';
 
 
 const NODE_MODULES_DIRS: string[] = [];
@@ -31,8 +31,6 @@ process.cwd().split(path.sep).forEach((part, i, pathArr) => {
         NODE_MODULES_DIRS.push(importPath);
     }
 });
-// Exclude devtool plugin
-NODE_MODULES_DIRS.push(IMPORT_PATH);
 
 
 function getDependencies(content: string): Array<string> {
@@ -90,6 +88,11 @@ export async function buildDependencyDictionary(
     const dependencies = getDependencies(dependencyNode.transpiledSource);
 
     for (let dependency of dependencies) {
+        // Skipping devtool plugin
+        if (dependency === DEVTOOL_IMPORT_PATH) {
+            continue;
+        }
+
         const dependencyAbsolutePath = resolveAbsolutePath(dependency, absolutePath);
         const isInternal = isInternalDependency(dependencyAbsolutePath);
 
@@ -123,6 +126,11 @@ export async function buildDependencyDictionaryFromFile(
 ): Promise<DependencyDict> {
     const dependencies: { [key: string]: string } = {};
     const dependenciesMap = getDependencies(file.transpiledSource).reduce((memo: Map<string, string>, dependency) => {
+        // Skipping devtool plugin
+        if (dependency === DEVTOOL_IMPORT_PATH) {
+            return memo;
+        }
+
         const absolutePath = resolveAbsolutePath(dependency, file.path);
 
         if (!isInternalDependency(absolutePath)) {

@@ -2,6 +2,7 @@ import * as vm from 'vm';
 import * as path from 'path';
 import { DependencyDict } from '@testring/types';
 import { requirePackage, resolvePackage } from '@testring/utils';
+import * as devtoolExecutionPlugin from '@testring/devtool-execution-plugin';
 import { Script } from './script';
 
 class Sandbox {
@@ -121,8 +122,11 @@ class Sandbox {
     private require(requestPath) {
         const dependenciesMap = this.dependencies[this.filename].dependencies;
 
+        // Devtool plugin
+        if (requestPath === devtoolExecutionPlugin.IMPORT_PATH) {
+            return devtoolExecutionPlugin;
         // Parsed dependency by key
-        if ( dependenciesMap[requestPath] ) {
+        } else if ( dependenciesMap[requestPath] ) {
             const absolutePath = dependenciesMap[requestPath];
 
             return this.getSandbox(absolutePath);
