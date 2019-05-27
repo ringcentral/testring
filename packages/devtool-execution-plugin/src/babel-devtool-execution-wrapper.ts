@@ -18,7 +18,7 @@ import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import template from '@babel/template';
 
-export const IMPORT_PATH = '@testring/devtool-execution-wrapper';
+export const IMPORT_PATH = '@testring/devtool-execution-plugin';
 
 const buildRequireTemplate = template(`
     var %%importName%% = null;
@@ -230,7 +230,7 @@ export function devToolExecutionWrapper() {
     };
 
     return {
-        name: '@testring/devtool-execution-wrapper',
+        name: '@testring/devtool-execution-plugin',
 
         visitor: {
             Program(path: NodePath<Program>, state) {

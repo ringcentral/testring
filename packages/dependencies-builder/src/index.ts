@@ -11,7 +11,7 @@ import * as path from 'path';
 import { parse } from 'babylon';
 import traverse, { NodePath } from 'babel-traverse';
 import { resolveAbsolutePath } from './absolute-path-resolver';
-import { IMPORT_PATH } from '@testring/devtool-execution-wrapper';
+import { IMPORT_PATH } from '@testring/devtool-execution-plugin';
 
 
 const NODE_MODULES_DIRS: string[] = [];
@@ -31,7 +31,7 @@ process.cwd().split(path.sep).forEach((part, i, pathArr) => {
         NODE_MODULES_DIRS.push(importPath);
     }
 });
-// Exclude dependency builder
+// Exclude devtool plugin
 NODE_MODULES_DIRS.push(IMPORT_PATH);
 
 

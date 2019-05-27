@@ -1,5 +1,5 @@
 {
-  "name": "@testring/devtool-execution-wrapper",
+  "name": "@testring/devtool-execution-plugin",
   "version": "0.5.2",
   "main": "./dist/index.js",
   "types": "./src/index.ts",

@@ -20,7 +20,7 @@ import { fork } from '@testring/child-process';
 import { generateUniqId } from '@testring/utils';
 
 import { TestWorkerLocal } from './test-worker-local';
-import { devtoolExecutionWrapper } from '@testring/devtool-execution-wrapper';
+import { devtoolExecutionWrapper } from '@testring/devtool-execution-plugin';
 import {
     buildDependencyDictionary,
     buildDependencyDictionaryFromFile,
