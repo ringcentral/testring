@@ -2,7 +2,7 @@ import { transport } from '@testring/transport';
 import { TestWorkerAction, IDevtoolStartScope, IDevtoolEndScope } from '@testring/types';
 
 
-export function broadcastStartScope(
+export function startScope(
     filename: string,
     id: string,
     coordinates: [number, number, number, number],
@@ -25,7 +25,7 @@ export function broadcastStartScope(
     });
 }
 
-export function broadcastStopScope(filename: string, ids: string[]) {
+export function endScope(filename: string, ids: string[]) {
     for (let id of ids) {
         transport.broadcastUniversally<IDevtoolEndScope>(TestWorkerAction.endScope, {
             filename,
