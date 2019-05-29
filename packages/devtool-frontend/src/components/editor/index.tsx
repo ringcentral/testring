@@ -1,10 +1,10 @@
 import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api';
+import { DevtoolScopeType, IDevtoolStartScope } from '@testring/types';
 
 import React from 'react';
 import MonacoEditor from 'react-monaco-editor';
 
 import style from './style.css';
-import { IDevtoolStartScope } from '@testring/types';
 
 type Monaco = typeof monacoEditor;
 type IStandaloneCodeEditor = monacoEditor.editor.IStandaloneCodeEditor;
@@ -100,7 +100,7 @@ export class Editor extends React.Component<EditorProps, EditorState> {
                 const c = highlight.coordinates;
                 let options: any;
 
-                if (c.start.line === c.end.line) {
+                if (highlight.meta.type === DevtoolScopeType.inline) {
                     options = {
                         inlineClassName: this.getInlineHighlightClass(i),
                     };

@@ -5,7 +5,7 @@ import {
 } from '../web-application';
 import { ITestControllerExecutionState } from '../test-worker/structs';
 import { TestWorkerAction } from '../test-worker/enums';
-
+import { DevtoolScopeType } from './enums';
 import { DevtoolEvents } from '../devtool-extension/enums';
 
 interface IDevtoolRoute {
@@ -88,7 +88,9 @@ export interface IDevtoolStartScope {
             line: number;
         };
     };
-    meta: any;
+    meta: {
+        type: DevtoolScopeType;
+    };
 }
 
 export interface IDevtoolEndScope {

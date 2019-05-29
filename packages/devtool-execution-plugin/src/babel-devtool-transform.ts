@@ -1,40 +1,40 @@
 import { NodePath } from '@babel/traverse';
+import * as t from '@babel/types';
 import {
-    Identifier,
-    ImportDeclaration,
-    Program,
-    Statement,
-    Node,
-    BaseNode,
-    IfStatement,
-    StringLiteral,
-    NumericLiteral,
     ArrayExpression,
-    VariableDeclaration,
-    ExpressionStatement,
-    ReturnStatement,
-    FunctionDeclaration,
     ArrowFunctionExpression,
+    BaseNode,
     BlockStatement,
-    FunctionExpression,
-    Expression,
-    Loop,
     BreakStatement,
-    SwitchStatement,
     ContinueStatement,
+    Expression,
+    ExpressionStatement,
+    FunctionDeclaration,
+    FunctionExpression,
+    Identifier,
+    IfStatement,
+    ImportDeclaration,
+    Loop,
+    Node,
+    NumericLiteral,
+    Program,
+    ReturnStatement,
+    Statement,
+    StringLiteral,
+    SwitchStatement,
+    VariableDeclaration,
 } from '@babel/types';
-import { PublicReplacements } from '@babel/template';
+import template, { PublicReplacements } from '@babel/template';
+import { DevtoolScopeType } from '@testring/types';
 
 import { IMPORT_PATH } from './constants';
-
-import template from '@babel/template';
-import * as t from '@babel/types';
 
 
 type StartScopeWrapperArgs = {
     filename: StringLiteral;
     importName: Identifier;
     id: StringLiteral;
+    type: StringLiteral;
     startLine: NumericLiteral;
     startColumn: NumericLiteral;
     endLine: NumericLiteral;
@@ -95,7 +95,7 @@ export class BabelDevtoolTransform {
 
     private buildRequireTemplate(importName: Identifier = this.importName): Statement[] {
         const statement = template(
-            'const %%importName%% = null;' +
+            'var %%importName%% = null;' +
             `try { %%importName%% = require("${IMPORT_PATH}"); } catch (err) { }`
         );
 
@@ -109,6 +109,7 @@ export class BabelDevtoolTransform {
                     '%%filename%%, ' +
                     '%%id%%, ' +
                     '[%%startLine%%, %%startColumn%%, %%endLine%%, %%endColumn%%],' +
+                    '%%type%%' +
                 ')'
             )) as StartScopeWrapper;
         }
@@ -129,6 +130,7 @@ export class BabelDevtoolTransform {
     private startScopeStatement(
         id: string,
         node: BaseNode,
+        type: DevtoolScopeType = DevtoolScopeType.block,
         filename: string = this.fileName,
         importName: Identifier = this.importName,
     ): IfStatement {
@@ -140,6 +142,7 @@ export class BabelDevtoolTransform {
 
             return this.getStartScopeTemplate()({
                 filename: t.stringLiteral(filename),
+                type: t.stringLiteral(type),
                 importName,
                 id: t.stringLiteral(id),
                 startLine: t.numericLiteral(startLine),
@@ -409,15 +412,21 @@ export class BabelDevtoolTransform {
 
     private expressionStatementVisitor(path: NodePath<ExpressionStatement>, state): void {
         const id = this.generateId();
+        const exp = path.get('expression');
 
-        path.insertBefore(this.startScopeStatement(id, path.node));
+        let type = DevtoolScopeType.block;
+        if (exp && (exp.isCallExpression() || exp.isAwaitExpression() || exp.isAssignmentExpression())) {
+            type = DevtoolScopeType.inline;
+        }
+
+        path.insertBefore(this.startScopeStatement(id, path.node, type));
         path.insertAfter(this.endScopeStatement([id]));
     }
 
     private variableDeclarationVisitor(path: NodePath<VariableDeclaration>, state): void {
         const id = this.generateId();
 
-        path.insertBefore(this.startScopeStatement(id, path.node));
+        path.insertBefore(this.startScopeStatement(id, path.node, DevtoolScopeType.inline));
         path.insertAfter(this.endScopeStatement([id]));
     }
 

@@ -21,3 +21,8 @@ export const enum DevtoolPluginHooks {
     beforeStop = 'beforeStop',
     afterStop = 'afterStop',
 }
+
+export enum DevtoolScopeType {
+    block = 'block',
+    inline = 'inline',
+}

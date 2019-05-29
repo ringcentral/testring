@@ -1,12 +1,12 @@
 import { transport } from '@testring/transport';
-import { TestWorkerAction, IDevtoolStartScope, IDevtoolEndScope } from '@testring/types';
+import { TestWorkerAction, IDevtoolStartScope, IDevtoolEndScope, DevtoolScopeType } from '@testring/types';
 
 
 export function startScope(
     filename: string,
     id: string,
     coordinates: [number, number, number, number],
-    meta: any
+    type: DevtoolScopeType
 ) {
     transport.broadcastUniversally<IDevtoolStartScope>(TestWorkerAction.startScope, {
         filename,
@@ -21,7 +21,9 @@ export function startScope(
                 col: coordinates[3],
             },
         },
-        meta,
+        meta: {
+            type,
+        },
     });
 }
 
