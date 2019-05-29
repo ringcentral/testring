@@ -415,8 +415,19 @@ export class BabelDevtoolTransform {
         const exp = path.get('expression');
 
         let type = DevtoolScopeType.block;
-        if (exp && (exp.isCallExpression() || exp.isAwaitExpression() || exp.isAssignmentExpression())) {
+        if (exp && (exp.isCallExpression() || exp.isAwaitExpression())) {
             type = DevtoolScopeType.inline;
+        }
+
+        if (exp && exp.isAssignmentExpression()) {
+            const right = path.get('right') as NodePath<Expression>;
+
+            if (!right.isFunction()) {
+                type = DevtoolScopeType.inline;
+            }
+
+            this.subTraverseWithChildren(right, state);
+            path.skip();
         }
 
         path.insertBefore(this.startScopeStatement(id, path.node, type));
