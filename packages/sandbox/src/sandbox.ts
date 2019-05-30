@@ -4,10 +4,12 @@ import { DependencyDict } from '@testring/types';
 import { requirePackage, resolvePackage } from '@testring/utils';
 import * as devtoolExecutionPlugin from '@testring/devtool-execution-plugin';
 import { Script } from './script';
+import { ScopeManager } from './scope-manager';
 
 class Sandbox {
 
     private context: any;
+    private scopeManager: ScopeManager;
 
     // Special flag for cyclic dependencies,
     // useful when module has recursive call of itself
@@ -21,7 +23,9 @@ class Sandbox {
         private filename: string,
         private dependencies: DependencyDict,
     ) {
+        this.scopeManager = new ScopeManager(filename);
         this.context = this.createContext();
+
         Sandbox.modulesCache.set(filename, this);
     }
 
@@ -78,20 +82,22 @@ class Sandbox {
         Sandbox.modulesCache.clear();
     }
 
-    public static async evaluateScript(filename: string, source: string): Promise<any> {
+    public static async evaluateScript(filename: string, source: string, fnPath: string | null = null): Promise<any> {
         if (!Sandbox.modulesCache.has(filename)) {
             throw new Error(`Sandbox ${filename} is not created`);
         }
 
         const sandbox = Sandbox.modulesCache.get(filename) as Sandbox;
-        const context = vm.createContext(sandbox.getContext());
-        const script = new Script(source, filename);
+
 
         sandbox.isCompiled = false;
         sandbox.isCompiling = true;
 
         let result;
         try {
+            const context = vm.createContext(sandbox.getScopeContext(fnPath));
+            const script = new Script(source, filename);
+
             result = await sandbox.runInContext(script, context);
         } catch (error) {
             throw error;
@@ -104,6 +110,10 @@ class Sandbox {
     }
 
     private static modulesCache: Map<string, Sandbox> = new Map();
+
+    private getScopeContext(fnPath: string | null) {
+        return this.scopeManager.getScopeContext(fnPath);
+    }
 
     private getSandbox(absolutePath) {
         let dependencySandbox;
@@ -174,6 +184,7 @@ class Sandbox {
         });
 
         const ownContext = {
+            __scopeManager: this.scopeManager,
             __dirname: path.dirname(filename),
             __filename: filename,
             require: this.require.bind(this),
@@ -219,6 +230,8 @@ class Sandbox {
                 return (key in target) || (key in global);
             },
         });
+
+        this.scopeManager.registerGlobal(contextProxy);
 
         return contextProxy;
     }

@@ -8,6 +8,7 @@ export const devtoolExecutionWrapper = async (source: string, filename: string):
         plugins: [
             BabelDevtoolTransform.getBabelPlugin,
         ],
+        babelrc: false,
     });
 
     if (result === null || result.code === null || result.code === undefined) {

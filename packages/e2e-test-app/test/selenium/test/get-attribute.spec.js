@@ -2,15 +2,17 @@ import { run } from 'testring';
 import '../import-file';
 
 async function test(api) {
-    await api.application.url('https://service.ringcentral.com/');
+    const application = api.application;
 
-    await api.application.setValue(api.application.root.credential.input, '1111111111');
-    await api.application.setValue(api.application.root.credential.input, '222');
-    await api.application.setValue(api.application.root.credential.input, '33333');
-    await api.application.setValue(api.application.root.credential.input, '4444');
-    await api.application.setValue(api.application.root.credential.input, '55555');
-    await api.application.setValue(api.application.root.credential.input, '6666');
-    await api.application.setValue(api.application.root.credential.input, '1111111111');
+    await application.url('https://service.ringcentral.com/');
+
+    await application.setValue(api.application.root.credential.input, '1111111111');
+    await application.setValue(api.application.root.credential.input, '222');
+    await application.setValue(api.application.root.credential.input, '33333');
+    await application.setValue(api.application.root.credential.input, '4444');
+    await application.setValue(api.application.root.credential.input, '55555');
+    await application.setValue(api.application.root.credential.input, '6666');
+    await application.setValue(api.application.root.credential.input, '1111111111');
 
     await api.application.click(
         api.application.root.loginCredentialNext

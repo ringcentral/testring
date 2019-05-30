@@ -274,7 +274,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
             return compiledSource;
         } catch (error) {
-            this.logger.error(`Compilation ${filename} failed`);
+            this.logger.error(`Compilation ${filename} failed\n`, error);
 
             throw error;
         }
