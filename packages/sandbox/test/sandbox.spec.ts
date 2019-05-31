@@ -400,7 +400,8 @@ describe('Sandbox', () => {
             const fnCall = 'foo';
 
             const source = `
-                let globalValue = 100;
+                var globalValue = 100;
+
                 async function ${fnPath}() {
                     __scopeManager.registerFunction("${fnPath}", null, this, arguments);
 
@@ -413,7 +414,7 @@ describe('Sandbox', () => {
                     return ${fnPath}();
                 }
                 
-                module.exports = {
+                exports = {
                     result: ${fnCall}(),
                 };
             `;
@@ -426,21 +427,26 @@ describe('Sandbox', () => {
             chai.expect(await context.exports.result).to.be.equal(100);
 
             await Sandbox.evaluateScript(filename, `
-                globalValue = 500;
+                var globalValue = 300;
 
                 async function ${fnPath}() {
                     __scopeManager.registerFunction("${fnPath}", null, this, arguments);
-
+                    globalValue = 500;
+                    
                     return globalValue + 200;
                 }
             `);
 
+            chai.expect(context.globalValue).to.be.equal(300);
+
             await Sandbox.evaluateScript(filename, `
-                module.exports = {
+                exports = {
                     result: ${fnCall}(),
                 };
             `);
+
             chai.expect(await context.exports.result).to.be.equal(700);
+            chai.expect(await context.globalValue).to.be.equal(500);
 
             chai.expect(context.test).to.be.equal(undefined);
         });
