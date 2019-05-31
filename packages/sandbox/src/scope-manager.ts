@@ -98,7 +98,9 @@ export class ScopeManager {
                 }
             },
             set: (target: any, key: string | number | symbol, value: any): any => {
-                if (key === '__scopeExports') {
+                if (key === '__arguments' || key === '__context') {
+                    throw new Error(`Property ${key} is readonly`);
+                } else if (key === '__scopeExports') {
                     return this.getExportsNamespace()[fnName] = value;
                 }
 
