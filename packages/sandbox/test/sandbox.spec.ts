@@ -352,33 +352,46 @@ describe('Sandbox', () => {
 
             await sandbox.execute();
 
-            await Sandbox.evaluateScript('test-data.js', 'test = 20;');
+            await Sandbox.evaluateScript(filename, 'test = 20;');
             const context = sandbox.getContext();
             chai.expect(context.test).to.be.equal(20);
         });
 
-        it('Register function scope', async () => {
+        it('Evaluate with object mutation', async () => {
             const filename = 'test-data.js';
+            const fnPath = 'hello';
             const source = `
-                function hello() {
-                    __scopeManager.registerFunction("hello", null, this, arguments);
+                function ${fnPath}() {
+                    __scopeManager.registerFunction("${fnPath}", null, this, arguments);
+                    __scopeManager.registerVariable("${fnPath}", "obj", () => obj);
+                    __scopeManager.registerVariable("${fnPath}", "test", () => obj.key);
+                    var obj = { key: 20 };
+                    var test = obj.key;
                 }
                 hello(1, "test");
             `;
             const dependencies = await generateDependencyDict(filename, source);
-
             const sandbox = new Sandbox(filename, dependencies);
 
             await sandbox.execute();
 
-            await Sandbox.evaluateScript('test-data.js', `
-                __scopeManager.registerVariable("hello", "test", () => undefined);
-                var test = 20;
+            await Sandbox.evaluateScript(filename, `
+                __scopeExports = (async function () {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    obj.key = 30;
+                    
+                    return test + 40;
+                })();
             `,
-                'hello'
+                fnPath
             );
             const context = sandbox.getContext();
+            chai.expect(await Sandbox.getEvaluationResult(filename, fnPath)).to.be.equal(70);
+
             chai.expect(context.test).to.be.equal(undefined);
+
+            Sandbox.clearEvaluationResult(filename, fnPath);
+            chai.expect(await Sandbox.getEvaluationResult(filename, fnPath)).to.be.equal(undefined);
         });
     });
 });

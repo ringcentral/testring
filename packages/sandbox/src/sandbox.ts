@@ -10,6 +10,7 @@ class Sandbox {
 
     private context: any;
     private scopeManager: ScopeManager;
+    static readonly exportNamespace: unique symbol = Symbol('scope.export');
 
     // Special flag for cyclic dependencies,
     // useful when module has recursive call of itself
@@ -17,13 +18,15 @@ class Sandbox {
 
     private isCompiled = false;
 
-    public exports = {};
+    public exports = {
+        [Sandbox.exportNamespace]: {},
+    };
 
     constructor(
         private filename: string,
         private dependencies: DependencyDict,
     ) {
-        this.scopeManager = new ScopeManager(filename);
+        this.scopeManager = new ScopeManager(filename, Sandbox.exportNamespace);
         this.context = this.createContext();
 
         Sandbox.modulesCache.set(filename, this);
@@ -79,6 +82,10 @@ class Sandbox {
     }
 
     public static clearCache(): void {
+        for (let [, sandbox] of Sandbox.modulesCache) {
+            sandbox.clear();
+        }
+
         Sandbox.modulesCache.clear();
     }
 
@@ -89,10 +96,6 @@ class Sandbox {
 
         const sandbox = Sandbox.modulesCache.get(filename) as Sandbox;
 
-
-        sandbox.isCompiled = false;
-        sandbox.isCompiling = true;
-
         let result;
         try {
             const context = vm.createContext(sandbox.getScopeContext(fnPath));
@@ -101,15 +104,36 @@ class Sandbox {
             result = await sandbox.runInContext(script, context);
         } catch (error) {
             throw error;
-        } finally {
-            sandbox.isCompiled = true;
-            sandbox.isCompiling = false;
         }
 
         return result;
     }
 
+    public static getEvaluationResult(filename: string, fnPath: string): any {
+        if (!Sandbox.modulesCache.has(filename)) {
+            throw new Error(`Sandbox ${filename} is not created`);
+        }
+
+        const sandbox = Sandbox.modulesCache.get(filename) as Sandbox;
+
+        return sandbox.exports[Sandbox.exportNamespace][fnPath];
+    }
+
+    public static clearEvaluationResult(filename: string, fnPath: string): void {
+        if (!Sandbox.modulesCache.has(filename)) {
+            throw new Error(`Sandbox ${filename} is not created`);
+        }
+
+        const sandbox = Sandbox.modulesCache.get(filename) as Sandbox;
+
+        delete sandbox.exports[Sandbox.exportNamespace][fnPath];
+    }
+
     private static modulesCache: Map<string, Sandbox> = new Map();
+
+    private clear() {
+        this.scopeManager.clearScopes();
+    }
 
     private getScopeContext(fnPath: string | null) {
         return this.scopeManager.getScopeContext(fnPath);
@@ -217,7 +241,10 @@ class Sandbox {
             set: (target: any, key: string, value: any): any => {
                 switch (key) {
                     case 'exports': {
-                        return this.exports = value;
+                        return this.exports = {
+                            ...value,
+                            [Sandbox.exportNamespace]: this.exports[Sandbox.exportNamespace],
+                        };
                     }
 
                     default: {

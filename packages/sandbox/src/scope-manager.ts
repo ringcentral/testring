@@ -5,24 +5,40 @@ type Scope = {
     vars: object;
 };
 
+
+type VariableKey = string | number | symbol;
+type VariableGetter = () => any;
+
 export class ScopeManager {
-    private global: object;
+    private global: any;
     private scopes: Map<string, Scope> = new Map();
 
-    constructor(private filename: string) {
+    constructor(private filename: string, private exportNamespace: symbol) {
         // eslint-disable-next-line no-console
         console.log(this.filename);
+    }
+
+    public clearScopes() {
+        this.scopes.clear();
     }
 
     public registerGlobal(global: object) {
         this.global = global;
     }
 
-    public registerVariable(fnName: string, variableName: string | number | symbol, valueGetter: () => any) {
+    public registerVariable(fnName: string, variableName: VariableKey, valueGetter: VariableGetter) {
         if (this.scopes.has(fnName)) {
             let scope = this.scopes.get(fnName) as Scope;
 
             scope.vars[variableName] = valueGetter;
+        }
+    }
+
+    public addVariable(fnName: string, variableName: VariableKey, valueGetter: VariableGetter) {
+        const scope = this.scopes.get(fnName);
+
+        if (scope && !Object.prototype.hasOwnProperty.call(scope.vars, variableName)) {
+            this.registerVariable(fnName, variableName, valueGetter);
         }
     }
 
@@ -39,6 +55,10 @@ export class ScopeManager {
             context,
             args,
         });
+    }
+
+    private getExportsNamespace(): object {
+        return this.global.module.exports[this.exportNamespace];
     }
 
     public getScopeContext(fnName: string | null) {
@@ -58,6 +78,8 @@ export class ScopeManager {
                     return scope.args;
                 } else if (key === '__context') {
                     return scope.context;
+                } else if (key === '__scopeExports') {
+                    return this.getExportsNamespace()[fnName];
                 }
 
 
@@ -76,6 +98,10 @@ export class ScopeManager {
                 }
             },
             set: (target: any, key: string | number | symbol, value: any): any => {
+                if (key === '__scopeExports') {
+                    return this.getExportsNamespace()[fnName] = value;
+                }
+
                 if (Object.prototype.hasOwnProperty.call(target, key)) {
                     target[key] = () => value;
 
