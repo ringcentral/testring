@@ -368,7 +368,7 @@ describe('Sandbox', () => {
                     var obj = { key: 20 };
                     var test = obj.key;
                 }
-                hello(1, "test");
+                hello();
             `;
             const dependencies = await generateDependencyDict(filename, source);
             const sandbox = new Sandbox(filename, dependencies);
@@ -392,6 +392,57 @@ describe('Sandbox', () => {
 
             Sandbox.clearEvaluationResult(filename, fnPath);
             chai.expect(await Sandbox.getEvaluationResult(filename, fnPath)).to.be.equal(undefined);
+        });
+
+        it('Evaluate with function redeclaration', async () => {
+            const filename = 'test-data.js';
+            const fnPath = 'hello';
+            const fnCall = 'foo';
+
+            const source = `
+                let globalValue = 100;
+                async function ${fnPath}() {
+                    __scopeManager.registerFunction("${fnPath}", null, this, arguments);
+
+                    return globalValue;
+                }
+                
+                async function ${fnCall}() {
+                    __scopeManager.registerFunction("${fnCall}", null, this, arguments);
+
+                    return ${fnPath}();
+                }
+                
+                module.exports = {
+                    result: ${fnCall}(),
+                };
+            `;
+            const dependencies = await generateDependencyDict(filename, source);
+            const sandbox = new Sandbox(filename, dependencies);
+
+            await sandbox.execute();
+
+            const context = sandbox.getContext();
+            chai.expect(await context.exports.result).to.be.equal(100);
+
+            await Sandbox.evaluateScript(filename, `
+                globalValue = 500;
+
+                async function ${fnPath}() {
+                    __scopeManager.registerFunction("${fnPath}", null, this, arguments);
+
+                    return globalValue + 200;
+                }
+            `);
+
+            await Sandbox.evaluateScript(filename, `
+                module.exports = {
+                    result: ${fnCall}(),
+                };
+            `);
+            chai.expect(await context.exports.result).to.be.equal(700);
+
+            chai.expect(context.test).to.be.equal(undefined);
         });
     });
 });
