@@ -62,7 +62,11 @@ export class ScopeManager {
 
 
                 if (Object.prototype.hasOwnProperty.call(target, key)) {
-                    return target[key]();
+                    try {
+                        return target[key]();
+                    } catch (e) {
+                        return undefined;
+                    }
                 } else if (scope.parent !== null) {
                     const parentScope = this.getScopeContext(scope.parent) as object;
 

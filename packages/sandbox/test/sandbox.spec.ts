@@ -356,5 +356,29 @@ describe('Sandbox', () => {
             const context = sandbox.getContext();
             chai.expect(context.test).to.be.equal(20);
         });
+
+        it('Register function scope', async () => {
+            const filename = 'test-data.js';
+            const source = `
+                function hello() {
+                    __scopeManager.registerFunction("hello", null, this, arguments);
+                }
+                hello(1, "test");
+            `;
+            const dependencies = await generateDependencyDict(filename, source);
+
+            const sandbox = new Sandbox(filename, dependencies);
+
+            await sandbox.execute();
+
+            await Sandbox.evaluateScript('test-data.js', `
+                __scopeManager.registerVariable("hello", "test", () => undefined);
+                var test = 20;
+            `,
+                'hello'
+            );
+            const context = sandbox.getContext();
+            chai.expect(context.test).to.be.equal(undefined);
+        });
     });
 });

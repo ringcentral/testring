@@ -412,6 +412,20 @@ export class BabelDevtoolTransform {
         }
     }
 
+    private getVariableRegisterInject(fnName: string, variable: Identifier): Statement {
+        return template(
+            'global.__scopeManager && global.__scopeManager.registerVariable(' +
+                '%%fnName%%, ' +
+                '%%variableName%%, ' +
+                '() => { return %%variableIdentifier%% }' +
+            ')'
+        )({
+            fnName: t.stringLiteral(fnName),
+            variableIdentifier: variable,
+            variableName: t.stringLiteral(variable.name),
+        }) as Statement;
+    }
+
     private functionScopeInject(path: NodePath<Function>, state): void {
         const fnName = getFunctionPath(path);
 
@@ -423,17 +437,30 @@ export class BabelDevtoolTransform {
 
             const fnParentName = getFunctionPath(path.parentPath);
 
+            const bindings = path.scope.getAllBindings();
+            const variableStatements: Statement[] = Object.entries(bindings)
+                .reduce((memo: Statement[], [key, binding]) => {
+                    if (path.scope.hasOwnBinding(key)) {
+                        const identifier = binding.identifier as Identifier;
+                        memo.push(this.getVariableRegisterInject(fnName, identifier));
+                    }
+
+                    return memo;
+                }, []);
+
             const inject = template(this.scopeWrapper(
                 'global.__scopeManager && global.__scopeManager.registerFunction(' +
                     '%%fnName%%, ' +
                     '%%fnParentName%%, ' +
                     'this, ' +
                     'arguments' +
-                ')'
+                ');' +
+                '%%variableStatements%%'
             ))({
                 importName: this.importName,
                 fnName: t.stringLiteral(fnName),
                 fnParentName: fnParentName === null ? t.nullLiteral() : t.stringLiteral(fnParentName),
+                variableStatements,
             }) as IfStatement;
 
             this.unshiftContainer(path.get('body') as NodePath<BlockStatement>, inject);
@@ -479,51 +506,8 @@ export class BabelDevtoolTransform {
         path.insertAfter(this.endScopeStatement([id]));
     }
 
-    private getInjectTemplate(fnName: string, variable: Identifier): IfStatement {
-        return template(this.scopeWrapper(
-            'global.__scopeManager && global.__scopeManager.registerVariable(' +
-                '%%fnName%%, ' +
-                '%%variableName%%, ' +
-                '() => { return %%variableIdentifier%% }' +
-            ')'
-        ))({
-            importName: this.importName,
-            fnName: t.stringLiteral(fnName),
-            variableIdentifier: variable,
-            variableName: t.stringLiteral(variable.name),
-        }) as IfStatement;
-    }
-
-    private variableDeclarationInjection(path: NodePath<VariableDeclaration>, state): void {
-        const parentFn = path.getFunctionParent();
-
-        if (parentFn) {
-            const fnName = parentFn.state.fnName;
-
-            if (!fnName) {
-                return;
-            }
-
-            const declarations = path.get('declarations');
-            const injects: IfStatement[] = [];
-
-            declarations.forEach((declaration) => {
-                let id = declaration.get('id');
-
-                if (id.isIdentifier()) {
-                    injects.push(this.getInjectTemplate(fnName, id.node));
-                }
-            });
-
-
-            path.insertAfter(injects);
-        }
-    }
-
     private variableDeclarationVisitor(path: NodePath<VariableDeclaration>, state): void {
         const id = this.generateId();
-
-        this.variableDeclarationInjection(path, state);
 
         path.insertBefore(this.startScopeStatement(id, path.node, DevtoolScopeType.inline));
         path.insertAfter(this.endScopeStatement([id]));
