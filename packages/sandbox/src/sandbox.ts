@@ -1,8 +1,11 @@
 import * as vm from 'vm';
 import * as path from 'path';
-import { DependencyDict } from '@testring/types';
+import { DependencyDict, ITransport } from '@testring/types';
 import { requirePackage, resolvePackage } from '@testring/utils';
+import { transport as transportClient } from '@testring/transport';
 import * as devtoolExecutionPlugin from '@testring/devtool-execution-plugin';
+
+
 import { Script } from './script';
 import { ScopeManager } from './scope-manager';
 
@@ -25,8 +28,9 @@ class Sandbox {
     constructor(
         private filename: string,
         private dependencies: DependencyDict,
+        private transport: ITransport = transportClient,
     ) {
-        this.scopeManager = new ScopeManager(filename, Sandbox.exportNamespace);
+        this.scopeManager = new ScopeManager(filename, Sandbox.exportNamespace, this.transport);
         this.context = this.createContext();
 
         Sandbox.modulesCache.set(filename, this);

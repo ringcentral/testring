@@ -98,6 +98,15 @@ export interface IDevtoolEndScope {
     id: string;
 }
 
+export interface IDevtoolRegisterScope {
+    filename: string;
+    scopeId: string;
+}
+
+export interface IDevtoolRegisterScopeVariable extends IDevtoolRegisterScope {
+    variableName: string | number | symbol;
+}
+
 export interface IDevtoolProxyCleanedMessage {
     source: null | string;
     messageData: any;

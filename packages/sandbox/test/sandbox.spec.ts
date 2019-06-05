@@ -368,7 +368,8 @@ describe('Sandbox', () => {
                     var obj = { key: 20 };
                     var test = obj.key;
                 }
-                hello();
+
+                ${fnPath}();
             `;
             const dependencies = await generateDependencyDict(filename, source);
             const sandbox = new Sandbox(filename, dependencies);

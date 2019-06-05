@@ -1,3 +1,10 @@
+import {
+    IDevtoolRegisterScope,
+    IDevtoolRegisterScopeVariable,
+    ITransport,
+    TestWorkerAction,
+} from '@testring/types';
+
 type Scope = {
     parent: string | null;
     context: any;
@@ -13,10 +20,11 @@ export class ScopeManager {
     private global: any;
     private scopes: Map<string, Scope> = new Map();
 
-    constructor(private filename: string, private exportNamespace: symbol) {
-        // eslint-disable-next-line no-console
-        console.log(this.filename);
-    }
+    constructor(
+        private filename: string,
+        private exportNamespace: symbol,
+        private transport: ITransport,
+    ) {}
 
     public clearScopes() {
         this.scopes.clear();
@@ -26,34 +34,45 @@ export class ScopeManager {
         this.global = global;
     }
 
-    public registerVariable(fnName: string, variableName: VariableKey, valueGetter: VariableGetter) {
-        if (this.scopes.has(fnName)) {
-            let scope = this.scopes.get(fnName) as Scope;
+    public registerVariable(scopeId: string, variableName: VariableKey, valueGetter: VariableGetter): void {
+        if (this.scopes.has(scopeId)) {
+            let scope = this.scopes.get(scopeId) as Scope;
 
             scope.vars[variableName] = valueGetter;
+
+            this.transport.broadcastUniversally<IDevtoolRegisterScopeVariable>(TestWorkerAction.registerVariable, {
+                filename: this.filename,
+                scopeId,
+                variableName,
+            });
         }
     }
 
-    public addVariable(fnName: string, variableName: VariableKey, valueGetter: VariableGetter) {
-        const scope = this.scopes.get(fnName);
+    public addVariable(scopeId: string, variableName: VariableKey, valueGetter: VariableGetter): void {
+        const scope = this.scopes.get(scopeId);
 
         if (scope && !Object.prototype.hasOwnProperty.call(scope.vars, variableName)) {
-            this.registerVariable(fnName, variableName, valueGetter);
+            this.registerVariable(scopeId, variableName, valueGetter);
         }
     }
 
-    public registerFunction(fnName: string, parent: string, context: any, args: any[]) {
+    public registerFunction(scopeId: string, parent: string, context: any, args: any[]): void {
         let initialScope: Partial<Scope> = {};
-        if (this.scopes.has(fnName)) {
-            initialScope = this.scopes.get(fnName) as Scope;
+        if (this.scopes.has(scopeId)) {
+            initialScope = this.scopes.get(scopeId) as Scope;
         }
 
-        this.scopes.set(fnName, {
+        this.scopes.set(scopeId, {
             vars: {},
             ...initialScope,
             parent,
             context,
             args,
+        });
+
+        this.transport.broadcastUniversally<IDevtoolRegisterScope>(TestWorkerAction.registerScope, {
+            filename: this.filename,
+            scopeId,
         });
     }
 
@@ -61,16 +80,16 @@ export class ScopeManager {
         return this.global.module.exports[this.exportNamespace];
     }
 
-    public getScopeContext(fnName: string | null) {
-        if (fnName === null) {
+    public getScopeContext(scopeId: string | null) {
+        if (scopeId === null) {
             return this.global;
         }
 
-        if (!this.scopes.has(fnName)) {
-            throw new Error(`Scope ${fnName} is not created yet`);
+        if (!this.scopes.has(scopeId)) {
+            throw new Error(`Scope ${scopeId} is not created yet`);
         }
 
-        const scope = this.scopes.get(fnName) as Scope;
+        const scope = this.scopes.get(scopeId) as Scope;
 
         return new Proxy(scope.vars, {
             get: (target: any, key: string | number | symbol): any => {
@@ -79,7 +98,7 @@ export class ScopeManager {
                 } else if (key === '__context') {
                     return scope.context;
                 } else if (key === '__scopeExports') {
-                    return this.getExportsNamespace()[fnName];
+                    return this.getExportsNamespace()[scopeId];
                 }
 
 
@@ -101,7 +120,7 @@ export class ScopeManager {
                 if (key === '__arguments' || key === '__context') {
                     throw new Error(`Property ${key} is readonly`);
                 } else if (key === '__scopeExports') {
-                    return this.getExportsNamespace()[fnName] = value;
+                    return this.getExportsNamespace()[scopeId] = value;
                 }
 
                 if (Object.prototype.hasOwnProperty.call(target, key)) {
