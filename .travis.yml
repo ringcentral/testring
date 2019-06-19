@@ -5,8 +5,13 @@ git:
 
 addons:
   chrome: stable
+  sonarcloud:
+    organization: "danbao-github" # the key of the org you chose at step #3
+    token:
+      secure: "PHqAQ2ixX/ULa0TAEoxYYstuAJ03kymGoIL5C2+5iqG0GjBr74jyn+N+ITVJsYAFA0Gt/MBLjQs+2JfOLJ3bbg+c6SjAfPU47FECtTR5GeaXCEDH0CX40yZaQ0QP2sOVvO/h47WbOKlzznk7lGPvg58drtsgZRzPDRnaauk4uP9kKtCKFJeKG4SIRihWIGsNHW3jGRdWf+kHW3DKwL5geUNbOi3w1YWa5igttqQDNDICUx5lDVeTAYSSJ3i3jaBiin72GlakGNiUob+PqJNN4Bp88NSSjTecYmVUgcz6DPm356+p25stgG1dwI1iywnyJf653/DoasRqMGqZlKvgrPH4+xMnAeYG3fmD9ayxUFSMOxyYcs8qTRelC1I7FUQu1xK76DHA5NnV80q3iltrBN9U/yrrZAUJutQ06hPLjbQnNz9yUC9cS0IcNfwpZc+dw42Ps02a4VLtTzUaA80tvsglM8mL+n1zXAwd8z0p4jXlVprYpEjQScOYPlDXfBO0t6RXCYigNC2wzYIU92uI/HgpTqmyNqekWxweJZOChPsQKHG+fQeGw1ReSEElKoOLPIoObGGj6S/NiGSjzGLR7U098dyn/dlbbzbcOZfWsSmOk25cWaz4i2mvHvuZXKLh10uoqKrBVsK7oXxkIbORyqukfaGFfsJK0KgIoUk6NuY=" # encrypted value of your token
 
 language: node_js
+dist: trusty
 
 node_js:
   - "10"
