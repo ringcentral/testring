@@ -23,7 +23,9 @@ cache:
   - $HOME/.npm
   - node_modules
 
-script: xvfb-run npm run build:ci
+script:
+  - xvfb-run npm run build:ci
+  - sonar-scanner
 
 stages:
   - test
