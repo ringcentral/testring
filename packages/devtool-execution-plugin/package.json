@@ -1,6 +1,6 @@
 {
   "name": "@testring/devtool-execution-plugin",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -13,8 +13,8 @@
     "@babel/core": "7.4.4",
     "@babel/template": "7.4.4",
     "@babel/types": "7.4.4",
-    "@testring/transport": "0.5.2",
-    "@testring/types": "0.5.2",
+    "@testring/transport": "0.5.3",
+    "@testring/types": "0.5.3",
     "@types/babel-types": "7.0.7",
     "@types/babel__core": "7.1.2"
   },

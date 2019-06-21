@@ -1,6 +1,6 @@
 {
   "name": "@testring/sandbox",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,11 +10,11 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/api": "0.5.2",
-    "@testring/devtool-execution-plugin": "0.5.2",
-    "@testring/test-utils": "0.5.2",
-    "@testring/transport": "0.5.2",
-    "@testring/types": "0.5.2",
-    "@testring/utils": "0.5.2"
+    "@testring/api": "0.5.3",
+    "@testring/devtool-execution-plugin": "0.5.3",
+    "@testring/test-utils": "0.5.3",
+    "@testring/transport": "0.5.3",
+    "@testring/types": "0.5.3",
+    "@testring/utils": "0.5.3"
   }
 }

@@ -1,12 +1,17 @@
 sudo: required
 
 git:
-  depth: 10
+  depth: false
 
 addons:
   chrome: stable
+  sonarcloud:
+    organization: "ringcentral"
+    token:
+      secure: "xzS9szSu7A+yzpqf4n/YIB5LFVhySghNPlekW5kFc/t0+xefFBgfYSDr2yXhcbMyL/ZlCmIL8/RSdL83QtgThI4vLQfRp/DQTrap58D3aboCb9yKY57ELzv/jwbH1tJ3ocy/GzTbDDcHb0V/tzElELGWPcKQIbu9T2RisJxpo7P+XGjEV6eDlzsE/rFh6tP7gF2dEE/RcvjGfOamOFLK/XtUPAeO50sKqnDQvmU3GfKtwwnGLFAqIPJOU5m8BJGfZrhDY18EOwLxAOXCCb+//FwiOm0AiR+N0/WnZGP7ZLcOMcVKcje9IGg0+j5B5wziCGuZtJuDh9VyORzrxsgXL/xhUKoMy8yQ5f70ziMFWG/oJexQP+ItDYKkktXEM8PkNrtgxnDcHSDN37Xda9m0vSAwrLInISnG65jIsJO53QY3eemd9DBZMPOGTWYAkMZK8Si1GcXNhfAhTT2e6nKZIYvDy/ADoPSgk1hqyxMZOdmqQQSVPg0qur1lk8Lmvc25UyPqZt8hsldOKfwkg5GEXYC5kLuRJa+ZuaMjWmNlg1DEGhyhE19JhgRIsvPF7u654RKwaTzMndCAR2vuMfspK+YVtPHJVt6EMw+jnjilt4dZb0Qp6CHYgQnSNq+p256oc73MjvA5lq+foTgat89fFgPoPp63sLiaRA8OYLfxQwA="
 
 language: node_js
+dist: trusty
 
 node_js:
   - "10"
@@ -18,7 +23,9 @@ cache:
   - $HOME/.npm
   - node_modules
 
-script: xvfb-run npm run build:ci
+script:
+  - xvfb-run npm run build:ci
+  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi' # sonar only on non-PRs https://github.com/travis-ci/travis-ci/issues/10062
 
 stages:
   - test

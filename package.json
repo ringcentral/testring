@@ -23,7 +23,7 @@
     "test:e2e": "lerna run --stream --scope @testring/e2e-test-app e2e",
     "test:e2e-simple": "lerna run --stream --scope @testring/e2e-test-app e2e-simple",
     "test:coverage": "nyc npm test",
-    "test:publish": "coveralls < ./coverage/lcov.info && rimraf ./coverage -G",
+    "test:publish": "coveralls < ./coverage/lcov.info && rimraf ./coverage/lcov-report -G",
     "test:ci": "npm run test:coverage && npm run test:e2e && npm run test:publish",
     "build": "npm run build:main && npm run build:devtool && npm run build:extension",
     "build:main": "lerna exec --ignore=\"@testring/@(e2e-test-app|devtool-frontend|devtool-extension)\" -- tsc --target es2015",
