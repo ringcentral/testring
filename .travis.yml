@@ -1,7 +1,7 @@
 sudo: required
 
 git:
-  depth: 10
+  depth: false
 
 addons:
   chrome: stable
