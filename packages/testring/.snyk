@@ -1,0 +1,22 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.13.5
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  SNYK-JS-LODASH-450202:
+    - '@testring/cli > @testring/devtool-backend > babel-types > lodash':
+        patched: '2019-07-03T22:58:55.137Z'
+    - '@testring/cli > @testring/devtool-backend > babel-traverse > lodash':
+        patched: '2019-07-03T22:58:55.137Z'
+    - '@testring/cli > @testring/http-api > request-promise-native > request-promise-core > lodash':
+        patched: '2019-07-03T22:58:55.137Z'
+    - '@testring/cli > @testring/devtool-backend > babel-traverse > babel-types > lodash':
+        patched: '2019-07-03T22:58:55.137Z'
+    - '@testring/cli > @testring/test-worker > @testring/dependencies-builder > babel-traverse > lodash':
+        patched: '2019-07-03T22:58:55.137Z'
+    - '@testring/cli > @testring/test-worker > @testring/dependencies-builder > babel-traverse > babel-types > lodash':
+        patched: '2019-07-03T22:58:55.137Z'
+    - '@testring/cli > @testring/test-worker > @testring/api > @testring/http-api > request-promise-native > request-promise-core > lodash':
+        patched: '2019-07-03T22:58:55.137Z'
+    - '@testring/cli > @testring/test-worker > @testring/sandbox > @testring/api > @testring/http-api > request-promise-native > request-promise-core > lodash':
+        patched: '2019-07-03T22:58:55.137Z'
