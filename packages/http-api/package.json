@@ -20,6 +20,12 @@
     "@types/request-promise-native": "1.0.15",
     "@types/tough-cookie": "2.3.3",
     "request-promise-native": "1.0.7",
-    "tough-cookie": "2.4.3"
-  }
+    "tough-cookie": "2.4.3",
+    "snyk": "^1.189.0"
+  },
+  "scripts": {
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
+  },
+  "snyk": true
 }
