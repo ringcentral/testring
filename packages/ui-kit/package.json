@@ -9,7 +9,9 @@
   "author": "RingCentral",
   "license": "MIT",
   "scripts": {
-    "storybook": "start-storybook -p 9001 -c storybook"
+    "storybook": "start-storybook -p 9001 -c storybook",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "devDependencies": {
     "@storybook/addon-actions": "3.4.10",
@@ -26,5 +28,9 @@
     "react": "16.7.0",
     "style-loader": "0.23.1",
     "ts-loader": "5.3.3"
+  },
+  "snyk": true,
+  "dependencies": {
+    "snyk": "^1.189.0"
   }
 }
