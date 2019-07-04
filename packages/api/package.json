@@ -16,6 +16,12 @@
     "@testring/transport": "0.5.3",
     "@testring/types": "0.5.3",
     "@testring/utils": "0.5.3",
-    "@testring/web-application": "0.5.3"
-  }
+    "@testring/web-application": "0.5.3",
+    "snyk": "^1.189.0"
+  },
+  "scripts": {
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
+  },
+  "snyk": true
 }
