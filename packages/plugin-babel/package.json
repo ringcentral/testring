@@ -12,9 +12,15 @@
   "dependencies": {
     "@testring/plugin-api": "0.5.3",
     "@types/babel-core": "6.25.5",
-    "babel-core": "6.26.3"
+    "babel-core": "6.26.3",
+    "snyk": "^1.189.0"
   },
   "devDependencies": {
     "babel-preset-es2015": "6.24.1"
-  }
+  },
+  "scripts": {
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
+  },
+  "snyk": true
 }
