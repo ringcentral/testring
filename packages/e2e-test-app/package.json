@@ -14,12 +14,16 @@
     "test:simple-run": "testring run --config test/simple/.testringrc --env-parameters.test 10 --rc.tags-list=#P0,#P1",
     "test:run-with-devtool": "testring run --config ./test/selenium/config.js --devtool",
     "e2e-simple": "npm run test:simple-run",
-    "e2e": "npm run test:simple-run && npm run test:selenium"
+    "e2e": "npm run test:simple-run && npm run test:selenium",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "dependencies": {
     "@testring/plugin-babel": "0.5.3",
     "@testring/plugin-selenium-driver": "0.5.3",
     "babel-preset-es2015": "6.24.1",
-    "testring": "0.5.3"
-  }
+    "testring": "0.5.3",
+    "snyk": "^1.189.0"
+  },
+  "snyk": true
 }
