@@ -21,6 +21,12 @@
     "chromedriver": "74.0.0",
     "deepmerge": "2.1.1",
     "selenium-server": "3.141.59",
-    "webdriverio": "4.13.1"
-  }
+    "webdriverio": "4.13.1",
+    "snyk": "^1.189.0"
+  },
+  "scripts": {
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
+  },
+  "snyk": true
 }
