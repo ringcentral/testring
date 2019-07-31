@@ -18,7 +18,7 @@
     "@types/deepmerge": "2.2.0",
     "@types/node": "10.5.6",
     "@types/webdriverio": "4.10.3",
-    "chromedriver": "74.0.0",
+    "chromedriver": "76.0.0",
     "deepmerge": "2.1.1",
     "selenium-server": "3.141.59",
     "webdriverio": "4.13.1"
