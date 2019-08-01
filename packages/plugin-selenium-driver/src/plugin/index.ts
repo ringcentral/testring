@@ -133,9 +133,15 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     private getChromeDriverArgs() {
-        const chromeDriver = require('chromedriver');
+        let chromeDriverPath;
 
-        return [`-Dwebdriver.chrome.driver=${chromeDriver.path}`];
+        if (this.config.chromeDriverPath) {
+            chromeDriverPath = this.config.chromeDriverPath;
+        } else {
+            chromeDriverPath = require('chromedriver').path;
+        }
+
+        return [`-Dwebdriver.chrome.driver=${chromeDriverPath}`];
     }
 
     private async runLocalSelenium() {
