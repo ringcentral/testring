@@ -113,4 +113,26 @@ export interface IBrowserProxyPlugin {
     makeScreenshot(applicant: string): Promise<string | void>;
 
     uploadFile(applicant: string, filePath: string): Promise<string | void>;
+
+    getCssProperty(applicant: string, xpath: string, cssProperty: string): Promise<any>;
+
+    getSource(applicant: string): Promise<any>;
+
+    isExisting(applicant: string, xpath: string): Promise<any>;
+
+    waitForValue(applicant: string, xpath: string, timeout: number, reverse: boolean): Promise<any>;
+
+    waitForSelected(applicant: string, xpath: string, timeout: number, reverse: boolean): Promise<any>;
+
+    waitUntil(applicant: string,
+              condition: () => boolean | Promise<boolean>,
+              timeout?: number,
+              timeoutMsg?: string,
+              interval?: number): Promise<any>;
+
+    selectByAttribute(applicant: string, xpath: string, attribute: string, value: string): Promise<any>;
+
+    getGridNodeDetails(applicant: string): Promise<any>;
+
+    gridTestSession(applicant: string): Promise<any>;
 }

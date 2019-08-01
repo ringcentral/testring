@@ -59,4 +59,13 @@ export const enum BrowserProxyActions {
     uploadFile = 'uploadFile',
     end = 'end',
     kill = 'kill',
+    getCssProperty = 'getCssProperty',
+    getSource = 'getSource',
+    isExisting = 'isExisting',
+    waitForValue = 'waitForValue',
+    waitForSelected = 'waitForSelected',
+    waitUntil = 'waitUntil',
+    selectByAttribute = 'selectByAttribute',
+    getGridNodeDetails = 'getGridNodeDetails',
+    gridTestSession = 'gridTestSession',
 }

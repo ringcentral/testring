@@ -249,4 +249,40 @@ export class WebClient implements IWebApplicationClient {
     public kill() {
         return this.makeRequest(BrowserProxyActions.kill);
     }
+
+    public getCssProperty(xpath, cssProperty) {
+        return this.makeRequest(BrowserProxyActions.getCssProperty, [xpath, cssProperty]);
+    }
+
+    public getSource() {
+        return this.makeRequest(BrowserProxyActions.getSource, []);
+    }
+
+    public isExisting(xpath) {
+        return this.makeRequest(BrowserProxyActions.isExisting, [xpath]);
+    }
+
+    public waitForValue(xpath, timeout, reverse) {
+        return this.makeRequest(BrowserProxyActions.waitForValue, [xpath, timeout, reverse]);
+    }
+
+    public waitForSelected(xpath, timeout, reverse) {
+        return this.makeRequest(BrowserProxyActions.waitForSelected, [xpath, timeout, reverse]);
+    }
+
+    public waitUntil(condition, timeout, timeoutMsg, interval) {
+        return this.makeRequest(BrowserProxyActions.waitUntil, [condition, timeout, timeoutMsg, interval]);
+    }
+
+    public selectByAttribute(xpath, attribute, value) {
+        return this.makeRequest(BrowserProxyActions.selectByAttribute, [xpath, attribute, value]);
+    }
+
+    public getGridNodeDetails() {
+        return this.makeRequest(BrowserProxyActions.getGridNodeDetails, []);
+    }
+
+    public gridTestSession() {
+        return this.makeRequest(BrowserProxyActions.gridTestSession, []);
+    }
 }

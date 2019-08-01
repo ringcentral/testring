@@ -733,6 +733,94 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             return this.wrapWithPromise(client.uploadFile(filePath));
         }
     }
+
+    public async getCssProperty(applicant: string, xpath: string, cssProperty: string): Promise<any> {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.getCssProperty(xpath, cssProperty));
+        }
+    }
+
+    public async getSource(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.getSource());
+        }
+    }
+
+    public async isExisting(applicant: string, xpath: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.isExisting(xpath));
+        }
+    }
+
+    public async waitForValue(applicant: string, xpath: string, timeout: number, reverse: boolean) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.waitForValue(xpath, timeout, reverse));
+        }
+    }
+
+    public async waitForSelected(applicant: string, xpath: string, timeout: number, reverse: boolean) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.waitForSelected(xpath, timeout, reverse));
+        }
+    }
+
+    public async waitUntil(
+        applicant: string,
+        condition: () => boolean | Promise<boolean> | Client<RawResult<any>> & RawResult<any>,
+        timeout?: number,
+        timeoutMsg?: string,
+        interval?: number
+    ): Promise<Client<boolean> & any> {
+
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.waitUntil(condition, timeout, timeoutMsg, interval));
+        }
+    }
+
+    public async selectByAttribute(applicant: string, xpath: string, attribute: string, value: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.selectByAttribute(xpath, attribute, value));
+        }
+    }
+
+    public async getGridNodeDetails(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.getGridNodeDetails());
+        }
+    }
+
+    public async gridTestSession(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        if (client) {
+            return this.wrapWithPromise(client.gridTestSession());
+        }
+    }
 }
 
 export default function seleniumProxy(config: Config) {

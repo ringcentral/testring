@@ -180,6 +180,32 @@ export class WebApplication extends PluggableModule {
         clearElement(xpath) {
             return `Clear element ${this.formatXpath(xpath)}`;
         },
+        getCssProperty(xpath, cssProperty) {
+            return `Get CSS property ${cssProperty} from ${this.formatXpath(xpath)}`;
+        },
+        getSource() {
+            return 'Get source of current page';
+        },
+        waitForValue(xpath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean) {
+            if (reverse) {
+                return `Waiting for element ${this.formatXpath(xpath)} doesn't has value for ${timeout}`;
+            } else {
+                return `Waiting for any value of ${this.formatXpath(xpath)} for ${timeout}`;
+            }
+        },
+        waitForSelected(xpath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean) {
+            if (reverse) {
+                return `Waiting for element ${this.formatXpath(xpath)} isn't selected for ${timeout}`;
+            } else {
+                return `Waiting for element ${this.formatXpath(xpath)} is selected for ${timeout}`;
+            }
+        },
+        waitUntil(condition, timeout: number = this.WAIT_TIMEOUT, timeoutMsg?: string, interval?: number) {
+            return `Waiting by condition for ${timeout}`;
+        },
+        selectByAttribute(xpath, attribute: string, value: string) {
+            return `Select by attribute ${attribute} with value ${value} from ${xpath}`;
+        },
     };
 
     constructor(
@@ -1336,5 +1362,56 @@ export class WebApplication extends PluggableModule {
             await this.unregisterAppInDevtool();
         }
         await this.client.end();
+    }
+
+    public async getCssProperty(xpath, cssProperty: string, timeout: number = this.WAIT_TIMEOUT): Promise<any> {
+        await this.waitForExist(xpath, timeout);
+
+        xpath = this.normalizeSelector(xpath);
+        return await this.client.getCssProperty(xpath, cssProperty);
+    }
+
+    public async getSource() {
+        return await this.client.getSource();
+    }
+
+    public async isExisting(xpath) {
+        xpath = this.normalizeSelector(xpath);
+        return await this.client.isExisting(xpath);
+    }
+
+    public async waitForValue(xpath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean = false) {
+        xpath = this.normalizeSelector(xpath);
+        return await this.client.waitForValue(xpath, timeout, reverse);
+    }
+
+    public async waitForSelected(xpath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean = false) {
+        xpath = this.normalizeSelector(xpath);
+        return await this.client.waitForSelected(xpath, timeout, reverse);
+    }
+
+    public async waitUntil(
+        condition: () => boolean | Promise<boolean>,
+        timeout: number = this.WAIT_TIMEOUT,
+        timeoutMsg: string = 'Wait by condition failed!',
+        interval: number = 500
+    ) {
+        return await this.client.waitUntil(condition, timeout, timeoutMsg, interval);
+    }
+
+    public async selectByAttribute(xpath, attribute: string, value: string, timeout: number = this.WAIT_TIMEOUT) {
+        const logXpath = this.formatXpath(xpath);
+        const errorMessage = `Could not select by attribute "${attribute}" with value "${value}": ${logXpath}`;
+
+        xpath = this.normalizeSelector(xpath);
+
+        await this.waitForExist(xpath, timeout);
+
+        try {
+            return await this.client.selectByAttribute(xpath, attribute, value);
+        } catch (e) {
+            e.message = errorMessage;
+            throw e;
+        }
     }
 }
