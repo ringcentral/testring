@@ -1,6 +1,6 @@
 {
   "name": "@testring/devtool-extension",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "main": "./index.js",
   "types": "./index.d.ts",
   "repository": {
@@ -14,9 +14,9 @@
     "build:watch": "webpack --config webpack.config.ts --watch --devtool inline-source-map"
   },
   "devDependencies": {
-    "@testring/client-ws-transport": "0.5.3",
-    "@testring/types": "0.5.3",
-    "@testring/utils": "0.5.3",
+    "@testring/client-ws-transport": "0.5.4",
+    "@testring/types": "0.5.4",
+    "@testring/utils": "0.5.4",
     "@types/chrome": "0.0.69",
     "@types/webpack": "4.4.22",
     "chrome-launcher": "0.10.5",

@@ -18,7 +18,7 @@ run(async (api) => {
     await api.logBusiness('checking class');
 
     const isClassExists = await api.application.isCSSClassExists(
-        api.application.root.signInBtn,
+        api.application.root.loginCredentialNext,
         'btn'
     );
 
