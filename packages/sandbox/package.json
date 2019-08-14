@@ -1,6 +1,6 @@
 {
   "name": "@testring/sandbox",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,9 +10,9 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/api": "0.5.4",
-    "@testring/test-utils": "0.5.4",
-    "@testring/types": "0.5.4",
-    "@testring/utils": "0.5.4"
+    "@testring/api": "0.5.5",
+    "@testring/test-utils": "0.5.5",
+    "@testring/types": "0.5.5",
+    "@testring/utils": "0.5.5"
   }
 }
