@@ -675,7 +675,7 @@ export class WebApplication extends PluggableModule {
         } else {
             if (value === '' || value === null || value === undefined) {
                 await this.client.setValue(xpath, ' ');
-                await this.client.keys(['Delete', 'Back space']);
+                await this.client.setValue(xpath, '');
             } else {
                 await this.client.setValue(xpath, value);
             }

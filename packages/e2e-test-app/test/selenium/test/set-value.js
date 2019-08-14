@@ -13,5 +13,16 @@ run(async (api) => {
     );
 
     await api.application.assert.equal(credentialValue, 'testRing');
+
+    await api.application.setValue(
+        api.application.root.credential.input,
+        null
+    );
+
+    const emptyValue = await api.application.getValue(
+        api.application.root.credential.input
+    );
+
+    await api.application.assert.equal(emptyValue, '');
 });
 
