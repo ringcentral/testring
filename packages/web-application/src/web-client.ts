@@ -130,6 +130,10 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.setValue, [xpath, value]);
     }
 
+    public keysOnElement(xpath, value) {
+        return this.makeRequest(BrowserProxyActions.keysOnElement, [xpath, value]);
+    }
+
     public selectByIndex(xpath, value) {
         return this.makeRequest(BrowserProxyActions.selectByIndex, [xpath, value]);
     }

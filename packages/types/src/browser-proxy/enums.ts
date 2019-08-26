@@ -68,4 +68,5 @@ export const enum BrowserProxyActions {
     selectByAttribute = 'selectByAttribute',
     getGridNodeDetails = 'getGridNodeDetails',
     gridTestSession = 'gridTestSession',
+    keysOnElement = 'keysOnElement',
 }

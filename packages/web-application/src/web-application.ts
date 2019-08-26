@@ -629,57 +629,331 @@ export class WebApplication extends PluggableModule {
         return this.client.getValue(xpath);
     }
 
-    public async setValue(xpath, value: valueType, emulateViaJS: boolean = false, timeout: number = this.WAIT_TIMEOUT) {
-        await this.waitForExist(xpath, timeout);
-        xpath = this.normalizeSelector(xpath);
+    public async simulateJSFieldClear(xpath) {
+        await this.client.setValue(xpath, '');
 
-        if (emulateViaJS) {
-            let result = await this.client.executeAsync((xpath, value, done) => {
+        return await this.client.executeAsync((xpath, done) => {
+            /* eslint-disable no-var */
+            var supportedInputTypes = {
+                color: true,
+                date: true,
+                datetime: true,
+                'datetime-local': true,
+                email: true,
+                month: true,
+                number: true,
+                password: true,
+                range: true,
+                search: true,
+                tel: true,
+                text: true,
+                time: true,
+                url: true,
+                week: true,
+            };
 
-                function getElementByXPath(xpath) {
-                    // eslint-disable-next-line no-var
-                    var element = document.evaluate(xpath, document, null,
-                        XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                    if (element.snapshotLength > 0) {
-                        return element.snapshotItem(0) as any;
+            function isTextNode(el) {
+                const nodeName = el.nodeName.toLowerCase();
+
+                return nodeName === 'textarea'
+                    || (nodeName === 'input' && supportedInputTypes[el.getAttribute('type')]);
+            }
+
+            function getElementByXPath(xpath) {
+                // eslint-disable-next-line no-var
+                var element = document.evaluate(xpath, document, null,
+                    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                if (element.snapshotLength > 0) {
+                    return element.snapshotItem(0) as any;
+                }
+
+                return null;
+            }
+
+            function simulateKey(el, type, keyCode, key) {
+                // eslint-disable-next-line no-var
+                let oEvent = new KeyboardEvent(type, {
+                    bubbles: true,
+                    cancelable: true,
+                    key,
+                });
+
+                // Chromium Hack
+                Object.defineProperty(oEvent, 'keyCode', {
+                    get: function () {
+                        return this.keyCodeVal;
+                    },
+                });
+                Object.defineProperty(oEvent, 'which', {
+                    get: function () {
+                        return this.keyCodeVal;
+                    },
+                });
+
+                (oEvent as any).keyCodeVal = keyCode;
+
+                el.dispatchEvent(oEvent);
+            }
+
+            // Source https://github.com/vitalyq/react-trigger-change
+            function reactTriggerChange(node) {
+                var nodeName = node.nodeName.toLowerCase();
+                var type = node.type;
+                var event;
+                var descriptor;
+                var initialValue;
+                var initialChecked;
+                var initialCheckedRadio;
+
+                // Do not try to delete non-configurable properties.
+                // Value and checked properties on DOM elements are non-configurable in PhantomJS.
+                function deletePropertySafe(elem, prop) {
+                    var desc = Object.getOwnPropertyDescriptor(elem, prop);
+                    if (desc && desc.configurable) {
+                        delete elem[prop];
                     }
+                }
 
+                // In IE10 propertychange is not dispatched on range input if invalid
+                // value is set.
+                function changeRangeValue(range) {
+                    var initMin = range.min;
+                    var initMax = range.max;
+                    var initStep = range.step;
+                    var initVal = Number(range.value);
+
+                    range.min = initVal;
+                    range.max = initVal + 1;
+                    range.step = 1;
+                    range.value = initVal + 1;
+                    deletePropertySafe(range, 'value');
+                    range.min = initMin;
+                    range.max = initMax;
+                    range.step = initStep;
+                    range.value = initVal;
+                }
+
+                function getCheckedRadio(radio) {
+                    var name = radio.name;
+                    var radios;
+                    var i;
+                    if (name) {
+                        radios = document.querySelectorAll('input[type="radio"][name="' + name + '"]');
+                        for (i = 0; i < radios.length; i += 1) {
+                            if (radios[i].checked) {
+                                return radios[i] !== radio ? radios[i] : null;
+                            }
+                        }
+                    }
                     return null;
                 }
 
-                try {
-                    let element = getElementByXPath(xpath);
-                    let evt = document.createEvent('HTMLEvents');
-
-                    if (element) {
-                        element.focus();
-                        element.value = value;
-
-                        evt.initEvent('input', true, true);
-                        element.dispatchEvent(evt);
-                        element.blur();
-                        done(null);
-                    } else {
-                        done(`Element not found ${xpath}`);
+                function preventChecking(e) {
+                    e.preventDefault();
+                    if (!initialChecked) {
+                        e.target.checked = false;
                     }
-                } catch (e) {
-                    done(`${e.message} ${xpath}`);
+                    if (initialCheckedRadio) {
+                        initialCheckedRadio.checked = true;
+                    }
                 }
-            }, xpath, value);
 
-            if (result) {
-                throw new Error(result);
-            } else {
-                this.logger.debug(`Value ${value} was entered into ${this.formatXpath(xpath)} using JS emulation`);
+                if (nodeName === 'select' ||
+                    (nodeName === 'input' && type === 'file')) {
+                    // IE9-IE11, non-IE
+                    // Dispatch change.
+                    event = document.createEvent('HTMLEvents');
+                    event.initEvent('change', true, false);
+                    node.dispatchEvent(event);
+                } else if (isTextNode(node)) {
+                    // React 16
+                    // Cache artificial value property descriptor.
+                    // Property doesn't exist in React <16, descriptor is undefined.
+                    descriptor = Object.getOwnPropertyDescriptor(node, 'value');
+
+                    // React 0.14: IE9
+                    // React 15: IE9-IE11
+                    // React 16: IE9
+                    // Dispatch focus.
+                    event = document.createEvent('UIEvents');
+                    event.initEvent('focus', false, false);
+                    node.dispatchEvent(event);
+
+                    // React 0.14: IE9
+                    // React 15: IE9-IE11
+                    // React 16
+                    // In IE9-10 imperative change of node value triggers propertychange event.
+                    // Update inputValueTracking cached value.
+                    // Remove artificial value property.
+                    // Restore initial value to trigger event with it.
+                    if (type === 'range') {
+                        changeRangeValue(node);
+                    } else {
+                        initialValue = node.value;
+                        node.value = initialValue + '#';
+                        deletePropertySafe(node, 'value');
+                        node.value = initialValue;
+                    }
+
+                    // React 15: IE11
+                    // For unknown reason React 15 added listener for propertychange with addEventListener.
+                    // This doesn't work, propertychange events are deprecated in IE11,
+                    // but allows us to dispatch fake propertychange which is handled by IE11.
+                    event = document.createEvent('HTMLEvents');
+                    event.initEvent('propertychange', false, false);
+                    event.propertyName = 'value';
+                    node.dispatchEvent(event);
+
+                    // React 0.14: IE10-IE11, non-IE
+                    // React 15: non-IE
+                    // React 16: IE10-IE11, non-IE
+                    event = document.createEvent('HTMLEvents');
+                    event.initEvent('input', true, false);
+                    node.dispatchEvent(event);
+
+                    // React 16
+                    // Restore artificial value property descriptor.
+                    if (descriptor) {
+                        Object.defineProperty(node, 'value', descriptor);
+                    }
+                } else if (nodeName === 'input' && type === 'checkbox') {
+                    // Invert inputValueTracking cached value.
+                    node.checked = !node.checked;
+
+                    // Dispatch click.
+                    // Click event inverts checked value.
+                    event = document.createEvent('MouseEvents');
+                    event.initEvent('click', true, true);
+                    node.dispatchEvent(event);
+                } else if (nodeName === 'input' && type === 'radio') {
+                    // Cache initial checked value.
+                    initialChecked = node.checked;
+
+                    // Find and cache initially checked radio in the group.
+                    initialCheckedRadio = getCheckedRadio(node);
+
+                    // React 16
+                    // Cache property descriptor.
+                    // Invert inputValueTracking cached value.
+                    // Remove artificial checked property.
+                    // Restore initial value, otherwise preventDefault will eventually revert the value.
+                    descriptor = Object.getOwnPropertyDescriptor(node, 'checked');
+                    node.checked = !initialChecked;
+                    deletePropertySafe(node, 'checked');
+                    node.checked = initialChecked;
+
+                    // Prevent toggling during event capturing phase.
+                    // Set checked value to false if initialChecked is false,
+                    // otherwise next listeners will see true.
+                    // Restore initially checked radio in the group.
+                    node.addEventListener('click', preventChecking, true);
+
+                    // Dispatch click.
+                    // Click event inverts checked value.
+                    event = document.createEvent('MouseEvents');
+                    event.initEvent('click', true, true);
+                    node.dispatchEvent(event);
+
+                    // Remove listener to stop further change prevention.
+                    node.removeEventListener('click', preventChecking, true);
+
+                    // React 16
+                    // Restore artificial checked property descriptor.
+                    if (descriptor) {
+                        Object.defineProperty(node, 'checked', descriptor);
+                    }
+                }
+                /* eslint-enable no-var */
             }
+
+            ((el) => {
+                if (el) {
+                    el.focus();
+
+                    if (isTextNode(el)) {
+                        simulateKey(el, 'keydown', 8, 'Backspace');
+                        simulateKey(el, 'keypress', 8, 'Backspace');
+                        simulateKey(el, 'keyup', 8, 'Backspace');
+                    }
+
+                    reactTriggerChange(el);
+                } else {
+                    throw Error(`Element ${xpath} not found.`);
+                }
+            })(getElementByXPath(xpath));
+
+            done();
+        }, xpath);
+    }
+
+    public async simulateJSFieldChange(xpath, value) {
+        let result = await this.client.executeAsync((xpath, value, done) => {
+
+            function getElementByXPath(xpath) {
+                // eslint-disable-next-line no-var
+                var element = document.evaluate(xpath, document, null,
+                    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                if (element.snapshotLength > 0) {
+                    return element.snapshotItem(0) as any;
+                }
+
+                return null;
+            }
+
+            try {
+                let element = getElementByXPath(xpath);
+                let evt = document.createEvent('HTMLEvents');
+
+                if (element) {
+                    element.focus();
+                    element.value = value;
+
+                    evt.initEvent('input', true, true);
+                    element.dispatchEvent(evt);
+                    element.blur();
+                    done(null);
+                } else {
+                    done(`Element not found ${xpath}`);
+                }
+            } catch (e) {
+                done(`${e.message} ${xpath}`);
+            }
+        }, xpath, value);
+
+        if (result) {
+            throw new Error(result);
+        }
+    }
+
+    public async clearElement(xpath, emulateViaJs: boolean = false, timeout: number = this.WAIT_TIMEOUT) {
+        await this.waitForExist(xpath, timeout);
+
+        xpath = this.normalizeSelector(xpath);
+
+        if (emulateViaJs) {
+            return this.simulateJSFieldClear(xpath);
         } else {
-            if (value === '' || value === null || value === undefined) {
-                await this.clearElement(xpath);
+            await this.client.setValue(xpath,' ');
+            await this.waitForExist(xpath, timeout);
+            return this.client.keysOnElement(xpath, ['Backspace']);
+        }
+    }
+
+    public async setValue(xpath, value: valueType, emulateViaJS: boolean = false, timeout: number = this.WAIT_TIMEOUT) {
+        if (value === '' || value === null || value === undefined) {
+            this.clearElement(xpath, emulateViaJS, timeout);
+        } else {
+            await this.waitForExist(xpath, timeout);
+            xpath = this.normalizeSelector(xpath);
+
+            if (emulateViaJS) {
+                this.simulateJSFieldChange(xpath, value);
+
+                this.logger.debug(`Value ${value} was entered into ${this.formatXpath(xpath)} using JS emulation`);
             } else {
                 await this.client.setValue(xpath, value);
+                this.logger.debug(`Value ${value} was entered into ${this.formatXpath(xpath)} using Selenium`);
             }
-
-            this.logger.debug(`Value ${value} was entered into ${this.formatXpath(xpath)} using Selenium`);
         }
 
         await this.makeScreenshot();
@@ -1309,255 +1583,6 @@ export class WebApplication extends PluggableModule {
     public async url(val?: string) {
         await this.extensionHandshake();
         return this.client.url(val);
-    }
-
-    public async simulateJSChange(xpath) {
-        return await this.client.executeAsync((xpath, done) => {
-            function getElementByXPath(xpath) {
-                // eslint-disable-next-line no-var
-                var element = document.evaluate(xpath, document, null,
-                    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                if (element.snapshotLength > 0) {
-                    return element.snapshotItem(0) as any;
-                }
-
-                return null;
-            }
-
-            function simulateKey(el, type, keyCode, key) {
-                // eslint-disable-next-line no-var
-                let oEvent = new KeyboardEvent(type, {
-                    bubbles: true,
-                    cancelable: true,
-                    key,
-                });
-
-                // Chromium Hack
-                Object.defineProperty(oEvent, 'keyCode', {
-                    get: function () {
-                        return this.keyCodeVal;
-                    },
-                });
-                Object.defineProperty(oEvent, 'which', {
-                    get: function () {
-                        return this.keyCodeVal;
-                    },
-                });
-
-                (oEvent as any).keyCodeVal = keyCode;
-
-                el.dispatchEvent(oEvent);
-            }
-
-            // Source https://github.com/vitalyq/react-trigger-change
-            function reactTriggerChange(node) {
-                /* eslint-disable no-var */
-                var supportedInputTypes = {
-                    color: true,
-                    date: true,
-                    datetime: true,
-                    'datetime-local': true,
-                    email: true,
-                    month: true,
-                    number: true,
-                    password: true,
-                    range: true,
-                    search: true,
-                    tel: true,
-                    text: true,
-                    time: true,
-                    url: true,
-                    week: true,
-                };
-                var nodeName = node.nodeName.toLowerCase();
-                var type = node.type;
-                var event;
-                var descriptor;
-                var initialValue;
-                var initialChecked;
-                var initialCheckedRadio;
-
-                // Do not try to delete non-configurable properties.
-                // Value and checked properties on DOM elements are non-configurable in PhantomJS.
-                function deletePropertySafe(elem, prop) {
-                    var desc = Object.getOwnPropertyDescriptor(elem, prop);
-                    if (desc && desc.configurable) {
-                        delete elem[prop];
-                    }
-                }
-
-                // In IE10 propertychange is not dispatched on range input if invalid
-                // value is set.
-                function changeRangeValue(range) {
-                    var initMin = range.min;
-                    var initMax = range.max;
-                    var initStep = range.step;
-                    var initVal = Number(range.value);
-
-                    range.min = initVal;
-                    range.max = initVal + 1;
-                    range.step = 1;
-                    range.value = initVal + 1;
-                    deletePropertySafe(range, 'value');
-                    range.min = initMin;
-                    range.max = initMax;
-                    range.step = initStep;
-                    range.value = initVal;
-                }
-
-                function getCheckedRadio(radio) {
-                    var name = radio.name;
-                    var radios;
-                    var i;
-                    if (name) {
-                        radios = document.querySelectorAll('input[type="radio"][name="' + name + '"]');
-                        for (i = 0; i < radios.length; i += 1) {
-                            if (radios[i].checked) {
-                                return radios[i] !== radio ? radios[i] : null;
-                            }
-                        }
-                    }
-                    return null;
-                }
-
-                function preventChecking(e) {
-                    e.preventDefault();
-                    if (!initialChecked) {
-                        e.target.checked = false;
-                    }
-                    if (initialCheckedRadio) {
-                        initialCheckedRadio.checked = true;
-                    }
-                }
-
-                if (nodeName === 'select' ||
-                    (nodeName === 'input' && type === 'file')) {
-                    // IE9-IE11, non-IE
-                    // Dispatch change.
-                    event = document.createEvent('HTMLEvents');
-                    event.initEvent('change', true, false);
-                    node.dispatchEvent(event);
-                } else if ((nodeName === 'input' && supportedInputTypes[type]) ||
-                    nodeName === 'textarea') {
-                    // React 16
-                    // Cache artificial value property descriptor.
-                    // Property doesn't exist in React <16, descriptor is undefined.
-                    descriptor = Object.getOwnPropertyDescriptor(node, 'value');
-
-                    // React 0.14: IE9
-                    // React 15: IE9-IE11
-                    // React 16: IE9
-                    // Dispatch focus.
-                    event = document.createEvent('UIEvents');
-                    event.initEvent('focus', false, false);
-                    node.dispatchEvent(event);
-
-                    // React 0.14: IE9
-                    // React 15: IE9-IE11
-                    // React 16
-                    // In IE9-10 imperative change of node value triggers propertychange event.
-                    // Update inputValueTracking cached value.
-                    // Remove artificial value property.
-                    // Restore initial value to trigger event with it.
-                    if (type === 'range') {
-                        changeRangeValue(node);
-                    } else {
-                        initialValue = node.value;
-                        node.value = initialValue + '#';
-                        deletePropertySafe(node, 'value');
-                        node.value = initialValue;
-                    }
-
-                    // React 15: IE11
-                    // For unknown reason React 15 added listener for propertychange with addEventListener.
-                    // This doesn't work, propertychange events are deprecated in IE11,
-                    // but allows us to dispatch fake propertychange which is handled by IE11.
-                    event = document.createEvent('HTMLEvents');
-                    event.initEvent('propertychange', false, false);
-                    event.propertyName = 'value';
-                    node.dispatchEvent(event);
-
-                    // React 0.14: IE10-IE11, non-IE
-                    // React 15: non-IE
-                    // React 16: IE10-IE11, non-IE
-                    event = document.createEvent('HTMLEvents');
-                    event.initEvent('input', true, false);
-                    node.dispatchEvent(event);
-
-                    // React 16
-                    // Restore artificial value property descriptor.
-                    if (descriptor) {
-                        Object.defineProperty(node, 'value', descriptor);
-                    }
-                } else if (nodeName === 'input' && type === 'checkbox') {
-                    // Invert inputValueTracking cached value.
-                    node.checked = !node.checked;
-
-                    // Dispatch click.
-                    // Click event inverts checked value.
-                    event = document.createEvent('MouseEvents');
-                    event.initEvent('click', true, true);
-                    node.dispatchEvent(event);
-                } else if (nodeName === 'input' && type === 'radio') {
-                    // Cache initial checked value.
-                    initialChecked = node.checked;
-
-                    // Find and cache initially checked radio in the group.
-                    initialCheckedRadio = getCheckedRadio(node);
-
-                    // React 16
-                    // Cache property descriptor.
-                    // Invert inputValueTracking cached value.
-                    // Remove artificial checked property.
-                    // Restore initial value, otherwise preventDefault will eventually revert the value.
-                    descriptor = Object.getOwnPropertyDescriptor(node, 'checked');
-                    node.checked = !initialChecked;
-                    deletePropertySafe(node, 'checked');
-                    node.checked = initialChecked;
-
-                    // Prevent toggling during event capturing phase.
-                    // Set checked value to false if initialChecked is false,
-                    // otherwise next listeners will see true.
-                    // Restore initially checked radio in the group.
-                    node.addEventListener('click', preventChecking, true);
-
-                    // Dispatch click.
-                    // Click event inverts checked value.
-                    event = document.createEvent('MouseEvents');
-                    event.initEvent('click', true, true);
-                    node.dispatchEvent(event);
-
-                    // Remove listener to stop further change prevention.
-                    node.removeEventListener('click', preventChecking, true);
-
-                    // React 16
-                    // Restore artificial checked property descriptor.
-                    if (descriptor) {
-                        Object.defineProperty(node, 'checked', descriptor);
-                    }
-                }
-                /* eslint-enable no-var */
-            }
-
-            ((el) => {
-                simulateKey(el, 'keydown', 8, 'Backspace');
-                simulateKey(el, 'keypress', 8, 'Backspace');
-                simulateKey(el, 'keyup', 8, 'Backspace');
-
-                reactTriggerChange(el);
-            })(getElementByXPath(xpath));
-
-            done();
-        }, xpath);
-    }
-
-    public async clearElement(xpath, timeout: number = this.WAIT_TIMEOUT) {
-        await this.waitForExist(xpath, timeout);
-
-        xpath = this.normalizeSelector(xpath);
-
-        await this.client.clearElement(xpath);
-        return this.simulateJSChange(xpath);
     }
 
     public keys(value) {
