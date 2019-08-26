@@ -14,7 +14,7 @@ run(async (api) => {
 
     await api.application.assert.equal(credentialValue, 'testRing');
 
-    await api.application.setValue(
+    await api.application.clearElement(
         api.application.root.credential.input,
         null
     );
