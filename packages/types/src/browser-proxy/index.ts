@@ -26,7 +26,7 @@ export interface IBrowserProxyPlugin {
 
     click(applicant: string, selector: string): Promise<any>;
 
-    gridProxyDetails(applicant: string): Promise<any>;
+    gridProxyDetails(applicant: string, proxyId: string | number): Promise<any>;
 
     url(applicant: string, val: string): Promise<any>;
 

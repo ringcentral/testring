@@ -333,12 +333,12 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    public async gridProxyDetails(applicant: string) {
+    public async gridProxyDetails(applicant: string, proxyId: string | number) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.gridProxyDetails());
+            return this.wrapWithPromise(client.gridProxyDetails(proxyId));
         }
     }
 
