@@ -941,7 +941,7 @@ export class WebApplication extends PluggableModule {
 
     public async setValue(xpath, value: valueType, emulateViaJS: boolean = false, timeout: number = this.WAIT_TIMEOUT) {
         if (value === '' || value === null || value === undefined) {
-            this.clearElement(xpath, emulateViaJS, timeout);
+            await this.clearElement(xpath, emulateViaJS, timeout);
         } else {
             await this.waitForExist(xpath, timeout);
             xpath = this.normalizeSelector(xpath);
