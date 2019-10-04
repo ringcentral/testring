@@ -41,7 +41,9 @@
     "check-deps:root": "npm-check -u",
     "check-deps:packages": "lerna exec --no-bail -- npm-check --no-color --no-emoji --ignore @testring/*",
     "check-deps:update": "lernaupdate",
-    "check-deps:dedupe": "lernaupdate -d"
+    "check-deps:dedupe": "lernaupdate -d",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "precommit": "build:precommit",
   "nyc": {
@@ -99,5 +101,9 @@
     "ts-node": "7.0.1",
     "typescript": "3.1.1",
     "typescript-eslint-parser": "21.0.2"
+  },
+  "snyk": true,
+  "dependencies": {
+    "snyk": "^1.230.5"
   }
 }
