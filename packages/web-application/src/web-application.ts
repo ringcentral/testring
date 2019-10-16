@@ -634,7 +634,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async simulateJSFieldChange(xpath, value) {
-        let result = await this.client.executeAsync((xpath, value, done) => {
+        const result = await this.client.executeAsync((xpath, value, done) => {
 
             function getElementByXPath(xpath) {
                 // eslint-disable-next-line no-var
@@ -648,16 +648,13 @@ export class WebApplication extends PluggableModule {
             }
 
             try {
-                let element = getElementByXPath(xpath);
-                let evt = document.createEvent('HTMLEvents');
+                const element = getElementByXPath(xpath);
 
                 if (element) {
-                    element.focus();
                     element.value = value;
-
-                    evt.initEvent('input', true, true);
-                    element.dispatchEvent(evt);
-                    element.blur();
+                    let event = document.createEvent('HTMLEvents');
+                    event.initEvent('input', true);
+                    element.dispatchEvent(event);
                     done(null);
                 } else {
                     done(`Element not found ${xpath}`);
