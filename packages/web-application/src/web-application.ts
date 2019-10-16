@@ -652,9 +652,16 @@ export class WebApplication extends PluggableModule {
 
                 if (element) {
                     element.value = value;
-                    let event = document.createEvent('HTMLEvents');
-                    event.initEvent('input', true);
-                    element.dispatchEvent(event);
+                    const eventInit = {
+                        bubbles: true,
+                    };
+                    const inputEvent = new Event('input', eventInit);
+                    const keydownEvent = new Event('keydown', eventInit);
+                    const keyupEvent = new Event('keyup', eventInit);
+
+                    element.dispatchEvent(keydownEvent);
+                    element.dispatchEvent(inputEvent);
+                    element.dispatchEvent(keyupEvent);
                     done(null);
                 } else {
                     done(`Element not found ${xpath}`);
