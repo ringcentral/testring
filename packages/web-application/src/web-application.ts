@@ -635,6 +635,65 @@ export class WebApplication extends PluggableModule {
 
     public async simulateJSFieldChange(xpath, value) {
         const result = await this.client.executeAsync((xpath, value, done) => {
+            /* eslint-disable no-var */
+            var supportedInputTypes = {
+                color: true,
+                date: true,
+                datetime: true,
+                'datetime-local': true,
+                email: true,
+                month: true,
+                number: true,
+                password: true,
+                range: true,
+                search: true,
+                tel: true,
+                text: true,
+                time: true,
+                url: true,
+                week: true,
+            };
+
+            function isTextNode(el) {
+                var nodeName = el.nodeName.toLowerCase();
+
+                return nodeName === 'textarea'
+                    || (nodeName === 'input' && supportedInputTypes[el.getAttribute('type')]);
+            }
+
+            function simulateEvent(el, type) {
+                var oEvent = new Event(type, {
+                    bubbles: true,
+                    cancelable: true,
+                });
+
+                el.dispatchEvent(oEvent);
+            }
+
+            function simulateKey(el, type, keyCode, key) {
+                // eslint-disable-next-line no-var
+                var oEvent = new KeyboardEvent(type, {
+                    bubbles: true,
+                    cancelable: true,
+                    key,
+                });
+
+                // Chromium Hack
+                Object.defineProperty(oEvent, 'keyCode', {
+                    get: function () {
+                        return this.keyCodeVal;
+                    },
+                });
+                Object.defineProperty(oEvent, 'which', {
+                    get: function () {
+                        return this.keyCodeVal;
+                    },
+                });
+
+                (oEvent as any).keyCodeVal = keyCode;
+
+                el.dispatchEvent(oEvent);
+            }
 
             function getElementByXPath(xpath) {
                 // eslint-disable-next-line no-var
@@ -648,24 +707,23 @@ export class WebApplication extends PluggableModule {
             }
 
             try {
-                const element = getElementByXPath(xpath);
+                ((el) => {
+                    if (el) {
+                        el.focus();
 
-                if (element) {
-                    element.value = value;
-                    const eventInit = {
-                        bubbles: true,
-                    };
-                    const inputEvent = new Event('input', eventInit);
-                    const keydownEvent = new Event('keydown', eventInit);
-                    const keyupEvent = new Event('keyup', eventInit);
+                        if (isTextNode(el)) {
+                            simulateKey(el, 'keydown', 8, 'Backspace');
+                            simulateKey(el, 'keypress', 8, 'Backspace');
+                            simulateKey(el, 'keyup', 8, 'Backspace');
+                        }
 
-                    element.dispatchEvent(keydownEvent);
-                    element.dispatchEvent(inputEvent);
-                    element.dispatchEvent(keyupEvent);
-                    done(null);
-                } else {
-                    done(`Element not found ${xpath}`);
-                }
+                        el.value = value;
+                        simulateEvent(el, 'input');
+                        simulateEvent(el, 'change');
+                    } else {
+                        throw Error(`Element ${xpath} not found.`);
+                    }
+                })(getElementByXPath(xpath));
             } catch (e) {
                 done(`${e.message} ${xpath}`);
             }
