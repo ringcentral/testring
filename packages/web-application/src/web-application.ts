@@ -707,7 +707,7 @@ export class WebApplication extends PluggableModule {
             }
 
             try {
-                ((el) => {
+                (function (el) {
                     if (el) {
                         el.focus();
 
@@ -720,6 +720,7 @@ export class WebApplication extends PluggableModule {
                         el.value = value;
                         simulateEvent(el, 'input');
                         simulateEvent(el, 'change');
+                        done();
                     } else {
                         throw Error(`Element ${xpath} not found.`);
                     }
