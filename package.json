@@ -32,7 +32,7 @@
     "build:watch": "lerna exec --ignore=\"@testring/@(e2e-test-app|devtool-frontend|devtool-extension|ui-kit)\" --parallel -- tsc --target es2015 --watch --inlineSourceMap",
     "build:clear": "npm run lint && npm run build",
     "build:precommit": "npm run check-deps:precommit && npm run build:clear && npm run test && npm run test:e2e-simple",
-    "build:ci": "npm run build:clear",
+    "build:ci": "npm run build:clear && npm run test:ci",
     "publish:version": "lerna version --exact",
     "publish:ci": "node ./bin/publish.js",
     "storybook": "lerna run --stream --scope @testring/ui-kit storybook",
