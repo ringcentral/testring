@@ -17,6 +17,11 @@ type browserClientItem = {
     initTime: number;
 };
 
+type initResult = {
+    sessionId?: string;
+    value: { sessionId?: string };
+};
+
 const DEFAULT_CONFIG: SeleniumPluginConfig = {
     recorderExtension: false,
     deprecationWarnings: false,
@@ -315,10 +320,14 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
 
         const client = remote(this.config);
-        const { sessionId = null } = (await this.wrapWithPromise(client.init()) || {});
-        this.addElementKeysMethod(client);
+        const initResult = await client.init<initResult>() || {};
 
-        if (sessionId === null) {
+        let sessionId: string;
+        if (initResult.sessionId) {
+            sessionId = initResult.sessionId;
+        } else if (initResult.value && initResult.value.sessionId) {
+            sessionId = initResult.value.sessionId;
+        } else {
             throw Error('Session can not be null');
         }
 
@@ -327,6 +336,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             sessionId,
             initTime: Date.now(),
         });
+
+        this.addElementKeysMethod(client);
         this.logger.debug(`Started session for applicant: ${applicant}. Session id: ${sessionId}`);
     }
 
