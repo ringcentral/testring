@@ -315,7 +315,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
 
         const client = remote(this.config);
-        const { sessionId = null } = (await client.init() || {});
+        const { sessionId = null } = (await this.wrapWithPromise(client.init()) || {});
         this.addElementKeysMethod(client);
 
         if (sessionId === null) {
