@@ -53,7 +53,7 @@ function getExecutor(filePath: string): string {
 
     switch (extension) {
         case '.js':
-            return 'node';
+            return process.execPath;
 
         case '.ts':
             return resolveBinary('ts-node');
@@ -61,10 +61,10 @@ function getExecutor(filePath: string): string {
         case '':
             return require.extensions['.ts'] ?
                 resolveBinary('ts-node') :
-                'node';
+                process.execPath;
 
         default:
-            return 'node';
+            return  process.execPath;
     }
 }
 
