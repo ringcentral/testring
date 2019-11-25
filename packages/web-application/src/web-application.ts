@@ -662,7 +662,7 @@ export class WebApplication extends PluggableModule {
             }
 
             function simulateEvent(el, type) {
-                var oEvent = new Event(type, {
+                const oEvent = new CustomEvent(type, {
                     bubbles: true,
                     cancelable: true,
                 });
