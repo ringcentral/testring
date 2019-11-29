@@ -1,6 +1,6 @@
 {
   "name": "@testring/devtool-backend",
-  "version": "0.5.12",
+  "version": "0.5.13",
   "main": "./dist/index.js",
   "repository": {
     "type": "git",
@@ -13,14 +13,14 @@
     "start:watch": "nodemon --watch 'src/**/*' -e ts,tsx --exec 'ts-node' ./src/index.ts"
   },
   "dependencies": {
-    "@testring/child-process": "0.5.12",
-    "@testring/devtool-extension": "0.5.12",
-    "@testring/devtool-frontend": "0.5.12",
-    "@testring/logger": "0.5.12",
-    "@testring/pluggable-module": "0.5.12",
-    "@testring/transport": "0.5.12",
-    "@testring/types": "0.5.12",
-    "@testring/utils": "0.5.12",
+    "@testring/child-process": "0.5.13",
+    "@testring/devtool-extension": "0.5.13",
+    "@testring/devtool-frontend": "0.5.13",
+    "@testring/logger": "0.5.13",
+    "@testring/pluggable-module": "0.5.13",
+    "@testring/transport": "0.5.13",
+    "@testring/types": "0.5.13",
+    "@testring/utils": "0.5.13",
     "@types/babel-traverse": "6.25.4",
     "@types/express-serve-static-core": "4.16.2",
     "@types/node": "10.5.6",
@@ -32,7 +32,7 @@
     "ws": "6.0.0"
   },
   "devDependencies": {
-    "@testring/test-utils": "0.5.12",
+    "@testring/test-utils": "0.5.13",
     "request": "2.87.0",
     "request-promise": "4.2.2",
     "ts-node": "7.0.1"
