@@ -39,6 +39,8 @@ export class WebApplication extends PluggableModule {
 
     private isLogOpened: boolean = false;
 
+    private isSessionStopped: boolean = false;
+
     private mainTabID: number | null = null;
 
     private isRegisteredInDevtool: boolean = false;
@@ -241,13 +243,14 @@ export class WebApplication extends PluggableModule {
 
                     // eslint-disable-next-line func-style
                     const method = async function decoratedMethod(...args) {
-                        const logger = this.logger;
-                        const message = logFn.apply(this, args);
+                        const self = this;
+                        const logger = self.logger;
+                        const message = logFn.apply(self, args);
                         let result;
 
-                        if (this.isLogOpened) {
+                        if (self.isLogOpened) {
                             logger.debug(message);
-                            result = originMethod.apply(this, args);
+                            result = originMethod.apply(self, args);
                         } else {
                             await asyncBreakpoints.waitBeforeInstructionBreakpoint((state) => {
                                 if (state) {
@@ -255,29 +258,29 @@ export class WebApplication extends PluggableModule {
                                 }
                             });
                             logger.startStep(message);
-                            this.isLogOpened = true;
+                            self.isLogOpened = true;
 
                             try {
-                                result = originMethod.apply(this, args);
+                                result = originMethod.apply(self, args);
                                 if (result && result.catch && typeof result.catch === 'function') {
                                     result = result.catch(async (err) => {
-                                        await this.asyncErrorHandler(err);
+                                        await self.asyncErrorHandler(err);
                                         logger.endStep(message);
-                                        this.isLogOpened = false;
+                                        self.isLogOpened = false;
                                         return Promise.reject(err);
                                     }).then((result) => {
                                         logger.endStep(message);
-                                        this.isLogOpened = false;
+                                        self.isLogOpened = false;
                                         return result;
                                     });
                                 } else {
                                     logger.endStep(message);
-                                    this.isLogOpened = false;
+                                    self.isLogOpened = false;
                                 }
                             } catch (err) {
-                                this.errorHandler(err);
+                                self.errorHandler(err);
                                 logger.endStep(message);
-                                this.isLogOpened = false;
+                                self.isLogOpened = false;
 
                                 throw err;
                             }
@@ -1433,11 +1436,17 @@ export class WebApplication extends PluggableModule {
         return this.client.uploadFile(fullPath);
     }
 
+    public isStopped(): boolean {
+        return this.isSessionStopped;
+    }
+
     public async end() {
         if (this.config.devtool !== null && this.isRegisteredInDevtool) {
             await this.unregisterAppInDevtool();
         }
+
         await this.client.end();
+        this.isSessionStopped = true;
     }
 
     public async getCssProperty(xpath, cssProperty: string, timeout: number = this.WAIT_TIMEOUT): Promise<any> {

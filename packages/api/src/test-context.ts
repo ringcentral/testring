@@ -95,9 +95,11 @@ export class TestContext {
         ];
 
         for (const customApplication of this.customApplications) {
-            requests.push(
-                customApplication.end()
-            );
+            if (!customApplication.isStopped()) {
+                requests.push(
+                    customApplication.end()
+                );
+            }
         }
 
         return Promise.all(requests)
