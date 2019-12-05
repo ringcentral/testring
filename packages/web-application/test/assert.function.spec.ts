@@ -62,6 +62,7 @@ describe('assertion functional', () => {
                         isSoft: false,
                         successMessage: '',
                         originalMethod: 'equal',
+                        args: [1, 1],
                     });
                     callback();
                 } catch (e) {
@@ -91,6 +92,7 @@ describe('assertion functional', () => {
                         isSoft: false,
                         successMessage: '',
                         originalMethod: 'equal',
+                        args: [1, 2],
                     });
                     callback();
                 } catch (e) {

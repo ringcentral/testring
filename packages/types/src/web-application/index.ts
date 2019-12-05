@@ -28,6 +28,7 @@ export interface IAssertionSuccessMeta {
     successMessage?: string;
     assertMessage?: string;
     originalMethod: string;
+    args: any[];
 }
 
 export interface IAssertionErrorMeta extends IAssertionSuccessMeta {
