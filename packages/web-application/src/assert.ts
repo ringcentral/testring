@@ -51,6 +51,8 @@ export function createAssertion(options: IAssertionOptions = {}) {
                             isSoft,
                             successMessage,
                             assertMessage,
+                            args,
+                            originalMethod: fieldName,
                         });
                     }
 
@@ -65,6 +67,8 @@ export function createAssertion(options: IAssertionOptions = {}) {
                             assertMessage,
                             errorMessage,
                             error,
+                            args,
+                            originalMethod: fieldName,
                         });
                     }
 

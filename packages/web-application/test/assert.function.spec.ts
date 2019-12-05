@@ -61,6 +61,8 @@ describe('assertion functional', () => {
                         assertMessage: '[assert] equal(act = 1, exp = 1)',
                         isSoft: false,
                         successMessage: '',
+                        originalMethod: 'equal',
+                        args: [1, 1],
                     });
                     callback();
                 } catch (e) {
@@ -89,6 +91,8 @@ describe('assertion functional', () => {
                         errorMessage: 'expected 1 to equal 2',
                         isSoft: false,
                         successMessage: '',
+                        originalMethod: 'equal',
+                        args: [1, 2],
                     });
                     callback();
                 } catch (e) {
