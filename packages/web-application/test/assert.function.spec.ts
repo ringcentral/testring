@@ -61,6 +61,7 @@ describe('assertion functional', () => {
                         assertMessage: '[assert] equal(act = 1, exp = 1)',
                         isSoft: false,
                         successMessage: '',
+                        originalMethod: 'equal',
                     });
                     callback();
                 } catch (e) {

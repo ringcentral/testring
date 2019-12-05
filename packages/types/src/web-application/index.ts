@@ -27,12 +27,12 @@ export interface IAssertionSuccessMeta {
     isSoft: boolean;
     successMessage?: string;
     assertMessage?: string;
+    originalMethod: string;
 }
 
 export interface IAssertionErrorMeta extends IAssertionSuccessMeta {
     errorMessage?: string;
     error?: Error;
-    originalMethod?: string;
 }
 
 export interface IAssertionOptions {

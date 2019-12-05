@@ -51,6 +51,7 @@ export function createAssertion(options: IAssertionOptions = {}) {
                             isSoft,
                             successMessage,
                             assertMessage,
+                            originalMethod: fieldName,
                         });
                     }
 
