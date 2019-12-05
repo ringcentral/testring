@@ -105,4 +105,41 @@ describe('assertion functional', () => {
             await assert.equal(1, 2);
         } catch (ignore) { /* ignore */ }
     });
+
+    it('should call onError assertion callback without changed error object', async () => {
+        const assert = createAssertion({
+            onError: (meta) => {},
+        });
+
+        try {
+            await assert.equal(1, 2);
+        } catch (error) {
+            chai.expect(error).to.be.an.instanceof(Error);
+            chai.expect(error.message).to.be.eq('[assert] equal(act = 1, exp = 2)');
+        }
+    });
+
+    it('should call onError assertion callback with different Error', async () => {
+        const overloadMessage = 'Overloaded message';
+        let originalError;
+
+        const assert = createAssertion({
+            onError: (meta) => {
+                const tmpErr = new Error();
+                originalError = meta.error;
+                tmpErr.message = overloadMessage;
+                tmpErr.stack = meta.error.stack;
+
+                return tmpErr;
+            },
+        });
+
+        try {
+            await assert.equal(1, 2);
+        } catch (error) {
+            chai.expect(error).to.be.an.instanceof(Error);
+            chai.expect(error.message).to.be.eq(overloadMessage);
+            chai.expect(error.stack).to.be.eq(originalError.stack);
+        }
+    });
 });

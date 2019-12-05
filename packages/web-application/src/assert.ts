@@ -58,10 +58,12 @@ export function createAssertion(options: IAssertionOptions = {}) {
 
                 } catch (error) {
                     const errorMessage = error.message;
+                    let handleError: void | Error;
+
                     error.message = (successMessage || assertMessage || errorMessage);
 
                     if (options.onError) {
-                        await options.onError({
+                        handleError = await options.onError({
                             isSoft,
                             successMessage,
                             assertMessage,
@@ -72,10 +74,14 @@ export function createAssertion(options: IAssertionOptions = {}) {
                         });
                     }
 
+                    if (!handleError) {
+                        handleError = error;
+                    }
+
                     if (isSoft) {
-                        target._errorMessages.push(error.message);
+                        target._errorMessages.push((handleError as Error).message);
                     } else {
-                        throw error;
+                        throw handleError;
                     }
                 }
             };
