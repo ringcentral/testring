@@ -89,6 +89,7 @@ describe('assertion functional', () => {
                         errorMessage: 'expected 1 to equal 2',
                         isSoft: false,
                         successMessage: '',
+                        originalMethod: 'equal',
                     });
                     callback();
                 } catch (e) {

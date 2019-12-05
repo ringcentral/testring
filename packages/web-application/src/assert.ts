@@ -65,6 +65,7 @@ export function createAssertion(options: IAssertionOptions = {}) {
                             assertMessage,
                             errorMessage,
                             error,
+                            originalMethod: fieldName,
                         });
                     }
 

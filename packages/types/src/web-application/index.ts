@@ -32,6 +32,7 @@ export interface IAssertionSuccessMeta {
 export interface IAssertionErrorMeta extends IAssertionSuccessMeta {
     errorMessage?: string;
     error?: Error;
+    originalMethod?: string;
 }
 
 export interface IAssertionOptions {
