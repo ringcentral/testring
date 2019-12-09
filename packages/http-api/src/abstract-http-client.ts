@@ -23,10 +23,16 @@ export abstract class AbstractHttpClient implements IHttpClient {
 
     private requestQueue: IQueue<Function>;
 
+    private params: HttpClientParams = {
+        httpThrottle: 0,
+    };
+
     private queueRunning = false;
 
-    constructor(protected transportInstance: ITransport, private params: HttpClientParams) {
+    constructor(protected transportInstance: ITransport, params: Partial<HttpClientParams> = {}) {
         this.requestQueue = new Queue();
+
+        this.params = Object.assign<HttpClientParams, Partial<HttpClientParams>>(this.params, params);
     }
 
     public post(options: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any> {
@@ -61,6 +67,10 @@ export abstract class AbstractHttpClient implements IHttpClient {
         return (this.isValidData(request) && request.hasOwnProperty('url'));
     }
 
+    private async throttleDelay() {
+        await new Promise(resolve => setTimeout(resolve, this.params.httpThrottle));
+    }
+
     private async runQueue(): Promise<void> {
         if (this.queueRunning) {
             return;
@@ -73,7 +83,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
 
             if (item) {
                 await item();
-                await new Promise(resolve => setTimeout(resolve, this.params.httpThrottle));
+                await this.throttleDelay();
             }
         }
 
