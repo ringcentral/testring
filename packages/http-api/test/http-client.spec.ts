@@ -1,17 +1,16 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
+import * as sinon from 'sinon';
 import { IHttpRequestMessage, HttpMessageType } from '@testring/types';
 import { TransportMock } from '@testring/test-utils';
 import { HttpClient } from '../src/http-client';
 
+type resolveFn = (value?: void | PromiseLike<void>) => void;
+
 const DEFAULT_URL = 'test.com/invalid/test/url';
 const DEFAULT_RESPONSE = {
     body: {},
-};
-
-const httpClientParams = {
-    httpThrottle: 0,
 };
 
 const imitateServer = (transport: TransportMock, response) => {
@@ -35,7 +34,7 @@ const imitateFailedServer = (transport: TransportMock, error: Error) => {
 describe('HttpClient', () => {
     it('should get an error if request is null', (callback) => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, httpClientParams);
+        const httpClient = new HttpClient(transport);
 
         httpClient.post(null as any)
             .then(() => {
@@ -50,7 +49,7 @@ describe('HttpClient', () => {
 
     it('should get response from server (GET)', async () => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, httpClientParams);
+        const httpClient = new HttpClient(transport);
 
         imitateServer(transport, DEFAULT_RESPONSE);
 
@@ -61,7 +60,7 @@ describe('HttpClient', () => {
 
     it('should get response from server (POST)', async () => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, httpClientParams);
+        const httpClient = new HttpClient(transport);
 
         imitateServer(transport, DEFAULT_RESPONSE);
 
@@ -72,7 +71,7 @@ describe('HttpClient', () => {
 
     it('should get response from server (PUT)', async () => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, httpClientParams);
+        const httpClient = new HttpClient(transport);
 
         imitateServer(transport, DEFAULT_RESPONSE);
 
@@ -83,7 +82,7 @@ describe('HttpClient', () => {
 
     it('should get response from server (DELETE)', async () => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, httpClientParams);
+        const httpClient = new HttpClient(transport);
 
         imitateServer(transport, DEFAULT_RESPONSE);
 
@@ -94,7 +93,7 @@ describe('HttpClient', () => {
 
     it('should fail correctly, if server returns error', async () => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, httpClientParams);
+        const httpClient = new HttpClient(transport);
 
         imitateFailedServer(transport, new Error('test'));
 
@@ -107,7 +106,7 @@ describe('HttpClient', () => {
 
     it('should get an error if response has no uid', (callback) => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, httpClientParams);
+        const httpClient = new HttpClient(transport);
 
         //imitate a server
         transport.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
@@ -129,8 +128,8 @@ describe('HttpClient', () => {
 
     it('should return queue requests responses in proper order', async () => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, { httpThrottle: 200 });
-        
+        const httpClient = new HttpClient(transport, { httpThrottle: 100 });
+
         const responses = [1, 2, 3];
 
         // imitate server
@@ -160,38 +159,42 @@ describe('HttpClient', () => {
         chai.expect(results).to.deep.equal(responses);
     });
 
-    it('should execute queued requests one by one with exact timeouts', async () => {
+    it('should execute queued requests one by one with timeouts', async () => {
         const httpThrottle = 200;
-        const responseTime = 100;
-        const fullTime = httpThrottle + responseTime - 1; // -1 is an error correction
+        const queue: resolveFn[] = [];
+        let finishedRequests = 0;
 
         const transport = new TransportMock();
         const httpClient = new HttpClient(transport, { httpThrottle });
-        
+
+        const stub = sinon.stub(httpClient, 'throttleDelay').callsFake(function fakeThrottle() {
+            return new Promise<void>(resolve => queue.push(resolve));
+        });
+
         transport.on(HttpMessageType.send, async (data: IHttpRequestMessage, src: string) => {
-            await new Promise(resolve => setTimeout(resolve, responseTime));
             transport.send(src, HttpMessageType.response, {
                 uid: data.uid,
                 response: DEFAULT_RESPONSE,
             });
         });
 
-        const results: Array<any> = [];
-
         const runRequest = async () => {
-            const queued = Date.now();
             await httpClient.get({ url: DEFAULT_URL });
-            const executed = Date.now();
-            results.push(executed - queued);
+            finishedRequests++;
         };
 
-        await Promise.all([
-            runRequest(),
-            runRequest(),
-            runRequest(),
-        ]);
+        await runRequest();
+        const secondRequest = runRequest();
+        const thirdRequest = runRequest();
 
-        chai.expect(results[1] - results[0]).to.be.gte(fullTime);
-        chai.expect(results[2] - results[1]).to.be.gte(fullTime);
+        chai.expect(finishedRequests).to.be.eq(1);
+        queue[0]();
+        await secondRequest;
+        chai.expect(finishedRequests).to.be.eq(2);
+        queue[1]();
+        await thirdRequest;
+        chai.expect(finishedRequests).to.be.eq(3);
+
+        stub.restore();
     });
 });
