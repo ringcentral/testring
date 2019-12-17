@@ -142,10 +142,6 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.selectByValue, [xpath, value]);
     }
 
-    public selectByName(xpath, value) {
-        return this.makeRequest(BrowserProxyActions.selectByName, [xpath, value]);
-    }
-
     public selectByVisibleText(xpath, str) {
         return this.makeRequest(BrowserProxyActions.selectByVisibleText, [xpath, str]);
     }
