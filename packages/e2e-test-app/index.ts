@@ -1,13 +1,18 @@
 import * as childProcess from 'child_process';
-import { startWebServer, killWebServer } from './src/mock-web-server';
+import { MockWebServer } from './src/mock-web-server';
 
-startWebServer();
+const mockWebServer = new MockWebServer();
+mockWebServer.start();
 
 const testringProcess = childProcess.exec(
     './node_modules/.bin/testring run --config ./test/selenium/config.js',
     {},
     (error, stdout, stderr) => {
-        killWebServer();
+        mockWebServer.stop();
+
+        if (error) {
+            throw error;
+        }
     });
 
 if (testringProcess.stdout) {
