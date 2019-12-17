@@ -33,8 +33,4 @@ run(async (api) => {
     await api.application.assert.deepEqual(selectValues, [
         'byAttribute', 'byName', 'byIndex', 'byValue', 'byVisibleText', 'withTestId',
     ]);
-
-    await api.application.selectByName(api.application.root.form.select, 'testName');
-    const byNameText = await api.application.getSelectedText(api.application.root.form.select);
-    api.application.assert.equal(byNameText, 'By name');
 });

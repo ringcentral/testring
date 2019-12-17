@@ -116,9 +116,6 @@ export class WebApplication extends PluggableModule {
         selectByIndex(xpath, value: string | number) {
             return `Select by index ${this.formatXpath(xpath)} ${value}`;
         },
-        selectByName(xpath, value: string | number) {
-            return `Select by name ${this.formatXpath(xpath)} ${value}`;
-        },
         selectByValue(xpath, value: string | number) {
             return `Select by value ${this.formatXpath(xpath)} ${value}`;
         },
@@ -883,22 +880,6 @@ export class WebApplication extends PluggableModule {
         } catch (e) {
             e.message = errorMessage;
             throw e;
-        }
-    }
-
-    public async selectByName(xpath, value: string | number, timeout: number = this.WAIT_TIMEOUT) {
-        const logXpath = this.formatXpath(xpath);
-        const errorMessage = `Could not select by name "${value}": ${logXpath}`;
-
-        xpath = this.normalizeSelector(xpath);
-
-        await this.waitForExist(xpath, timeout);
-
-        try {
-            await this.client.selectByName(xpath, value);
-        } catch (error) {
-            error.message = errorMessage;
-            throw error;
         }
     }
 
