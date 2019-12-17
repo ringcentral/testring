@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script>
+        function appendText4(id) {
+            document.getElementById(id).append('Text 4');
+        }
+    </script>
+</head>
+<body data-test-automation-id="root">
+    <div data-test-automation-id="container"><p>test</p></div>
+    <div data-test-automation-id="text">Text is here!</div>
+    <div data-test-automation-id="texts" id="texts" onmouseover="appendText4('texts')">
+        <p>Text 1</p>
+        <p>Text 2</p>
+        <p>Text 3</p>
+    </div>
+    <div data-test-automation-id="textWithoutFocus" id="textWithoutFocus" onmouseover="appendText4('textWithoutFocus')">Text without focus</div>
+</body>
+</html>

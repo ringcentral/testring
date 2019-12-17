@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body data-test-automation-id="root">
+    <form data-test-automation-id="form">
+        <div>
+            <label for="nameInput">Name: </label><input id="nameInput" type="text" placeholder="name" data-test-automation-id="nameInput">
+        </div>
+        <div>
+            <label for="disabledInput">disabled: </label>
+            <input id="disabledInput" type="text" placeholder="disabled" data-test-automation-id="disabledInput" disabled>
+        </div>
+        <div>
+            <label for="readonlyInput">readonly: </label>
+            <input id="readonlyInput" type="text" placeholder="readonly" data-test-automation-id="readonlyInput" readonly value="readonly">
+        </div>
+        <div>
+            <input id="checkbox" type="checkbox" data-test-automation-id="checkbox">
+            <label for="checkbox">checkbox label</label>
+        </div>
+        <div>
+            <input id="checkbox2" type="checkbox" data-test-automation-id="checkbox_2" checked="checked">
+            <label for="checkbox2">checkbox label with initial checked</label>
+        </div>
+        <div>
+            <label for="select">Choose: </label>
+            <select id="select" data-test-automation-id="select">
+                <option data-test-attr="value" value="byAttribute">By attribute</option>
+                <option name="testName" value="byName">By name</option>
+                <option value="byIndex">By index</option>
+                <option value="byValue">By value</option>
+                <option value="byVisibleText" id="select-option-visible-text">By visible text</option>
+                <option data-test-automation-id="option" value="withTestId" id="select-test-option">With test id</option>
+            </select>
+        </div>
+    </form>
+</body>
+</html>
