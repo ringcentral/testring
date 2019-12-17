@@ -4,8 +4,15 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script>
+        var addedForIds = [];
+
         function appendText4(id) {
+            if (addedForIds.indexOf(id) !== -1) {
+                return;
+            }
+
             document.getElementById(id).append('Text 4');
+            addedForIds.push(id);
         }
     </script>
 </head>
