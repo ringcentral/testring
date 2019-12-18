@@ -13,5 +13,8 @@
     "@testring/logger": "0.5.14",
     "@testring/types": "0.5.14",
     "@testring/utils": "0.5.14"
+  },
+  "devDependencies": {
+    "@types/node": "12.12.21"
   }
 }

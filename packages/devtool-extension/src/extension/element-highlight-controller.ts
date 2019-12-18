@@ -225,7 +225,7 @@ export class ElementHighlightController {
             const arr: Node[] = [];
 
             for (let i = 0, len = elements.snapshotLength; i < len; i++) {
-                arr.push(elements.snapshotItem(i));
+                arr.push(<Node>elements.snapshotItem(i));
             }
 
             return arr.filter(element => element instanceof HTMLElement) as HTMLElement[];

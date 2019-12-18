@@ -138,11 +138,11 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
 
         this.worker.on('exit', this.onExit);
 
-        this.worker.stdout.on('data', (message) => {
+        this.worker.stdout?.on('data', (message) => {
             this.logger.log(`[logged] ${message.toString()}`);
         });
 
-        this.worker.stderr.on('data', (message) => {
+        this.worker.stderr?.on('data', (message) => {
             this.logger.warn(`[logged] ${message.toString()}`);
         });
 

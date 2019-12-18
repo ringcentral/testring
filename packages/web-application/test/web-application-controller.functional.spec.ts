@@ -47,7 +47,7 @@ describe('WebApplicationController functional', () => {
                 }
             });
 
-            testProcess.stderr.on('data', (message) => {
+            testProcess.stderr?.on('data', (message) => {
                 callback(message.toString());
             });
         });

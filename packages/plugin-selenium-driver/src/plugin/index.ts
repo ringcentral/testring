@@ -247,7 +247,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             ]);
 
             this.waitForReadyState = new Promise((resolve) => {
-                this.localSelenium.stderr.on('data', (data) => {
+                this.localSelenium.stderr?.on('data', (data) => {
                     const message = data.toString();
 
                     this.logger.verbose(message);

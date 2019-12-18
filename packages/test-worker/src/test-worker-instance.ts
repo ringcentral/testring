@@ -311,11 +311,11 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     private async createWorker(): Promise<IWorkerEmitter> {
         const worker = await fork(WORKER_ROOT, [], {});
 
-        worker.stdout.on('data', (data) => {
+        worker.stdout?.on('data', (data) => {
             this.logger.log(`[${this.getWorkerID()}] [logged] ${data.toString().trim()}`);
         });
 
-        worker.stderr.on('data', (data) => {
+        worker.stderr?.on('data', (data) => {
             this.logger.error(`[${this.getWorkerID()}] [error] ${data.toString().trim()}`);
         });
 

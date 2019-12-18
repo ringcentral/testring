@@ -4,8 +4,8 @@ import { TransportMessageHandler } from './structs';
 type RemoveHandlerFunction = () => void;
 
 export interface IWorkerEmitter extends EventEmitter {
-    send(message: any, callback?: (error: Error) => void): boolean;
-    kill(signal?: string): void;
+    send(message: any, callback?: (error: Error | null) => void): boolean;
+    kill(signal?: NodeJS.Signals): void;
 
     addListener(event: string, listener: (...args: any[]) => void): this;
     addListener(event: 'close', listener: (code: number, signal: string) => void): this;

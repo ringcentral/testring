@@ -14,7 +14,7 @@ describe('Transport functional test', () => {
         fork(childEntryPath).then((childProcess) => {
             const transport = new Transport(process);
 
-            childProcess.stderr.on('data', (error) => {
+            childProcess.stderr?.on('data', (error) => {
                 callback(error.toString());
             });
 

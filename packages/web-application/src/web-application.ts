@@ -372,7 +372,7 @@ export class WebApplication extends PluggableModule {
     }
 
     protected formatXpath(xpath): string {
-        return utils.logXpath(xpath);
+        return utils.getFormattedString(xpath);
     }
 
     protected getRootSelector(): ElementPath {
