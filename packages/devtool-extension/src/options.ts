@@ -3,4 +3,4 @@ import {
     IOptionsWindow,
 } from './extension/options-chrome-controller';
 
-new OptionsChromeController(window as IOptionsWindow);
+new OptionsChromeController(<IOptionsWindow>(window as any));

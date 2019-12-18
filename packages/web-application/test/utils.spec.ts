@@ -1,40 +1,38 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { logXpath } from '../src/utils';
+import { getFormattedString } from '../src/utils';
 
 describe('utils', () => {
-    it('should throw error if called without arguments', () => {
-       const catcher = () => logXpath(undefined);
-
-       chai.expect(catcher).to.throw(Error);
+    it('should return the "undefined" if undefined is passed', () => {
+        chai.expect(getFormattedString(undefined)).to.equal('undefined');
     });
 
 
-    it('should return the same object if null is passed', () => {
-        chai.expect(logXpath(null)).to.equal(null);
+    it('should return the "null" if null is passed', () => {
+        chai.expect(getFormattedString(null)).to.equal('null');
     });
 
 
     it('should return the same string if Symbol is passed', () => {
         const symbol = Symbol('@symbol');
 
-        chai.expect(logXpath(symbol)).to.equal('Symbol(@symbol)');
+        chai.expect(getFormattedString(symbol)).to.equal('Symbol(@symbol)');
     });
 
 
     it('should return [object Object] if called from Object', () => {
-        chai.expect(logXpath({})).to.equal('[object Object]');
+        chai.expect(getFormattedString({})).to.equal('[object Object]');
     });
 
 
     it('should return empty string if called from empty Array', () => {
-        chai.expect(logXpath([])).to.equal('');
+        chai.expect(getFormattedString([])).to.equal('');
     });
 
 
     it('should return concatenated string if called from Array', () => {
-        chai.expect(logXpath([1,2,3])).to.equal('1,2,3');
+        chai.expect(getFormattedString([1,2,3])).to.equal('1,2,3');
     });
 
 
@@ -48,7 +46,7 @@ describe('utils', () => {
             }
         }
 
-        chai.expect(logXpath(new Dummy('foo'))).to.equal('foo');
+        chai.expect(getFormattedString(new Dummy('foo'))).to.equal('foo');
     });
 
 
@@ -57,7 +55,7 @@ describe('utils', () => {
             toString: () => 'bar',
         };
 
-        chai.expect(logXpath(object)).to.equal('bar');
+        chai.expect(getFormattedString(object)).to.equal('bar');
     });
 
 
@@ -75,7 +73,7 @@ describe('utils', () => {
             }
         }
 
-        chai.expect(logXpath(new Dummy('foo'))).to.equal('formatted foo');
+        chai.expect(getFormattedString(new Dummy('foo'))).to.equal('formatted foo');
     });
 
 
@@ -90,6 +88,6 @@ describe('utils', () => {
             toString: () => 'test',
         };
 
-        chai.expect(logXpath(object)).to.equal('formatted bar');
+        chai.expect(getFormattedString(object)).to.equal('formatted bar');
     });
 });

@@ -23,7 +23,6 @@
     "@testring/utils": "0.5.14",
     "@types/babel-traverse": "6.25.4",
     "@types/express-serve-static-core": "4.16.2",
-    "@types/node": "10.5.6",
     "@types/ws": "5.1.2",
     "babel-traverse": "6.26.0",
     "babel-types": "6.26.0",
@@ -35,6 +34,6 @@
     "@testring/test-utils": "0.5.14",
     "request": "2.87.0",
     "request-promise": "4.2.2",
-    "ts-node": "7.0.1"
+    "ts-node": "8.5.4"
   }
 }

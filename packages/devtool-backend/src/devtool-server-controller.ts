@@ -78,11 +78,11 @@ export class DevtoolServerController extends PluggableModule implements IDevtool
 
         this.worker = await fork(workerPath);
 
-        this.worker.stdout.on('data', (data) => {
+        this.worker.stdout?.on('data', (data) => {
             this.logger.log(`[logged] ${data.toString().trim()}`);
         });
 
-        this.worker.stderr.on('data', (data) => {
+        this.worker.stderr?.on('data', (data) => {
             this.logger.warn(`[logged] ${data.toString().trim()}`);
         });
 
