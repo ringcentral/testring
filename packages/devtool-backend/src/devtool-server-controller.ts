@@ -78,13 +78,21 @@ export class DevtoolServerController extends PluggableModule implements IDevtool
 
         this.worker = await fork(workerPath);
 
-        this.worker.stdout?.on('data', (data) => {
-            this.logger.log(`[logged] ${data.toString().trim()}`);
-        });
+        if (this.worker.stdout) {
+            this.worker.stdout.on('data', (data) => {
+                this.logger.log(`[logged] ${data.toString().trim()}`);
+            });
+        } else {
+            console.warn(`[DevtoolServerController] The STDOUT of worker ${this.getWorkerID()} is null`);
+        }
 
-        this.worker.stderr?.on('data', (data) => {
-            this.logger.warn(`[logged] ${data.toString().trim()}`);
-        });
+        if (this.worker.stderr) {
+            this.worker.stderr.on('data', (data) => {
+                this.logger.warn(`[logged] ${data.toString().trim()}`);
+            });
+        } else {
+            console.warn(`[DevtoolServerController] The STDERR of worker ${this.getWorkerID()} is null`);
+        }
 
         this.transport.registerChild(workerID, this.worker);
 
