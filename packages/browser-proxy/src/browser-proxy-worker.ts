@@ -138,13 +138,21 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
 
         this.worker.on('exit', this.onExit);
 
-        this.worker.stdout?.on('data', (message) => {
-            this.logger.log(`[logged] ${message.toString()}`);
-        });
+        if (this.worker.stdout) {
+            this.worker.stdout.on('data', (message) => {
+                this.logger.log(`[logged] ${message.toString()}`);
+            });
+        } else {
+            console.warn(`[BrowserProxyWorker] The STDOUT of worker ${this.workerID} is null`);
+        }
 
-        this.worker.stderr?.on('data', (message) => {
-            this.logger.warn(`[logged] ${message.toString()}`);
-        });
+        if (this.worker.stderr) {
+            this.worker.stderr.on('data', (message) => {
+                this.logger.warn(`[logged] ${message.toString()}`);
+            });
+        } else {
+            console.warn(`[BrowserProxyWorker] The STDERR of worker ${this.workerID} is null`);
+        }
 
         this.transport.registerChild(this.workerID, this.worker);
 

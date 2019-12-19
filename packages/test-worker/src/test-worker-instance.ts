@@ -311,13 +311,21 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     private async createWorker(): Promise<IWorkerEmitter> {
         const worker = await fork(WORKER_ROOT, [], {});
 
-        worker.stdout?.on('data', (data) => {
-            this.logger.log(`[${this.getWorkerID()}] [logged] ${data.toString().trim()}`);
-        });
+        if (worker.stdout) {
+            worker.stdout.on('data', (data) => {
+                this.logger.log(`[${this.getWorkerID()}] [logged] ${data.toString().trim()}`);
+            });
+        } else {
+            console.warn(`[TestWorkerInstance] The STDOUT of worker ${this.getWorkerID()} is null`);
+        }
 
-        worker.stderr?.on('data', (data) => {
-            this.logger.error(`[${this.getWorkerID()}] [error] ${data.toString().trim()}`);
-        });
+        if (worker.stderr) {
+            worker.stderr.on('data', (data) => {
+                this.logger.error(`[${this.getWorkerID()}] [error] ${data.toString().trim()}`);
+            });
+        } else {
+            console.warn(`[TestWorkerInstance] The STDERR of worker ${this.getWorkerID()} is null`);
+        }
 
         worker.on('error', this.workerErrorHandler);
         worker.once('exit', this.workerExitHandler);
