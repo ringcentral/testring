@@ -36,7 +36,7 @@ describe('getConfig', () => {
             },
             {
                 plugins: ['plugin2', 'plugin3'],
-            }
+            },
         );
 
         chai.expect(config).to.be.deep.equals({
@@ -63,7 +63,7 @@ describe('getConfig', () => {
                         test: 1,
                     }],
                 ],
-            }
+            },
         );
 
         chai.expect(config).to.be.deep.equals({

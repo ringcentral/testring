@@ -33,9 +33,9 @@ function mergePlugins(target: Array<any>, source: Array<any>, options) {
     return Object.keys(plugins).map((pluginName) => {
         if (plugins[pluginName]) {
             return [pluginName, plugins[pluginName]];
-        } else {
+        } 
             return pluginName;
-        }
+        
     });
 }
 

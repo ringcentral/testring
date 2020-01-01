@@ -10,6 +10,8 @@ export function createAssertion(options: IAssertionOptions = {}) {
     const isSoft = options.isSoft === true;
 
     return new Proxy<AssertionAPI>(root, {
+        // TODO (flops) thinks about complexity
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         get(target, fieldName: string) {
             if (fieldName === '_errorMessages') {
                 return target._errorMessages;

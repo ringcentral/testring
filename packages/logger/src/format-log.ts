@@ -84,7 +84,7 @@ export function formatLog(
             return util.format(
                 formattedPrefix, ...prefixes,
                 `Filename: ${filename};`,
-                `Size: ${bytes.format(media ? media.length : 0)};`
+                `Size: ${bytes.format(media ? media.length : 0)};`,
             );
         }
 

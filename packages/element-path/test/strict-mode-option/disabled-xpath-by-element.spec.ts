@@ -46,7 +46,7 @@ describe('.xpathByElement()', () => {
 
         it('.toString(true)', () => {
             expect(xpathSelectorCall.toString(true)).to.be.equal(
-                '//*[@data-test-automation-id=\'root\']//*[@data-test-automation-id=\'foo\']//*[@class=\'selected\']'
+                '//*[@data-test-automation-id=\'root\']//*[@data-test-automation-id=\'foo\']//*[@class=\'selected\']',
             );
         });
 
@@ -129,12 +129,12 @@ describe('.xpathByElement()', () => {
     describe('.__getReversedChain call', () => {
         it('with root', () => {
             expect(xpathSelectorCall.__getReversedChain()).to.be.equal(
-                'root.foo.xpath("selected", "//*[@class=\'selected\']")'
+                'root.foo.xpath("selected", "//*[@class=\'selected\']")',
             );
         });
         it('without root', () => {
             expect(xpathSelectorCall.__getReversedChain(false)).to.be.equal(
-                '.foo.xpath("selected", "//*[@class=\'selected\']")'
+                '.foo.xpath("selected", "//*[@class=\'selected\']")',
             );
         });
     });

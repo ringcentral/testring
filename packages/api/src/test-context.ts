@@ -97,7 +97,7 @@ export class TestContext {
         for (const customApplication of this.customApplications) {
             if (!customApplication.isStopped()) {
                 requests.push(
-                    customApplication.end()
+                    customApplication.end(),
                 );
             }
         }

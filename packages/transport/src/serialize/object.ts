@@ -24,13 +24,13 @@ export function serializeObject(object: object, serialize: TransportSerializer):
 
 export function deserializeObject(
     serializedObject: ISerializedObject,
-    deserialize: TransportDeserializer
+    deserialize: TransportDeserializer,
 ): object {
     const dictionary = serializedObject.dictionary;
     const object = {};
 
     for (let key in dictionary) {
-        if (!dictionary.hasOwnProperty(key)) {
+        if (!Object.prototype.hasOwnProperty.call(dictionary, key)) {
             continue;
         }
 

@@ -63,16 +63,17 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
                         && typeof (thisArg as any).__getInstance === 'function'
                     ) {
                         return Reflect.get(ctx, key).apply((thisArg as any).__getInstance(), argumentsList);
-                    } else {
-                        return Reflect.get(ctx, key).apply(thisArg, argumentsList);
                     }
+                        return Reflect.get(ctx, key).apply(thisArg, argumentsList);
+
                 },
             });
-        } else {
-            return Reflect.get(instance, key);
         }
+            return Reflect.get(instance, key);
+
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     function getTrap(target: ElementPath, key: KeyType): any {
         if (key === '') {
             throw new TypeError('Key can not me empty');
@@ -110,9 +111,9 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
             return function __getInstance() {
                 if (this === proxy) {
                     return instance;
-                } else {
-                    return this;
                 }
+                    return this;
+
             };
         }
 
@@ -120,9 +121,9 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
             return function __getChildType() {
                 if (this === proxy) {
                     return instance.getElementType.apply(instance, arguments);
-                } else {
-                    return instance.getElementType.apply(this, arguments);
                 }
+                    return instance.getElementType.apply(this, arguments);
+
             };
         }
 
@@ -130,9 +131,9 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
             return function __getReversedChain() {
                 if (this === proxy) {
                     return instance.getReversedChain.apply(instance, arguments);
-                } else {
-                    return instance.getReversedChain.apply(this, arguments);
                 }
+                    return instance.getReversedChain.apply(this, arguments);
+
             };
         }
 
@@ -140,9 +141,9 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
             return function __findChildren() {
                 if (this === proxy) {
                     return proxify(instance.generateChildElementPathByOptions.apply(instance, arguments), strictMode);
-                } else {
-                    return proxify(instance.generateChildElementPathByOptions.apply(this, arguments), strictMode);
                 }
+                    return proxify(instance.generateChildElementPathByOptions.apply(this, arguments), strictMode);
+
             };
         }
 

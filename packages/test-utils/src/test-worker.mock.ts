@@ -33,9 +33,9 @@ class TestWorkerMockInstance implements ITestWorkerInstance {
                     this.callback = () => resolve();
                     this.timeout = setTimeout(() => reject(this.$getErrorInstance()), this.executionDelay);
                 });
-            } else {
+            } 
                 return Promise.reject(this.$getErrorInstance());
-            }
+            
         }
 
         if (this.executionDelay > 0) {
@@ -43,9 +43,9 @@ class TestWorkerMockInstance implements ITestWorkerInstance {
                 this.callback = () => resolve();
                 this.timeout = setTimeout(resolve, this.executionDelay);
             });
-        } else {
+        } 
             return Promise.resolve();
-        }
+        
     }
 
     async kill() {

@@ -78,8 +78,8 @@ class RunCommand implements ICLICommand {
 
         applyPlugins({
             logger: loggerServer,
-            fsReader: fsReader,
-            testWorker: testWorker,
+            fsReader,
+            testWorker,
             browserProxy: this.browserProxyController,
             testRunController: this.testRunController,
             httpClientInstance: httpClient,

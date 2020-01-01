@@ -9,7 +9,7 @@ import { deserialize, serialize } from './serialize';
 class BroadcastTransport {
     constructor(
         private triggerListeners: TransportMessageHandler,
-        private rootProcess: NodeJS.Process
+        private rootProcess: NodeJS.Process,
     ) {
         this.registerRootProcess();
     }

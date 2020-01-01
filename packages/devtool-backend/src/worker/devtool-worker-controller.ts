@@ -9,6 +9,7 @@ import {
     IDevtoolServerConfig,
     IDevtoolWebAppRegisterMessage,
     IDevtoolWorkerRegisterMessage,
+    IDevtoolWorkerUpdateStateMessage,
     IDevtoolWSMessage,
     IDevtoolWSMeta,
     ITestControllerExecutionState,
@@ -149,10 +150,10 @@ export class DevtoolWorkerController {
 
         switch (messageType) {
             case TestWorkerAction.register:
-                await this.registerWorker(message as IDevtoolWorkerRegisterMessage);
+                await this.updateExecutionState(message as IDevtoolWorkerRegisterMessage);
                 break;
             case TestWorkerAction.updateExecutionState:
-                await this.updateExecutionState(message);
+                await this.updateExecutionState(message as IDevtoolWorkerUpdateStateMessage);
                 break;
             case TestWorkerAction.unregister:
                 await this.unregisterWorker(message as IDevtoolWorkerRegisterMessage);
@@ -195,15 +196,7 @@ export class DevtoolWorkerController {
         });
     }
 
-    private async registerWorker(message: IDevtoolWorkerRegisterMessage) {
-        const workerId = this.normalizeWorkerId(message.source);
-
-        const store = await this.getOrRegisterStoreByWorkerId(workerId);
-
-        this.updateWorkerState(store, message.messageData);
-    }
-
-    private async updateExecutionState(message) {
+    private async updateExecutionState(message: IDevtoolWorkerRegisterMessage | IDevtoolWorkerUpdateStateMessage) {
         const workerId = this.normalizeWorkerId(message.source);
 
         const store = await this.getOrRegisterStoreByWorkerId(workerId);
@@ -342,9 +335,9 @@ export class DevtoolWorkerController {
                 context: this.storesByWebAppId.get(webAppId) as Store,
                 key: webAppId,
             };
-        } else {
-            throw Error(`Store id ${webAppId} is not found.`);
         }
+            throw Error(`Store id ${webAppId} is not found.`);
+
     }
 
     async initHttpServer(config: IDevtoolServerConfig) {
@@ -416,7 +409,7 @@ export class DevtoolWorkerController {
                 }
 
                 this.wsServer.send(meta.connectionId, DevtoolEvents.HANDSHAKE_RESPONSE, payload);
-                // @TODO make error handler
+                // @TODO (flops) make error handler
                 break;
             }
 
@@ -431,7 +424,7 @@ export class DevtoolWorkerController {
                         store.getState(),
                     );
                 } else {
-                    // @TODO make error handler
+                    // @TODO (flops) make error handler
                 }
                 break;
             }
@@ -446,7 +439,7 @@ export class DevtoolWorkerController {
                         this.sendToWorkerMessage(workerId, actionType, {});
                     }
                 } else {
-                    // @TODO make error handler
+                    // @TODO (flops) make error handler
                 }
                 break;
             }

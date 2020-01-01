@@ -1,4 +1,5 @@
 /// <reference types="mocha" />
+/* eslint sonarjs/no-identical-functions: 0 */
 
 import * as chai from 'chai';
 import { TransportMock } from '@testring/test-utils';

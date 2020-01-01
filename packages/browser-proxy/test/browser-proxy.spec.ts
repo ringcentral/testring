@@ -1,4 +1,5 @@
 /// <reference types="mocha" />
+/* eslint sonarjs/no-identical-functions: 0 */
 
 import * as path from 'path';
 import * as chai from 'chai';
@@ -40,7 +41,7 @@ describe('Browser proxy', () => {
                 uid,
                 applicant: 'test',
                 command: commandMock,
-            }
+            },
         );
     });
 
@@ -61,7 +62,7 @@ describe('Browser proxy', () => {
             {
                 uid,
                 command: commandMock,
-            }
+            },
         );
     });
 
@@ -77,7 +78,7 @@ describe('Browser proxy', () => {
                 chai.expect(response).to.have.property('error');
 
                 callback();
-            }
+            },
         );
 
         transport.emit(
@@ -88,7 +89,7 @@ describe('Browser proxy', () => {
                     action: 'barrelRoll' as BrowserProxyActions,
                     arguments: ['foo', 'bar'],
                 },
-            }
+            },
         );
     });
 });

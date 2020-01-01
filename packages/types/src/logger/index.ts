@@ -69,5 +69,5 @@ export interface ILoggerClient<Transport, Prefix, Marker, Stack> {
     withPrefix(prefix: Prefix): ILoggerClient<Transport, Prefix, Marker, Stack>;
     withMarker(marker: Marker): ILoggerClient<Transport, Prefix, Marker, Stack>;
 
-    getLogger(prefix: Prefix, mark: Marker, stepStack: Stack): ILoggerClient<Transport, Prefix, Marker, Stack>;
+    createNewLogger(prefix: Prefix, mark: Marker, stepStack: Stack): ILoggerClient<Transport, Prefix, Marker, Stack>;
 }

@@ -22,7 +22,7 @@ export interface IDevtoolServerRoute extends IDevtoolRoute {
 }
 
 export type DevtoolHttpRouteHandler = (
-    // @TODO maybe add import express and redux types?
+    // @TODO (flops) maybe add import express and redux types?
     req: any,
     res: any,
     context: any,
@@ -127,7 +127,7 @@ export interface IDevtoolWSGetStoreStateMessage {
 
 export interface IDevtoolWSUpdateStoreStateMessage {
     type: DevtoolEvents.STORE_STATE;
-    // @TODO put here store state
+    // @TODO (flops) put here store state
     payload: any;
 }
 
@@ -140,7 +140,6 @@ export interface IDevtoolWSCallWorkerAction {
 
 export type IDevtoolWSMessage = IDevtoolWSHandshakeResponseMessage
     | IDevtoolWSHandshakeRequestMessage
-    | IDevtoolWSGetStoreStateMessage
     | IDevtoolWSGetStoreStateMessage
     | IDevtoolWSUpdateStoreStateMessage
     | IDevtoolWSCallWorkerAction;

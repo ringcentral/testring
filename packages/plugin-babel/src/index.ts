@@ -2,6 +2,7 @@ import * as path from 'path';
 import { PluginAPI } from '@testring/plugin-api';
 import * as babelCore from 'babel-core';
 
+// eslint-disable-next-line import/no-default-export
 export default (pluginAPI: PluginAPI, config: babelCore.TransformOptions | null) => {
     const testWorker = pluginAPI.getTestWorker();
 
@@ -11,7 +12,7 @@ export default (pluginAPI: PluginAPI, config: babelCore.TransformOptions | null)
             sourceRoot: process.cwd(),
             sourceFileName: path.relative(process.cwd(), filename),
             ...config,
-            filename: filename,
+            filename,
         };
         const result = babelCore.transform(code, opts);
 

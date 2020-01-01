@@ -68,7 +68,7 @@ describe('.xpathByLocator() with parent', () => {
         it('.toString(true)', () => {
             expect(xpathSelectorCall.toString(true)).to.be.equal(
                 '//*[@data-test-automation-id=\'root\']//*[@data-test-automation-id=\'foo\']' +
-                '//*[@data-test-automation-id=\'bar\']//*[@class=\'selected\']'
+                '//*[@data-test-automation-id=\'bar\']//*[@class=\'selected\']',
             );
         });
 
@@ -165,12 +165,12 @@ describe('.xpathByLocator() with parent', () => {
     describe('.__getReversedChain call', () => {
         it('with root', () => {
             expect(xpathSelectorCall.__getReversedChain()).to.be.equal(
-                'root.foo.bar.xpath("selected", "//*[@class=\'selected\']")'
+                'root.foo.bar.xpath("selected", "//*[@class=\'selected\']")',
             );
         });
         it('without root', () => {
             expect(xpathSelectorCall.__getReversedChain(false)).to.be.equal(
-                '.foo.bar.xpath("selected", "//*[@class=\'selected\']")'
+                '.foo.bar.xpath("selected", "//*[@class=\'selected\']")',
             );
         });
     });

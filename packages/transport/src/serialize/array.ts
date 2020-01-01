@@ -16,7 +16,7 @@ export function serializeArray(array: Array<any>, serialize: TransportSerializer
 
 export function deserializeArray(
     serializedArray: ISerializedArray,
-    deserialize: TransportDeserializer
+    deserialize: TransportDeserializer,
 ): Array<any> {
     return serializedArray.values.map((value) => deserialize(value));
 }

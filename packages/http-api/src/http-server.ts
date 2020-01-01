@@ -21,7 +21,7 @@ export class HttpServer extends PluggableModule {
 
     constructor(
         private transportInstance: ITransport,
-        private request: MakeRequest
+        private request: MakeRequest,
     ) {
         super([
             HttpServerPlugins.beforeResponse,
@@ -37,7 +37,7 @@ export class HttpServer extends PluggableModule {
                 }
 
                 this.makeRequest(data, src);
-            }
+            },
         );
     }
 

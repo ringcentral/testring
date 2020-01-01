@@ -109,12 +109,12 @@ describe('.xpathByLocator() from root', () => {
     describe('.__getReversedChain call', () => {
         it('with root', () => {
             expect(xpathSelectorCall.__getReversedChain()).to.be.equal(
-                '.xpath("selected", "//*[@class=\'selected\']")'
+                '.xpath("selected", "//*[@class=\'selected\']")',
             );
         });
         it('without root', () => {
             expect(xpathSelectorCall.__getReversedChain(false)).to.be.equal(
-                '.xpath("selected", "//*[@class=\'selected\']")'
+                '.xpath("selected", "//*[@class=\'selected\']")',
             );
         });
     });

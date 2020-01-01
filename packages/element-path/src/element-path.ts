@@ -107,6 +107,7 @@ export class ElementPath {
      */
 
     // noinspection JSMethodCanBeStatic
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     protected parseMask(mask: string): SearchMaskObject {
         let maskFilter: SearchMaskObject = {};
 
@@ -177,7 +178,7 @@ export class ElementPath {
             subQuery: Object.assign(
                 {},
                 this.parseMask(mask),
-                textSearch === undefined ? undefined : this.parseText(textSearch)
+                textSearch === undefined ? undefined : this.parseText(textSearch),
             ),
         };
     }
@@ -196,7 +197,7 @@ export class ElementPath {
             {},
             this.parseMask(mask),
             textSearch === undefined ? undefined : this.parseText(textSearch),
-            subQueryPart === undefined ? undefined : this.parseSubQuery(subQueryPart)
+            subQueryPart === undefined ? undefined : this.parseSubQuery(subQueryPart),
         );
     }
 
@@ -334,6 +335,7 @@ export class ElementPath {
     }
 
     public getReversedChain(withRoot: boolean = true): string {
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         let parts = this.getElementPathChain().reduce((memo: string[], node: any): string[] => {
             if (node.isRoot) {
                 if (withRoot) {
@@ -378,20 +380,20 @@ export class ElementPath {
                     name: 'root',
                     xpath: this.getSearchQueryXpath(),
                 }];
-            } else {
+            }
                 return [{
                     isRoot: false,
                     query: this.searchOptions,
                     xpath: this.getSearchQueryXpath(),
                 }];
-            }
-        } else {
+
+        }
             return (this.getParentElementPathChain() || []).concat([{
                 isRoot,
                 query: this.searchOptions,
                 xpath: this.getSearchQueryXpath(),
             }]);
-        }
+
     }
 
     public getParentElementPathChain(): NodePath[] | null {
@@ -403,7 +405,7 @@ export class ElementPath {
     }
 
     public generateChildElementPathByOptions(searchOptions: SearchObject, withoutParent = false): ElementPath {
-        // @TODO move validation into constructor
+        // @TODO (flops) move validation into constructor
         if (hasOwn(searchOptions, 'index')) {
 
             // If search called with searchMask and index in the same time we are selecting child by index
@@ -440,21 +442,21 @@ export class ElementPath {
                 flows: this.flows,
                 parent: withoutParent ? undefined : this,
             });
-        } else {
+        }
             return new ElementPath({
                 searchOptions: { ...searchOptions },
                 flows: this.flows,
                 parent: this,
             });
-        }
+
     }
 
     public generateChildElementsPath(key: string | number): ElementPath {
         if (isInteger(key)) {
             return this.generateChildElementPathByOptions({ index: +key });
-        } else {
-            return this.generateChildElementPathByOptions(this.parseQueryKey(`${key}`));
         }
+            return this.generateChildElementPathByOptions(this.parseQueryKey(`${key}`));
+
     }
 
     public generateChildByXpath(element: { id: string; xpath: string }): ElementPath {
@@ -465,7 +467,7 @@ export class ElementPath {
     }
 
     // @deprecated
-    // TODO remove asap
+    // TODO (flops) remove asap
     public generateChildByLocator(locator: XpathLocator): ElementPath {
         // noinspection SuspiciousTypeOfGuard
         if (typeof locator.xpath !== 'string') {
@@ -491,12 +493,12 @@ export class ElementPath {
                 xpath: locator.xpath,
                 id: locator.id,
             });
-        } else {
+        }
             return this.generateChildElementPathByOptions({
                 xpath: locator.xpath,
                 id: locator.id,
             }, true);
-        }
+
     }
 
     public hasFlow(key: string | number): boolean {
@@ -520,17 +522,17 @@ export class ElementPath {
 
         if (typeof flow === 'function') {
             return flow;
-        } else {
-            throw new TypeError(`Flow ${key} is not a function`);
         }
+            throw new TypeError(`Flow ${key} is not a function`);
+
     }
 
     public getFlows(): FlowsFnObject {
         if (this.searchMask && hasOwn(this.flows, this.searchMask)) {
             return this.flows[this.searchMask];
-        } else {
-            return {};
         }
+            return {};
+
     }
 
     public getSearchOptions(): SearchObject {
@@ -554,9 +556,9 @@ export class ElementPath {
 
         if (allowMultipleNodesInResult) {
             return xpath;
-        } else {
-            return `(${xpath})[1]`;
         }
+            return `(${xpath})[1]`;
+
     }
 }
 

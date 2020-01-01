@@ -95,12 +95,12 @@ export async function fork(
     if (IS_WIN) {
         childProcess = spawn(
             'node',
-            [...processArgs, ...getAdditionalParameters(filePath), filePath, childArg, ...args]
+            [...processArgs, ...getAdditionalParameters(filePath), filePath, childArg, ...args],
         );
     } else {
         childProcess = spawn(
             getExecutor(filePath),
-            [...processArgs, filePath, childArg, ...args]
+            [...processArgs, filePath, childArg, ...args],
         );
     }
 

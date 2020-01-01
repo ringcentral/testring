@@ -61,29 +61,26 @@ class Sandbox {
         Sandbox.modulesCache.clear();
     }
 
-    public static async evaluateScript(filename: string, code: string): Promise<any> {
+
+    // TODO (flops) remove async
+    public static async evaluateScript(filename: string, code: string): Promise<Sandbox> {
         if (!Sandbox.modulesCache.has(filename)) {
             throw new Error(`Sandbox ${filename} is not created`);
         }
 
-        const sandbox = Sandbox.modulesCache.get(filename) as Sandbox;
+        const sandbox = <Sandbox>Sandbox.modulesCache.get(filename);
         const context = vm.createContext(sandbox.getContext());
         const script = new Script(code, filename);
 
         sandbox.isCompiled = false;
         sandbox.isCompiling = true;
 
-        let result;
-        try {
-            result = await sandbox.runInContext(script, context);
-        } catch (error) {
-            throw error;
-        } finally {
-            sandbox.isCompiled = true;
-            sandbox.isCompiling = false;
-        }
+        await sandbox.runInContext(script, context);
 
-        return result;
+        sandbox.isCompiled = true;
+        sandbox.isCompiling = false;
+
+        return sandbox;
     }
 
     private static modulesCache: Map<string, Sandbox> = new Map();
@@ -115,8 +112,20 @@ class Sandbox {
 
     private createContext(filename: string, dependencies) {
         const moduleObject = {
-            filename: filename,
+            filename,
             id: filename,
+        };
+
+        const setter = (target: any, key: string, value: any): any => {
+            switch (key) {
+                case 'exports': {
+                    return this.exports = value;
+                }
+
+                default: {
+                    return target[key] = value;
+                }
+            }
         };
 
         const module = new Proxy(moduleObject, {
@@ -132,24 +141,14 @@ class Sandbox {
                 }
             },
 
-            set: (target: any, key: string, value: any): any => {
-                switch (key) {
-                    case 'exports': {
-                        return this.exports = value;
-                    }
-
-                    default: {
-                        return target[key] = value;
-                    }
-                }
-            },
+            set: setter,
         });
 
         const ownContext = {
             __dirname: path.dirname(filename),
             __filename: filename,
             require: this.require.bind(this),
-            module: module,
+            module,
         };
 
         const contextProxy = new Proxy(ownContext, {
@@ -175,17 +174,7 @@ class Sandbox {
                 }
             },
 
-            set: (target: any, key: string, value: any): any => {
-                switch (key) {
-                    case 'exports': {
-                        return this.exports = value;
-                    }
-
-                    default: {
-                        return target[key] = value;
-                    }
-                }
-            },
+            set: setter,
 
             has: (target: any, key: string): boolean => {
                 return (key in target) || (key in global);

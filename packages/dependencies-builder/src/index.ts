@@ -37,7 +37,7 @@ function getDependencies(absolutePath: string, content: string): Array<string> {
             const dependencyPath: NodePath<string> = firstArgument.get('value') as any;
 
             requests.push(
-                dependencyPath.node
+                dependencyPath.node,
             );
         },
     });
@@ -49,7 +49,7 @@ function getDependencies(absolutePath: string, content: string): Array<string> {
 function createTreeNode(
     path: string,
     content: string,
-    nodes: IDependencyDictionary<IDependencyTreeNode> | null
+    nodes: IDependencyDictionary<IDependencyTreeNode> | null,
 ): IDependencyTreeNode {
     return {
         content,
@@ -99,7 +99,6 @@ async function buildNodes(
         }
 
         // Do not bundle node_modules, only user dependencies
-        // TODO check, if this hardcode can break some cases
         if (
             dependencyAbsolutePath.includes('node_modules') ||
             // Fix for local e2e tests running (lerna makes symlink and resolver eats it as path for real file)
@@ -114,7 +113,7 @@ async function buildNodes(
         node = createTreeNode(
             dependencyAbsolutePath,
             fileContent,
-            null
+            null,
         );
 
         // Putting nodes to cache BEFORE resolving it's dependencies, fixes circular dependencies case
@@ -129,12 +128,12 @@ async function buildNodes(
 
 export async function buildDependencyGraph(
     file: IFile,
-    readFile: DependencyFileReader
+    readFile: DependencyFileReader,
 ): Promise<IDependencyTreeNode> {
     const tree: IDependencyTreeNode = createTreeNode(
         file.path,
         file.content,
-        null
+        null,
     );
 
     const nodesCache = {
@@ -157,7 +156,7 @@ function getNodeDependencies(node: IDependencyTreeNode) {
     for (let request in node.nodes) {
         nodes[request] = createDictionaryNode(
             node.nodes[request].path,
-            node.nodes[request].content
+            node.nodes[request].content,
         );
     }
 
@@ -170,7 +169,7 @@ export async function buildDependencyDictionary(file: IFile, readFile: Dependenc
     const tree: IDependencyTreeNode = createTreeNode(
         file.path,
         file.content,
-        null
+        null,
     );
 
     const nodesCache = {
@@ -189,7 +188,7 @@ export async function buildDependencyDictionary(file: IFile, readFile: Dependenc
 
 export async function mergeDependencyDictionaries(
     dict1: DependencyDict,
-    dict2: DependencyDict
+    dict2: DependencyDict,
 ): Promise<DependencyDict> {
     return {
         ...dict1,

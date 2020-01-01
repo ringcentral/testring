@@ -14,7 +14,7 @@ const createExportFromGlobal = (key) => {
 describe('Sandbox', () => {
     afterEach(() => Sandbox.clearCache());
 
-    // TODO add dependencies tests
+    // TODO (flops) add dependencies tests
 
     context('Compilation', () => {
         it('should compile module', async () => {

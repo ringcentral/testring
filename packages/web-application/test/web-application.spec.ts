@@ -6,7 +6,7 @@ import { TransportMock } from '@testring/test-utils';
 import { generateUniqId } from '@testring/utils';
 import { WebApplication } from '../src/web-application';
 
-// TODO add more tests
+// TODO (flops) add more tests
 describe('WebApplication functional', () => {
     it('should extend current instance', () => {
         const workerId = generateUniqId();

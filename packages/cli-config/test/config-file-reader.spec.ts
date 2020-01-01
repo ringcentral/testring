@@ -1,7 +1,5 @@
-/* eslint no-unused-expressions: 0 */
-
-
 /// <reference types="mocha" />
+/* eslint sonarjs/no-identical-functions: 0 */
 
 import * as path from 'path';
 import * as chai from 'chai';

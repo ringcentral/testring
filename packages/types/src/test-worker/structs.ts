@@ -7,7 +7,7 @@ export type FileCompiler = (source: string, filename: string) => Promise<string>
 export interface ITestExecutionMessage extends IFile {
     waitForRelease: boolean;
     dependencies: DependencyDict;
-    // TODO move types here
+    // TODO (flops) rename envParameters and fix any
     parameters: any;
     envParameters: any;
 }

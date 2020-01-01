@@ -59,7 +59,7 @@ export class ClientWsTransport extends EventEmitter implements IClientWsTranspor
 
     private openHandler(): void {
         this.emit(
-            ClientWsTransportEvents.OPEN
+            ClientWsTransportEvents.OPEN,
         );
 
         this.resolveQueue();
@@ -88,7 +88,7 @@ export class ClientWsTransport extends EventEmitter implements IClientWsTranspor
 
     private closeHandler(): void {
         this.emit(
-            ClientWsTransportEvents.CLOSE
+            ClientWsTransportEvents.CLOSE,
         );
     }
 

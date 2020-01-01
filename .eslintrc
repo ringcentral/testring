@@ -7,11 +7,18 @@
       "experimentalObjectRestSpread": true
     }
   },
-  "parser": "typescript-eslint-parser",
-  "plugins": ["typescript"],
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "typescript"
+  ],
   "env": {
     "es6": true,
     "node": true
+  },
+  "settings": {
+    "react": {
+      "version": "16.7.18"
+    }
   },
   "rules": {
     "typescript/type-annotation-spacing": [2, {

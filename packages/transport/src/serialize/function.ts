@@ -14,7 +14,7 @@ function getBody(fn: string) {
     const blockBodyRegExp = /{([^]*)}$/;
     const inlineBodyRegExp = /=>\s*(.+)$/;
 
-    // TODO need to handle all cases
+    // TODO (flops) need to handle all cases
     // () => ({ test: 1 }), for example
     if (fn.includes('{')) {
         const blockBody = fn.match(blockBodyRegExp);
@@ -26,11 +26,11 @@ function getBody(fn: string) {
         }
 
         return normalizedBody;
-    } else {
+    }
         const inlineBody = fn.match(inlineBodyRegExp);
 
         return inlineBody ? `return ${inlineBody[1]}` : '';
-    }
+
 }
 
 
@@ -55,7 +55,7 @@ export function serializeFunction(func: Function): ISerializedFunction {
 
     return {
         $key: FUNCTION_KEY,
-        body: body,
+        body,
         arguments: args,
     };
 }

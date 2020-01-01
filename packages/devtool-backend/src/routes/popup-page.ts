@@ -35,6 +35,7 @@ const pageTemplate = (
     `;
 };
 
+// eslint-disable-next-line import/no-default-export
 export default function popupPage(req, res, store, webAppId) {
     const { devtoolConfig } = store.getState();
     const { host, wsPort } = devtoolConfig;

@@ -64,7 +64,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
     }
 
     private isValidRequest(request: IHttpRequest): boolean {
-        return (this.isValidData(request) && request.hasOwnProperty('url'));
+        return (this.isValidData(request) && Object.prototype.hasOwnProperty.call(request,'url'));
     }
 
     private async throttleDelay() {
@@ -91,13 +91,17 @@ export abstract class AbstractHttpClient implements IHttpClient {
     }
 
     private pushToQueue(requestParameters: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any> {
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             const sendRequest = () => this.sendRequest(requestParameters, cookieJar).then(resolve, reject);
+
             this.requestQueue.push(sendRequest);
+            // TODO (flops) move throttling into HttpServer
             this.runQueue();
         });
     }
 
+    // TODO (flops) refactor this function
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     private async sendRequest(requestParameters: IHttpRequest, cookieJar?: IHttpCookieJar): Promise<any> {
         if (cookieJar) {
             requestParameters = {
@@ -138,7 +142,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
                             resolve(response.response.body);
                         }
                     }
-                }
+                },
             );
 
             const removeRejectHandler = this.transportInstance.on(
@@ -154,7 +158,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
                         removeResponseHandler();
                         reject(response.error);
                     }
-                }
+                },
             );
 
             this.broadcast({

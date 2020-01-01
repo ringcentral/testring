@@ -22,7 +22,7 @@ describe('buildDependencyDictionary', () => {
         chai.expect(dictionary).to.have.all.keys(
             fixtureResolver('index.js'),
             fixtureResolver('dependency-1.js'),
-            fixtureResolver('dependency-2.js')
+            fixtureResolver('dependency-2.js'),
         );
     });
 });

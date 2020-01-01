@@ -27,7 +27,7 @@ export class FSReader extends PluggableModule implements IFSReader {
 
         return await this.callHook(
             FSReaderPlugins.afterResolve,
-            resolvedFiles
+            resolvedFiles,
         );
     }
 

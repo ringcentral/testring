@@ -4,6 +4,7 @@ import * as process from 'process';
 import { loggerClient } from '@testring/logger';
 import { requirePackage } from '@testring/utils';
 import { IConfig } from '@testring/types';
+import ProcessEnv = NodeJS.ProcessEnv;
 
 function findFile(configPath: string) {
     const filePath = path.resolve(configPath);
@@ -16,18 +17,21 @@ function findFile(configPath: string) {
     return null;
 }
 
-async function readJSConfig(configPath: string, config: IConfig): Promise<IConfig | null> {
+async function readJSConfig(
+    configPath: string,
+    config: IConfig,
+    processEnv: ProcessEnv = process.env,
+): Promise<IConfig | null> {
     try {
         const fullPath = path.resolve(configPath);
         const configFile = requirePackage(fullPath);
 
         if (typeof configFile === 'function') {
-            // TODO move process.env outside function
-            // TODO write tests for env passing
-            return await configFile(config, process.env);
-        } else {
-            return configFile;
+            // TODO (flops) write tests for env passing
+            return await configFile(config, processEnv);
         }
+            return configFile;
+
     } catch (exception) {
         const error = new SyntaxError(`
             Config file ${configPath} can't be parsed.
@@ -60,7 +64,7 @@ async function readJSONConfig(configPath: string): Promise<IConfig | null> {
 
 async function readConfig(
     configPath: string | void,
-    config: IConfig
+    config: IConfig,
 ): Promise<IConfig | null> {
 
     if (!configPath) {

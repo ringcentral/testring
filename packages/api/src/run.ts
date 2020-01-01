@@ -9,7 +9,7 @@ function getValidCopyVmError(error) {
         return error;
     }
 
-    // TODO check signature
+    // TODO (flops) check signature
     let tmpError = new Error(error.message);
     tmpError.stack = error.stack;
     return tmpError;

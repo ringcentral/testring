@@ -103,7 +103,7 @@ export class WorkerController {
 
         this.transport.broadcastUniversally(
             TestWorkerAction.unregister,
-            {}
+            {},
         );
 
         this.transport.broadcastUniversally<ITestExecutionCompleteMessage>(
@@ -111,7 +111,7 @@ export class WorkerController {
             {
                 status: TestStatus.done,
                 error: null,
-            }
+            },
         );
     }
 
@@ -132,7 +132,7 @@ export class WorkerController {
             {
                 status: TestStatus.failed,
                 error,
-            }
+            },
         );
 
         try {
@@ -179,7 +179,8 @@ export class WorkerController {
 
     private evaluateCode(message: ITestEvaluationMessage) {
         this.setPendingState(true);
-        Sandbox.evaluateScript(message.path, message.content);
+        Sandbox.evaluateScript(message.path, message.content)
+            .catch((err) => this.logger.error(err));
         this.setPendingState(false);
     }
 
@@ -212,7 +213,7 @@ export class WorkerController {
     }
 
     private async runTest(message: ITestExecutionMessage): Promise<void> {
-        // TODO pass message.parameters somewhere inside web application
+        // TODO (flops) pass message.parameters somewhere inside web application
         const testID = path.relative(process.cwd(), message.path);
 
         const sandbox = new Sandbox(message.content, message.path, message.dependencies);
