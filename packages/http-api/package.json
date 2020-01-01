@@ -16,7 +16,7 @@
     "@testring/transport": "0.5.14",
     "@testring/types": "0.5.14",
     "@testring/utils": "0.5.14",
-    "@types/node": "12.12.20",
+    "@types/node": "12.12.21",
     "@types/request-promise-native": "1.0.15",
     "@types/tough-cookie": "2.3.3",
     "request-promise-native": "1.0.7",
