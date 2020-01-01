@@ -14,8 +14,8 @@
     },
     "publish": {
       "forcePublish": "*",
-      "allowBranch": "master"
+      "allowBranch": "packages-update"
     }
   },
-  "version": "0.5.14"
+  "version": "0.5.15"
 }
