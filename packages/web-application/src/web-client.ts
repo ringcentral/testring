@@ -21,11 +21,11 @@ export class WebClient implements IWebApplicationClient {
         return new Promise((resolve, reject) => {
             const uid = generateUniqId();
             const request: IWebApplicationExecuteMessage = {
-                uid: uid,
+                uid,
                 applicant: this.applicant,
                 command: {
-                    action: action,
-                    args: args,
+                    action,
+                    args,
                 },
             };
 
@@ -43,7 +43,7 @@ export class WebClient implements IWebApplicationClient {
                             resolve(message.response);
                         }
                     }
-                }
+                },
             );
 
             transport.broadcastUniversally(WebApplicationMessageType.execute, request);

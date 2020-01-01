@@ -29,7 +29,7 @@ const mapResponse = (response: Response, cookies) => ({
     statusMessage: response.statusMessage,
     headers: response.headers,
     body: response.body,
-    cookies: cookies,
+    cookies,
 });
 
 export async function requestFunction(request: IHttpRequest): Promise<IHttpResponse> {

@@ -135,7 +135,7 @@ const UNICODE_CHARACTERS = {
 };
 
 function checkUnicode(value): Array<string> {
-    return UNICODE_CHARACTERS.hasOwnProperty(value)
+    return Object.prototype.hasOwnProperty.call(UNICODE_CHARACTERS, value)
         ? [UNICODE_CHARACTERS[value]]
         : new GraphemeSplitter().splitGraphemes(value);
 }
@@ -198,7 +198,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     private initIntervals() {
         this.clientCheckInterval = setInterval(
             () => this.checkClientsTimeout(),
-            this.config.clientCheckInterval
+            this.config.clientCheckInterval,
         );
 
         process.on('exit', () => {
@@ -246,16 +246,20 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 '-port', this.config.port,
             ]);
 
-            this.waitForReadyState = new Promise((resolve) => {
-                this.localSelenium.stderr?.on('data', (data) => {
-                    const message = data.toString();
+            this.waitForReadyState = new Promise((resolve, reject) => {
+                if (this.localSelenium.stderr) {
+                    this.localSelenium.stderr.on('data', (data) => {
+                        const message = data.toString();
 
-                    this.logger.verbose(message);
+                        this.logger.verbose(message);
 
-                    if (message.includes('SeleniumServer.boot')) {
-                        delay(500).then(resolve);
-                    }
-                });
+                        if (message.includes('SeleniumServer.boot')) {
+                            delay(500).then(resolve);
+                        }
+                    });
+                } else {
+                    reject(new Error('There is no STDERR on selenium worker'));
+                }
             });
         } catch (err) {
             this.logger.error('Local selenium server init failed', err);
@@ -278,27 +282,35 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
+    private async pingClients() {
+        for (let [applicant] of this.browserClients) {
+            try {
+                await this.execute(applicant, '(function () {})()', []);
+            } catch (e) { /* ignore */ }
+        }
+    }
+
+    private async closeExpiredClients() {
+        const timeLimit = Date.now() - this.config.clientTimeout;
+
+        for (let [applicant, clientData] of this.browserClients) {
+            if (clientData.initTime < timeLimit) {
+                this.logger.warn(`Session applicant ${applicant} marked as expired`);
+                try {
+                    await this.end(applicant);
+                } catch (e) {
+                    this.logger.error(`Session applicant ${applicant} failed to stop`, e);
+                }
+                this.expiredBrowserClients.add(applicant);
+            }
+        }
+    }
+
     private async checkClientsTimeout() {
         if (this.config.clientTimeout === 0) {
-            for (let [applicant] of this.browserClients) {
-                try {
-                    this.execute(applicant, '(function () {})()', []);
-                } catch (e) { /* ignore */ }
-            }
+            await this.pingClients();
         } else {
-            const timeLimit = Date.now() - this.config.clientTimeout;
-
-            for (let [applicant, clientData] of this.browserClients) {
-                if (clientData.initTime < timeLimit) {
-                    this.logger.warn(`Session applicant ${applicant} marked as expired`);
-                    try {
-                        await this.end(applicant);
-                    } catch (e) {
-                        this.logger.error(`Session applicant ${applicant} failed to stop`, e);
-                    }
-                    this.expiredBrowserClients.add(applicant);
-                }
-            }
+            await this.closeExpiredClients();
         }
     }
 
@@ -908,7 +920,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         condition: () => boolean | Promise<boolean> | Client<RawResult<any>> & RawResult<any>,
         timeout?: number,
         timeoutMsg?: string,
-        interval?: number
+        interval?: number,
     ): Promise<Client<boolean> & any> {
 
         await this.createClient(applicant);
@@ -947,6 +959,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 }
 
+// eslint-disable-next-line import/no-default-export
 export default function seleniumProxy(config: Config) {
     return new SeleniumPlugin(config);
 }

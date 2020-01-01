@@ -8,7 +8,7 @@ export class BrowserProxyAPI extends AbstractAPI {
     proxyPlugin(pluginPath: string, config: object) {
         if (BrowserProxyAPI.currentPlugin) {
             throw new Error(
-                `Plugin ${BrowserProxyAPI.currentPlugin} already registered as browser proxy!`
+                `Plugin ${BrowserProxyAPI.currentPlugin} already registered as browser proxy!`,
             );
         }
 
@@ -19,7 +19,7 @@ export class BrowserProxyAPI extends AbstractAPI {
         if (hook) {
             hook.writeHook(this.pluginName, async () => ({
                 plugin: pluginPath,
-                config: config,
+                config,
             }));
         }
     }

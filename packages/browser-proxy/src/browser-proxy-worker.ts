@@ -41,7 +41,7 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
                 if (this.workerID === source) {
                     this.onCommandResponse(response);
                 }
-            }
+            },
         );
 
         this.transport.on(BrowserProxyMessageTypes.exception, (error, source) => {
@@ -68,11 +68,11 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
             }
 
             return resolve(response);
-        } else {
+        } 
             this.logger.error(`Browser Proxy controller: cannot find command with uid ${uid}`);
 
             throw new ReferenceError(`Cannot find command with uid ${uid}`);
-        }
+        
     }
 
     private onProxyConnect(): void {
@@ -96,7 +96,7 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
         this.logger.debug(
             'Browser Proxy controller: miss connection with child process',
             'code', code,
-            'error', error
+            'error', error,
         );
 
 
@@ -118,7 +118,7 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
                 uid,
                 command,
                 applicant,
-            }
+            },
         ).catch((err) => {
             this.logger.error(err);
         });

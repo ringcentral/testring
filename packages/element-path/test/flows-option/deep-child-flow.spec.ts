@@ -14,8 +14,8 @@ describe('flows option on deep child', () => {
     let root = createElementPath({
         flows: {
             deepChild: {
-                foo: foo,
-                bar: bar,
+                foo,
+                bar,
             },
         },
     });
@@ -26,8 +26,8 @@ describe('flows option on deep child', () => {
             object: deepChildFoo,
             key: '__flows',
             valueDescriptor: getDescriptor({
-                foo: foo,
-                bar: bar,
+                foo,
+                bar,
             }),
         });
     });

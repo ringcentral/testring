@@ -40,7 +40,7 @@ class DirectTransport {
 
             if (child === undefined) {
                 return reject(
-                    new ReferenceError(`Process ${processID} doesn't found.`)
+                    new ReferenceError(`Process ${processID} doesn't found.`),
                 );
             }
 
@@ -70,7 +70,7 @@ class DirectTransport {
     public registerChild(processID: string, child: IWorkerEmitter) {
         if (this.childRegistry.has(processID)) {
             throw new ReferenceError(
-                `Process ${processID} already exists in transport registry`
+                `Process ${processID} already exists in transport registry`,
             );
         }
 

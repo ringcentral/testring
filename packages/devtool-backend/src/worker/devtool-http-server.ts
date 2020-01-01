@@ -81,7 +81,7 @@ export class DevtoolHttpServer implements IServer {
                 case 'put':
                     this.server[route.method](
                         route.mask,
-                        (req, res) => this.routeHandler(req, res, route.handler, route.options)
+                        (req, res) => this.routeHandler(req, res, route.handler, route.options),
                     );
                     break;
                 default:

@@ -32,7 +32,7 @@ async function task(pkg) {
                     location: pkg.location,
                     published,
                 });
-            }
+            },
         );
     });
 }

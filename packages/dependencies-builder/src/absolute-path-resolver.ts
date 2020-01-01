@@ -6,7 +6,7 @@ export function resolveAbsolutePath(request: string, parentPath: string) {
         const normalizedRequest = path.resolve(path.dirname(parentPath), request);
 
         return resolvePackage(normalizedRequest);
-    } else {
+    } 
         return resolvePackage(request);
-    }
+    
 }

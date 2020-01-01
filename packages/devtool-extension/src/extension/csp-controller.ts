@@ -11,7 +11,7 @@ export class CSPController {
                 urls : [ 'http://*/*', 'https://*/*' ],
                 types: [ 'main_frame' ],
             },
-            [ 'blocking', 'responseHeaders' ]
+            [ 'blocking', 'responseHeaders' ],
         );
     }
 

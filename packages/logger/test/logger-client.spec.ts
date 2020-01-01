@@ -84,7 +84,7 @@ describe('Logger client', () => {
         const spy = sinon.spy();
         const transport = new TransportMock();
         const loggerParent = new LoggerClient(transport, PREFIX);
-        const loggerClient = loggerParent.getLogger();
+        const loggerClient = loggerParent.createNewLogger();
 
         transport.on(LoggerMessageTypes.REPORT, spy);
         loggerClient.log(...report);

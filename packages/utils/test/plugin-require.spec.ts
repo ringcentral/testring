@@ -14,7 +14,7 @@ describe('requirePlugin', () => {
 
     it('should resolve local node modules', () => {
         const plugin = requirePlugin(
-            path.resolve(__dirname, './fixtures/node-export')
+            path.resolve(__dirname, './fixtures/node-export'),
         );
 
         chai.expect(plugin).to.be.equal('test');
@@ -22,7 +22,7 @@ describe('requirePlugin', () => {
 
     it('should resolve local node modules', () => {
         const plugin = requirePlugin(
-            path.resolve(__dirname, './fixtures/babel-export')
+            path.resolve(__dirname, './fixtures/babel-export'),
         );
 
         chai.expect(plugin).to.be.equal('test');

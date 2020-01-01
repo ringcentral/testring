@@ -96,7 +96,7 @@ describe('serialize', () => {
     });
 
     it('should serialize anonymous function', () => {
-        const anonymousFunction = function(a, b) {
+        const anonymousFunction = (a, b) => {
             return a + b + 2;
         };
 
@@ -112,7 +112,7 @@ describe('serialize', () => {
     });
 
     it('should serialize anonymous function without arguments', () => {
-        const anonymousFunction = function() {
+        const anonymousFunction = () => {
             return 2;
         };
 

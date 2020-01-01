@@ -25,7 +25,7 @@ export class WebApplicationController extends EventEmitter {
             this.emit(WebApplicationControllerEventType.response, response);
             const payload = {
                 uid: message.uid,
-                response: response,
+                response,
                 error: null,
             };
 
@@ -33,7 +33,7 @@ export class WebApplicationController extends EventEmitter {
                 await this.transport.send<IWebApplicationResponseMessage>(
                     source,
                     WebApplicationMessageType.response,
-                    payload
+                    payload,
                 );
             } else {
                 await this.transport.broadcastLocal(WebApplicationMessageType.response, payload);
@@ -47,14 +47,14 @@ export class WebApplicationController extends EventEmitter {
             const payload = {
                 uid: message.uid,
                 response: null,
-                error: error,
+                error,
             };
 
             if (source) {
                 await this.transport.send<IWebApplicationResponseMessage>(
                     source,
                     WebApplicationMessageType.response,
-                    payload
+                    payload,
                 );
             } else {
                 await this.transport.broadcastLocal(WebApplicationMessageType.response, payload);
@@ -64,7 +64,7 @@ export class WebApplicationController extends EventEmitter {
 
     constructor(
         private browserProxyController: IBrowserProxyController,
-        private transport: ITransport
+        private transport: ITransport,
     ) {
         super();
     }

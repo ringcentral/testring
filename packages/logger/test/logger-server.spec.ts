@@ -217,7 +217,7 @@ describe('Logger Server', () => {
             {
                 ...LOG_ENTITY,
                 logLevel: LogLevel.verbose,
-            }
+            },
         );
 
         setTimeout(() => {

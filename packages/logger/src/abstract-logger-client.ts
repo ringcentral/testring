@@ -104,7 +104,7 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
 
         this.broadcast(
             LoggerMessageTypes.REPORT,
-            logEntry
+            logEntry,
         );
 
         return logEntry;
@@ -250,7 +250,7 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
     }
 
     public withPrefix(prefix: LogEntityPrefixType) {
-        return this.getLogger(
+        return this.createNewLogger(
             prefix,
             this.marker,
             this.stepStack,
@@ -258,18 +258,17 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
     }
 
     public withMarker(marker: LogEntityMarkerType) {
-        return this.getLogger(
+        return this.createNewLogger(
             this.prefix,
             marker,
             this.stepStack,
         );
     }
 
-    // @TODO make private
-    public getLogger(
+    public createNewLogger(
         prefix: LogEntityPrefixType = this.prefix,
         marker: LogEntityMarkerType = this.marker,
-        stepStack: LoggerStack = this.stepStack
+        stepStack: LoggerStack = this.stepStack,
     ) {
         return new (this.constructor as any)(this.transportInstance, prefix, marker, stepStack) as this;
     }

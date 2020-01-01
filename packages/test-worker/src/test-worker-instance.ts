@@ -22,7 +22,7 @@ import {
 } from '@testring/types';
 
 const WORKER_ROOT = require.resolve(
-    path.resolve(__dirname, 'worker')
+    path.resolve(__dirname, 'worker'),
 );
 
 const WORKER_DEFAULT_CONFIG: ITestWorkerConfig = {
@@ -59,7 +59,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         if (this.abortTestExecution !== null) {
             this.abortTestExecution(
-                new Error(`[${this.getWorkerID()}] unexpected worker shutdown. Exit Code: ${exitCode}`)
+                new Error(`[${this.getWorkerID()}] unexpected worker shutdown. Exit Code: ${exitCode}`),
             );
 
             this.successTestExecution = null;
@@ -81,7 +81,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         private transport: ITransport,
         private compile: FileCompiler,
         private beforeCompile: (paths: Array<string>, filePath: string, fileContent: string) => Promise<Array<string>>,
-        workerConfig: Partial<ITestWorkerConfig> = {}
+        workerConfig: Partial<ITestWorkerConfig> = {},
     ) {
         this.config = this.createConfig(workerConfig);
     }
@@ -93,19 +93,14 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         };
     }
 
-    public async execute(file: IFile, parameters: any, envParameters: any): Promise<any> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                return await this.makeExecutionRequest(
-                    file,
-                    parameters,
-                    envParameters,
-                    resolve,
-                    reject
-                );
-            } catch (error) {
-                reject(error);
-            }
+    public async execute(file: IFile, parameters: any, envParameters: any): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.makeExecutionRequest(
+                file,
+                parameters,
+                envParameters,
+                (err) => err ? reject(err) : resolve(),
+            ).catch(reject);
         });
     }
 
@@ -162,7 +157,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         // Calling external hooks to compile source
         const compiledSource = await this.compileSource(file.content, file.path);
-        // TODO implement code instrumentation here
+        // TODO (flops) implement code instrumentation here
 
         const compiledFile = {
             path: file.path,
@@ -194,24 +189,30 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         file: IFile,
         parameters: any,
         envParameters: any,
-        resolve,
-        reject
-    ) {
+        callback: (err?: Error) => void,
+    ): Promise<void> {
         const worker = await this.initWorker();
 
         const relativePath = path.relative(process.cwd(), file.path);
-        const payload = await this.getExecutionPayload(file, parameters, envParameters);
+
+        let payload;
+        try {
+            payload = await this.getExecutionPayload(file, parameters, envParameters);
+        } catch (err) {
+            callback(err);
+            return;
+        }
 
         this.logger.debug(`Sending test for execution: ${relativePath}`);
 
         const completeHandler = (message) => {
             switch (message.status) {
                 case TestStatus.done:
-                    resolve();
+                    callback();
                     break;
 
                 case TestStatus.failed:
-                    reject(message.error);
+                    callback(message.error);
                     break;
             }
 
@@ -223,24 +224,24 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         if (this.config.localWorker) {
             removeListener = this.transport.once<ITestExecutionCompleteMessage>(
                 TestWorkerAction.executionComplete,
-                completeHandler
+                completeHandler,
             );
         } else {
             removeListener = this.transport.onceFrom<ITestExecutionCompleteMessage>(
                 this.getWorkerID(),
                 TestWorkerAction.executionComplete,
-                completeHandler
+                completeHandler,
             );
         }
 
         this.successTestExecution = () => {
             removeListener();
-            resolve();
+            callback();
         };
 
         this.abortTestExecution = (error) => {
             removeListener();
-            reject(error);
+            callback(error);
         };
 
         if (this.config.localWorker) {
@@ -287,6 +288,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             return this.queuedWorker;
         } else if (this.worker === null) {
             this.queuedWorker = this.createWorker()
+                // eslint-disable-next-line sonarjs/no-identical-functions
                 .then((worker) => {
                     this.worker = worker;
                     this.queuedWorker = null;

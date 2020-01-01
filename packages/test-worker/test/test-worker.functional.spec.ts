@@ -29,10 +29,11 @@ describe('TestWorkerInstance', () => {
             try {
                 await instance.execute(file, {}, null);
             } catch (error) {
-                throw error;
-            } finally {
                 await instance.kill();
+                throw error;
             }
+
+            await instance.kill();
         });
 
         it('should fail sync test correctly', (callback) => {

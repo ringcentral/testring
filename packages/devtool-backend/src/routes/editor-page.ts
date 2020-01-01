@@ -33,6 +33,7 @@ const pageTemplate = (
     `;
 };
 
+// eslint-disable-next-line import/no-default-export
 export default function editorPage(req, res, store) {
     const { devtoolConfig } = store.getState();
     const { host, wsPort } = devtoolConfig;

@@ -62,7 +62,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
     public async kill(): Promise<void> {
         await Promise.all(
-            this.workers.map((worker) => worker.kill())
+            this.workers.map((worker) => worker.kill()),
         );
 
         this.workers.length = 0;
@@ -114,45 +114,31 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             this.logger.warn('Workers won`t be restarted on every test end.');
         }
 
-        try {
-            this.workers = this.createWorkers(1);
-            const worker = this.workers[0];
+        this.workers = this.createWorkers(1);
+        const worker = this.workers[0];
 
-            while (testQueue.length > 0) {
-                await this.executeWorker(worker, testQueue);
-            }
-        } catch (error) {
-            throw error;
-        } finally {
-            this.workers = [];
+        while (testQueue.length > 0) {
+            await this.executeWorker(worker, testQueue);
         }
     }
 
     private async runChildWorkers(testQueue: TestQueue, workerLimit: number): Promise<void> {
         this.logger.debug(`Run controller: ${workerLimit} worker(s) created.`);
 
-        try {
-            this.workers = this.createWorkers(workerLimit);
+        this.workers = this.createWorkers(workerLimit);
 
-            await Promise.all(
-                this.workers.map(async (worker) => {
-                    while (testQueue.length > 0) {
-                        await this.executeWorker(worker, testQueue);
+        await Promise.all(
+            this.workers.map(async (worker) => {
+                while (testQueue.length > 0) {
+                    await this.executeWorker(worker, testQueue);
 
-                        if (this.config.restartWorker) {
-                            await worker.kill();
-                        }
+                    if (this.config.restartWorker) {
+                        await worker.kill();
                     }
-                    await worker.kill();
-                })
-            );
-
-        } catch (error) {
-            throw error;
-        } finally {
-            this.workers = [];
-            this.currentQueue = null;
-        }
+                }
+                await worker.kill();
+            }),
+        );
     }
 
     private createWorkers(limit: number): Array<ITestWorkerInstance> {
@@ -239,7 +225,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         error: Error,
         worker: ITestWorkerInstance,
         queueItem: IQueuedTest,
-        queue: TestQueue
+        queue: TestQueue,
     ): Promise<void> {
         if (this.config.bail) {
             await this.callHook(TestRunControllerPlugins.afterTest, queueItem, error, this.getWorkerMeta(worker));
@@ -250,7 +236,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             TestRunControllerPlugins.shouldNotRetry,
             false,
             queueItem,
-            this.getWorkerMeta(worker)
+            this.getWorkerMeta(worker),
         );
 
         if (
@@ -291,7 +277,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 TestRunControllerPlugins.shouldNotStart,
                 false,
                 queuedTest,
-                this.getWorkerMeta(worker)
+                this.getWorkerMeta(worker),
             );
 
             if (!!shouldNotStart) {
@@ -304,7 +290,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 worker.execute(
                     queuedTest.test,
                     queuedTest.parameters,
-                    queuedTest.envParameters
+                    queuedTest.envParameters,
                 ),
             ];
 
@@ -315,7 +301,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                             isRejectedByTimeout = true;
                             reject(new Error(`Test timeout exceeded ${timeout}ms`));
                         }, timeout);
-                    })
+                    }),
                 );
             }
 

@@ -29,9 +29,9 @@ function escapify(str) {
         return path.normalize(str).split(/\\/).map(windowsQuotes).join('\\\\');
     } else if (/[^-_.~/\w]/.test(str)) {
         return '\'' + str.replace(/'/g, '\'"\'"\'') + '\'';
-    } else {
+    } 
         return str;
-    }
+    
 }
 
 export function resolveBinary(name: string) {

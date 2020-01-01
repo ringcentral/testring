@@ -1,3 +1,6 @@
+/// <reference types="mocha" />
+/* eslint sonarjs/no-identical-functions: 0 */
+
 import * as chai from 'chai';
 import { TestWorkerMock } from '@testring/test-utils';
 import { TestRunControllerPlugins } from '../../types/src/test-run-controller';
@@ -16,7 +19,7 @@ const generateTestFiles = (count: number) => Array.from({ length: count }, (v, i
 describe('TestRunController', () => {
     it('should fail if zero workers are passed', async () => {
         const workerLimit = 0;
-        const config = { bail: false, workerLimit: workerLimit, timeout: DEFAULT_TIMEOUT } as any;
+        const config = { bail: false, workerLimit, timeout: DEFAULT_TIMEOUT } as any;
 
         const tests = generateTestFiles(10);
 
@@ -33,7 +36,7 @@ describe('TestRunController', () => {
 
     it('should run spawn workers with count from according limit', async () => {
         const workerLimit = 20;
-        const config = { bail: false, workerLimit: workerLimit, timeout: DEFAULT_TIMEOUT } as any;
+        const config = { bail: false, workerLimit, timeout: DEFAULT_TIMEOUT } as any;
 
         const tests = generateTestFiles(40);
 
@@ -103,7 +106,7 @@ describe('TestRunController', () => {
     it('should run spawn workers according the limit and kill them in the end of the run', async () => {
         const workerLimit = 20;
         const testsCount = 40;
-        const config = { bail: false, workerLimit: workerLimit, timeout: DEFAULT_TIMEOUT, restartWorker: false } as any;
+        const config = { bail: false, workerLimit, timeout: DEFAULT_TIMEOUT, restartWorker: false } as any;
 
         const tests = generateTestFiles(testsCount);
 
@@ -119,7 +122,7 @@ describe('TestRunController', () => {
     it('should run spawn workers according the limit and called kill in the middle', async () => {
         const workerLimit = 2;
         const testsCount = 4;
-        const config = { bail: false, workerLimit: workerLimit, timeout: DEFAULT_TIMEOUT } as any;
+        const config = { bail: false, workerLimit, timeout: DEFAULT_TIMEOUT } as any;
 
         const tests = generateTestFiles(testsCount);
 
@@ -147,7 +150,7 @@ describe('TestRunController', () => {
     it('should run spawn workers and kill by testTimeout delay', async () => {
         const workerLimit = 1;
         const testsCount = 2;
-        const config = { bail: false, workerLimit: workerLimit, timeout: DEFAULT_TIMEOUT, testTimeout: 100 } as any;
+        const config = { bail: false, workerLimit, timeout: DEFAULT_TIMEOUT, testTimeout: 100 } as any;
 
         const tests = generateTestFiles(testsCount);
 
@@ -165,7 +168,7 @@ describe('TestRunController', () => {
     it('should run spawn workers according the limit and kill after every execution', async () => {
         const workerLimit = 20;
         const testsCount = 40;
-        const config = { bail: false, workerLimit: workerLimit, timeout: DEFAULT_TIMEOUT, restartWorker: true } as any;
+        const config = { bail: false, workerLimit, timeout: DEFAULT_TIMEOUT, restartWorker: true } as any;
 
         const tests = generateTestFiles(testsCount);
 

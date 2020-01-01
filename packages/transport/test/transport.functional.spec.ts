@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /// <reference types="mocha" />
 
 import { fork } from '@testring/child-process';
@@ -14,9 +13,14 @@ describe('Transport functional test', () => {
         fork(childEntryPath).then((childProcess) => {
             const transport = new Transport(process);
 
-            childProcess.stderr?.on('data', (error) => {
-                callback(error.toString());
-            });
+            if (childProcess.stderr) {
+                childProcess.stderr.on('data', (error) => {
+                    callback(error.toString());
+                });
+            } else {
+                callback(new Error('No STDERR'));
+            }
+
 
             transport.registerChild(CHILD_PROCESS_NAME, childProcess);
 

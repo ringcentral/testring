@@ -13,9 +13,9 @@ function normalizeArg(arg: any): any {
             if (!Array.isArray(arg) && arg !== null) {
                 // eslint-disable-next-line no-use-before-define
                 return normalize(arg, false);
-            } else {
+            } 
                 return arg;
-            }
+            
 
         default:
             return arg;

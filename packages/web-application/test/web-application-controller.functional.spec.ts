@@ -12,7 +12,7 @@ import { ELEMENT_NAME, TEST_NAME } from './fixtures/constants';
 
 const testProcessPath = path.resolve(__dirname, './fixtures/test-process.ts');
 
-// TODO add more tests
+// TODO (flops) add more tests
 describe('WebApplicationController functional', () => {
     it('should get messages from', (callback) => {
         const processID = generateUniqId();
@@ -47,9 +47,13 @@ describe('WebApplicationController functional', () => {
                 }
             });
 
-            testProcess.stderr?.on('data', (message) => {
-                callback(message.toString());
-            });
+            if (testProcess.stderr) {
+                testProcess.stderr.on('data', (message) => {
+                    callback(message.toString());
+                });
+            } else {
+                callback(new Error('Failed to get STDERR'));
+            }
         });
     }).timeout(30000);
 });

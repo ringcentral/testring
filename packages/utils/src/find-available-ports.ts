@@ -35,7 +35,7 @@ export function getRandomPort(host: string): Promise<number> {
 
 export async function getAvailablePort(
     ports: Array<number> = [],
-    host: string = 'localhost'
+    host: string = 'localhost',
 ): Promise<number> {
     for (let i = 0, len = ports.length; i < len; i++) {
         let port = ports[i];
@@ -52,7 +52,7 @@ export async function getAvailablePort(
 export async function getAvailableFollowingPort(
     start: number,
     host: string = 'localhost',
-    skipPorts: Array<number> = []
+    skipPorts: Array<number> = [],
 ): Promise<number> {
     if (!skipPorts.includes(start) && await isAvailablePort(start, host)) {
         return start;

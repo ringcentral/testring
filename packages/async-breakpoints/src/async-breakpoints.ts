@@ -70,15 +70,15 @@ export class AsyncBreakpoints extends EventEmitter {
 
     async waitForBreakpoint(
         type: BreakpointsTypes,
-        hasBreakpointCallback: HasBreakpointCallback
+        hasBreakpointCallback: HasBreakpointCallback,
     ): Promise<void> {
         if (this.breakpoints.has(type)) {
             await hasBreakpointCallback(true);
             return this.breakpoints.get(type) as Promise<void>;
-        } else {
+        }
             await hasBreakpointCallback(false);
             return Promise.resolve();
-        }
+
     }
 
 
@@ -87,7 +87,7 @@ export class AsyncBreakpoints extends EventEmitter {
     }
 
     public async waitBeforeInstructionBreakpoint(
-        hasBreakpointCallback: HasBreakpointCallback = () => undefined
+        hasBreakpointCallback: HasBreakpointCallback = () => undefined,
     ): Promise<void> {
         return this.waitForBreakpoint(
             BreakpointsTypes.beforeInstruction,
@@ -109,7 +109,7 @@ export class AsyncBreakpoints extends EventEmitter {
     }
 
     public async waitAfterInstructionBreakpoint(
-        hasBreakpointCallback: HasBreakpointCallback = () => undefined
+        hasBreakpointCallback: HasBreakpointCallback = () => undefined,
     ): Promise<void> {
         return this.waitForBreakpoint(
             BreakpointsTypes.afterInstruction,

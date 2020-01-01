@@ -79,9 +79,9 @@ export class WebApplication extends PluggableModule {
         openPage(uri: ((arg) => any) | string) {
             if (typeof uri === 'string') {
                 return `Opening page uri: ${uri}`;
-            } else {
-                return 'Opening page';
             }
+                return 'Opening page';
+
         },
         isBecomeVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
             return `Waiting for become visible ${this.formatXpath(xpath)} for ${timeout}`;
@@ -188,16 +188,16 @@ export class WebApplication extends PluggableModule {
         waitForValue(xpath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean) {
             if (reverse) {
                 return `Waiting for element ${this.formatXpath(xpath)} doesn't has value for ${timeout}`;
-            } else {
-                return `Waiting for any value of ${this.formatXpath(xpath)} for ${timeout}`;
             }
+                return `Waiting for any value of ${this.formatXpath(xpath)} for ${timeout}`;
+
         },
         waitForSelected(xpath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean) {
             if (reverse) {
                 return `Waiting for element ${this.formatXpath(xpath)} isn't selected for ${timeout}`;
-            } else {
-                return `Waiting for element ${this.formatXpath(xpath)} is selected for ${timeout}`;
             }
+                return `Waiting for element ${this.formatXpath(xpath)} is selected for ${timeout}`;
+
         },
         waitUntil(condition, timeout: number = this.WAIT_TIMEOUT, timeoutMsg?: string, interval?: number) {
             return `Waiting by condition for ${timeout}`;
@@ -224,6 +224,7 @@ export class WebApplication extends PluggableModule {
         }, userConfig);
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     protected decorateMethods() {
         const decorators = (this.constructor as any).stepLogMessagesDecorator;
 
@@ -234,7 +235,7 @@ export class WebApplication extends PluggableModule {
 
         for (let key in decorators) {
             ((key) => {
-                if (decorators.hasOwnProperty(key)) {
+                if (Object.prototype.hasOwnProperty.call(decorators, key)) {
                     const originMethod = this[key];
                     const logFn = decorators[key];
 
@@ -428,7 +429,7 @@ export class WebApplication extends PluggableModule {
         const normalizedXPath = this.normalizeSelector(xpath);
         const exists = await this.client.waitForExist(
             normalizedXPath,
-            timeout
+            timeout,
         );
 
         if (!skipMoveToObject) {
@@ -519,27 +520,27 @@ export class WebApplication extends PluggableModule {
         return userAgent;
     }
 
-    private documentReadyWait() {
+    private async documentReadyWait() {
         const attemptCount = 1000;
         const attemptInterval = 200;
 
-        return new Promise(async (resolve, reject) => {
-            let i = 0;
-            let result = false;
-            while (i < attemptCount) {
-                const ready = await this.execute(() => document.readyState === 'complete');
+        let i = 0;
+        let result = false;
+        while (i < attemptCount) {
+            const ready = await this.execute(() => document.readyState === 'complete');
 
-                if (ready) {
-                    result = true;
-                    break;
-                } else {
-                    await this.pause(attemptInterval);
-                    i++;
-                }
+            if (ready) {
+                result = true;
+                break;
+            } else {
+                await this.pause(attemptInterval);
+                i++;
             }
+        }
 
-            result ? resolve() : reject();
-        });
+        if (!result) {
+            throw new Error('Failed to wait for the page load');
+        }
     }
 
     private async openPageFromURI(uri) {
@@ -550,16 +551,16 @@ export class WebApplication extends PluggableModule {
             await this.refresh();
             await this.logNavigatorVersion();
             return this.documentReadyWait();
-        } else {
+        }
             await this.url(uri);
             await this.logNavigatorVersion();
             return this.documentReadyWait();
-        }
+
     }
 
     public async openPage(
         page: ((arg: this) => any) | string,
-        timeout: number = this.WAIT_PAGE_LOAD_TIMEOUT
+        timeout: number = this.WAIT_PAGE_LOAD_TIMEOUT,
     ): Promise<any> {
         if (typeof page === 'string') {
             let timer;
@@ -580,9 +581,9 @@ export class WebApplication extends PluggableModule {
 
         } else if (typeof page === 'function') {
             return page(this);
-        } else {
-            throw new Error('Unsupported path type for openPage');
         }
+            throw new Error('Unsupported path type for openPage');
+
     }
 
     public async isBecomeVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
@@ -633,6 +634,7 @@ export class WebApplication extends PluggableModule {
         return this.simulateJSFieldChange(xpath, '');
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     public async simulateJSFieldChange(xpath, value) {
         const result = await this.client.executeAsync((xpath, value, done) => {
             /* eslint-disable no-var */
@@ -680,12 +682,12 @@ export class WebApplication extends PluggableModule {
 
                 // Chromium Hack
                 Object.defineProperty(oEvent, 'keyCode', {
-                    get: function () {
+                    get() {
                         return this.keyCodeVal;
                     },
                 });
                 Object.defineProperty(oEvent, 'which', {
-                    get: function () {
+                    get() {
                         return this.keyCodeVal;
                     },
                 });
@@ -742,11 +744,11 @@ export class WebApplication extends PluggableModule {
 
         if (emulateViaJs) {
             return this.simulateJSFieldClear(xpath);
-        } else {
+        }
             await this.client.setValue(xpath,' ');
             await this.waitForExist(xpath, timeout);
             return this.client.keysOnElement(xpath, ['Backspace']);
-        }
+
     }
 
     public async setValue(xpath, value: valueType, emulateViaJS: boolean = false, timeout: number = this.WAIT_TIMEOUT) {
@@ -809,7 +811,7 @@ export class WebApplication extends PluggableModule {
                     xpath,
                     document,
                     null,
-                    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null
+                    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null,
                 );
 
                 if (element.snapshotLength > 0) {
@@ -922,7 +924,7 @@ export class WebApplication extends PluggableModule {
         let value = await this.client.getValue(xpath);
 
         if (typeof value === 'string' || typeof value === 'number') {
-            // TODO rework this for supporting custom selectors
+            // TODO (flops) rework this for supporting custom selectors
             xpath += `//option[@value='${value}']`;
 
             try {
@@ -937,7 +939,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async getElementsIds(xpath, timeout: number = this.WAIT_TIMEOUT) {
-        // todo (flops) need to add log ?
+        // TODO (flops) need to add log ?
         await this.waitForExist(xpath, timeout);
         let elements: any = await this.elements(xpath);
         let elementIds: any[] = [];
@@ -1073,7 +1075,7 @@ export class WebApplication extends PluggableModule {
     }
 
     public async dragAndDrop(xpathSource, xpathDestination, timeout: number = this.WAIT_TIMEOUT) {
-        // TODO This method doesn't work successfully, ReImplement
+        // TODO (flops) This method doesn't work successfully, ReImplement
         await this.waitForExist(xpathSource, timeout);
         await this.waitForExist(xpathDestination, timeout);
 
@@ -1330,6 +1332,7 @@ export class WebApplication extends PluggableModule {
         return new Promise<void>((resolve, reject) => {
             const removeListener = this.transport.on<IWebApplicationRegisterCompleteMessage>(
                 WebApplicationDevtoolActions.unregisterComplete,
+                // eslint-disable-next-line sonarjs/no-identical-functions
                 (message) => {
                     if (message.id === this.applicationId) {
                         if (message.error === null || message.error === undefined) {
@@ -1408,7 +1411,7 @@ export class WebApplication extends PluggableModule {
 
             this.logger.media(
                 `${this.testUID}-${formattedDate}-${generateUniqId(5)}.png`,
-                screenshoot
+                screenshoot,
             );
         }
     }
@@ -1460,7 +1463,7 @@ export class WebApplication extends PluggableModule {
         condition: () => boolean | Promise<boolean>,
         timeout: number = this.WAIT_TIMEOUT,
         timeoutMsg: string = 'Wait by condition failed!',
-        interval: number = 500
+        interval: number = 500,
     ) {
         return await this.client.waitUntil(condition, timeout, timeoutMsg, interval);
     }

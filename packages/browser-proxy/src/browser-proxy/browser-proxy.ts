@@ -29,7 +29,7 @@ export class BrowserProxy {
     constructor(
         private transportInstance: ITransport,
         pluginPath: string,
-        pluginConfig: any
+        pluginConfig: any,
     ) {
         this.loadPlugin(pluginPath, pluginConfig);
         this.registerCommandListener();
@@ -50,7 +50,7 @@ export class BrowserProxy {
             } catch (error) {
                 this.transportInstance.broadcast(
                     BrowserProxyMessageTypes.exception,
-                    error
+                    error,
                 );
             }
         }
@@ -59,14 +59,14 @@ export class BrowserProxy {
     private registerCommandListener() {
         this.transportInstance.on(
             BrowserProxyMessageTypes.execute,
-            (message) => this.onMessage(message)
+            (message) => this.onMessage(message),
         );
     }
 
     private sendEmptyResponse(uid: string) {
         this.transportInstance.broadcast(
             BrowserProxyMessageTypes.response,
-            { uid }
+            { uid },
         );
     }
 
@@ -86,9 +86,9 @@ export class BrowserProxy {
                 ) {
                     this.sendEmptyResponse(uid);
                     return;
-                } else {
+                } 
                     throw new ReferenceError('Cannot find browser proxy plugin!');
-                }
+                
             }
 
             if (command.action === BrowserProxyActions.kill) {
@@ -103,7 +103,7 @@ export class BrowserProxy {
                     uid,
                     response,
                     error: null,
-                }
+                },
             );
         } catch (error) {
             this.transportInstance.broadcast<IBrowserProxyCommandResponse>(
@@ -112,7 +112,7 @@ export class BrowserProxy {
                     uid,
                     error,
                     response: null,
-                }
+                },
             );
         }
     }
