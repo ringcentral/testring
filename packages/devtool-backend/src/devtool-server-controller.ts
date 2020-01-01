@@ -83,7 +83,7 @@ export class DevtoolServerController extends PluggableModule implements IDevtool
                 this.logger.log(`[logged] ${data.toString().trim()}`);
             });
         } else {
-            console.warn(`[DevtoolServerController] The STDOUT of worker ${this.getWorkerID()} is null`);
+            this.logger.warn(`[logged] The STDOUT of worker ${this.getWorkerID()} is null`);
         }
 
         if (this.worker.stderr) {
@@ -91,7 +91,7 @@ export class DevtoolServerController extends PluggableModule implements IDevtool
                 this.logger.warn(`[logged] ${data.toString().trim()}`);
             });
         } else {
-            console.warn(`[DevtoolServerController] The STDERR of worker ${this.getWorkerID()} is null`);
+            this.logger.warn(`[logged] The STDERR of worker ${this.getWorkerID()} is null`);
         }
 
         this.transport.registerChild(workerID, this.worker);

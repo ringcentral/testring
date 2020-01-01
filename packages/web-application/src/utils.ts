@@ -1,13 +1,15 @@
 export function getFormattedString(xpath: any): string {
-    if (typeof xpath === 'string') {
-        return xpath;
-    } else if (xpath && typeof (xpath as any).toFormattedString === 'function') {
-        return (xpath as any).toFormattedString();
-    } else if (xpath && typeof (xpath as any).toString === 'function') {
-        return (xpath as any).toString();
-    } else if (xpath === undefined) {
+    if (xpath === undefined) {
         return 'undefined';
+    } else if (xpath === null) {
+        return 'null';
+    } else if (typeof xpath === 'string') {
+        return xpath;
+    } else if (xpath && typeof xpath.toFormattedString === 'function') {
+        return xpath.toFormattedString();
+    } else if (xpath && typeof xpath.toString === 'function') {
+        return xpath.toString();
     }
 
-    return 'null';
+    return 'UNKNOWN_OBJECT';
 }

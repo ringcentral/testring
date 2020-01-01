@@ -143,7 +143,7 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
                 this.logger.log(`[logged] ${message.toString()}`);
             });
         } else {
-            console.warn(`[BrowserProxyWorker] The STDOUT of worker ${this.workerID} is null`);
+            this.logger.warn(`[logged] The STDOUT of worker ${this.workerID} is null`);
         }
 
         if (this.worker.stderr) {
@@ -151,7 +151,7 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
                 this.logger.warn(`[logged] ${message.toString()}`);
             });
         } else {
-            console.warn(`[BrowserProxyWorker] The STDERR of worker ${this.workerID} is null`);
+            this.logger.warn(`[logged] The STDERR of worker ${this.workerID} is null`);
         }
 
         this.transport.registerChild(this.workerID, this.worker);
