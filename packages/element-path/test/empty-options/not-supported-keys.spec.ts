@@ -1,7 +1,6 @@
 import { expect } from 'chai';
 import { createElementPath } from '../../src';
 
-const has = (obj: any, key: PropertyKey) => Object.prototype.hasOwnProperty.call(obj, key);
 
 describe('not supported keys', () => {
     let empty = createElementPath();
@@ -13,12 +12,13 @@ describe('not supported keys', () => {
 
     it('.hasOwnProperty [Symbol]', () => {
         let symbol = Symbol('test');
-        expect(has(empty, symbol)).to.be.equal(false);
+        // eslint-disable-next-line no-prototype-builtins
+        expect(empty.hasOwnProperty(symbol)).to.be.equal(false);
     });
 
     it('Object.hasOwnProperty.call [Symbol]', () => {
         let symbol = Symbol('test');
-        expect(has(empty, symbol)).to.be.equal(false);
+        expect(Object.hasOwnProperty.call(empty, symbol)).to.be.equal(false);
     });
 
     it('in [Symbol]', () => {
