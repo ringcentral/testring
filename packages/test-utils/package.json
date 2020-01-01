@@ -1,6 +1,6 @@
 {
   "name": "@testring/test-utils",
-  "version": "0.5.14",
+  "version": "0.5.15",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "repository": {
@@ -10,6 +10,6 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/types": "0.5.14"
+    "@testring/types": "0.5.15"
   }
 }
