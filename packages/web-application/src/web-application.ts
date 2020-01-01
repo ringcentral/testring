@@ -636,8 +636,8 @@ export class WebApplication extends PluggableModule {
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
     public async simulateJSFieldChange(xpath, value) {
+        /* eslint-disable object-shorthand, no-var */
         const result = await this.client.executeAsync((xpath, value, done) => {
-            /* eslint-disable no-var */
             var supportedInputTypes = {
                 color: true,
                 date: true,
@@ -664,7 +664,7 @@ export class WebApplication extends PluggableModule {
             }
 
             function simulateEvent(el, type) {
-                const oEvent = new CustomEvent(type, {
+                var oEvent = new CustomEvent(type, {
                     bubbles: true,
                     cancelable: true,
                 });
@@ -673,21 +673,20 @@ export class WebApplication extends PluggableModule {
             }
 
             function simulateKey(el, type, keyCode, key) {
-                // eslint-disable-next-line no-var
                 var oEvent = new KeyboardEvent(type, {
                     bubbles: true,
                     cancelable: true,
-                    key,
+                    key: key,
                 });
 
                 // Chromium Hack
                 Object.defineProperty(oEvent, 'keyCode', {
-                    get() {
+                    get: function () {
                         return this.keyCodeVal;
                     },
                 });
                 Object.defineProperty(oEvent, 'which', {
-                    get() {
+                    get: function () {
                         return this.keyCodeVal;
                     },
                 });
@@ -698,7 +697,6 @@ export class WebApplication extends PluggableModule {
             }
 
             function getElementByXPath(xpath) {
-                // eslint-disable-next-line no-var
                 var element = document.evaluate(xpath, document, null,
                     XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
                 if (element.snapshotLength > 0) {
@@ -735,6 +733,7 @@ export class WebApplication extends PluggableModule {
         if (result) {
             throw new Error(result);
         }
+        /* eslint-enable object-shorthand, no-var */
     }
 
     public async clearElement(xpath, emulateViaJs: boolean = false, timeout: number = this.WAIT_TIMEOUT) {
