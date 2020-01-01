@@ -4,6 +4,15 @@ import * as chai from 'chai';
 import { getFormattedString } from '../src/utils';
 
 describe('utils', () => {
+    it('should return the "UNKNOWN_OBJECT" if all serialize methods are overloaded', () => {
+        const object = {
+            toFormattedString: undefined,
+            toString: null,
+        };
+
+        chai.expect(getFormattedString(object)).to.equal('UNKNOWN_OBJECT');
+    });
+
     it('should return the "undefined" if undefined is passed', () => {
         chai.expect(getFormattedString(undefined)).to.equal('undefined');
     });
@@ -32,7 +41,7 @@ describe('utils', () => {
 
 
     it('should return concatenated string if called from Array', () => {
-        chai.expect(getFormattedString([1,2,3])).to.equal('1,2,3');
+        chai.expect(getFormattedString([1, 2, 3])).to.equal('1,2,3');
     });
 
 

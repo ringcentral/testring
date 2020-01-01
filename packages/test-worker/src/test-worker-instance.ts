@@ -316,7 +316,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
                 this.logger.log(`[${this.getWorkerID()}] [logged] ${data.toString().trim()}`);
             });
         } else {
-            console.warn(`[TestWorkerInstance] The STDOUT of worker ${this.getWorkerID()} is null`);
+            this.logger.warn(`[${this.getWorkerID()}] The STDOUT of worker ${this.getWorkerID()} is null`);
         }
 
         if (worker.stderr) {
@@ -324,7 +324,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
                 this.logger.error(`[${this.getWorkerID()}] [error] ${data.toString().trim()}`);
             });
         } else {
-            console.warn(`[TestWorkerInstance] The STDERR of worker ${this.getWorkerID()} is null`);
+            this.logger.warn(`[${this.getWorkerID()}] The STDERR of worker ${this.getWorkerID()} is null`);
         }
 
         worker.on('error', this.workerErrorHandler);
