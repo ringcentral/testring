@@ -1,4 +1,4 @@
-import { IHttpRequest, IHttpResponse } from '@testring/types';
+import { IHttpRequest, IHttpResponse, IHttpServerController } from '@testring/types';
 import { PluggableModule } from '@testring/pluggable-module';
 import { LoggerClient, loggerClient } from '@testring/logger';
 import {
@@ -12,10 +12,10 @@ import {
 
 type MakeRequest = (request: IHttpRequest) => Promise<IHttpResponse>;
 
-export class HttpServer extends PluggableModule {
+export class HttpServer extends PluggableModule implements IHttpServerController {
     private unsubscribeTransport: Function;
 
-    private loggerInstance: LoggerClient | null = null;
+    private logger: LoggerClient = loggerClient.withPrefix('[http-server]');
 
     private isKilled = false;
 
@@ -46,22 +46,12 @@ export class HttpServer extends PluggableModule {
         this.unsubscribeTransport();
     }
 
-    private get logger(): LoggerClient {
-        if (this.loggerInstance) {
-            return this.loggerInstance;
-        }
-
-        this.loggerInstance = loggerClient.withPrefix('[http-server]');
-
-        return this.loggerInstance;
-    }
-
     private makeRequest(data: IHttpRequestMessage, src: string): void {
         if (this.isKilled) {
             return;
         }
 
-        setImmediate(async () => {
+        const send = async (data: IHttpRequestMessage, src: string) => {
             let uid;
 
             try {
@@ -104,7 +94,9 @@ export class HttpServer extends PluggableModule {
 
                 this.logger.debug(errorAfterHook);
             }
-        });
+        };
+
+        setImmediate(() => send(data, src).catch(err => this.logger.error(err)));
     }
 
     private async sendResponse<T>(source: string | null, messageType: string, payload: T) {

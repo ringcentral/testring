@@ -5,7 +5,7 @@ import { ITestRunController } from './test-run-controller';
 import { IPluggableModule } from './pluggable-module';
 import { IBrowserProxyController } from './browser-proxy';
 import { IHttpClient } from './http-api';
-import { IDevtoolServerController } from './devtool-backend';
+import { IDevtoolServerController, IHttpServerController } from './devtool-backend';
 
 export type PluginConfig = object | null;
 
@@ -18,5 +18,6 @@ export interface IPluginModules {
     testRunController: ITestRunController & IPluggableModule;
     browserProxy: IBrowserProxyController & IPluggableModule;
     httpClientInstance: IHttpClient;
+    httpServer: IHttpServerController & IPluggableModule;
     devtool: IDevtoolServerController & IPluggableModule;
 }

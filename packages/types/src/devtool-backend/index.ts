@@ -63,6 +63,10 @@ export interface IDevtoolServerConfig extends IDevtoolServerBaseConfig {
     staticRoutes: IDevtoolStaticRoutes;
 }
 
+export interface IHttpServerController {
+    kill: () => void;
+}
+
 export interface IDevtoolServerController {
     init: () => Promise<void>;
     kill: () => Promise<void>;

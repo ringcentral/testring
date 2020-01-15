@@ -5,6 +5,7 @@ import { LoggerAPI } from './modules/logger';
 import { TestWorkerAPI } from './modules/test-worker';
 import { TestRunControllerAPI } from './modules/test-run-controller';
 import { DevtoolAPI } from './modules/devtool';
+import { HttpServerAPI } from './modules/http-server';
 
 export class PluginAPI {
     constructor(private pluginName: string, private modules: IPluginModules) {
@@ -32,6 +33,10 @@ export class PluginAPI {
 
     getBrowserProxy() {
         return new BrowserProxyAPI(this.pluginName, this.modules.browserProxy);
+    }
+    
+    getHttpServer() {
+        return new HttpServerAPI(this.pluginName, this.modules.httpServer);
     }
 
     getHttpClient() {

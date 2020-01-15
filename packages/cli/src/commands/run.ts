@@ -83,6 +83,7 @@ class RunCommand implements ICLICommand {
             browserProxy: this.browserProxyController,
             testRunController: this.testRunController,
             httpClientInstance: httpClient,
+            httpServer: this.httpServer,
             devtool: this.devtoolServerController,
         }, this.config);
 
