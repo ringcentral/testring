@@ -21,6 +21,8 @@ export interface ILogEntity {
     parentStep: LogEntityStepUidType;
     prefix: LogEntityPrefixType;
     marker: LogEntityMarkerType;
+
+    muteStdout?: boolean;
 }
 
 export interface ILogMeta {
