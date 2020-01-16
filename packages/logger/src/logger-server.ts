@@ -2,13 +2,13 @@ import { PluggableModule } from '@testring/pluggable-module';
 import { Queue } from '@testring/utils';
 import {
     IConfigLogger,
-    ITransport,
     ILogEntity,
-    ILogQueue,
     ILoggerServer,
+    ILogQueue,
+    ITransport,
     LoggerMessageTypes,
-    LogQueueStatus,
     LoggerPlugins,
+    LogQueueStatus,
 } from '@testring/types';
 import { formatLog } from './format-log';
 
@@ -63,6 +63,11 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
 
         try {
             const entryAfterPlugin = await this.callHook(LoggerPlugins.beforeLog, logEntity, meta);
+            
+            if (!entryAfterPlugin.muteStdout) {
+                const formattedMessage = formatLog(logEntity, meta.processID);
+                this.stdout.write(`${formattedMessage}\n`);
+            }
 
             await this.callHook(LoggerPlugins.onLog, entryAfterPlugin, meta);
 
@@ -92,11 +97,9 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
             return;
         }
 
-        const shouldRun = this.queue.length === 0;
-        const formattedMessage = formatLog(logEntity, processID);
+        const shouldRun = this.status !== LogQueueStatus.RUNNING;
         const meta = processID ? { processID } : {};
 
-        this.stdout.write(`${formattedMessage}\n`);
         this.queue.push({
             logEntity,
             meta,
