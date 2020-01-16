@@ -1,6 +1,5 @@
 /// <reference types="mocha" />
 
-import { Writable } from 'stream';
 import * as sinon from 'sinon';
 import * as chai from 'chai';
 import { TransportMock } from '@testring/test-utils';
@@ -11,16 +10,11 @@ import { LoggerServer } from '../src/logger-server';
 
 const PROCESS_ID = 'testId';
 const DEFAULT_CONFIG: any = {};
-const DEFAULT_WRITABLE_CONFIG = {
-    write: () => {
-    },
-};
 
 describe('Logger Server', () => {
     it('should get a processID in beforeLog and onLog hook', (callback) => {
         const transport = new TransportMock();
-        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport);
         const beforeLog = loggerServer.getHook(LoggerPlugins.beforeLog);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
@@ -42,8 +36,7 @@ describe('Logger Server', () => {
 
     it('should call beforeLog hook and pass transformed entry to log', (callback) => {
         const transport = new TransportMock();
-        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport);
         const beforeLog = loggerServer.getHook(LoggerPlugins.beforeLog);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
@@ -71,8 +64,7 @@ describe('Logger Server', () => {
 
     it('should call onError hook when fail to log report', (callback) => {
         const transport = new TransportMock();
-        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout, 0, true);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, 0, true);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
         const onError = loggerServer.getHook(LoggerPlugins.onError);
 
@@ -91,8 +83,7 @@ describe('Logger Server', () => {
 
     it('should get a processId in onError hook', (callback) => {
         const transport = new TransportMock();
-        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout, 0, true);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, 0, true);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
         const onError = loggerServer.getHook(LoggerPlugins.onError);
 
@@ -121,8 +112,7 @@ describe('Logger Server', () => {
 
     it('should retry 1 time then log successfully', (callback) => {
         const transport = new TransportMock();
-        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout, 1);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, 1);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         const errorSpy = sinon.spy();
@@ -144,8 +134,7 @@ describe('Logger Server', () => {
 
     it('should skip one entry then successfully log one', (callback) => {
         const transport = new TransportMock();
-        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, stdout, 0, true);
+        const loggerServer = new LoggerServer(DEFAULT_CONFIG, transport, 0, true);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         const successEntry = {
@@ -179,8 +168,7 @@ describe('Logger Server', () => {
             silent: true,
         };
         const transport = new TransportMock();
-        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(config, transport, stdout);
+        const loggerServer = new LoggerServer(config, transport);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (onLog) {
@@ -202,8 +190,7 @@ describe('Logger Server', () => {
             logLevel: LogLevel.debug,
         };
         const transport = new TransportMock();
-        const stdout = new Writable(DEFAULT_WRITABLE_CONFIG);
-        const loggerServer = new LoggerServer(config, transport, stdout);
+        const loggerServer = new LoggerServer(config, transport);
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (onLog) {

@@ -85,7 +85,7 @@ export const runCLI = async (argv: Array<string>) => {
     switch (command) {
         case undefined:
         case 'run':
-            commandExecution = runTests(config, transport, process.stdout);
+            commandExecution = runTests(config, transport);
             break;
 
         default:
@@ -125,7 +125,7 @@ export const runCLI = async (argv: Array<string>) => {
 
         isExitHandling = true;
 
-        new LoggerServer(config, transport, process.stdout);
+        new LoggerServer(config, transport);
 
         loggerClient.error(exception);
 

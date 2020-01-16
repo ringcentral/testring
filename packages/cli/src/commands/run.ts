@@ -20,7 +20,7 @@ class RunCommand implements ICLICommand {
     private httpServer: HttpServer;
     private devtoolServerController: DevtoolServerController;
 
-    constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {}
+    constructor(private config: IConfig, private transport: ITransport) {}
 
     formatJSON(obj: object) {
         const separator = '⋅';
@@ -70,7 +70,7 @@ class RunCommand implements ICLICommand {
 
         this.webApplicationController = new WebApplicationController(this.browserProxyController, this.transport);
 
-        const loggerServer = new LoggerServer(this.config, this.transport, this.stdout);
+        const loggerServer = new LoggerServer(this.config, this.transport);
         const fsReader = new FSReader();
         const httpClient = new HttpClient(this.transport, {
             httpThrottle: this.config.httpThrottle,
@@ -145,11 +145,11 @@ class RunCommand implements ICLICommand {
     }
 }
 
-export function runTests(config, transport, stdout) {
+export function runTests(config, transport) {
     if (typeof config.tests !== 'string') {
         throw new Error('required field --tests in arguments or config');
     }
 
-    return new RunCommand(config, transport, stdout);
+    return new RunCommand(config, transport);
 }
 

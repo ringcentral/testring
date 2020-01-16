@@ -1,16 +1,11 @@
 /// <reference types="mocha" />
 
 import * as path from 'path';
-import { Writable } from 'stream';
 import { getConfig } from '@testring/cli-config';
 import { Transport } from '@testring/transport';
 import { runTests } from '../src/commands/run';
 
 const fixturesPath = path.resolve(__dirname, './fixtures');
-const stdout = new Writable({
-    write: () => {
-    },
-});
 
 describe('testring CLI', () => {
     it('should run positive tests', async () => {
@@ -22,7 +17,7 @@ describe('testring CLI', () => {
             '--silent',
         ]);
 
-        const command = runTests(config, transport, stdout);
+        const command = runTests(config, transport);
 
         await command.execute();
     });
@@ -39,7 +34,7 @@ describe('testring CLI', () => {
         let passed: boolean;
 
         try {
-            const command = runTests(config, transport, stdout);
+            const command = runTests(config, transport);
 
             await command.execute();
             passed = true;
@@ -56,7 +51,7 @@ describe('testring CLI', () => {
         const transport = new Transport();
 
         try {
-            runTests({} as any, transport, stdout);
+            runTests({} as any, transport);
             callback('Tests finished somehow');
         } catch {
             callback();

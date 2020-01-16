@@ -12,7 +12,7 @@ const server = new DevtoolWorkerController(transport);
 new LoggerServer({
     logLevel: 'verbose' as LogLevel,
     silent: false,
-}, transport, process.stdout);
+}, transport);
 
 server.init(defaultDevtoolConfig).catch((err) => {
     loggerClient.error(err);
