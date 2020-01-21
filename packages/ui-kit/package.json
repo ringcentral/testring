@@ -25,6 +25,6 @@
     "css-loader": "2.1.0",
     "react": "16.7.0",
     "style-loader": "0.23.1",
-    "ts-loader": "5.3.3"
+    "ts-loader": "6.0.0"
   }
 }
