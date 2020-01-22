@@ -35,7 +35,9 @@ jobs:
       script: npm run build
       deploy:
         provider: script
-        script: npm run publish:ci
+        script:
+          - npm config set _auth $NPM_TOKEN
+          - npm run publish:ci
         skip_cleanup: true
         on:
           tags: true
