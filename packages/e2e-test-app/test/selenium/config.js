@@ -7,6 +7,11 @@ module.exports = async (config) =>  ({
         ['selenium-driver', {
             clientTimeout: config.devtool ? 0 : config.testTimeout,
             recorderExtension: config.devtool,
+            desiredCapabilities: config.devtool ? {} : {
+                chromeOptions: {
+                    args: ['--headless', '--disable-gpu', '--no-sandbox'],
+                },
+            },
         }],
         ['babel', {
             presets: [
