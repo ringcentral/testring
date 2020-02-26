@@ -6,7 +6,9 @@ export class HttpServerAPI extends AbstractAPI {
         this.registryWritePlugin(HttpServerPlugins.beforeRequest, handler);
     }
     
-    beforeResponse(handler: (response: IHttpResponse, data: IHttpRequestMessage) => Promise<IHttpResponse>) {
+    beforeResponse(
+        handler: (response: IHttpResponse, data: IHttpRequestMessage, request: IHttpRequest) => Promise<IHttpResponse>,
+    ) {
         this.registryWritePlugin(HttpServerPlugins.beforeResponse, handler);
     }
     
