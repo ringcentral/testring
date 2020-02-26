@@ -74,7 +74,8 @@ export class HttpServer extends PluggableModule implements IHttpServerController
 
                 this.logger.verbose(`Successful response form ${request.url}`);
 
-                const responseAfterHook = await this.callHook(HttpServerPlugins.beforeResponse, response, data);
+                const responseAfterHook = await this.callHook(HttpServerPlugins.beforeResponse, response,
+                    data, requestAfterHook);
 
                 await this.sendResponse<IHttpResponseMessage>(src, HttpMessageType.response, {
                     uid,
