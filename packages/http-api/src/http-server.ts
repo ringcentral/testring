@@ -53,11 +53,10 @@ export class HttpServer extends PluggableModule implements IHttpServerController
 
         const send = async (data: IHttpRequestMessage, src: string) => {
             let uid;
+            const request = data.request;
 
             try {
                 uid = data.uid;
-
-                const request = data.request;
 
                 this.logger.verbose(`Sending http request to ${request.url}`);
 
@@ -86,7 +85,7 @@ export class HttpServer extends PluggableModule implements IHttpServerController
                     return;
                 }
 
-                const errorAfterHook = await this.callHook(HttpServerPlugins.beforeError, error, data);
+                const errorAfterHook = await this.callHook(HttpServerPlugins.beforeError, error, data, request);
 
                 await this.sendResponse<IHttpResponseRejectMessage>(src, HttpMessageType.reject, {
                     uid,
