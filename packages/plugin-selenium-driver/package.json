@@ -22,6 +22,6 @@
     "deepmerge": "2.1.1",
     "grapheme-splitter": "1.0.4",
     "selenium-server": "3.141.59",
-    "webdriverio": "4.13.1"
+    "webdriverio": "5.0.0"
   }
 }
