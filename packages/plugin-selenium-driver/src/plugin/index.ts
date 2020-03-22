@@ -4,7 +4,7 @@ import GraphemeSplitter from 'grapheme-splitter';
 
 import { ChildProcess } from 'child_process';
 
-import { Config, Client, RawResult, remote } from 'webdriverio';
+import { Config, BrowserObject, remote } from 'webdriverio';
 import * as deepmerge from 'deepmerge';
 
 import { spawn } from '@testring/child-process';
@@ -12,32 +12,28 @@ import { loggerClient } from '@testring/logger';
 import { absoluteExtensionPath } from '@testring/devtool-extension';
 
 type browserClientItem = {
-    client: Client<any>;
+    client: BrowserObject;
     sessionId: string;
     initTime: number;
 };
 
-type initResult = {
-    sessionId?: string;
-    value: { sessionId?: string };
-};
-
 const DEFAULT_CONFIG: SeleniumPluginConfig = {
     recorderExtension: false,
-    deprecationWarnings: false,
+    // deprecationWarnings: false,
     clientCheckInterval: 5 * 1000,
     clientTimeout: 15 * 60 * 1000,
+    // @ts-ignore
     port: 4444,
-    desiredCapabilities: {
+    capabilities: {
         browserName: 'chrome',
-        chromeOptions: { // for local ChromeDriver
+        'goog:chromeOptions': { // for local ChromeDriver
             args: [],
         },
     },
 };
 
-function waitFor(client: Client<any>) {
-    return client.waitUntil(() => client.isExisting('body'), 10000);
+function waitFor(client: BrowserObject) {
+    return client.waitUntil(async () => (await client.$('body')).isExisting(), 10000);
 }
 
 function delay(timeout) {
@@ -158,6 +154,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     constructor(config: Partial<SeleniumPluginConfig> = {}) {
         this.config = this.createConfig(config);
 
+        // @ts-ignore
         if (this.config.host === undefined) {
             this.runLocalSelenium();
         }
@@ -167,8 +164,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     private getDevelopmentConfigAdditions(): Partial<SeleniumPluginConfig> {
         return {
-            desiredCapabilities: {
-                chromeOptions: {
+            capabilities: {
+                'goog:chromeOptions': {
                     args: [
                         `load-extension=${absoluteExtensionPath}`,
                     ],
@@ -243,6 +240,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             this.localSelenium = spawn('java', [
                 ...this.getChromeDriverArgs(),
                 '-jar', seleniumJarPath,
+                // @ts-ignore TODO: (maksim.lebedev)
                 '-port', this.config.port,
             ]);
 
@@ -274,7 +272,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    private getBrowserClient(applicant): Client<any> | undefined {
+    private getBrowserClient(applicant): BrowserObject | undefined {
         let item = this.browserClients.get(applicant);
 
         if (item) {
@@ -331,14 +329,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             throw Error(`This session expired in ${this.config.clientTimeout}ms`);
         }
 
-        const client = remote(this.config);
-        const initResult = await client.init<initResult>() || {};
+        const client = await remote(this.config as any); // TODO: fix it (maksim.lebedev)
 
         let sessionId: string;
-        if (initResult.sessionId) {
-            sessionId = initResult.sessionId;
-        } else if (initResult.value && initResult.value.sessionId) {
-            sessionId = initResult.value.sessionId;
+        if (client.sessionId) {
+            sessionId = client.sessionId;
         } else {
             throw Error('Session can not be null');
         }
@@ -353,8 +348,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         this.logger.debug(`Started session for applicant: ${applicant}. Session id: ${sessionId}`);
     }
 
-    protected addElementKeysMethod(client: Client<any>) {
-        client.addCommand('keysOnElement', function (path, value) {
+    protected addElementKeysMethod(client: BrowserObject) {
+        client.addCommand('keysOnElement', async function (path, value) {
             let keySequence: string[] = [];
 
             if (typeof value === 'string') {
@@ -367,34 +362,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 throw new Error('"keys" command requires a string or array of strings as parameter');
             }
 
-            return this.setValue(path, keySequence);
-        }, true);
-    }
-
-    private wrapWithPromise<T>(item: Client<RawResult<T> | T>): Promise<T> {
-        return new Promise<T>((resolve, reject) => {
-            try {
-                item
-                    .then((rawResult) => {
-                        if (
-                            rawResult !== null &&
-                            typeof rawResult === 'object' &&
-                            'value' in (rawResult as RawResult<T>)
-                        ) {
-                            resolve(rawResult['value']);
-                        } else {
-                            resolve(rawResult as T);
-                        }
-                    })
-                    .catch((exception) => {
-                        const formattedError = new Error(exception.message);
-
-                        reject(formattedError);
-                    });
-            } catch (error) {
-                reject(error);
-            }
-        });
+            return (await this.$(path)).setValue(keySequence);
+        }, false);
     }
 
     public async end(applicant: string) {
@@ -404,7 +373,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         if (client) {
             try {
-                await this.wrapWithPromise(client.alertDismiss());
+                if (await client.isAlertOpen()) {
+                    await client.dismissAlert();
+                }
             } catch { /* ignore */ }
 
             const startingSessionID = this.getApplicantSessionId(applicant);
@@ -416,14 +387,13 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 this.logger.warn(`Stopping sessions for applicant warning ${applicant}.`,
                     `Session ids are not equal, started with - ${startingSessionID}, ended with - ${sessionID}`);
                 try {
-                    await this.wrapWithPromise(client.session('DELETE', startingSessionID));
+                    await client.deleteSession();
                 } catch (err) {
                     this.logger.error(`Old session ${startingSessionID} delete error`, err);
                 }
             }
 
             this.browserClients.delete(applicant);
-            await this.wrapWithPromise(client.end());
         }
     }
 
@@ -447,7 +417,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.refresh());
+            return client.refresh();
         }
     }
 
@@ -456,7 +426,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.click(selector));
+            return (await client.$(selector)).click();
         }
     }
 
@@ -465,7 +435,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.gridProxyDetails());
+            // return client.gridProxyDetails(); TODO: (maksim.lebedev) fix
         }
     }
 
@@ -474,7 +444,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.url(val));
+            return (!!val) ? client.url(val) : client.getUrl();
         }
     }
 
@@ -484,7 +454,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const args = stringifyWindowFeatures(windowFeatures);
 
         if (client) {
-            return this.wrapWithPromise(client.newWindow(val, windowName, args));
+            return client.newWindow(val, windowName, args); // TODO: check (maksim.lebedev)
         }
     }
 
@@ -493,7 +463,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.waitForExist(xpath, timeout));
+            return (await client.$(xpath)).waitForExist(timeout);
         }
     }
 
@@ -502,7 +472,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.waitForVisible(xpath, timeout));
+            return (await client.$(xpath)).waitForDisplayed(timeout);
         }
     }
 
@@ -511,7 +481,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.isVisible(xpath));
+            return (await client.$(xpath)).isDisplayed();
         }
     }
 
@@ -520,7 +490,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.moveToObject(xpath, x, y));
+            const elem = await client.$(xpath);
+            await elem.scrollIntoView();
+            return elem.moveTo(x, y);
         }
     }
 
@@ -529,7 +501,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.execute(fn, ...args));
+            return client.execute(fn, ...args);
         }
     }
 
@@ -538,7 +510,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.executeAsync(fn, ...args));
+            return client.executeAsync(fn, ...args);
         }
     }
 
@@ -547,7 +519,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.getTitle());
+            return client.getTitle();
         }
     }
 
@@ -556,7 +528,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.clearElement(xpath));
+            return (await client.$(xpath)).clearValue();
         }
     }
 
@@ -565,7 +537,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            client.keys(value);
+            return client.keys(value);
         }
     }
 
@@ -574,7 +546,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.elementIdText(elementId));
+            return client.getElementText(elementId);
         }
     }
 
@@ -583,7 +555,13 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.elements(xpath));
+            const elements = await client.findElements('xpath', xpath) as unknown;
+            const a = (elements as Array<Record<string, string>>).map((o) => {
+                const keys = Object.keys(o);
+                return { 'ELEMENT': o[keys[0]] };
+            });
+
+            return a;
         }
     }
 
@@ -592,7 +570,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.frame(frameID));
+            return client.switchToFrame(frameID);
         }
     }
 
@@ -601,7 +579,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.frameParent());
+            return client.switchToParentFrame();
         }
     }
 
@@ -610,7 +588,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.getValue(xpath));
+            return (await client.$(xpath)).getValue();
         }
     }
 
@@ -619,7 +597,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise((client as any).keysOnElement(xpath, value));
+            return (client as any).keysOnElement(xpath, value);
         }
     }
 
@@ -628,7 +606,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.setValue(xpath, value));
+            return (await client.$(xpath)).setValue(value);
         }
     }
 
@@ -637,7 +615,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.selectByIndex(xpath, value));
+            return (await client.$(xpath)).selectByIndex(value);
         }
     }
 
@@ -646,7 +624,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.selectByValue(xpath, value));
+            return (await client.$(xpath)).selectByAttribute('value', value);
         }
     }
 
@@ -655,7 +633,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.selectByVisibleText(xpath, str));
+            return (await client.$(xpath)).selectByVisibleText(str);
         }
     }
 
@@ -664,7 +642,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.getAttribute(xpath, attr));
+            return (await client.$(xpath)).getAttribute(attr);
         }
     }
 
@@ -673,7 +651,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.windowHandleMaximize());
+            return client.maximizeWindow();
         }
     }
 
@@ -682,7 +660,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.isEnabled(xpath));
+            return (await client.$(xpath)).isEnabled();
         }
     }
 
@@ -691,7 +669,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.scroll(xpath, x, y));
+            // return (await client.$(xpath)).scrollIntoView(x, y); TODO: method is deprecated, what I have to do? (maksim.lebedev)
         }
     }
 
@@ -700,7 +678,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.alertAccept());
+            return client.acceptAlert();
         }
     }
 
@@ -709,7 +687,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.alertDismiss());
+            return client.dismissAlert();
         }
     }
 
@@ -718,7 +696,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.alertText() as Client<string>);
+            return client.getAlertText();
         }
     }
 
@@ -727,7 +705,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.dragAndDrop(xpathSource, xpathDestination));
+            return (await client.$(xpathSource)).dragAndDrop(await client.$(xpathDestination));
         }
     }
 
@@ -736,7 +714,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.getCookie(cookieName));
+            const cookies = await client.getCookies([cookieName]);
+            return cookies[0].value;
         }
     }
 
@@ -745,7 +724,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.deleteCookie(cookieName));
+            return client.deleteCookie(cookieName);
         }
     }
 
@@ -754,7 +733,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.getHTML(xpath, b));
+            return (await client.$(xpath)).getHTML(b);
         }
     }
 
@@ -763,7 +742,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.getCurrentTabId());
+            return client.getWindowHandle();
         }
     }
 
@@ -772,7 +751,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            let result = this.wrapWithPromise(client.switchTab(tabId));
+            const result = client.switchWindow(tabId);
             await waitFor(client);
 
             return result;
@@ -784,17 +763,12 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.close(tabId));
+            return client.closeWindow(); // TODO: check is it correct (maksim.lebedev)
         }
     }
 
     public async getTabIds(applicant: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        if (client) {
-            return this.wrapWithPromise(client.getTabIds());
-        }
+        return this.windowHandles(applicant);
     }
 
     public async window(applicant: string, fn: any) {
@@ -802,7 +776,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.window(fn));
+            return client.switchWindow(fn);
         }
     }
 
@@ -811,7 +785,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.windowHandles());
+            return client.getWindowHandles();
         }
     }
 
@@ -821,7 +795,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.getTagName(xpath));
+            return (await client.$(xpath)).getTagName();
         }
     }
 
@@ -830,7 +804,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.isSelected(xpath));
+            return (await client.$(xpath)).isSelected();
         }
     }
 
@@ -839,7 +813,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.getText(xpath));
+            return (await client.$(xpath)).getText();
         }
     }
 
@@ -848,7 +822,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.elementIdSelected(id));
+            return client.isElementSelected(id);
         }
     }
 
@@ -857,7 +831,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.screenshot());
+            return client.takeScreenshot();
         }
     }
 
@@ -866,7 +840,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.uploadFile(filePath));
+            return client.uploadFile(filePath);
         }
     }
 
@@ -875,7 +849,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.getCssProperty(xpath, cssProperty));
+            return (await (await client.$(xpath)).getCSSProperty(cssProperty)).value;
         }
     }
 
@@ -884,7 +858,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.getSource());
+            return client.getPageSource();
         }
     }
 
@@ -893,7 +867,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.isExisting(xpath));
+            return (await client.$(xpath)).isExisting();
         }
     }
 
@@ -902,7 +876,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.waitForValue(xpath, timeout, reverse));
+            return client.waitUntil(async () => {
+                const elemValue = await (await client.$(xpath)).getValue();
+                return reverse ? !elemValue : !!elemValue;
+            }, timeout);
         }
     }
 
@@ -911,23 +888,26 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.waitForSelected(xpath, timeout, reverse));
+            return client.waitUntil(async () => {
+                const isSelected = await (await client.$(xpath)).isSelected();
+                return reverse ? !isSelected : isSelected;
+            }, timeout);
         }
     }
 
     public async waitUntil(
         applicant: string,
-        condition: () => boolean | Promise<boolean> | Client<RawResult<any>> & RawResult<any>,
+        condition: () => Promise<boolean>,
         timeout?: number,
         timeoutMsg?: string,
         interval?: number,
-    ): Promise<Client<boolean> & any> {
+    ): Promise<BrowserObject & any> {
 
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.waitUntil(condition, timeout, timeoutMsg, interval));
+            return client.waitUntil(condition, timeout, timeoutMsg, interval);
         }
     }
 
@@ -936,7 +916,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.selectByAttribute(xpath, attribute, value));
+            return (await client.$(xpath)).selectByAttribute(attribute, value);
         }
     }
 
@@ -945,7 +925,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.getGridNodeDetails());
+            // return client.getGridNodeDetails(); TODO: (maksim.lebedev)
         }
     }
 
@@ -954,7 +934,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return this.wrapWithPromise(client.gridTestSession());
+            // return client.gridTestSession(); TODO: (maksim.lebedev)
         }
     }
 }

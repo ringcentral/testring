@@ -17,11 +17,10 @@
     "@testring/types": "0.5.17",
     "@types/deepmerge": "2.2.0",
     "@types/node": "12.12.21",
-    "@types/webdriverio": "4.10.3",
     "chromedriver": "*",
     "deepmerge": "2.1.1",
     "grapheme-splitter": "1.0.4",
     "selenium-server": "3.141.59",
-    "webdriverio": "4.13.1"
+    "webdriverio": "5.22.3"
   }
 }
