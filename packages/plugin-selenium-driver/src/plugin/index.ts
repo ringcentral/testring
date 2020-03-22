@@ -240,7 +240,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             this.localSelenium = spawn('java', [
                 ...this.getChromeDriverArgs(),
                 '-jar', seleniumJarPath,
-                // @ts-ignore TODO: (maksim.lebedev)
                 '-port', this.config.port,
             ]);
 
@@ -329,7 +328,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             throw Error(`This session expired in ${this.config.clientTimeout}ms`);
         }
 
-        const client = await remote(this.config as any); // TODO: fix it (maksim.lebedev)
+        const client = await remote(this.config);
 
         let sessionId: string;
         if (client.sessionId) {
@@ -454,7 +453,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const args = stringifyWindowFeatures(windowFeatures);
 
         if (client) {
-            return client.newWindow(val, windowName, args); // TODO: check (maksim.lebedev)
+            return client.newWindow(val, windowName, args);
         }
     }
 
@@ -763,7 +762,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return client.closeWindow(); // TODO: check is it correct (maksim.lebedev)
+            await client.switchWindow(tabId);
+            return client.closeWindow();
         }
     }
 
