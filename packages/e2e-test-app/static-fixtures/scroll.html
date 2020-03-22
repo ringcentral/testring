@@ -11,10 +11,15 @@
             background: aliceblue;
         }
     </style>
+    <script>
+        function onMouseOver(n) {
+            document.getElementById('mouseOverResult').innerText = n.toString();
+        }
+    </script>
 </head>
 <body data-test-automation-id="root">
     <div class="container" data-test-automation-id="container" id="container">
-        <p data-test-automation-id="item_1" id="item_1">Text 1</p>
+        <p data-test-automation-id="item_1" id="item_1" onmouseover="onMouseOver(1)">Text 1</p>
         <p>Text 2</p>
         <p>Text 3</p>
         <p>Text 4</p>
@@ -23,7 +28,8 @@
         <p data-test-automation-id="item_7">Text 7</p>
         <p data-test-automation-id="item_8">Text 8</p>
         <p>Text 9</p>
-        <p data-test-automation-id="item_10" id="item_10">Text 10</p>
+        <p data-test-automation-id="item_10" id="item_10" onmouseover="onMouseOver(10)">Text 10</p>
     </div>
+    <p id="mouseOverResult" data-test-automation-id="mouseOverResult"></p>
 </body>
 </html>
