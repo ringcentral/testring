@@ -19,10 +19,8 @@ type browserClientItem = {
 
 const DEFAULT_CONFIG: SeleniumPluginConfig = {
     recorderExtension: false,
-    // deprecationWarnings: false,
     clientCheckInterval: 5 * 1000,
     clientTimeout: 15 * 60 * 1000,
-    // @ts-ignore
     port: 4444,
     capabilities: {
         browserName: 'chrome',
@@ -154,7 +152,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     constructor(config: Partial<SeleniumPluginConfig> = {}) {
         this.config = this.createConfig(config);
 
-        // @ts-ignore
         if (this.config.host === undefined) {
             this.runLocalSelenium();
         }
@@ -177,7 +174,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     private createConfig(config: Partial<SeleniumPluginConfig>): SeleniumPluginConfig {
         let mergedConfig = deepmerge.all<SeleniumPluginConfig>([
             DEFAULT_CONFIG,
-            config,
+            {
+                ...config,
+                capabilities: config.desiredCapabilities,
+            },
         ], {
             clone: true,
         });
@@ -188,6 +188,12 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 this.getDevelopmentConfigAdditions(),
             ]);
         }
+
+        if (!mergedConfig.hostname && mergedConfig.host) {
+            mergedConfig.hostname = mergedConfig.host;
+        }
+
+        delete mergedConfig.desiredCapabilities;
 
         return mergedConfig;
     }
@@ -434,7 +440,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            // return client.gridProxyDetails(); TODO: (maksim.lebedev) fix
+            return client.gridProxyDetails(client.sessionId);
         }
     }
 
@@ -668,7 +674,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            // return (await client.$(xpath)).scrollIntoView(x, y); TODO: method is deprecated, what I have to do? (maksim.lebedev)
+            const element = await client.$(xpath);
+            await element.scrollIntoView();
+            return element.moveTo(x, y);
         }
     }
 
@@ -925,7 +933,17 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            // return client.getGridNodeDetails(); TODO: (maksim.lebedev)
+            const testSession = await client.gridTestSession(client.sessionId);
+            const proxyDetails = await client.gridProxyDetails(testSession.proxyId);
+
+            delete testSession.msg;
+            delete testSession.success;
+
+            delete proxyDetails.msg;
+            delete proxyDetails.success;
+            delete proxyDetails.id;
+
+            return { ...testSession, ...proxyDetails };
         }
     }
 
@@ -934,7 +952,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            // return client.gridTestSession(); TODO: (maksim.lebedev)
+            return client.gridTestSession(client.sessionId);
         }
     }
 }
