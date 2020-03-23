@@ -172,11 +172,19 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     private createConfig(config: Partial<SeleniumPluginConfig>): SeleniumPluginConfig {
+        let capabilities;
+
+        if (config.desiredCapabilities && config.capabilities) {
+            capabilities = deepmerge.all<any>([config.desiredCapabilities, config.capabilities]);
+        } else {
+            capabilities = config.desiredCapabilities || config.capabilities;
+        }
+
         let mergedConfig = deepmerge.all<SeleniumPluginConfig>([
             DEFAULT_CONFIG,
             {
                 ...config,
-                capabilities: config.desiredCapabilities,
+                capabilities,
             },
         ], {
             clone: true,
@@ -277,12 +285,14 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    private getBrowserClient(applicant): BrowserObject | undefined {
+    private getBrowserClient(applicant): BrowserObject {
         let item = this.browserClients.get(applicant);
 
         if (item) {
             return item.client;
         }
+
+        throw new Error('Browser client is not found');
     }
 
     private async pingClients() {
@@ -376,30 +386,28 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            try {
-                if (await client.isAlertOpen()) {
-                    await client.dismissAlert();
-                }
-            } catch { /* ignore */ }
-
-            const startingSessionID = this.getApplicantSessionId(applicant);
-            const sessionID = ((client as any).requestHandler || {}).sessionID;
-
-            if (startingSessionID === sessionID) {
-                this.logger.debug(`Stopping sessions for applicant ${applicant}. Session id: ${sessionID}`);
-            } else {
-                this.logger.warn(`Stopping sessions for applicant warning ${applicant}.`,
-                    `Session ids are not equal, started with - ${startingSessionID}, ended with - ${sessionID}`);
-                try {
-                    await client.deleteSession();
-                } catch (err) {
-                    this.logger.error(`Old session ${startingSessionID} delete error`, err);
-                }
+        try {
+            if (await client.isAlertOpen()) {
+                await client.dismissAlert();
             }
+        } catch { /* ignore */ }
 
-            this.browserClients.delete(applicant);
+        const startingSessionID = this.getApplicantSessionId(applicant);
+        const sessionID = ((client as any).requestHandler || {}).sessionID;
+
+        if (startingSessionID === sessionID) {
+            this.logger.debug(`Stopping sessions for applicant ${applicant}. Session id: ${sessionID}`);
+        } else {
+            this.logger.warn(`Stopping sessions for applicant warning ${applicant}.`,
+                `Session ids are not equal, started with - ${startingSessionID}, ended with - ${sessionID}`);
+            try {
+                await client.deleteSession();
+            } catch (err) {
+                this.logger.error(`Old session ${startingSessionID} delete error`, err);
+            }
         }
+
+        this.browserClients.delete(applicant);
     }
 
     public async kill() {
@@ -421,36 +429,33 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.refresh();
-        }
+        return client.refresh();
     }
 
     public async click(applicant: string, selector: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(selector)).click();
-        }
+        const element = await client.$(selector);
+        return element.click();
     }
 
     public async gridProxyDetails(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.gridProxyDetails(client.sessionId);
-        }
+        return client.gridProxyDetails(client.sessionId);
     }
 
     public async url(applicant: string, val: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (!!val) ? client.url(val) : client.getUrl();
+        if (!val) {
+            return client.getUrl();
         }
+
+        return client.url(val);
     }
 
     public async newWindow(applicant: string, val: string, windowName: string, windowFeatures: WindowFeaturesConfig) {
@@ -458,18 +463,15 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
         const args = stringifyWindowFeatures(windowFeatures);
 
-        if (client) {
-            return client.newWindow(val, windowName, args);
-        }
+        return client.newWindow(val, windowName, args);
     }
 
     public async waitForExist(applicant: string, xpath: string, timeout: number) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(xpath)).waitForExist(timeout);
-        }
+        const selector = await client.$(xpath);
+        return selector.waitForExist(timeout);
     }
 
     public async waitForVisible(applicant: string, xpath: string, timeout: number) {
@@ -477,7 +479,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (client) {
-            return (await client.$(xpath)).waitForDisplayed(timeout);
+            const selector = await client.$(xpath);
+        return selector.waitForDisplayed(timeout);
         }
     }
 
@@ -485,294 +488,242 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(xpath)).isDisplayed();
-        }
+        const selector = await client.$(xpath);
+        return selector.isDisplayed();
     }
 
     public async moveToObject(applicant: string, xpath: string, x: number, y: number) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            const elem = await client.$(xpath);
-            await elem.scrollIntoView();
-            return elem.moveTo(x, y);
-        }
+        const elem = await client.$(xpath);
+        await elem.scrollIntoView();
+        return elem.moveTo(x, y);
     }
 
     public async execute(applicant: string, fn: any, args: Array<any>) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.execute(fn, ...args);
-        }
+        return client.execute(fn, ...args);
     }
 
     public async executeAsync(applicant: string, fn: any, args: Array<any>) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.executeAsync(fn, ...args);
-        }
+        return client.executeAsync(fn, ...args);
     }
 
     public async getTitle(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.getTitle();
-        }
+        return client.getTitle();
     }
 
     public async clearElement(applicant: string, xpath: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(xpath)).clearValue();
-        }
+        const selector = await client.$(xpath);
+        return selector.clearValue();
     }
 
     public async keys(applicant: string, value: any) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.keys(value);
-        }
+        return client.keys(value);
     }
 
     public async elementIdText(applicant: string, elementId: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.getElementText(elementId);
-        }
+        return client.getElementText(elementId);
     }
 
     public async elements(applicant: string, xpath: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            const elements = await client.findElements('xpath', xpath) as unknown;
-            const a = (elements as Array<Record<string, string>>).map((o) => {
-                const keys = Object.keys(o);
-                return { 'ELEMENT': o[keys[0]] };
-            });
-
-            return a;
-        }
+        const elements = await client.findElements('xpath', xpath) as unknown;
+        return (elements as Array<Record<string, string>>).map((o) => {
+            const keys = Object.keys(o);
+            return { 'ELEMENT': o[keys[0]] };
+        });
     }
 
     public async frame(applicant: string, frameID: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.switchToFrame(frameID);
-        }
+        return client.switchToFrame(frameID);
     }
 
     public async frameParent(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.switchToParentFrame();
-        }
+        return client.switchToParentFrame();
     }
 
     public async getValue(applicant: string, xpath: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(xpath)).getValue();
-        }
+        const selector = await client.$(xpath);
+        return selector.getValue();
     }
 
     public async keysOnElement(applicant: string, xpath: string, value: any) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (client as any).keysOnElement(xpath, value);
-        }
+        return (client as any).keysOnElement(xpath, value);
     }
 
     public async setValue(applicant: string, xpath: string, value: any) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(xpath)).setValue(value);
-        }
+        const selector = await client.$(xpath);
+        return selector.setValue(value);
     }
 
     public async selectByIndex(applicant: string, xpath: string, value: any) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(xpath)).selectByIndex(value);
-        }
+        const selector = await client.$(xpath);
+        return selector.selectByIndex(value);
     }
 
     public async selectByValue(applicant: string, xpath: string, value: any) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(xpath)).selectByAttribute('value', value);
-        }
+        const selector = await client.$(xpath);
+        return selector.selectByAttribute('value', value);
     }
 
     public async selectByVisibleText(applicant: string, xpath: string, str: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(xpath)).selectByVisibleText(str);
-        }
+        const selector = await client.$(xpath);
+        return selector.selectByVisibleText(str);
     }
 
     public async getAttribute(applicant: string, xpath: string, attr: string): Promise<any> {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(xpath)).getAttribute(attr);
-        }
+        const selector = await client.$(xpath);
+        return selector.getAttribute(attr);
     }
 
     public async windowHandleMaximize(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.maximizeWindow();
-        }
+        return client.maximizeWindow();
     }
 
     public async isEnabled(applicant: string, xpath: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(xpath)).isEnabled();
-        }
+        const selector = await client.$(xpath);
+        return selector.isEnabled();
     }
 
     public async scroll(applicant: string, xpath: string, x: number, y: number) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            const element = await client.$(xpath);
-            await element.scrollIntoView();
-            return element.moveTo(x, y);
-        }
+        const element = await client.$(xpath);
+        await element.scrollIntoView();
+        return element.moveTo(x, y);
     }
 
     public async alertAccept(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.acceptAlert();
-        }
+        return client.acceptAlert();
     }
 
     public async alertDismiss(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.dismissAlert();
-        }
+        return client.dismissAlert();
     }
 
     public async alertText(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.getAlertText();
-        }
+        return client.getAlertText();
     }
 
     public async dragAndDrop(applicant: string, xpathSource: string, xpathDestination: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(xpathSource)).dragAndDrop(await client.$(xpathDestination));
-        }
+        const sourceElement = await client.$(xpathSource);
+        const destinationElement = await client.$(xpathDestination);
+        return sourceElement.dragAndDrop(destinationElement);
     }
 
     public async getCookie(applicant: string, cookieName: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            const cookies = await client.getCookies([cookieName]);
-            return cookies[0].value;
-        }
+        const cookies = await client.getCookies([cookieName]);
+        return cookies[0].value;
     }
 
     public async deleteCookie(applicant: string, cookieName: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.deleteCookie(cookieName);
-        }
+        return client.deleteCookie(cookieName);
     }
 
     public async getHTML(applicant: string, xpath: string, b: any) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(xpath)).getHTML(b);
-        }
+        const selector = await client.$(xpath);
+        return selector.getHTML(b);
     }
 
     public async getCurrentTabId(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.getWindowHandle();
-        }
+        return client.getWindowHandle();
     }
 
     public async switchTab(applicant: string, tabId: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            const result = client.switchWindow(tabId);
-            await waitFor(client);
+        const result = client.switchWindow(tabId);
+        await waitFor(client);
 
-            return result;
-        }
+        return result;
     }
 
     public async close(applicant: string, tabId: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            await client.switchWindow(tabId);
-            return client.closeWindow();
-        }
+        await client.switchWindow(tabId);
+        return client.closeWindow();
     }
 
     public async getTabIds(applicant: string) {
@@ -783,18 +734,14 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.switchWindow(fn);
-        }
+        return client.switchWindow(fn);
     }
 
     public async windowHandles(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.getWindowHandles();
-        }
+        return client.getWindowHandles();
     }
 
 
@@ -802,105 +749,89 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(xpath)).getTagName();
-        }
+        const selector = await client.$(xpath);
+        return selector.getTagName();
     }
 
     public async isSelected(applicant: string, xpath: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(xpath)).isSelected();
-        }
+        const selector = await client.$(xpath);
+        return selector.isSelected();
     }
 
     public async getText(applicant: string, xpath: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(xpath)).getText();
-        }
+        const selector = await client.$(xpath);
+        return selector.getText();
     }
 
     public async elementIdSelected(applicant: string, id: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.isElementSelected(id);
-        }
+        return client.isElementSelected(id);
     }
 
     public async makeScreenshot(applicant: string): Promise<string | void> {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.takeScreenshot();
-        }
+        return client.takeScreenshot();
     }
 
     public async uploadFile(applicant: string, filePath: string): Promise<string | void> {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.uploadFile(filePath);
-        }
+        return client.uploadFile(filePath);
     }
 
     public async getCssProperty(applicant: string, xpath: string, cssProperty: string): Promise<any> {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await (await client.$(xpath)).getCSSProperty(cssProperty)).value;
-        }
+        const element = await client.$(xpath);
+        const property = await element.getCSSProperty(cssProperty);
+        return property.value;
     }
 
     public async getSource(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.getPageSource();
-        }
+        return client.getPageSource();
     }
 
     public async isExisting(applicant: string, xpath: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(xpath)).isExisting();
-        }
+        const selector = await client.$(xpath);
+        return selector.isExisting();
     }
 
     public async waitForValue(applicant: string, xpath: string, timeout: number, reverse: boolean) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.waitUntil(async () => {
-                const elemValue = await (await client.$(xpath)).getValue();
-                return reverse ? !elemValue : !!elemValue;
-            }, timeout);
-        }
+        return client.waitUntil(async () => {
+            const elemValue = await (await client.$(xpath)).getValue();
+            return reverse ? !elemValue : !!elemValue;
+        }, timeout);
     }
 
     public async waitForSelected(applicant: string, xpath: string, timeout: number, reverse: boolean) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.waitUntil(async () => {
-                const isSelected = await (await client.$(xpath)).isSelected();
-                return reverse ? !isSelected : isSelected;
-            }, timeout);
-        }
+        return client.waitUntil(async () => {
+            const isSelected = await (await client.$(xpath)).isSelected();
+            return reverse ? !isSelected : isSelected;
+        }, timeout);
     }
 
     public async waitUntil(
@@ -914,46 +845,39 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.waitUntil(condition, timeout, timeoutMsg, interval);
-        }
+        return client.waitUntil(condition, timeout, timeoutMsg, interval);
     }
 
     public async selectByAttribute(applicant: string, xpath: string, attribute: string, value: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return (await client.$(xpath)).selectByAttribute(attribute, value);
-        }
+        const selector = await client.$(xpath);
+        return selector.selectByAttribute(attribute, value);
     }
 
     public async getGridNodeDetails(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            const testSession = await client.gridTestSession(client.sessionId);
-            const proxyDetails = await client.gridProxyDetails(testSession.proxyId);
+        const testSession = await client.gridTestSession(client.sessionId);
+        const proxyDetails = await client.gridProxyDetails(testSession.proxyId);
 
-            delete testSession.msg;
-            delete testSession.success;
+        delete testSession.msg;
+        delete testSession.success;
 
-            delete proxyDetails.msg;
-            delete proxyDetails.success;
-            delete proxyDetails.id;
+        delete proxyDetails.msg;
+        delete proxyDetails.success;
+        delete proxyDetails.id;
 
-            return { ...testSession, ...proxyDetails };
-        }
+        return { ...testSession, ...proxyDetails };
     }
 
     public async gridTestSession(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            return client.gridTestSession(client.sessionId);
-        }
+        return client.gridTestSession(client.sessionId);
     }
 }
 
