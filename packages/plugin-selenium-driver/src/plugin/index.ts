@@ -11,8 +11,12 @@ import { spawn } from '@testring/child-process';
 import { loggerClient } from '@testring/logger';
 import { absoluteExtensionPath } from '@testring/devtool-extension';
 
+type BrowserObjectCustom = BrowserObject & {
+    keysOnElement: (xpath, value) => Promise<void>;
+}
+
 type browserClientItem = {
-    client: BrowserObject & { keysOnElement: (xpath, value) => Promise<void> };
+    client: BrowserObjectCustom;
     sessionId: string;
     initTime: number;
 };
@@ -30,10 +34,6 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
         },
     },
 };
-
-function waitFor(client: BrowserObject) {
-    return client.waitUntil(async () => (await client.$('body')).isExisting(), 10000);
-}
 
 function delay(timeout) {
     return new Promise<void>((resolve) => setTimeout(() => resolve(), timeout));
@@ -286,7 +286,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    private getBrowserClient(applicant): BrowserObject & { keysOnElement: (xpath, value) => Promise<void> } {
+    private getBrowserClient(applicant): BrowserObjectCustom {
         let item = this.browserClients.get(applicant);
 
         if (item) {
@@ -354,17 +354,18 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             throw Error('Session can not be null');
         }
 
+        const customClient = this.addCustromMethods(client);
+
         this.browserClients.set(applicant, {
-            client: client as BrowserObject & { keysOnElement: (xpath, value) => Promise<void> },
+            client: customClient,
             sessionId,
             initTime: Date.now(),
         });
 
-        this.addElementKeysMethod(client);
         this.logger.debug(`Started session for applicant: ${applicant}. Session id: ${sessionId}`);
     }
 
-    protected addElementKeysMethod(client: BrowserObject) {
+    protected addCustromMethods(client: BrowserObject): BrowserObjectCustom {
         client.addCommand('keysOnElement', async function (path, value) {
             let keySequence: string[] = [];
 
@@ -378,8 +379,12 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 throw new Error('"keys" command requires a string or array of strings as parameter');
             }
 
-            return (await this.$(path)).setValue(keySequence);
+            const selector = await this.$(path);
+
+            return selector.setValue(keySequence);
         }, false);
+
+        return client as BrowserObjectCustom;
     }
 
     public async end(applicant: string) {
@@ -712,7 +717,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         const result = client.switchWindow(tabId);
-        await waitFor(client);
+        await client.waitUntil(async () => (await client.$('body')).isExisting(), 10000);
 
         return result;
     }
@@ -839,7 +844,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         timeout?: number,
         timeoutMsg?: string,
         interval?: number,
-    ): Promise<BrowserObject & any> {
+    ) {
 
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
