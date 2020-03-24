@@ -22,6 +22,7 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
     clientCheckInterval: 5 * 1000,
     clientTimeout: 15 * 60 * 1000,
     port: 4444,
+    logLevel: 'warn',
     capabilities: {
         browserName: 'chrome',
         'goog:chromeOptions': { // for local ChromeDriver
