@@ -478,10 +478,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (client) {
-            const selector = await client.$(xpath);
+        const selector = await client.$(xpath);
         return selector.waitForDisplayed(timeout);
-        }
     }
 
     public async isVisible(applicant: string, xpath: string) {
