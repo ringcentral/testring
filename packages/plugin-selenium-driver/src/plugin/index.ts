@@ -12,7 +12,7 @@ import { loggerClient } from '@testring/logger';
 import { absoluteExtensionPath } from '@testring/devtool-extension';
 
 type browserClientItem = {
-    client: BrowserObject;
+    client: BrowserObject & { keysOnElement: (xpath, value) => Promise<void> };
     sessionId: string;
     initTime: number;
 };
@@ -285,7 +285,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    private getBrowserClient(applicant): BrowserObject {
+    private getBrowserClient(applicant): BrowserObject & { keysOnElement: (xpath, value) => Promise<void> } {
         let item = this.browserClients.get(applicant);
 
         if (item) {
@@ -354,7 +354,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
 
         this.browserClients.set(applicant, {
-            client,
+            client: client as BrowserObject & { keysOnElement: (xpath, value) => Promise<void> },
             sessionId,
             initTime: Date.now(),
         });
@@ -393,7 +393,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         } catch { /* ignore */ }
 
         const startingSessionID = this.getApplicantSessionId(applicant);
-        const sessionID = ((client as any).requestHandler || {}).sessionID;
+        const sessionID = client.sessionId;
 
         if (startingSessionID === sessionID) {
             this.logger.debug(`Stopping sessions for applicant ${applicant}. Session id: ${sessionID}`);
@@ -579,7 +579,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        return (client as any).keysOnElement(xpath, value);
+        return client.keysOnElement(xpath, value);
     }
 
     public async setValue(applicant: string, xpath: string, value: any) {
