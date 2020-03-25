@@ -6,6 +6,8 @@ import { requirePackage } from '@testring/utils';
 import { IConfig } from '@testring/types';
 import ProcessEnv = NodeJS.ProcessEnv;
 
+import { mergeConfigs } from './merge-configs';
+
 function findFile(configPath: string) {
     const filePath = path.resolve(configPath);
     const configExists = fs.existsSync(filePath);
@@ -75,17 +77,37 @@ async function readConfig(
 
     loggerClient.debug(`Read config file: ${configPath}`);
 
+    let configData;
+
     switch (extension) {
         case '.js':
-            return readJSConfig(configPath, config);
+            configData = await readJSConfig(configPath, config);
+            break;
 
         case '.json':
         case '':
-            return readJSONConfig(configPath);
+            configData = await readJSONConfig(configPath);
+            break;
 
         default:
             throw new Error(`${extension} is not supported`);
     }
+
+    if (configData && Object.prototype.hasOwnProperty.call(configData, '@extend')) {
+        const extendConfigPath = path.resolve(path.dirname(configPath), configData['@extend']);
+        const extendConfig = await readConfig(extendConfigPath, config) as Partial<IConfig>;
+
+        if (extendConfig === null) {
+            throw Error(`Config ${extendConfigPath} not found`);
+        }
+
+        configData = mergeConfigs(
+            extendConfig,
+            configData,
+        );
+    }
+
+    return configData;
 }
 
 export async function getFileConfig(configPath: string | void, userConfig: IConfig) {

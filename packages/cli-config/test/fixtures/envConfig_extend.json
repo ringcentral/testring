@@ -1,0 +1,6 @@
+{
+  "@extend": "./envConfig.json",
+  "envParameters": {
+    "data": "data"
+  }
+}
