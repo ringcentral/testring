@@ -11,6 +11,8 @@ import { spawn } from '@testring/child-process';
 import { loggerClient } from '@testring/logger';
 import { absoluteExtensionPath } from '@testring/devtool-extension';
 
+import Cookie = WebdriverIO.Cookie;
+
 type BrowserObjectCustom = BrowserObject & {
     keysOnElement: (xpath, value) => Promise<void>;
 }
@@ -680,6 +682,13 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const sourceElement = await client.$(xpathSource);
         const destinationElement = await client.$(xpathDestination);
         return sourceElement.dragAndDrop(destinationElement);
+    }
+
+    public async setCookie(applicant: string, cookieObj: Cookie) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        return await client.setCookies(cookieObj);
     }
 
     public async getCookie(applicant: string, cookieName: string) {

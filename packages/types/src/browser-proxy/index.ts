@@ -84,6 +84,8 @@ export interface IBrowserProxyPlugin {
 
     dragAndDrop(applicant: string, xpathSource: string, xpathDestination: string): Promise<any>;
 
+    setCookie(applicant: string, cookieName: any): Promise<any>;
+
     getCookie(applicant: string, cookieName: string): Promise<any>;
 
     deleteCookie(applicant: string, cookieName: string): Promise<any>;

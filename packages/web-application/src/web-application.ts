@@ -1253,6 +1253,10 @@ export class WebApplication extends PluggableModule {
         return false;
     }
 
+    public setCookie(cookieObj) {
+        return this.client.setCookie(cookieObj);
+    }
+
     public getCookie(cookieName) {
         return this.client.getCookie(cookieName);
     }

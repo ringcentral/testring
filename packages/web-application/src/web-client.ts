@@ -186,6 +186,10 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.frameParent, []);
     }
 
+    public setCookie(cookieObj) {
+        return this.makeRequest(BrowserProxyActions.setCookie, [cookieObj]);
+    }
+
     public getCookie(cookieName) {
         return this.makeRequest(BrowserProxyActions.getCookie, [cookieName]);
     }
