@@ -746,7 +746,7 @@ export class WebApplication extends PluggableModule {
         }
             await this.client.setValue(xpath,' ');
             await this.waitForExist(xpath, timeout);
-            return this.client.keysOnElement(xpath, ['Backspace']);
+            return this.client.keys(['Backspace']);
 
     }
 
