@@ -76,6 +76,8 @@ export interface IBrowserProxyPlugin {
 
     scroll(applicant: string, xpath: string, x: number, y: number): Promise<any>;
 
+    isAlertOpen(applicant: string): Promise<any>;
+
     alertAccept(applicant: string): Promise<any>;
 
     alertDismiss(applicant: string): Promise<any>;

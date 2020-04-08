@@ -162,6 +162,10 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.scroll, [xpath, x, y]);
     }
 
+    public isAlertOpen() {
+        return this.makeRequest(BrowserProxyActions.isAlertOpen, []);
+    }
+
     public alertAccept() {
         return this.makeRequest(BrowserProxyActions.alertAccept, []);
     }

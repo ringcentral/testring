@@ -1118,6 +1118,10 @@ export class WebApplication extends PluggableModule {
         return (elementsCount > 0);
     }
 
+    public async isAlertOpen() {
+        return this.client.isAlertOpen();
+    }
+
     public async alertAccept(timeout: number = this.WAIT_TIMEOUT) {
         await this.waitForAlert(timeout);
         return this.client.alertAccept();

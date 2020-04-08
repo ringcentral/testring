@@ -1,6 +1,5 @@
 import { SeleniumPluginConfig } from '../types';
 import { IBrowserProxyPlugin, WindowFeaturesConfig } from '@testring/types';
-import GraphemeSplitter from 'grapheme-splitter';
 
 import { ChildProcess } from 'child_process';
 
@@ -13,8 +12,12 @@ import { absoluteExtensionPath } from '@testring/devtool-extension';
 
 import Cookie = WebdriverIO.Cookie;
 
+// Stupidly needed thing for making our own requests
+const _webdriverReq = require('webdriver/build/request');
+const WebDriverRequest = _webdriverReq.default;
+
 type BrowserObjectCustom = BrowserObject & {
-    keysOnElement: (xpath, value) => Promise<void>;
+    deleteSessionId: (sessionId: string) => Promise<void>;
 }
 
 type browserClientItem = {
@@ -53,89 +56,6 @@ function stringifyWindowFeatures(windowFeatures: WindowFeaturesConfig) {
     return result;
 }
 
-const UNICODE_CHARACTERS = {
-    'NULL': '\uE000',
-    'Unidentified': '\uE000',
-    'Cancel': '\uE001',
-    'Help': '\uE002',
-    'Back space': '\uE003',
-    'Backspace': '\uE003',
-    'Tab': '\uE004',
-    'Clear': '\uE005',
-    'Return': '\uE006',
-    'Enter': '\uE007',
-    'Shift': '\uE008',
-    'Control': '\uE009',
-    'Control Left': '\uE009',
-    'Control Right': '\uE051',
-    'Alt': '\uE00A',
-    'Pause': '\uE00B',
-    'Escape': '\uE00C',
-    'Space': '\uE00D',
-    ' ': '\uE00D',
-    'Pageup': '\uE00E',
-    'PageUp': '\uE00E',
-    'Page_Up': '\uE00E',
-    'Pagedown': '\uE00F',
-    'PageDown': '\uE00F',
-    'Page_Down': '\uE00F',
-    'End': '\uE010',
-    'Home': '\uE011',
-    'Left arrow': '\uE012',
-    'Arrow_Left': '\uE012',
-    'ArrowLeft': '\uE012',
-    'Up arrow': '\uE013',
-    'Arrow_Up': '\uE013',
-    'ArrowUp': '\uE013',
-    'Right arrow': '\uE014',
-    'Arrow_Right': '\uE014',
-    'ArrowRight': '\uE014',
-    'Down arrow': '\uE015',
-    'Arrow_Down': '\uE015',
-    'ArrowDown': '\uE015',
-    'Insert': '\uE016',
-    'Delete': '\uE017',
-    'Semicolon': '\uE018',
-    'Equals': '\uE019',
-    'Numpad 0': '\uE01A',
-    'Numpad 1': '\uE01B',
-    'Numpad 2': '\uE01C',
-    'Numpad 3': '\uE01D',
-    'Numpad 4': '\uE01E',
-    'Numpad 5': '\uE01F',
-    'Numpad 6': '\uE020',
-    'Numpad 7': '\uE021',
-    'Numpad 8': '\uE022',
-    'Numpad 9': '\uE023',
-    'Multiply': '\uE024',
-    'Add': '\uE025',
-    'Separator': '\uE026',
-    'Subtract': '\uE027',
-    'Decimal': '\uE028',
-    'Divide': '\uE029',
-    'F1': '\uE031',
-    'F2': '\uE032',
-    'F3': '\uE033',
-    'F4': '\uE034',
-    'F5': '\uE035',
-    'F6': '\uE036',
-    'F7': '\uE037',
-    'F8': '\uE038',
-    'F9': '\uE039',
-    'F10': '\uE03A',
-    'F11': '\uE03B',
-    'F12': '\uE03C',
-    'Command': '\uE03D',
-    'Meta': '\uE03D',
-    'Zenkaku_Hankaku': '\uE040',
-    'ZenkakuHankaku': '\uE040',
-};
-
-function checkUnicode(value): Array<string> {
-    return Object.prototype.hasOwnProperty.call(UNICODE_CHARACTERS, value)
-        ? [UNICODE_CHARACTERS[value]]
-        : new GraphemeSplitter().splitGraphemes(value);
-}
 
 export class SeleniumPlugin implements IBrowserProxyPlugin {
     private logger = loggerClient.withPrefix('[selenium-browser-process]');
@@ -175,20 +95,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     private createConfig(config: Partial<SeleniumPluginConfig>): SeleniumPluginConfig {
-        let capabilities;
-
-        if (config.desiredCapabilities && config.capabilities) {
-            capabilities = deepmerge.all<any>([config.desiredCapabilities, config.capabilities]);
-        } else {
-            capabilities = config.desiredCapabilities || config.capabilities;
-        }
-
         let mergedConfig = deepmerge.all<SeleniumPluginConfig>([
             DEFAULT_CONFIG,
-            {
-                ...config,
-                capabilities,
-            },
+            config,
         ], {
             clone: true,
         });
@@ -203,8 +112,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         if (!mergedConfig.hostname && mergedConfig.host) {
             mergedConfig.hostname = mergedConfig.host;
         }
-
-        delete mergedConfig.desiredCapabilities;
 
         return mergedConfig;
     }
@@ -368,22 +275,21 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     protected addCustromMethods(client: BrowserObject): BrowserObjectCustom {
-        client.addCommand('keysOnElement', async function (path, value) {
-            let keySequence: string[] = [];
+        // Creating our delete selenium session to be able to close
+        // session if it's id is changed while we are running test
+        client.addCommand('deleteSessionId', function (sessionId) {
+            const { w3cCaps, jsonwpCaps } = this.options.requestedCapabilities;
 
-            if (typeof value === 'string') {
-                keySequence = checkUnicode(value);
-            } else if (value instanceof Array) {
-                for (const charSet of value) {
-                    keySequence = keySequence.concat(checkUnicode(charSet));
-                }
-            } else {
-                throw new Error('"keys" command requires a string or array of strings as parameter');
-            }
+            const sessionDeleteRequest = new WebDriverRequest(
+                'DELETE',
+                '/session/:sessionId',
+                {
+                    capabilities: w3cCaps, // W3C compliant
+                    desiredCapabilities: jsonwpCaps, // JSONWP compliant
+                },
+            );
 
-            const selector = await this.$(path);
-
-            return selector.setValue(keySequence);
+            return sessionDeleteRequest.makeRequest(this.options, sessionId);
         }, false);
 
         return client as BrowserObjectCustom;
@@ -395,9 +301,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         try {
-            if (await client.isAlertOpen()) {
-                await client.dismissAlert();
-            }
+            await this.alertDismiss(applicant);
         } catch { /* ignore */ }
 
         const startingSessionID = this.getApplicantSessionId(applicant);
@@ -405,11 +309,16 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         if (startingSessionID === sessionID) {
             this.logger.debug(`Stopping sessions for applicant ${applicant}. Session id: ${sessionID}`);
+            await client.deleteSession();
         } else {
             this.logger.warn(`Stopping sessions for applicant warning ${applicant}.`,
                 `Session ids are not equal, started with - ${startingSessionID}, ended with - ${sessionID}`);
             try {
-                await client.deleteSession();
+                if (startingSessionID) {
+                    await client.deleteSessionId(startingSessionID);
+                } else {
+                    await client.deleteSession();
+                }
             } catch (err) {
                 this.logger.error(`Old session ${startingSessionID} delete error`, err);
             }
@@ -446,13 +355,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         const element = await client.$(selector);
         return element.click();
-    }
-
-    public async gridProxyDetails(applicant: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        return client.gridProxyDetails(client.sessionId);
     }
 
     public async url(applicant: string, val: string) {
@@ -583,13 +485,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return selector.getValue();
     }
 
-    public async keysOnElement(applicant: string, xpath: string, value: any) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        return client.keysOnElement(xpath, value);
-    }
-
     public async setValue(applicant: string, xpath: string, value: any) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
@@ -654,25 +549,44 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return element.moveTo(x, y);
     }
 
+    public async isAlertOpen(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        return client.isAlertOpen();
+    }
+
     public async alertAccept(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        return client.acceptAlert();
+        if (await this.isAlertOpen(applicant)) {
+            return client.acceptAlert();
+        }
+
+        throw Error('There is no open alert');
     }
 
     public async alertDismiss(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        return client.dismissAlert();
+        if (await this.isAlertOpen(applicant)) {
+            return client.dismissAlert();
+        }
+
+        throw Error('There is no open alert');
     }
 
     public async alertText(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        return client.getAlertText();
+        if (await this.isAlertOpen(applicant)) {
+            return client.getAlertText();
+        }
+
+        throw Error('There is no open alert');
     }
 
     public async dragAndDrop(applicant: string, xpathSource: string, xpathDestination: string) {
@@ -725,7 +639,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        const result = client.switchWindow(tabId);
+        const result = client.switchToWindow(tabId);
         await client.waitUntil(async () => (await client.$('body')).isExisting(), 10000);
 
         return result;
@@ -735,7 +649,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        await client.switchWindow(tabId);
+        await client.switchToWindow(tabId);
         return client.closeWindow();
     }
 
@@ -869,28 +783,52 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return selector.selectByAttribute(attribute, value);
     }
 
-    public async getGridNodeDetails(applicant: string) {
+    public async gridProxyDetails(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        const testSession = await client.gridTestSession(client.sessionId);
-        const proxyDetails = await client.gridProxyDetails(testSession.proxyId);
+        if (this.localSelenium) {
+            return {
+                localSelenium: true,
+            };
+        }
 
-        delete testSession.msg;
-        delete testSession.success;
-
-        delete proxyDetails.msg;
-        delete proxyDetails.success;
-        delete proxyDetails.id;
-
-        return { ...testSession, ...proxyDetails };
+        return client.gridProxyDetails(client.sessionId);
     }
 
     public async gridTestSession(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
+        if (this.localSelenium) {
+            return {
+                localSelenium: true,
+            };
+        }
+
         return client.gridTestSession(client.sessionId);
+    }
+
+    public async getGridNodeDetails(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const testSession = await this.gridTestSession(applicant);
+
+        if (!testSession.localSelenium) {
+            const proxyDetails = await client.gridProxyDetails(applicant);
+
+            delete testSession.msg;
+            delete testSession.success;
+
+            delete proxyDetails.msg;
+            delete proxyDetails.success;
+            delete proxyDetails.id;
+
+            return { ...testSession, ...proxyDetails };
+        }
+
+        return testSession;
     }
 }
 
