@@ -34,6 +34,7 @@ export const enum BrowserProxyActions {
     windowHandleMaximize = 'windowHandleMaximize',
     isEnabled = 'isEnabled',
     scroll = 'scroll',
+    isAlertOpen = 'isAlertOpen',
     alertAccept = 'alertAccept',
     alertDismiss = 'alertDismiss',
     alertText = 'alertText',
