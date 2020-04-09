@@ -610,8 +610,12 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (cookieName) {
-            const cookies = await client.getCookies([cookieName]);
-            return cookies[0].value;
+            try {
+                const cookies = await client.getCookies([cookieName]);
+                return cookies[0]?.value;
+            } catch (e) {
+                return undefined;
+            }
         }
 
         return client.getAllCookies();

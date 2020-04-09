@@ -1,5 +1,4 @@
 import { run } from 'testring';
-import { application } from 'express';
 
 run(async (api) => {
     await api.application.url('http://localhost:8080/cookie.html');
@@ -12,10 +11,8 @@ run(async (api) => {
     const cookieTextAfterDelete = await api.application.getText(api.application.root.cookie_found_text);
     await api.application.assert.equal(cookieTextAfterDelete, '');
 
-    try {
-        await api.application.getCookie('test');
-        throw new Error('Cookie object is still exists');
-    } catch (e) { /* ignore */ }
+    const cookieTextGetter = await api.application.getCookie('test');
+    await api.application.assert.equal(cookieTextGetter, undefined);
 
     await api.application.setCookie({ 'name': 'foo', 'value': '1111' });
     const cookieValueAfterAdd = await api.application.getCookie('foo');
