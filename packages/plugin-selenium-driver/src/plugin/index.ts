@@ -605,19 +605,27 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return await client.setCookies(cookieObj);
     }
 
-    public async getCookie(applicant: string, cookieName: string) {
+    public async getCookie(applicant: string, cookieName?: string | null) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        const cookies = await client.getCookies([cookieName]);
-        return cookies[0].value;
+        if (cookieName) {
+            const cookies = await client.getCookies([cookieName]);
+            return cookies[0].value;
+        }
+
+        return client.getAllCookies();
     }
 
-    public async deleteCookie(applicant: string, cookieName: string) {
+    public async deleteCookie(applicant: string, cookieName?: string | null) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        return client.deleteCookie(cookieName);
+        if (cookieName) {
+            return client.deleteCookie(cookieName);
+        }
+
+        return client.deleteAllCookies();
     }
 
     public async getHTML(applicant: string, xpath: string, b: any) {
