@@ -657,11 +657,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return this.windowHandles(applicant);
     }
 
-    public async window(applicant: string, fn: any) {
+    public async window(applicant: string, winHandle: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        return client.switchWindow(fn);
+        return client.switchToWindow(winHandle);
     }
 
     public async windowHandles(applicant: string) {
