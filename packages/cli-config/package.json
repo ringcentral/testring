@@ -1,6 +1,6 @@
 {
   "name": "@testring/cli-config",
-  "version": "0.5.21",
+  "version": "0.5.22",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,9 +10,9 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/logger": "0.5.21",
-    "@testring/types": "0.5.21",
-    "@testring/utils": "0.5.21",
+    "@testring/logger": "0.5.22",
+    "@testring/types": "0.5.22",
+    "@testring/utils": "0.5.22",
     "@types/deepmerge": "2.2.0",
     "@types/yargs": "12.0.0",
     "deepmerge": "2.1.1",
