@@ -552,10 +552,10 @@ export class WebApplication extends PluggableModule {
             await this.logNavigatorVersion();
             return this.documentReadyWait();
         }
-            await this.url(uri);
-            await this.logNavigatorVersion();
-            return this.documentReadyWait();
 
+        await this.url(uri);
+        await this.logNavigatorVersion();
+        return this.documentReadyWait();
     }
 
     public async openPage(
@@ -582,8 +582,8 @@ export class WebApplication extends PluggableModule {
         } else if (typeof page === 'function') {
             return page(this);
         }
-            throw new Error('Unsupported path type for openPage');
 
+        throw new Error('Unsupported path type for openPage');
     }
 
     public async isBecomeVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
@@ -1074,7 +1074,6 @@ export class WebApplication extends PluggableModule {
     }
 
     public async dragAndDrop(xpathSource, xpathDestination, timeout: number = this.WAIT_TIMEOUT) {
-        // TODO (flops) This method doesn't work successfully, ReImplement
         await this.waitForExist(xpathSource, timeout);
         await this.waitForExist(xpathDestination, timeout);
 
@@ -1160,10 +1159,10 @@ export class WebApplication extends PluggableModule {
         return this.client.close(focusToTabId || mainTabID);
     }
 
-    public async closeCurrentTab(focusToTabId = null) {
-        await this.client.window(null);
-        const mainTabID = await this.getMainTabId();
-        await this.setActiveTab(focusToTabId || mainTabID);
+    public async closeCurrentTab() {
+        const currentTabId = await this.getCurrentTabId();
+        await this.closeBrowserWindow(currentTabId);
+        await this.switchToMainSiblingTab();
     }
 
     public async windowHandles() {
@@ -1175,7 +1174,7 @@ export class WebApplication extends PluggableModule {
         return this.client.window(handle);
     }
 
-    public async newWindow(url: string, windowName: string, windowFeatures: WindowFeaturesConfig) {
+    public async newWindow(url: string, windowName: string, windowFeatures: WindowFeaturesConfig = {}) {
         return this.client.newWindow(url, windowName, windowFeatures);
     }
 
@@ -1229,7 +1228,8 @@ export class WebApplication extends PluggableModule {
 
     public async closeFirstSiblingTab() {
         await this.switchToFirstSiblingTab();
-        await this.closeBrowserWindow();
+        await this.closeBrowserWindow(await this.getCurrentTabId());
+        await this.switchToMainSiblingTab();
     }
 
     public async switchToFirstSiblingTab() {
