@@ -3,8 +3,18 @@ import { run } from 'testring';
 run(async (api) => {
     await api.application.url('http://localhost:8080/alert.html');
 
-    await api.application.alertAccept();
-    await api.application.alertDismiss();
+    if (await api.application.isAlertOpen()) {
+        await api.application.alertAccept();
+    } else {
+        throw Error('Alert is not opened');
+    }
+
+    if (await api.application.isAlertOpen()) {
+        await api.application.alertDismiss();
+    } else {
+        throw Error('Alert is not opened');
+    }
+
     const text = await api.application.alertText();
 
     const firstAlertState = await api.application.getText(api.application.root.alerts.first);

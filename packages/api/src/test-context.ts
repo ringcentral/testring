@@ -90,7 +90,7 @@ export class TestContext {
     }
 
     public end(): Promise<any> {
-        const requests = [
+        const requests = this.application.isStopped() ? [] : [
             this.application.end(),
         ];
 

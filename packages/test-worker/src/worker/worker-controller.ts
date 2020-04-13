@@ -127,6 +127,12 @@ export class WorkerController {
     private async completeExecutionFailed(error: Error) {
         this.releasePauseMode();
 
+        try {
+            await testAPIController.flushAfterRunCallbacks();
+        } catch (e) {
+            this.logger.error('Failed to release tests execution');
+        }
+
         this.transport.broadcastUniversally<ITestExecutionCompleteMessage>(
             TestWorkerAction.executionComplete,
             {
@@ -135,11 +141,6 @@ export class WorkerController {
             },
         );
 
-        try {
-            await testAPIController.flushAfterRunCallbacks();
-        } catch (e) {
-            this.logger.error('Failed to release tests execution');
-        }
         Sandbox.clearCache();
 
         this.transport.broadcastUniversally(

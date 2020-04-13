@@ -72,6 +72,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     private config: SeleniumPluginConfig;
 
+    private isEndSessionStarted: boolean = false;
+
+    private incrementWinId: number = 0;
+
     constructor(config: Partial<SeleniumPluginConfig> = {}) {
         this.config = this.createConfig(config);
 
@@ -296,6 +300,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     public async end(applicant: string) {
+        if (this.isEndSessionStarted) {
+            return;
+        }
+        this.isEndSessionStarted = true;
+
         await this.waitForReadyState;
 
         const client = this.getBrowserClient(applicant);
@@ -307,24 +316,32 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const startingSessionID = this.getApplicantSessionId(applicant);
         const sessionID = client.sessionId;
 
+        const ignoreClosedWindowError = async (fn) => {
+            try {
+                await fn();
+            } catch (e) {
+                if (e.message !== 'no such window: target window already closed') {
+                    throw e;
+                }
+            }
+        };
+
         if (startingSessionID === sessionID) {
             this.logger.debug(`Stopping sessions for applicant ${applicant}. Session id: ${sessionID}`);
-            await client.deleteSession();
+            await ignoreClosedWindowError(() => client.deleteSession());
         } else {
             this.logger.warn(`Stopping sessions for applicant warning ${applicant}.`,
                 `Session ids are not equal, started with - ${startingSessionID}, ended with - ${sessionID}`);
             try {
                 if (startingSessionID) {
-                    await client.deleteSessionId(startingSessionID);
+                    await ignoreClosedWindowError(() => client.deleteSessionId(startingSessionID));
                 } else {
-                    await client.deleteSession();
+                    await ignoreClosedWindowError(() => client.deleteSession());
                 }
             } catch (err) {
                 this.logger.error(`Old session ${startingSessionID} delete error`, err);
             }
         }
-
-        this.browserClients.delete(applicant);
     }
 
     public async kill() {
@@ -368,12 +385,18 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.url(val);
     }
 
-    public async newWindow(applicant: string, val: string, windowName: string, windowFeatures: WindowFeaturesConfig) {
+    generateWinId() {
+        this.incrementWinId++;
+
+        return `window-${this.incrementWinId}`;
+    }
+
+    public async newWindow(applicant: string, val: string, windowName: string, windowFeatures: WindowFeaturesConfig = {}) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
         const args = stringifyWindowFeatures(windowFeatures);
 
-        return client.newWindow(val, windowName, args);
+        return client.newWindow(val, windowName || this.generateWinId(), args);
     }
 
     public async waitForExist(applicant: string, xpath: string, timeout: number) {
