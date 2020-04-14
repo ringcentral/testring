@@ -72,8 +72,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     private config: SeleniumPluginConfig;
 
-    private isEndSessionStarted: boolean = false;
-
     private incrementWinId: number = 0;
 
     constructor(config: Partial<SeleniumPluginConfig> = {}) {
@@ -121,10 +119,12 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     private initIntervals() {
-        this.clientCheckInterval = setInterval(
-            () => this.checkClientsTimeout(),
-            this.config.clientCheckInterval,
-        );
+        if (this.config.clientCheckInterval > 0) {
+            this.clientCheckInterval = setInterval(
+                () => this.checkClientsTimeout(),
+                this.config.clientCheckInterval,
+            );
+        }
 
         process.on('exit', () => {
             clearInterval(this.clientCheckInterval);
@@ -197,6 +197,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         if (item) {
             return item.sessionId;
         }
+    }
+
+    private hasBrowserClient(applicant): boolean {
+        return this.browserClients.has(applicant);
     }
 
     private getBrowserClient(applicant): BrowserObjectCustom {
@@ -300,12 +304,13 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     public async end(applicant: string) {
-        if (this.isEndSessionStarted) {
-            return;
-        }
-        this.isEndSessionStarted = true;
 
         await this.waitForReadyState;
+
+        if (!this.hasBrowserClient(applicant)) {
+            this.logger.warn(`No ${applicant} is registered`);
+            return;
+        }
 
         const client = this.getBrowserClient(applicant);
 
@@ -316,32 +321,31 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const startingSessionID = this.getApplicantSessionId(applicant);
         const sessionID = client.sessionId;
 
-        const ignoreClosedWindowError = async (fn) => {
-            try {
-                await fn();
-            } catch (e) {
-                if (e.message !== 'no such window: target window already closed') {
-                    throw e;
-                }
-            }
-        };
-
         if (startingSessionID === sessionID) {
             this.logger.debug(`Stopping sessions for applicant ${applicant}. Session id: ${sessionID}`);
-            await ignoreClosedWindowError(() => client.deleteSession());
+            await client.deleteSession();
         } else {
-            this.logger.warn(`Stopping sessions for applicant warning ${applicant}.`,
-                `Session ids are not equal, started with - ${startingSessionID}, ended with - ${sessionID}`);
-            try {
-                if (startingSessionID) {
-                    await ignoreClosedWindowError(() => client.deleteSessionId(startingSessionID));
-                } else {
-                    await ignoreClosedWindowError(() => client.deleteSession());
-                }
-            } catch (err) {
-                this.logger.error(`Old session ${startingSessionID} delete error`, err);
-            }
+            await this.logger.stepWarning(
+                `Stopping sessions for applicant warning ${applicant}. `
+                    + `Session ids are not equal, started with - ${startingSessionID}, ended with - ${sessionID}`,
+                async () => {
+                    try {
+                        if (startingSessionID) {
+                            await client.deleteSessionId(startingSessionID);
+                        }
+                    } catch (err) {
+                        this.logger.error(`Old session ${startingSessionID} delete error`, err);
+                    }
+
+                    try {
+                        await client.deleteSession();
+                    } catch (err) {
+                        this.logger.error(`New session ${client.sessionId} delete error`, err);
+                    }
+                });
         }
+
+        this.browserClients.delete(applicant);
     }
 
     public async kill() {
@@ -670,12 +674,31 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.getWindowHandle();
     }
 
+    public async getTabIds(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        return client.getWindowHandles();
+    }
+    // @deprecated
+    public async windowHandles(applicant: string) {
+        return this.getTabIds(applicant);
+    }
+
+    public async window(applicant: string, tabId: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        return client.switchToWindow(tabId);
+    }
+
     public async switchTab(applicant: string, tabId: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        const result = client.switchToWindow(tabId);
-        await client.waitUntil(async () => (await client.$('body')).isExisting(), 10000);
+        const result = await client.switchToWindow(tabId);
+        const body = await client.$('body');
+        await client.waitUntil(async () => body.isExisting(), 10000);
 
         return result;
     }
@@ -683,27 +706,16 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     public async close(applicant: string, tabId: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
+        const tabs = await this.getTabIds(applicant);
+
+        if (tabs.length === 1 && tabs[0] === tabId) {
+            return this.end(applicant);
+        }
 
         await client.switchToWindow(tabId);
+
         return client.closeWindow();
-    }
 
-    public async getTabIds(applicant: string) {
-        return this.windowHandles(applicant);
-    }
-
-    public async window(applicant: string, winHandle: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        return client.switchToWindow(winHandle);
-    }
-
-    public async windowHandles(applicant: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        return client.getWindowHandles();
     }
 
 

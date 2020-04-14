@@ -1156,13 +1156,34 @@ export class WebApplication extends PluggableModule {
 
     public async closeBrowserWindow(focusToTabId = null) {
         const mainTabID = await this.getMainTabId();
-        return this.client.close(focusToTabId || mainTabID);
+        const tabIds = await this.getTabIds();
+        const tabId = focusToTabId || mainTabID;
+
+        if (tabIds.length === 1 && tabIds[0] === tabId) {
+            this.resetMainTabId();
+        }
+
+        return this.client.close(tabId);
     }
 
     public async closeCurrentTab() {
         const currentTabId = await this.getCurrentTabId();
+        const mainTabID = await this.getMainTabId();
+
         await this.closeBrowserWindow(currentTabId);
-        await this.switchToMainSiblingTab();
+
+        if (currentTabId === mainTabID) {
+            const tabIds = await this.getTabIds();
+
+            if (tabIds.length > 0) {
+                await this.setActiveTab(tabIds[0]);
+                this.mainTabID = tabIds[0];
+            } else {
+                await this.end();
+            }
+        } else {
+            await this.switchToMainSiblingTab();
+        }
     }
 
     public async windowHandles() {
@@ -1190,6 +1211,10 @@ export class WebApplication extends PluggableModule {
         return this.mainTabID;
     }
 
+    private resetMainTabId() {
+        this.mainTabID = null;
+    }
+
     public async getTabIds() {
         return this.client.getTabIds();
     }
@@ -1213,22 +1238,24 @@ export class WebApplication extends PluggableModule {
 
     public async closeAllOtherTabs() {
         let tabIds: any = await this.getTabIds();
+        let mainTabId = await this.getMainTabId();
 
-        while (tabIds.length > 1) {
-            await this.closeFirstSiblingTab();
-
-            tabIds = await this.getTabIds();
+        for (let tabId of tabIds) {
+            if (tabId !== mainTabId) {
+                await this.window(tabId);
+                await this.closeBrowserWindow(tabId);
+            }
         }
+        await this.switchToMainSiblingTab();
     }
 
     public async setActiveTab(tabId: number | null) {
-        await this.switchTab(tabId);
         await this.window(tabId);
     }
 
     public async closeFirstSiblingTab() {
         await this.switchToFirstSiblingTab();
-        await this.closeBrowserWindow(await this.getCurrentTabId());
+        await this.closeCurrentTab();
         await this.switchToMainSiblingTab();
     }
 
@@ -1247,13 +1274,16 @@ export class WebApplication extends PluggableModule {
 
     public async switchToMainSiblingTab() {
         const mainTabID = await this.getMainTabId();
-        let tabIds: any = await this.getTabIds();
-        tabIds = tabIds.filter(tabId => tabId === mainTabID);
+        const tabIds: any = await this.getTabIds();
+        const mainTab = tabIds.find(tabId => tabId === mainTabID);
 
-        if (tabIds[0]) {
-            await this.setActiveTab(tabIds[0]);
+        if (mainTab) {
+            await this.setActiveTab(mainTab);
             return true;
+        } else if (tabIds.length > 0) {
+            await this.setActiveTab(tabIds[0]);
         }
+
         return false;
     }
 
@@ -1436,6 +1466,7 @@ export class WebApplication extends PluggableModule {
             await this.unregisterAppInDevtool();
         }
 
+        this.resetMainTabId();
         await this.client.end();
         this.isSessionStopped = true;
     }
