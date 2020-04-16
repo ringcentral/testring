@@ -1,6 +1,6 @@
 {
   "name": "@testring/plugin-selenium-driver",
-  "version": "0.5.26",
+  "version": "0.5.27",
   "main": "./dist/index.js",
   "typings": "./src/index.ts",
   "repository": {
@@ -10,11 +10,11 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/child-process": "0.5.26",
-    "@testring/devtool-extension": "0.5.26",
-    "@testring/logger": "0.5.26",
-    "@testring/plugin-api": "0.5.26",
-    "@testring/types": "0.5.26",
+    "@testring/child-process": "0.5.27",
+    "@testring/devtool-extension": "0.5.27",
+    "@testring/logger": "0.5.27",
+    "@testring/plugin-api": "0.5.27",
+    "@testring/types": "0.5.27",
     "@types/deepmerge": "2.2.0",
     "@types/node": "12.12.21",
     "chromedriver": "*",

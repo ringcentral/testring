@@ -1,6 +1,6 @@
 {
   "name": "@testring/transport",
-  "version": "0.5.26",
+  "version": "0.5.27",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,9 +10,9 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/child-process": "0.5.26",
-    "@testring/types": "0.5.26",
-    "@testring/utils": "0.5.26",
+    "@testring/child-process": "0.5.27",
+    "@testring/types": "0.5.27",
+    "@testring/utils": "0.5.27",
     "@types/node": "12.12.21"
   }
 }
