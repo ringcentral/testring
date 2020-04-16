@@ -37,7 +37,7 @@ export class TestContext {
     }
 
     public async logBusiness(message: string) {
-        this.stopLogBusiness();
+        await this.stopLogBusiness();
 
         this.lastLoggedBusinessMessage = message;
 
