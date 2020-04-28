@@ -11,6 +11,7 @@ import { loggerClient } from '@testring/logger';
 import { absoluteExtensionPath } from '@testring/devtool-extension';
 
 import Cookie = WebdriverIO.Cookie;
+import ClickOptions = WebdriverIO.ClickOptions;
 
 // Stupidly needed thing for making our own requests
 const _webdriverReq = require('webdriver/build/request');
@@ -370,12 +371,21 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.refresh();
     }
 
-    public async click(applicant: string, selector: string) {
+    public async click(applicant: string, selector: string, options?: ClickOptions) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
         const element = await client.$(selector);
         return element.click();
+    }
+
+    public async getSize(applicant: string, selector: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const element = await client.$(selector);
+
+        return element.getSize();
     }
 
     public async url(applicant: string, val: string) {

@@ -24,6 +24,11 @@ import * as utils from './utils';
 
 type valueType = string | number | null | undefined;
 
+type ClickOptions = {
+    x?: number | 'left' | 'center' | 'right';
+    y?: number | 'top' | 'center' | 'bottom';
+};
+
 export class WebApplication extends PluggableModule {
     protected LOGGER_PREFIX: string = '[web-application]';
 
@@ -91,6 +96,12 @@ export class WebApplication extends PluggableModule {
         },
         click(xpath) {
             return `Click on ${this.formatXpath(xpath)}`;
+        },
+        clickButton(xpath) {
+            return `Click on ${this.formatXpath(xpath)} in the middle`;
+        },
+        clickCoordinates(xpath, options: ClickOptions) {
+            return `Click on ${this.formatXpath(xpath)} in ${JSON.stringify(options || { x: 1, y: 1 })}`;
         },
         clickHiddenElement(xpath) {
             return `Make ${this.formatXpath(xpath)} visible and click`;
@@ -620,14 +631,80 @@ export class WebApplication extends PluggableModule {
         await this.waitForExist(normalizedSelector, timeout);
         await this.makeScreenshot();
 
-        return this.client.click(normalizedSelector);
+        return this.client.click(normalizedSelector, { x: 1, y: 1 });
+    }
+
+    public async clickButton(xpath, timeout: number = this.WAIT_TIMEOUT) {
+        const normalizedSelector = this.normalizeSelector(xpath);
+
+        await this.waitForExist(normalizedSelector, timeout);
+        await this.makeScreenshot();
+
+        return this.client.click(normalizedSelector, { button: 'middle' });
+    }
+
+    public async clickCoordinates(xpath, options: ClickOptions, timeout: number = this.WAIT_TIMEOUT) {
+        const normalizedSelector = this.normalizeSelector(xpath);
+
+        await this.waitForExist(normalizedSelector, timeout);
+        await this.makeScreenshot();
+
+        let hPos = 1;
+        let vPos = 1;
+
+        if (typeof options?.x === 'string' || typeof options?.y === 'string') {
+            const { width, height } = await this.client.getSize(normalizedSelector);
+
+            switch (options?.x) {
+                case 'left':
+                    hPos = 0;
+                    break;
+
+                case 'right':
+                    hPos = width;
+                    break;
+
+                case 'center':
+                    hPos = Math.ceil(width / 2);
+                    break;
+
+                default:
+                    hPos = 1;
+            }
+
+            switch (options?.y) {
+                case 'top':
+                    vPos = 0;
+                    break;
+
+                case 'bottom':
+                    vPos = width;
+                    break;
+
+                case 'center':
+                    vPos = Math.ceil(height / 2);
+                    break;
+
+                default:
+                    hPos = 1;
+            }
+        }
+
+        return this.client.click(normalizedSelector, { x: hPos, y: vPos });
+    }
+
+    public async getSize(xpath, timeout: number = this.WAIT_TIMEOUT) {
+        await this.waitForExist(xpath, timeout);
+
+        const normalizedSelector = this.normalizeSelector(xpath);
+        return this.client.getSize(normalizedSelector);
     }
 
     public async getValue(xpath, timeout: number = this.WAIT_TIMEOUT) {
         await this.waitForExist(xpath, timeout);
 
-        xpath = this.normalizeSelector(xpath);
-        return this.client.getValue(xpath);
+        const normalizedSelector = this.normalizeSelector(xpath);
+        return this.client.getValue(normalizedSelector);
     }
 
     public async simulateJSFieldClear(xpath) {

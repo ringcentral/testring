@@ -27,6 +27,7 @@ export const enum BrowserProxyActions {
     elements = 'elements',
     getValue = 'getValue',
     setValue = 'setValue',
+    getSize = 'getSize',
     selectByIndex = 'selectByIndex',
     selectByValue = 'selectByValue',
     selectByVisibleText = 'selectByVisibleText',

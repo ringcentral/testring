@@ -24,7 +24,7 @@ export interface IBrowserProxyPlugin {
 
     refresh(applicant: string): Promise<any>;
 
-    click(applicant: string, selector: string): Promise<any>;
+    click(applicant: string, selector: string, options?: any): Promise<any>;
 
     gridProxyDetails(applicant: string): Promise<any>;
 
@@ -93,6 +93,8 @@ export interface IBrowserProxyPlugin {
     deleteCookie(applicant: string, cookieName: string): Promise<any>;
 
     getHTML(applicant: string, xpath: string, b: any): Promise<any>;
+
+    getSize(applicant: string, xpath: string): Promise<any>;
 
     getCurrentTabId(applicant: string): Promise<any>;
 
