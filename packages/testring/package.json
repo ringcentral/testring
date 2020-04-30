@@ -15,6 +15,12 @@
   "license": "MIT",
   "dependencies": {
     "@testring/api": "0.5.28",
-    "@testring/cli": "0.5.28"
-  }
+    "@testring/cli": "0.5.28",
+    "snyk": "^1.316.1"
+  },
+  "scripts": {
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
+  },
+  "snyk": true
 }
