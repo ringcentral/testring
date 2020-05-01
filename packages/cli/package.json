@@ -23,9 +23,15 @@
     "@testring/types": "0.5.28",
     "@testring/web-application": "0.5.28",
     "@types/yargs": "12.0.0",
-    "yargs": "12.0.2"
+    "yargs": "12.0.2",
+    "snyk": "^1.316.1"
   },
   "devDependencies": {
     "@types/node": "12.12.21"
-  }
+  },
+  "scripts": {
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
+  },
+  "snyk": true
 }
