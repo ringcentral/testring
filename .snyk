@@ -1,0 +1,78 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.14.1
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  SNYK-JS-LODASH-567746:
+    - npm-utils > ggit > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - eslint > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - lerna-update-wizard > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - npm-check > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - babel-eslint > @babel/traverse > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - eslint > inquirer > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - lerna-update-wizard > inquirer > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - eslint > table > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - npm-check > callsite-record > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - npm-check > depcheck > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - npm-check > inquirer > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - sinon > @sinonjs/samsam > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - babel-eslint > @babel/traverse > @babel/generator > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - nyc > istanbul-lib-instrument > @babel/traverse > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - npm-check > depcheck > @babel/traverse > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - sinon > @sinonjs/formatio > @sinonjs/samsam > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - babel-eslint > @babel/traverse > @babel/helper-split-export-declaration > @babel/types > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - nyc > istanbul-lib-instrument > @babel/traverse > @babel/generator > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - npm-check > depcheck > @babel/traverse > @babel/generator > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - lerna > @lerna/publish > @lerna/prompt > inquirer > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - lerna > @lerna/version > @lerna/conventional-commits > conventional-changelog-core > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - sinon > nise > @sinonjs/formatio > @sinonjs/samsam > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - npm-check > depcheck > @babel/traverse > @babel/helper-split-export-declaration > @babel/types > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - nyc > istanbul-lib-instrument > @babel/traverse > @babel/helper-split-export-declaration > @babel/types > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - babel-eslint > @babel/traverse > @babel/helper-function-name > @babel/template > @babel/types > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - lerna > @lerna/publish > @lerna/version > @lerna/prompt > inquirer > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - lerna > @lerna/version > @lerna/conventional-commits > conventional-changelog-core > conventional-changelog-writer > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - lerna > @lerna/version > @lerna/conventional-commits > conventional-changelog-core > conventional-commits-parser > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - lerna > @lerna/version > @lerna/conventional-commits > conventional-recommended-bump > conventional-commits-parser > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - lerna > @lerna/publish > @lerna/version > @lerna/conventional-commits > conventional-changelog-core > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - npm-check > depcheck > @babel/traverse > @babel/helper-function-name > @babel/template > @babel/types > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - nyc > istanbul-lib-instrument > @babel/traverse > @babel/helper-function-name > @babel/template > @babel/types > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - lerna > @lerna/publish > @lerna/npm-publish > @lerna/otplease > @lerna/prompt > inquirer > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - lerna > @lerna/publish > @lerna/version > @lerna/conventional-commits > conventional-changelog-core > conventional-changelog-writer > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - lerna > @lerna/publish > @lerna/version > @lerna/conventional-commits > conventional-changelog-core > conventional-commits-parser > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
+    - lerna > @lerna/publish > @lerna/version > @lerna/conventional-commits > conventional-recommended-bump > conventional-commits-parser > lodash:
+        patched: '2020-05-01T02:46:51.208Z'
