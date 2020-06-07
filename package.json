@@ -1,6 +1,5 @@
 {
   "name": "testring-build",
-  "private": true,
   "author": "RingCentral",
   "license": "MIT",
   "repository": {
