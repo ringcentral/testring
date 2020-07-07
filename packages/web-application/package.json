@@ -1,6 +1,6 @@
 {
   "name": "@testring/web-application",
-  "version": "0.5.28",
+  "version": "0.0.8",
   "main": "./dist/index.js",
   "typings": "./src/index.ts",
   "repository": {

@@ -79,7 +79,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     private incrementWinId: number = 0;
 
-    private puppeteerDriver: puppeteer.Browser;
+    private puppeteerDriverMap: Map<string, puppeteer.Browser> = new Map();
 
     constructor(config: Partial<SeleniumPluginConfig> = {}) {
         this.config = this.createConfig(config);
@@ -284,15 +284,17 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             client: customClient,
             sessionId,
             initTime: Date.now(),
+
         });
 
         this.logger.debug(`Started session for applicant: ${applicant}. Session id: ${sessionId}`);
         //accurate
         const debugAddress = client.capabilities['goog:chromeOptions']?.debuggerAddress;
-        this.puppeteerDriver = await puppeteer.connect({ browserURL: `http://${debugAddress}` });
+        const puppeteerDriver = await puppeteer.connect({ browserURL: `http://${debugAddress}`,defaultViewport:null });
         // puppeteer: start to collect js coverage
-        const pages = await this.puppeteerDriver.pages();
+        const pages = await puppeteerDriver.pages();
         await pages[0].coverage.startJSCoverage({ resetOnNavigation: false });
+        this.puppeteerDriverMap.set(applicant,puppeteerDriver);
         this.logger.debug('Started to collect coverage.');
     }
 
@@ -371,9 +373,19 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         if (!clientData) {
             return;
         }
-        const pages = await this.puppeteerDriver.pages();
-        const coverages: any[] = await pages[0].coverage.stopJSCoverage();  // patched
-        fs.writeFileSync('v8-coverage.json', JSON.stringify(coverages, null, 2));
+        const puppeteerDriver = this.puppeteerDriverMap.get(applicant);
+        if (!puppeteerDriver) {
+            return;
+        }
+        const pages = await puppeteerDriver.pages();
+        let splitArray = applicant.split('/');
+        let sessionId = splitArray[splitArray.length-1];
+        let filepath = '/Users/zerk.huang/source/caseFolder/'+sessionId;
+        if (fs.existsSync(filepath)){
+            const coverages = await pages[0].coverage.stopJSCoverage(); // patched
+            fs.writeFileSync(filepath+'/v8-coverage.json', JSON.stringify(coverages, null, 2));
+        }
+        this.puppeteerDriverMap.delete(applicant);
     }
 
     public async kill() {
