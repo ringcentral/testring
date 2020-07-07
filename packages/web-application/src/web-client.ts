@@ -297,4 +297,7 @@ export class WebClient implements IWebApplicationClient {
     public gridTestSession() {
         return this.makeRequest(BrowserProxyActions.gridTestSession, []);
     }
+    public getApplicant() {
+        return this.applicant;
+    }
 }
