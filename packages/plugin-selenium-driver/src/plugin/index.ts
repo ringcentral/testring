@@ -11,6 +11,9 @@ import { loggerClient } from '@testring/logger';
 import { absoluteExtensionPath } from '@testring/devtool-extension';
 import * as puppeteer from 'puppeteer-core';
 
+const pti = require('puppeteer-to-istanbul')
+
+
 
 import Cookie = WebdriverIO.Cookie;
 import ClickOptions = WebdriverIO.ClickOptions;
@@ -383,6 +386,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         let filepath = '/Users/zerk.huang/source/caseFolder/'+sessionId;
         if (fs.existsSync(filepath)){
             const coverages = await pages[0].coverage.stopJSCoverage(); // patched
+            for (let i = 0; i <coverages.length; i++){
+                if (coverages[i].url.indexOf('appcues')!=-1) {
+                    coverages[i].url = '';
+                }
+            }
             fs.writeFileSync(filepath+'/v8-coverage.json', JSON.stringify(coverages, null, 2));
         }
         this.puppeteerDriverMap.delete(applicant);

@@ -1,11 +1,14 @@
 {
   "name": "@testring/plugin-selenium-driver",
-  "version": "0.5.28",
+  "version": "0.5.30",
   "main": "./dist/index.js",
   "typings": "./src/index.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/ringcentral/testring.git"
+  },
+  "scripts": {
+    "postinstall": "git apply -v patches/* || true"
   },
   "author": "RingCentral",
   "license": "MIT",
@@ -20,9 +23,9 @@
     "@types/puppeteer-core": "2.0.0",
     "chromedriver": "*",
     "deepmerge": "2.1.1",
+    "puppeteer-core": "3.1.0",
+    "puppeteer-to-istanbul": "1.4.0",
     "selenium-server": "3.141.59",
-    "webdriverio": "5.22.3",
-    "v8-to-istanbul": "4.1.4",
-    "puppeteer-core": "3.1.0"
+    "webdriverio": "5.22.3"
   }
 }
