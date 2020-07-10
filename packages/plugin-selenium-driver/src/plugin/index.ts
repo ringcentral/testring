@@ -11,9 +11,6 @@ import { loggerClient } from '@testring/logger';
 import { absoluteExtensionPath } from '@testring/devtool-extension';
 import * as puppeteer from 'puppeteer-core';
 
-const pti = require('puppeteer-to-istanbul')
-
-
 
 import Cookie = WebdriverIO.Cookie;
 import ClickOptions = WebdriverIO.ClickOptions;
