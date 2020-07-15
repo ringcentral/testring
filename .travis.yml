@@ -7,7 +7,7 @@ addons:
   chrome: stable
 
 language: node_js
-dist: trusty
+dist: xenial
 
 node_js:
   - "12"
@@ -20,6 +20,7 @@ cache:
   - node_modules
 
 script:
+  - google-chrome-stable --version
   - xvfb-run npm run build:ci
 
 stages:
