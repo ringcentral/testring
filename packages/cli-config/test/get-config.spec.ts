@@ -75,6 +75,7 @@ describe('Get config', () => {
         chai.expect(config).to.have.property('workerLimit', envConfig.workerLimit);
     });
 
+    // eslint-disable-next-line sonarjs/no-identical-functions
     it('should override default and file config fields with file config and ignore @extend', async () => {
         const config = await getConfig([
             `--config=${fileConfigPath}`,
