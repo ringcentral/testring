@@ -561,40 +561,33 @@ export class WebApplication extends PluggableModule {
             await this.url(uri);
             await this.refresh();
             await this.logNavigatorVersion();
-            return this.documentReadyWait();
+            await this.documentReadyWait();
+        } else {
+            await this.url(uri);
+            await this.logNavigatorVersion();
+            await this.documentReadyWait();
         }
-
-        await this.url(uri);
-        await this.logNavigatorVersion();
-        return this.documentReadyWait();
     }
 
     public async openPage(
-        page: ((arg: this) => any) | string,
+        page: string,
         timeout: number = this.WAIT_PAGE_LOAD_TIMEOUT,
     ): Promise<any> {
-        if (typeof page === 'string') {
-            let timer;
+        let timer;
 
-            let result = await Promise.race([
-                this.openPageFromURI(page),
-                new Promise((resolve, reject) => {
-                    timer = setTimeout(
-                        () => reject(new Error(`Page open timeout: ${page}`)),
-                        timeout,
-                    );
-                }),
-            ]);
+        let result = await Promise.race([
+            this.openPageFromURI(page),
+            new Promise((resolve, reject) => {
+                timer = setTimeout(
+                    () => reject(new Error(`Page open timeout: ${page}`)),
+                    timeout,
+                );
+            }),
+        ]);
 
-            clearTimeout(timer);
+        clearTimeout(timer);
 
-            return result;
-
-        } else if (typeof page === 'function') {
-            return page(this);
-        }
-
-        throw new Error('Unsupported path type for openPage');
+        return result;
     }
 
     public async isBecomeVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
