@@ -27,3 +27,17 @@ Let's start by installing testring inside your project:
 ```
 $ npm install testring
 ```
+or 
+```
+git clone https://github.com/testring
+
+### * installation
+> 1. install java last version (1.11)
+
+### * check installation
+
+run 
+``` 
+$ npm run test:e2e 
+```
+the execution must finish without an error.
