@@ -1,4 +1,7 @@
 {
+  "compilerOptions": {
+    "noEmitOnError": true
+  },
   "extends": "../../tsconfig.json",
   "include": [
     "*.ts",
