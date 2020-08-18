@@ -1,5 +1,5 @@
 import { ITestWorker, ITestWorkerInstance } from '@testring/types';
-import Timer = NodeJS.Timer;
+// import Timeout = NodeJS.Timeout;
 
 const ERROR_INSTANCE = {
     test: 'file.js',
@@ -10,7 +10,7 @@ type executionCallback = () => Promise<void> | void;
 
 class TestWorkerMockInstance implements ITestWorkerInstance {
 
-    private timeout: Timer | null = null;
+    private timeout: ReturnType<typeof setTimeout> | null = null;
     private callback: executionCallback | null = null;
 
     private executeCalls = 0;
