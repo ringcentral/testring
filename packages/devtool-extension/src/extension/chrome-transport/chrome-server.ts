@@ -3,7 +3,8 @@ import {
     IExtensionMessagingTransportMessage,
 } from '@testring/types';
 
-import * as EventEmitter from 'events';
+import { EventEmitter } from 'events';
+// import 'NodeJS';
 import { generateUniqId } from '@testring/utils';
 import Port = chrome.runtime.Port;
 
@@ -54,7 +55,7 @@ export class BackgroundChromeServer extends EventEmitter {
         this.emit(
             ExtensionMessagingTransportEvents.MESSAGE,
             message,
-            conId
+            conId,
         );
     }
 
