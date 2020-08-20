@@ -21,19 +21,19 @@
     "@testring/transport": "0.5.29",
     "@testring/types": "0.5.29",
     "@testring/utils": "0.5.29",
-    "@types/babel-traverse": "6.25.4",
-    "@types/express-serve-static-core": "4.16.2",
-    "@types/ws": "5.1.2",
+    "@types/babel-traverse": "6.25.5",
+    "@types/express-serve-static-core": "4.17.9",
+    "@types/ws": "7.2.6",
     "babel-traverse": "6.26.0",
     "babel-types": "6.26.0",
     "express": "4.17.1",
-    "redux": "4.0.1",
-    "ws": "6.0.0"
+    "redux": "4.0.5",
+    "ws": "7.3.1"
   },
   "devDependencies": {
     "@testring/test-utils": "0.5.29",
-    "request": "2.87.0",
-    "request-promise": "4.2.2",
-    "ts-node": "8.5.4"
+    "request": "2.88.2",
+    "request-promise": "4.2.6",
+    "ts-node": "8.10.2"
   }
 }

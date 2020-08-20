@@ -324,7 +324,7 @@ export class DevtoolWorkerController {
 
     async httpContextResolver(req: Request): Promise<{ context: Store; key: string }> {
         const PARAM_KEY = 'appId';
-        const webAppId = req.query[PARAM_KEY] || null;
+        const webAppId = req.query[PARAM_KEY] as string || null;
 
         if (webAppId === null) {
             throw Error(`${PARAM_KEY} search query is required.`);

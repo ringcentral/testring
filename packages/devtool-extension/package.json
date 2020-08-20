@@ -21,8 +21,8 @@
     "@types/webpack": "4.4.22",
     "chrome-launcher": "0.10.5",
     "copy-webpack-plugin": "5.0.2",
-    "ts-loader": "6.2.1",
-    "ts-node": "8.5.4",
+    "ts-loader": "8.0.2",
+    "ts-node": "8.10.2",
     "webpack": "4.28.4",
     "webpack-cli": "3.2.1"
   }

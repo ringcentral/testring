@@ -19,11 +19,11 @@
     "@testring/plugin-api": "0.5.29",
     "@testring/types": "0.5.29",
     "@types/deepmerge": "2.2.0",
-    "@types/node": "12.12.21",
+    "@types/node": "14.6.0",
     "@types/puppeteer-core": "2.0.0",
     "chromedriver": "*",
-    "deepmerge": "2.1.1",
-    "puppeteer-core": "3.1.0",
+    "deepmerge": "4.2.2",
+    "puppeteer-core": "5.2.1",
     "selenium-server": "3.141.59",
     "webdriverio": "5.22.3"
   }

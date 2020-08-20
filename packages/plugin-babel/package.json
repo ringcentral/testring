@@ -11,7 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "@testring/plugin-api": "0.5.29",
-    "@types/babel-core": "6.25.5",
+    "@types/babel-core": "6.25.6",
     "babel-core": "6.26.3"
   },
   "devDependencies": {

@@ -16,10 +16,10 @@
     "@testring/transport": "0.5.29",
     "@testring/types": "0.5.29",
     "@testring/utils": "0.5.29",
-    "@types/node": "12.12.21",
-    "@types/request-promise-native": "1.0.15",
-    "@types/tough-cookie": "2.3.3",
-    "request-promise-native": "1.0.7",
-    "tough-cookie": "2.4.3"
+    "@types/node": "14.6.0",
+    "@types/request-promise-native": "1.0.17",
+    "@types/tough-cookie": "4.0.0",
+    "request-promise-native": "1.0.9",
+    "tough-cookie": "4.0.0"
   }
 }
