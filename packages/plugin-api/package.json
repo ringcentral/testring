@@ -15,6 +15,6 @@
     "@testring/utils": "0.5.29"
   },
   "devDependencies": {
-    "@types/node": "12.12.21"
+    "@types/node": "14.6.0"
   }
 }

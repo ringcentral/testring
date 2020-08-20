@@ -1,5 +1,4 @@
 import { ITestWorker, ITestWorkerInstance } from '@testring/types';
-// import Timeout = NodeJS.Timeout;
 
 const ERROR_INSTANCE = {
     test: 'file.js',

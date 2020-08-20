@@ -14,9 +14,9 @@
     "@testring/transport": "0.5.29",
     "@testring/types": "0.5.29",
     "@testring/utils": "0.5.29",
-    "@types/bytes": "3.0.0",
-    "@types/node": "12.12.21",
-    "bytes": "3.0.0",
+    "@types/bytes": "3.1.0",
+    "@types/node": "14.6.0",
+    "bytes": "3.1.0",
     "chalk": "2.4.1"
   },
   "devDependencies": {

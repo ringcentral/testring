@@ -76,7 +76,7 @@ export class CRXPlugin {
         const data: Buffer[] = [];
         const output = await new Promise<Buffer>( (resolve, reject) => {
             stream.on('error', reject);
-            stream.on('data', chunk => data.push(typeof chunk === 'string'? Buffer.from(chunk):chunk));
+            stream.on('data', chunk => data.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk));
             stream.on('end', () => resolve(Buffer.concat(data)));
         });
 
