@@ -50,8 +50,10 @@ describe('argument parser', () => {
             tests: customTestsPath,
             plugins: pluginsSet,
             customField: customFieldSet,
-            myNamespacedCustomField: customFieldSet,
-            myNamespacedSecondCustomField: customField,
+            /* are the following needed ??? - looks like undocumented feature for early version
+            // myNamespacedCustomField: customFieldSet,
+            // myNamespacedSecondCustomField: customField,
+            */
             myNamespaced: {
                 customField: customFieldSet,
                 secondCustomField: customField,

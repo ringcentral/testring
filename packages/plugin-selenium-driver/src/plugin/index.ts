@@ -36,7 +36,7 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
     capabilities: {
         browserName: 'chrome',
         'goog:chromeOptions': { // for local ChromeDriver
-            args: [],
+            args: [] as string[],
         },
     },
 };

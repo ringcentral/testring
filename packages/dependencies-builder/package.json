@@ -13,8 +13,8 @@
     "@testring/test-utils": "0.5.29",
     "@testring/types": "0.5.29",
     "@testring/utils": "0.5.29",
-    "@types/babel-traverse": "6.25.4",
-    "@types/babylon": "6.16.3",
+    "@types/babel-traverse": "6.25.5",
+    "@types/babylon": "6.16.5",
     "babel-traverse": "6.26.0",
     "babylon": "6.18.0"
   }

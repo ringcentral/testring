@@ -4,7 +4,6 @@ import {
 } from '@testring/types';
 
 import { EventEmitter } from 'events';
-// import 'NodeJS';
 import { generateUniqId } from '@testring/utils';
 import Port = chrome.runtime.Port;
 

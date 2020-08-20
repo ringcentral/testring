@@ -4,7 +4,7 @@ import { BrowserProxy } from './browser-proxy';
 
 const args = yargs.argv;
 
-const name = args.name;
-const config = JSON.parse(args.config);
+const name = args.name as string;
+const config = JSON.parse(args.config as string);
 
 new BrowserProxy(transport, name, config);
