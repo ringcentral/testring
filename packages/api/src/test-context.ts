@@ -76,7 +76,7 @@ export class TestContext {
         return testAPIController.getEnvironmentParameters();
     }
 
-    public initCustomApplication<T extends WebApplication = WebApplication>(Ctr: { new(...args: Array<any>): T; }) {
+    public initCustomApplication<T extends WebApplication>(Ctr: { new(...args: Array<any>): T; }) {
         const runData = this.getRunData();
         const customApplication = new Ctr(testAPIController.getTestID(), transport, runData);
 
