@@ -7,9 +7,6 @@
     "type": "git",
     "url": "https://github.com/ringcentral/testring.git"
   },
-  "scripts": {
-    "postinstall": "git apply -v patches/* || true"
-  },
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
@@ -25,6 +22,8 @@
     "deepmerge": "4.2.2",
     "puppeteer-core": "5.2.1",
     "selenium-server": "3.141.59",
-    "webdriverio": "5.22.3"
+    "webdriverio": "5.22.3",
+    "v8-to-istanbul": "4.1.4",
+    "puppeteer-core": "3.1.0"
   }
 }
