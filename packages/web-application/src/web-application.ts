@@ -81,7 +81,7 @@ export class WebApplication extends PluggableModule {
         waitForVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
             return `Waiting for visible ${this.formatXpath(xpath)} for ${timeout}`;
         },
-        openPage(uri: ((arg) => any) | string) {
+        openPage(uri: string) {
             if (typeof uri === 'string') {
                 return `Opening page uri: ${uri}`;
             }
