@@ -13,8 +13,6 @@ import * as puppeteer from 'puppeteer-core';
 
 import Cookie = WebdriverIO.Cookie;
 import ClickOptions = WebdriverIO.ClickOptions;
-import * as fs from 'fs';
-
 
 // Stupidly needed thing for making our own requests
 const _webdriverReq = require('webdriver/build/request');
@@ -77,8 +75,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     private config: SeleniumPluginConfig;
 
     private incrementWinId: number = 0;
-
-    private puppeteerDriver: puppeteer.Browser;
 
     constructor(config: Partial<SeleniumPluginConfig> = {}) {
         this.config = this.createConfig(config);
@@ -286,13 +282,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         });
 
         this.logger.debug(`Started session for applicant: ${applicant}. Session id: ${sessionId}`);
-        //accurate
-        const debugAddress = client.capabilities['goog:chromeOptions']?.debuggerAddress;
-        this.puppeteerDriver = await puppeteer.connect({ browserURL: `http://${debugAddress}` });
-        // puppeteer: start to collect js coverage
-        const pages = await this.puppeteerDriver.pages();
-        await pages[0].coverage.startJSCoverage({ resetOnNavigation: false });
-        this.logger.debug('Started to collect coverage.');
     }
 
     protected addCustromMethods(client: BrowserObject): BrowserObjectCustom {
@@ -335,8 +324,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const sessionID = client.sessionId;
 
         if (startingSessionID === sessionID) {
-            this.logger.debug(`Stopping coverage for applicant ${applicant}. Session id: ${sessionID}`);
-            await this.writeCollectFile(applicant);
             this.logger.debug(`Stopping sessions for applicant ${applicant}. Session id: ${sessionID}`);
             await client.deleteSession();
         } else {
@@ -361,18 +348,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
 
         this.browserClients.delete(applicant);
-    }
-
-    public async writeCollectFile(applicant: string) {
-        // puppeteer: stop coverage collection
-        const clientData = this.browserClients.get(applicant);
-        this.logger.debug(`start download coverage for applicant ${applicant}`);
-        if (!clientData) {
-            return;
-        }
-        const pages = await this.puppeteerDriver.pages();
-        const coverages: any[] = await pages[0].coverage.stopJSCoverage();  // patched
-        fs.writeFileSync('v8-coverage.json', JSON.stringify(coverages, null, 2));
     }
 
     public async kill() {
