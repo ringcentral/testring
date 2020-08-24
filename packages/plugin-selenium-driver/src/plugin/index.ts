@@ -9,7 +9,6 @@ import * as deepmerge from 'deepmerge';
 import { spawn } from '@testring/child-process';
 import { loggerClient } from '@testring/logger';
 import { absoluteExtensionPath } from '@testring/devtool-extension';
-import * as puppeteer from 'puppeteer-core';
 
 import Cookie = WebdriverIO.Cookie;
 import ClickOptions = WebdriverIO.ClickOptions;
