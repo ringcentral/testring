@@ -11,7 +11,6 @@ import { loggerClient } from '@testring/logger';
 import { absoluteExtensionPath } from '@testring/devtool-extension';
 import * as puppeteer from 'puppeteer-core';
 
-
 import Cookie = WebdriverIO.Cookie;
 import ClickOptions = WebdriverIO.ClickOptions;
 import * as fs from 'fs';
