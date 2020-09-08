@@ -15,10 +15,12 @@ export interface IConfig extends IConfigLogger {
     devtool: boolean;
     restartWorker: boolean;
     screenshots: ScreenshotsConfig;
+    screenshotPath: string;
     config: string;
     debug: boolean;
     bail: boolean;
     workerLimit: number | 'local';
+    maxWriteThreadCount?: number;
     retryCount: number;
     retryDelay: number;
     testTimeout: number;

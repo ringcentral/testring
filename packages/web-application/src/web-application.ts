@@ -1,4 +1,5 @@
 import * as url from 'url';
+import * as path from 'path';
 import {
     IWebApplicationConfig,
     IAssertionErrorMeta,
@@ -17,6 +18,8 @@ import { loggerClient, LoggerClient } from '@testring/logger';
 import { generateUniqId } from '@testring/utils';
 import { PluggableModule } from '@testring/pluggable-module';
 import { createElementPath, ElementPath } from '@testring/element-path';
+
+import { FSWriter, FSQueueClient } from '@testring/fs-store';
 
 import { createAssertion } from './assert';
 import { WebClient } from './web-client';
@@ -51,6 +54,8 @@ export class WebApplication extends PluggableModule {
     private isRegisteredInDevtool: boolean = false;
 
     private applicationId: string = `webApp-${generateUniqId()}`;
+
+    private fsWriterClient: FSQueueClient;
 
     public assert = createAssertion({
         onSuccess: (meta) => this.successAssertionHandler(meta),
@@ -226,11 +231,13 @@ export class WebApplication extends PluggableModule {
         super();
         this.config = this.getConfig(config);
         this.decorateMethods();
+        this.fsWriterClient = new FSQueueClient();
     }
 
     protected getConfig(userConfig: Partial<IWebApplicationConfig>): IWebApplicationConfig {
         return Object.assign({}, {
             screenshotsEnabled: false,
+            screenshotPath: './tmp/',
             devtool: null,
         }, userConfig);
     }
@@ -1511,16 +1518,29 @@ export class WebApplication extends PluggableModule {
 
     public async makeScreenshot(force: boolean = false) {
         if (this.config.screenshotsEnabled && (this.screenshotsEnabledManually || force)) {
-            const screenshoot = await this.client.makeScreenshot();
-            const screenDate = new Date();
-            const formattedDate = (`${screenDate.toLocaleTimeString()} ${screenDate.toDateString()}`)
-                .replace(/\s+/g, '_');
+            const screenshot = await this.client.makeScreenshot();
 
-            this.logger.media(
-                `${this.testUID}-${formattedDate}-${generateUniqId(5)}.png`,
-                screenshoot,
-            );
+            const reqId = this.fsWriterClient.getPermission(async ()=>{
+                // get file name from master process
+                const fName = await this.generateUniqFileName(this.config.screenshotPath);
+                const writer = new FSWriter(fName);
+                await writer.write(screenshot);
+                this.fsWriterClient.releasePermission(reqId);
+                this.logger.file(fName);
+            });
+            // this.logger.media(
+            //     `${this.testUID}-${formattedDate}-${generateUniqId(5)}.png`,
+            //     screenshoot,
+            // );
         }
+    }
+
+    private async generateUniqFileName(dir: string, ext='png') {
+        const screenDate = new Date();
+        const formattedDate = (`${screenDate.toLocaleTimeString()} ${screenDate.toDateString()}`)
+                .replace(/\s+/g, '_');
+        return path.join(dir, `${this.testUID}-${formattedDate}-${generateUniqId(5)}.${ext}`);
+
     }
 
     public uploadFile(fullPath) {

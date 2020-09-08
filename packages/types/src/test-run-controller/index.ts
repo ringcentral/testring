@@ -20,6 +20,7 @@ export interface ITestQueuedTestRunData {
     screenshotsEnabled: boolean;
     isRetryRun: boolean;
     devtool: IDevtoolRuntimeConfiguration | null;
+    screenshotPath: string;
 }
 
 export interface IQueuedTest {

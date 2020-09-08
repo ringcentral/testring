@@ -14,6 +14,7 @@ export { requirePlugin } from './plugin-require';
 
 export { Queue } from './queue';
 export { Stack } from './stack';
+export { MultiLock } from './multi-lock';
 
 export { generateUniqId } from './generate-uniq-id';
 

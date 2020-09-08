@@ -142,6 +142,10 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
         this.createLog(LogTypes.media, LogLevel.info, [filename, content]);
     }
 
+    public file(filename: string): void {
+        this.createLog(LogTypes.file, LogLevel.info, [filename]);
+    }
+
     public startStep(message: string, stepType?: LogStepTypes): void {
         const step = this.generateStepEntity(message);
 

@@ -55,4 +55,45 @@ describe('PluggableModule', () => {
             });
         }
     });
+
+    it('should process multiple arguments', async () => {
+        const testData = { main: 1 };
+        const testDataExtra = { mainExtra: 2 };
+        const additional = { additional: 1 };
+
+        const expectedResult= {
+            main: 1,
+            mainExtra: 2,
+            additional: 1,
+        };
+
+        const testModule = new TestModule();
+        const hook = testModule.getHook(TestModule.hookName);
+
+        // eslint-disable-next-line no-unused-expressions
+        chai.expect(!!hook).to.be.true;
+
+        if (hook) {
+            hook.writeHook('testPlugin1', async (data, dataExtra) => {
+                chai.expect(data).to.be.deep.equal(testData);
+                chai.expect(dataExtra).to.be.deep.equal(testDataExtra);
+                return {
+                    ...data,
+                    ...dataExtra,
+                    ...additional,
+                };
+            });
+            hook.writeHook('testPlugin2', async (data, dataExtra) => {
+                chai.expect(data).to.be.deep.equal(expectedResult);
+                chai.expect(dataExtra).to.be.deep.equal(testDataExtra);
+                return {
+                    ...data,
+                };
+            });
+
+            const result = await testModule.call(testData, testDataExtra);
+
+            chai.expect(result).to.be.deep.equal(expectedResult);
+        }
+    });
 });

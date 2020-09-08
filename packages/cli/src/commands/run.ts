@@ -9,10 +9,14 @@ import { browserProxyControllerFactory, BrowserProxyController } from '@testring
 import { ICLICommand, IConfig, ITransport } from '@testring/types';
 import { DevtoolServerController } from '@testring/devtool-backend';
 
+import { FSQueueServer } from '@testring/fs-store';
+
 
 class RunCommand implements ICLICommand {
 
     private logger = loggerClient;
+
+    private fsWriterQueueServer;
 
     private webApplicationController: WebApplicationController;
     private browserProxyController: BrowserProxyController;
@@ -76,6 +80,8 @@ class RunCommand implements ICLICommand {
             httpThrottle: this.config.httpThrottle,
         });
 
+        this.fsWriterQueueServer = new FSQueueServer(this.config.maxWriteThreadCount || 10);
+
         applyPlugins({
             logger: loggerServer,
             fsReader,
@@ -137,6 +143,9 @@ class RunCommand implements ICLICommand {
         this.browserProxyController = (null as any);
         this.webApplicationController = (null as any);
         this.devtoolServerController = (null as any);
+
+        this.fsWriterQueueServer && this.fsWriterQueueServer.cleanUpTransport();
+        this.fsWriterQueueServer = (null as any);
 
         httpServer && httpServer.kill();
         webApplicationController && webApplicationController.kill();

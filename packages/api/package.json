@@ -16,6 +16,6 @@
     "@testring/transport": "0.5.30",
     "@testring/types": "0.5.30",
     "@testring/utils": "0.5.30",
-    "@testring/web-application": "0.5.29"
+    "@testring/web-application": "0.5.30"
   }
 }

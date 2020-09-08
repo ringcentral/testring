@@ -178,6 +178,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             httpThrottle,
             logLevel,
             devtool,
+            screenshotPath,
         } = this.config;
 
         if (this.config.screenshots === 'enable') {
@@ -198,6 +199,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             screenshotsEnabled,
             devtool: devtoolConfig,
             isRetryRun,
+            screenshotPath,
         };
 
         return {
