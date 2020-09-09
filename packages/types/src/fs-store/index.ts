@@ -29,4 +29,9 @@ export interface IFSStore {
 
 export interface IWriteAcquireData {
     requestId: string;
+    fileName: string;
+}
+
+export interface IWriteAcquireDataReq {
+    requestId: string;
 }

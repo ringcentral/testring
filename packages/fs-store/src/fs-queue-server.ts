@@ -1,7 +1,10 @@
-import { IWriteAcquireData } from '@testring/types';
+import { resolve as pathResolve, join as pathJoin } from 'path';
+import { IWriteAcquireData, IWriteAcquireDataReq } from '@testring/types';
+import { generateUniqId }  from '@testring/utils';
 import { transport } from '@testring/transport';
 
 import { FSQueue, hooks as queHooks } from './fs-queue';
+import { FSFile } from './fs-file';
 
 
 export class FSQueueServer {
@@ -10,35 +13,41 @@ export class FSQueueServer {
     private resName: string;
     private releaseName: string;
     private cleanName: string;
+    private savePath: string;
     private unHookReqTransport: (() => void )| null = null;
     private unHookReleaseTransport: (() => void) | null = null;
     private unHookCleanWorkerTransport: (() => void) | null = null;
-    private queue: FSQueue
+    private queue: FSQueue;
+    private fNames = {};
+
     
-    constructor(writeQueLength: number = 10, msgNamePrefix: string = 'fs-store') {
+    constructor(writeQueLength: number = 10, globalSavePath: string = './', msgNamePrefix: string = 'fs-store') {
         this.queue = new FSQueue(writeQueLength);
         this.reqName = msgNamePrefix +'_request_write';
         this.resName = msgNamePrefix +'_allow_write';
         this.releaseName = msgNamePrefix +'_release_write';
         this.cleanName = msgNamePrefix +'_release_worker';
-        
-        this.init();
+        this.savePath = pathResolve(globalSavePath);        
     }
 
-    private init() {
+    public async init() {
+        const file = new FSFile(pathJoin(this.savePath, 'tmp.txt'));
+        await file.ensureDir();
+
         const acqHook = this.queue.getHook(queHooks.ON_ACQUIRE);
         if (acqHook) {
             acqHook.readHook('queServer', ({ workerId, requestId })=>{
-                transport.send<IWriteAcquireData>(workerId, this.resName, { requestId });
+                const fileName = pathJoin(this.savePath, this.generateUniqFileName(workerId, requestId));
+                transport.send<IWriteAcquireData>(workerId, this.resName, { requestId, fileName });
             });
         }
         
-        this.unHookReqTransport = transport.on<IWriteAcquireData>(this.reqName, (msgData, workerId='*')=>{
+        this.unHookReqTransport = transport.on<IWriteAcquireDataReq>(this.reqName, (msgData, workerId='*')=>{
             const { requestId } = msgData;
             this.queue.acquire(workerId, requestId);
         });
 
-        this.unHookReleaseTransport = transport.on<IWriteAcquireData>(this.releaseName, (msgData, workerId='*')=>{
+        this.unHookReleaseTransport = transport.on<IWriteAcquireDataReq>(this.releaseName, (msgData, workerId='*')=>{
             const { requestId } = msgData;
             this.queue.release(workerId, requestId);
         });
@@ -52,6 +61,30 @@ export class FSQueueServer {
         this.unHookReqTransport && this.unHookReqTransport();
         this.unHookReleaseTransport && this.unHookReleaseTransport();
         this.unHookCleanWorkerTransport && this.unHookCleanWorkerTransport();
+    }
+
+    public removeFileName(workerId: string, requestId: string | undefined) {
+        const delKeys = Object.keys(this.fNames).filter((fName)=>{
+            const [wId, rId] = fName.split('-', 3);
+            return workerId === wId && (!requestId || requestId === rId);
+        });
+        delKeys.forEach(fName=>{
+            delete this.fNames[fName];
+        });
+    }
+
+    private generateUniqFileName(workerId: string, requestId: string, ext='png') {
+        const screenDate = new Date();
+        const formattedDate = (`${screenDate.toLocaleTimeString()} ${screenDate.toDateString()}`)
+                .replace(/\s+/g, '_');
+        
+        const fName = `${workerId.replace('/','.')}-${requestId}-${generateUniqId(5)}-${formattedDate}.${ext}`;
+
+        if (this.fNames[fName]) {
+            return this.generateUniqFileName(workerId, ext);
+        }
+        this.fNames[fName] = workerId;
+        return fName; 
     }
     
 }

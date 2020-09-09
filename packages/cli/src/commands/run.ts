@@ -80,7 +80,8 @@ class RunCommand implements ICLICommand {
             httpThrottle: this.config.httpThrottle,
         });
 
-        this.fsWriterQueueServer = new FSQueueServer(this.config.maxWriteThreadCount || 10);
+        this.fsWriterQueueServer = new FSQueueServer(this.config.maxWriteThreadCount || 10, this.config.screenshotPath);
+        await this.fsWriterQueueServer.init();
 
         applyPlugins({
             logger: loggerServer,

@@ -3,7 +3,10 @@ module.exports = async (config) => {
 
     return {
         devtool,
+        screenshotPath: './_tmp/',
         workerLimit: 5,
+        maxWriteThreadCount: 2,
+        screenshots: 'enable',
         retryCount: 0,
         testTimeout: devtool ? 0 : config.testTimeout,
         tests: 'test/selenium/test/*.spec.js',

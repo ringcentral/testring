@@ -25,16 +25,17 @@ export class FSQueueClient {
     private init() {
         
         transport.on<IWriteAcquireData>(this.resName, (msgData)=>{
-            const { requestId } = msgData;
+            const { requestId, fileName } = msgData;
             const reqObj = this.reqHash[requestId];
             if (reqObj && reqObj.cb && typeof reqObj.cb === 'function') {                
-                reqObj.cb();                
+                reqObj.cb(fileName);                
             }
             // FIX: if no reqObj found - possible race with release or miss on transport endpoint           
         });
     }
 
-    public getPermission( cb: () => void, requestId: string = ''): string {
+    public getPermission( cb: (fName: string) => void, requestId: string = ''): string {
+
         if (requestId === '') {
             requestId = generateUniqId(10);
             while (this.reqHash[requestId]) {

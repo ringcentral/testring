@@ -8,7 +8,7 @@ export const defaultConfiguration: IConfig = {
     tests: './tests/**/*.js',
     restartWorker: false,
     screenshots: 'disable',
-    screenshotPath: './tmp/',
+    screenshotPath: './_tmp/',
     config: '.testringrc',
     debug: false,
     silent: false,
