@@ -63,7 +63,7 @@ export class FSQueueServer {
         this.unHookCleanWorkerTransport && this.unHookCleanWorkerTransport();
     }
 
-    public removeFileName(workerId: string, requestId: string | undefined) {
+    public removeFileNames(workerId: string, requestId: string | undefined) {
         const delKeys = Object.keys(this.fNames).filter((fName)=>{
             const [wId, rId] = fName.split('-', 3);
             return workerId === wId && (!requestId || requestId === rId);
@@ -71,6 +71,14 @@ export class FSQueueServer {
         delKeys.forEach(fName=>{
             delete this.fNames[fName];
         });
+    } 
+    
+    public removeFileName(fileName: string) {
+        delete this.fNames[fileName];
+    }
+
+    public getNameList() {
+        return Object.keys(this.fNames);
     }
 
     private generateUniqFileName(workerId: string, requestId: string, ext='png') {

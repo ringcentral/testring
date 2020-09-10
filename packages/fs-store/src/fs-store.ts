@@ -11,7 +11,7 @@ export class FSStore implements IFSStore {
     // reading file from disk and pass a return a buffer, raise error if file is removed
     readSync(): Buffer {
         return readFileSync(this.fName);
-    } 
+    }
     
     // reading file from disk and pass a return with promise wrapper
     read(): Promise<Buffer> {
@@ -36,11 +36,11 @@ export class FSStore implements IFSStore {
     // unlocks file for remove operation
     unlock(id: string) {        
         this.lockHash.delete(id);        
-    } 
+    }
     // returns bool variable, true if nobody locks current file
     isLocked(): boolean {
         return this.lockHash.size > 0;
-    } 
+    }
     // removing file from file system, raise error if file is locked
     removeSync() {
         if (this.isLocked()) {
@@ -59,5 +59,5 @@ export class FSStore implements IFSStore {
                 res();
             });
         });
-    }    
+    }
 }
