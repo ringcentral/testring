@@ -12,7 +12,8 @@
   "dependencies": {
     "@testring/logger": "0.5.30",
     "@testring/types": "0.5.30",
-    "@testring/utils": "0.5.30"
+    "@testring/utils": "0.5.30",
+    "@testring/fs-store": "0.5.30"
   },
   "devDependencies": {
     "@types/node": "14.6.0"

@@ -19,6 +19,8 @@
     "@testring/utils": "0.5.30",
     "@testring/pluggable-module": "0.5.30",
     "@testring/transport": "0.5.30",
+    "@testring/logger": "0.5.30",
+    "@testring/cli-config": "0.5.30",
     "ts-loader": "8.0.2",
     "nanoid": ""
   },

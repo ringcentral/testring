@@ -9,7 +9,7 @@ import { browserProxyControllerFactory, BrowserProxyController } from '@testring
 import { ICLICommand, IConfig, ITransport } from '@testring/types';
 import { DevtoolServerController } from '@testring/devtool-backend';
 
-import { FSQueueServer } from '@testring/fs-store';
+import { fsQueueServer } from '@testring/fs-store';
 
 
 class RunCommand implements ICLICommand {
@@ -24,7 +24,11 @@ class RunCommand implements ICLICommand {
     private httpServer: HttpServer;
     private devtoolServerController: DevtoolServerController;
 
-    constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {}
+    constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {
+        if (fsQueueServer.getInitState()===0) {
+                fsQueueServer.init(config);
+        }
+    }
 
     formatJSON(obj: object) {
         const separator = '⋅';
@@ -51,6 +55,7 @@ class RunCommand implements ICLICommand {
     }
 
     async execute() {
+        
         const devtoolEnabled = this.config.devtool;
 
         if (devtoolEnabled) {
@@ -80,8 +85,6 @@ class RunCommand implements ICLICommand {
             httpThrottle: this.config.httpThrottle,
         });
 
-        this.fsWriterQueueServer = new FSQueueServer(this.config.maxWriteThreadCount || 10, this.config.screenshotPath);
-        await this.fsWriterQueueServer.init();
 
         applyPlugins({
             logger: loggerServer,
@@ -92,6 +95,7 @@ class RunCommand implements ICLICommand {
             httpClientInstance: httpClient,
             httpServer: this.httpServer,
             devtool: this.devtoolServerController,
+            fsQueueServer,
         }, this.config);
 
         this.logger.info('User config:\n', this.formatJSON(this.config));

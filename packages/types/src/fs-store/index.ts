@@ -35,3 +35,15 @@ export interface IWriteAcquireData {
 export interface IWriteAcquireDataReq {
     requestId: string;
 }
+
+export interface IOnFileReleaseHookData {
+    workerId: string;
+    requestId: string;
+}
+
+export interface IOnFileNameHookData {
+    workerId: string; 
+    requestId: string; 
+    fileName: string; 
+    path: string;
+}

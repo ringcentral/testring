@@ -18,7 +18,7 @@ import { generateUniqId } from '@testring/utils';
 import { PluggableModule } from '@testring/pluggable-module';
 import { createElementPath, ElementPath } from '@testring/element-path';
 
-import { FSFile, FSQueueClient } from '@testring/fs-store';
+import { FSFileWriter } from '@testring/fs-store';
 
 import { createAssertion } from './assert';
 import { WebClient } from './web-client';
@@ -53,8 +53,6 @@ export class WebApplication extends PluggableModule {
     private isRegisteredInDevtool: boolean = false;
 
     private applicationId: string = `webApp-${generateUniqId()}`;
-
-    private fsWriterClient: FSQueueClient;
 
     public assert = createAssertion({
         onSuccess: (meta) => this.successAssertionHandler(meta),
@@ -230,7 +228,6 @@ export class WebApplication extends PluggableModule {
         super();
         this.config = this.getConfig(config);
         this.decorateMethods();
-        this.fsWriterClient = new FSQueueClient();
     }
 
     protected getConfig(userConfig: Partial<IWebApplicationConfig>): IWebApplicationConfig {
@@ -1515,18 +1512,13 @@ export class WebApplication extends PluggableModule {
         this.screenshotsEnabledManually = true;
     }
 
-    public async makeScreenshot(force: boolean = false) {
+    public async makeScreenshot(force: boolean = false): Promise<string | null> {
         if (this.config.screenshotsEnabled && (this.screenshotsEnabledManually || force)) {
             const screenshot = await this.client.makeScreenshot();
-
-            const reqId = this.fsWriterClient.getPermission(async (filePath: string)=>{
-                // get file name from master process
-                const writer = new FSFile(filePath);
-                await writer.write(screenshot);
-                this.fsWriterClient.releasePermission(reqId);
-                this.logger.file(filePath);
-            });            
+            const file = new FSFileWriter();
+            return file.write( Buffer.from(screenshot.toString(), 'base64'), { encoding:'binary' }, this.logger);
         }
+        return null;
     }
 
     public uploadFile(fullPath) {

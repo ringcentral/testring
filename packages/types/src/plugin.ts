@@ -7,6 +7,7 @@ import { IBrowserProxyController } from './browser-proxy';
 import { IHttpClient } from './http-api';
 import { IDevtoolServerController, IHttpServerController } from './devtool-backend';
 
+
 export type PluginConfig = object | null;
 
 export type Plugin = (pluginAPI: any, config: PluginConfig) => void;
@@ -20,4 +21,5 @@ export interface IPluginModules {
     httpClientInstance: IHttpClient;
     httpServer: IHttpServerController & IPluggableModule;
     devtool: IDevtoolServerController & IPluggableModule;
+    fsQueueServer: IPluggableModule;
 }
