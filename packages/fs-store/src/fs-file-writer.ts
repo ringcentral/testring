@@ -12,20 +12,22 @@ const write = promisify(writeFile);
 export class FSFileWriter {
 
     private fsWriterClient: FSQueueClient;
+    private logger: LoggerClient;
 
-    constructor() {
+    constructor(logger: LoggerClient = loggerClient) {
         this.fsWriterClient = new FSQueueClient();
+        this.logger = logger;
     }
 
     // get unique name & write data into it & return filename
-    public async write(data: Buffer, options={}, logger: LoggerClient = loggerClient): Promise<string> {
+    public async write(data: Buffer, options={}): Promise<string> {
 
         return new Promise((resolve, reject) => {
             // get file name from master process
             const reqId = this.fsWriterClient.getPermission(async (filePath: string)=>{
                 await write(filePath, data, options);
                 this.fsWriterClient.releasePermission(reqId);
-                logger.file(filePath);
+                this.logger.file(filePath);
                 resolve(filePath);
             });
         });            

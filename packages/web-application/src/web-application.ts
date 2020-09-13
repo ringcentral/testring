@@ -54,6 +54,8 @@ export class WebApplication extends PluggableModule {
 
     private applicationId: string = `webApp-${generateUniqId()}`;
 
+    private fileWriter: FSFileWriter;
+
     public assert = createAssertion({
         onSuccess: (meta) => this.successAssertionHandler(meta),
         onError: (meta) => this.errorAssertionHandler(meta),
@@ -228,6 +230,7 @@ export class WebApplication extends PluggableModule {
         super();
         this.config = this.getConfig(config);
         this.decorateMethods();
+        this.fileWriter = new FSFileWriter(this.logger);
     }
 
     protected getConfig(userConfig: Partial<IWebApplicationConfig>): IWebApplicationConfig {
@@ -1515,8 +1518,8 @@ export class WebApplication extends PluggableModule {
     public async makeScreenshot(force: boolean = false): Promise<string | null> {
         if (this.config.screenshotsEnabled && (this.screenshotsEnabledManually || force)) {
             const screenshot = await this.client.makeScreenshot();
-            const file = new FSFileWriter();
-            return file.write( Buffer.from(screenshot.toString(), 'base64'), { encoding:'binary' }, this.logger);
+            
+            return this.fileWriter.write( Buffer.from(screenshot.toString(), 'base64'), { encoding:'binary' });
         }
         return null;
     }

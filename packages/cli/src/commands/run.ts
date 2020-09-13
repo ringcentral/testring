@@ -89,13 +89,13 @@ class RunCommand implements ICLICommand {
         applyPlugins({
             logger: loggerServer,
             fsReader,
+            fsQueueServer,
             testWorker,
             browserProxy: this.browserProxyController,
             testRunController: this.testRunController,
             httpClientInstance: httpClient,
             httpServer: this.httpServer,
             devtool: this.devtoolServerController,
-            fsQueueServer,
         }, this.config);
 
         this.logger.info('User config:\n', this.formatJSON(this.config));
