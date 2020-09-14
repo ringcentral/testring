@@ -48,6 +48,7 @@ export type IWebApplicationClient = {
 
 export interface IWebApplicationConfig {
     screenshotsEnabled: boolean;
+    screenshotPath: string;
     devtool: null | IDevtoolRuntimeConfiguration;
 }
 

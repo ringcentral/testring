@@ -15,6 +15,7 @@
     "@testring/child-process": "0.5.30",
     "@testring/dependencies-builder": "0.5.30",
     "@testring/fs-reader": "0.5.30",
+    "@testring/fs-store": "0.5.30",
     "@testring/logger": "0.5.30",
     "@testring/pluggable-module": "0.5.30",
     "@testring/sandbox": "0.5.30",

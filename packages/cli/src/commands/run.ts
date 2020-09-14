@@ -9,10 +9,14 @@ import { browserProxyControllerFactory, BrowserProxyController } from '@testring
 import { ICLICommand, IConfig, ITransport } from '@testring/types';
 import { DevtoolServerController } from '@testring/devtool-backend';
 
+import { fsQueueServer } from '@testring/fs-store';
+
 
 class RunCommand implements ICLICommand {
 
     private logger = loggerClient;
+
+    private fsWriterQueueServer;
 
     private webApplicationController: WebApplicationController;
     private browserProxyController: BrowserProxyController;
@@ -20,7 +24,11 @@ class RunCommand implements ICLICommand {
     private httpServer: HttpServer;
     private devtoolServerController: DevtoolServerController;
 
-    constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {}
+    constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {
+        if (fsQueueServer.getInitState()===0) {
+                fsQueueServer.init(config);
+        }
+    }
 
     formatJSON(obj: object) {
         const separator = '⋅';
@@ -47,6 +55,7 @@ class RunCommand implements ICLICommand {
     }
 
     async execute() {
+        
         const devtoolEnabled = this.config.devtool;
 
         if (devtoolEnabled) {
@@ -76,9 +85,11 @@ class RunCommand implements ICLICommand {
             httpThrottle: this.config.httpThrottle,
         });
 
+
         applyPlugins({
             logger: loggerServer,
             fsReader,
+            fsQueueServer,
             testWorker,
             browserProxy: this.browserProxyController,
             testRunController: this.testRunController,
@@ -137,6 +148,9 @@ class RunCommand implements ICLICommand {
         this.browserProxyController = (null as any);
         this.webApplicationController = (null as any);
         this.devtoolServerController = (null as any);
+
+        this.fsWriterQueueServer && this.fsWriterQueueServer.cleanUpTransport();
+        this.fsWriterQueueServer = (null as any);
 
         httpServer && httpServer.kill();
         webApplicationController && webApplicationController.kill();
