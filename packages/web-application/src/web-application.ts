@@ -18,6 +18,8 @@ import { generateUniqId } from '@testring/utils';
 import { PluggableModule } from '@testring/pluggable-module';
 import { createElementPath, ElementPath } from '@testring/element-path';
 
+import { FSFileWriter } from '@testring/fs-store';
+
 import { createAssertion } from './assert';
 import { WebClient } from './web-client';
 import * as utils from './utils';
@@ -51,6 +53,8 @@ export class WebApplication extends PluggableModule {
     private isRegisteredInDevtool: boolean = false;
 
     private applicationId: string = `webApp-${generateUniqId()}`;
+
+    private fileWriter: FSFileWriter;
 
     public assert = createAssertion({
         onSuccess: (meta) => this.successAssertionHandler(meta),
@@ -226,11 +230,13 @@ export class WebApplication extends PluggableModule {
         super();
         this.config = this.getConfig(config);
         this.decorateMethods();
+        this.fileWriter = new FSFileWriter(this.logger);
     }
 
     protected getConfig(userConfig: Partial<IWebApplicationConfig>): IWebApplicationConfig {
         return Object.assign({}, {
             screenshotsEnabled: false,
+            screenshotPath: './_tmp/',
             devtool: null,
         }, userConfig);
     }
@@ -1509,18 +1515,13 @@ export class WebApplication extends PluggableModule {
         this.screenshotsEnabledManually = true;
     }
 
-    public async makeScreenshot(force: boolean = false) {
+    public async makeScreenshot(force: boolean = false): Promise<string | null> {
         if (this.config.screenshotsEnabled && (this.screenshotsEnabledManually || force)) {
-            const screenshoot = await this.client.makeScreenshot();
-            const screenDate = new Date();
-            const formattedDate = (`${screenDate.toLocaleTimeString()} ${screenDate.toDateString()}`)
-                .replace(/\s+/g, '_');
-
-            this.logger.media(
-                `${this.testUID}-${formattedDate}-${generateUniqId(5)}.png`,
-                screenshoot,
-            );
+            const screenshot = await this.client.makeScreenshot();
+            
+            return this.fileWriter.write( Buffer.from(screenshot.toString(), 'base64'), { encoding:'binary' });
         }
+        return null;
     }
 
     public uploadFile(fullPath) {

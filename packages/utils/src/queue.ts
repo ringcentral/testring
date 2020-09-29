@@ -23,6 +23,17 @@ export class Queue<T> implements IQueue<T> {
         this.array.length = 0;
     }
 
+    /**
+     *
+     * @param {(T, number?)=>boolean} fn - function to filter elements for removal
+     * @returns - number of elements removed
+     */
+    public remove(fn: <T>(T, number?) => boolean): number {
+        const len = this.array.length;
+        this.array = this.array.filter((item, index)=>!fn(item, index));
+        return len - this.array.length;
+    }
+
     public getFirstElement(offset: number = 0): T | null {
         const elementIndex = offset;
 

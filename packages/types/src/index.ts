@@ -14,6 +14,7 @@ export * from './devtool-extension';
 
 export * from './child-process';
 export * from './fs-reader';
+export * from './fs-store';
 
 export * from './browser-proxy/structs';
 export * from './browser-proxy/enums';

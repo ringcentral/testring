@@ -1,6 +1,7 @@
 import * as path from 'path';
 import { loggerClient } from '@testring/logger';
 import { FSReader } from '@testring/fs-reader';
+import { FSQueueClient } from '@testring/fs-store';
 import { fork } from '@testring/child-process';
 import { generateUniqId } from '@testring/utils';
 import { TestWorkerLocal } from './test-worker-local';
@@ -53,8 +54,11 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private logger = loggerClient;
 
+    private fsWriterClient: FSQueueClient;
+
     private workerExitHandler = (exitCode) => {
         this.clearWorkerHandlers();
+        this.fsWriterClient.releaseAllWorkerPermissions();
         this.worker = null;
 
         if (this.abortTestExecution !== null) {
@@ -69,6 +73,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
 
     private workerErrorHandler = (error) => {
+        this.fsWriterClient.releaseAllWorkerPermissions();
         if (this.abortTestExecution !== null) {
             this.abortTestExecution(error);
 
@@ -84,6 +89,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         workerConfig: Partial<ITestWorkerConfig> = {},
     ) {
         this.config = this.createConfig(workerConfig);
+        this.fsWriterClient = new FSQueueClient();
     }
 
     private createConfig(workerConfig: Partial<ITestWorkerConfig>): ITestWorkerConfig {

@@ -1,6 +1,8 @@
 packages/**/dist
 packages/**/node_modules
 
+_tmp/
+
 .idea
 .nyc_output
 node_modules
