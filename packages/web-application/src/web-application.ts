@@ -846,14 +846,13 @@ export class WebApplication extends PluggableModule {
         await this.makeScreenshot();
     }
 
-    public async getText(xpath, trim: boolean = true, timeout: number = this.WAIT_TIMEOUT) {
+    public async getTextSilent(xpath, trim: boolean = true, timeout: number = this.WAIT_TIMEOUT) {
         await this.waitForExist(xpath, timeout);
 
-        const text = (await this.getTextsInternal(xpath, trim)).join(' ');
-
-        this.logger.debug(`Get text from ${this.formatXpath(xpath)} returns "${text}"`);
-
-        return text;
+        return (await this.getTextsInternal(xpath, trim)).join(' ');
+    }
+    public async getText(xpath, trim: boolean = true, timeout: number = this.WAIT_TIMEOUT) {
+        return await this.getTextSilent(xpath, trim, timeout);
     }
 
     public async getTextWithoutFocus(xpath, timeout: number = this.WAIT_TIMEOUT) {
