@@ -1137,16 +1137,166 @@ export class WebApplication extends PluggableModule {
         await this.waitForExist(xpath, timeout);
 
         xpath = this.normalizeSelector(xpath);
+        await this.client.scrollIntoView(xpath);
 
         return this.client.moveToObject(xpath, x, y);
     }
 
-    public async scroll(xpath, x: number = 1, y: number = 1, timeout: number = this.WAIT_TIMEOUT) {
+    public async scroll(xpath, x: number = 0, y: number = 0, timeout: number = this.WAIT_TIMEOUT) {
         await this.waitForExist(xpath, timeout);
 
         xpath = this.normalizeSelector(xpath);
 
         return this.client.scroll(xpath, x, y);
+    }
+
+    public async scrollIntoView(
+        xpath,
+        topOffset: number = 0,
+        leftOffset: number = 0,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
+        await this.waitForExist(xpath, timeout);
+
+        xpath = this.normalizeSelector(xpath);
+
+        if (topOffset || leftOffset) {
+            const result = await this.client.executeAsync(function (xpath, topOffset, leftOffset, done) {
+                function getElementByXPath(xpath) {
+                    const element = document.evaluate(
+                        xpath,
+                        document,
+                        null,
+                        XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null,
+                    );
+
+                    if (element.snapshotLength > 0) {
+                        return element.snapshotItem(0) as any;
+                    }
+
+                    return null;
+                }
+
+                function isScrollable(el) {
+                    const hasScrollableContent = el.scrollHeight > el.clientHeight;
+
+                    const overflowYStyle = window.getComputedStyle(el).overflowY;
+                    const isOverflowHidden = overflowYStyle.indexOf('hidden') !== -1;
+
+                    return hasScrollableContent && !isOverflowHidden;
+                }
+
+                function getScrollableParent(el) {
+                    // eslint-disable-next-line no-nested-ternary
+                    return (!el || el === document.scrollingElement || document.body)
+                        ? document.scrollingElement || document.body
+                        : (isScrollable(el) ? el : getScrollableParent(el.parentNode));
+                }
+
+                try {
+                    const element = getElementByXPath(xpath);
+                    const parent = getScrollableParent(element);
+
+                    if (element) {
+                        element.scrollIntoView();
+                        parent.scrollBy(leftOffset, topOffset);
+                        setTimeout(done, 200); // Gives browser some time to update values
+                    } else {
+                        throw new Error('Element not found');
+                    }
+                } catch (err) {
+                    done(`${err.message} ${xpath}`);
+                }
+            }, xpath, topOffset, leftOffset);
+
+            if (result) {
+                throw new Error(result);
+            }
+        } else {
+            return this.client.scrollIntoView(xpath);
+        }
+    }
+
+    public async scrollIntoViewIfNeeded(
+        xpath,
+        topOffset: number = 0,
+        leftOffset: number = 0,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
+        await this.waitForExist(xpath, timeout);
+
+        xpath = this.normalizeSelector(xpath);
+
+        const result: string = await this.client.executeAsync(function (xpath, topOffset, leftOffset, done) {
+            function getElementByXPath(xpath) {
+                const element = document.evaluate(
+                    xpath,
+                    document,
+                    null,
+                    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null,
+                );
+
+                if (element.snapshotLength > 0) {
+                    return element.snapshotItem(0) as any;
+                }
+
+                return null;
+            }
+
+            function isScrollable(el) {
+                const hasScrollableContent = el.scrollHeight > el.clientHeight;
+
+                const overflowYStyle = window.getComputedStyle(el).overflowY;
+                const isOverflowHidden = overflowYStyle.indexOf('hidden') !== -1;
+
+                return hasScrollableContent && !isOverflowHidden;
+            }
+
+            function getScrollableParent(el) {
+                // eslint-disable-next-line no-nested-ternary
+                return (!el || el === document.scrollingElement || document.body)
+                    ? document.scrollingElement || document.body
+                    : (isScrollable(el) ? el : getScrollableParent(el.parentNode));
+            }
+
+            function scrollIntoViewIfNeeded(element, topOffset, leftOffset) {
+                const parent = element.parentNode;
+                const scrollableParent = getScrollableParent(element);
+                const parentComputedStyle = window.getComputedStyle(parent, null);
+                const parentBorderTopWidth = parseInt(parentComputedStyle.getPropertyValue('border-top-width')) + topOffset;
+                const parentBorderLeftWidth = parseInt(parentComputedStyle.getPropertyValue('border-left-width')) + leftOffset;
+                const overTop = element.offsetTop - parent.offsetTop < parent.scrollTop;
+                const overBottom = (element.offsetTop - parent.offsetTop + element.clientHeight - parentBorderTopWidth) > (parent.scrollTop + parent.clientHeight);
+                const overLeft = element.offsetLeft - parent.offsetLeft < parent.scrollLeft;
+                const overRight = (element.offsetLeft - parent.offsetLeft + element.clientWidth - parentBorderLeftWidth) > (parent.scrollLeft + parent.clientWidth);
+
+                if (overTop || overBottom || overLeft || overRight) {
+                    element.scrollIntoViewIfNeeded();
+                    scrollableParent.scrollBy(leftOffset, topOffset);
+                }
+            }
+
+            try {
+                const element = getElementByXPath(xpath);
+
+                if (element) {
+                    if (topOffset || leftOffset) {
+                        scrollIntoViewIfNeeded(element, topOffset, leftOffset);
+                    } else {
+                        element.scrollIntoViewIfNeeded();
+                    }
+                    setTimeout(done, 200);
+                } else {
+                    throw new Error('Element not found');
+                }
+            } catch (err) {
+                done(`${err.message} ${xpath}`);
+            }
+        }, xpath, topOffset, leftOffset);
+
+        if (result) {
+            throw new Error(result);
+        }
     }
 
     public async dragAndDrop(xpathSource, xpathDestination, timeout: number = this.WAIT_TIMEOUT) {
@@ -1275,6 +1425,10 @@ export class WebApplication extends PluggableModule {
         return this.client.newWindow(url, windowName, windowFeatures);
     }
 
+    private resetMainTabId() {
+        this.mainTabID = null;
+    }
+
     protected async initMainTabId() {
         if (this.mainTabID === null) {
             this.mainTabID = await this.client.getCurrentTabId();
@@ -1285,10 +1439,6 @@ export class WebApplication extends PluggableModule {
         await this.initMainTabId();
 
         return this.mainTabID;
-    }
-
-    private resetMainTabId() {
-        this.mainTabID = null;
     }
 
     public async getTabIds() {
@@ -1518,7 +1668,7 @@ export class WebApplication extends PluggableModule {
     public async makeScreenshot(force: boolean = false): Promise<string | null> {
         if (this.config.screenshotsEnabled && (this.screenshotsEnabledManually || force)) {
             const screenshot = await this.client.makeScreenshot();
-            
+
             return this.fileWriter.write( Buffer.from(screenshot.toString(), 'base64'), { encoding:'binary' });
         }
         return null;

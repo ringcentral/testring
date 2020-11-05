@@ -10,6 +10,10 @@
             overflow: auto;
             background: aliceblue;
         }
+
+        .extender {
+            height: 200vh;
+        }
     </style>
     <script>
         function onMouseOver(n) {
@@ -31,5 +35,10 @@
         <p data-test-automation-id="item_10" id="item_10" onmouseover="onMouseOver(10)">Text 10</p>
     </div>
     <p id="mouseOverResult" data-test-automation-id="mouseOverResult"></p>
+    <div class="extender"></div>
+    <a data-test-automation-id="button" href="#" onclick="return false">
+        Button
+    </a>
+    <div class="extender"></div>
 </body>
 </html>

@@ -23,6 +23,6 @@
     "puppeteer-core": "5.2.1",
     "selenium-server": "3.141.59",
     "v8-to-istanbul": "4.1.4",
-    "webdriverio": "5.22.3"
+    "webdriverio": "5.23.0"
   }
 }
