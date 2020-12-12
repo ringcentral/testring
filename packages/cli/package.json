@@ -24,7 +24,7 @@
     "@testring/types": "0.5.31",
     "@testring/web-application": "0.5.31",
     "@types/yargs": "15.0.5",
-    "yargs": "15.4.1"
+    "yargs": "16.0.0"
   },
   "devDependencies": {
     "@types/node": "14.6.0"
