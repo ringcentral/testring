@@ -93,7 +93,7 @@
     "glob": "7.1.6",
     "lerna": "3.22.1",
     "lerna-update-wizard": "0.17.8",
-    "mocha": "8.1.1",
+    "mocha": "8.2.0",
     "npm-check": "5.9.2",
     "npm-utils": "2.0.3",
     "nyc": "15.1.0",
