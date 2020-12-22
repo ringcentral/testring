@@ -250,64 +250,113 @@ export class WebApplication extends PluggableModule {
             this.isLogOpened = false;
         }
 
-        for (let key in decorators) {
-            ((key) => {
-                if (Object.prototype.hasOwnProperty.call(decorators, key)) {
-                    const originMethod = this[key];
-                    const logFn = decorators[key];
+        const promiseGetter = (self, logFn, errorFn, originMethod, args) => {
+            let errorLogInterceptor: (err: Error, ...args: any) => string = errorFn;
 
-                    // eslint-disable-next-line func-style
-                    const method = async function decoratedMethod(...args) {
-                        const self = this;
-                        const logger = self.logger;
-                        const message = logFn.apply(self, args);
-                        let result;
+            // eslint-disable-next-line no-async-promise-executor
+            const promise = new Promise(async (resolve, reject) => {
+                const logger = self.logger;
+                const message = logFn.apply(self, args);
+                let result;
 
-                        if (self.isLogOpened) {
-                            logger.debug(message);
-                            result = originMethod.apply(self, args);
-                        } else {
-                            await asyncBreakpoints.waitBeforeInstructionBreakpoint((state) => {
-                                if (state) {
-                                    logger.debug('Debug: Stopped in breakpoint before instruction execution');
-                                }
-                            });
-                            logger.startStep(message);
-                            self.isLogOpened = true;
+                if (self.isLogOpened) {
+                    logger.debug(message);
+                    try {
+                        resolve(await originMethod.apply(self, args));
+                    } catch (err) {
+                        err.message = errorLogInterceptor(err, ...args);
 
-                            try {
-                                result = originMethod.apply(self, args);
-                                if (result && result.catch && typeof result.catch === 'function') {
-                                    result = result.catch(async (err) => {
-                                        await self.asyncErrorHandler(err);
-                                        logger.endStep(message);
-                                        self.isLogOpened = false;
-                                        return Promise.reject(err);
-                                    }).then((result) => {
-                                        logger.endStep(message);
-                                        self.isLogOpened = false;
-                                        return result;
-                                    });
-                                } else {
-                                    logger.endStep(message);
-                                    self.isLogOpened = false;
-                                }
-                            } catch (err) {
-                                self.errorHandler(err);
+                        reject(err);
+                    }
+                } else {
+                    await asyncBreakpoints.waitBeforeInstructionBreakpoint((state) => {
+                        if (state) {
+                            logger.debug('Debug: Stopped in breakpoint before instruction execution');
+                        }
+                    });
+                    logger.startStep(message);
+                    self.isLogOpened = true;
+
+                    try {
+                        result = originMethod.apply(self, args);
+
+                        if (result && result.catch && typeof result.catch === 'function') {
+                            result.catch(async (err) => {
+                                err.message = errorLogInterceptor(err, ...args);
+
+                                await self.asyncErrorHandler(err);
                                 logger.endStep(message);
                                 self.isLogOpened = false;
 
-                                throw err;
-                            }
+                                reject(err);
+                            }).then((result) => {
+                                logger.endStep(message);
+                                self.isLogOpened = false;
 
-                            await asyncBreakpoints.waitAfterInstructionBreakpoint((state) => {
-                                if (state) {
-                                    logger.debug('Debug: Stopped in breakpoint after instruction execution');
-                                }
+                                resolve(result);
                             });
+                        } else {
+                            logger.endStep(message);
+                            self.isLogOpened = false;
                         }
+                    } catch (err) {
+                        err.message = errorLogInterceptor(err, ...args);
 
-                        return result;
+                        self.errorHandler(err);
+                        logger.endStep(message);
+                        self.isLogOpened = false;
+
+                        reject(err);
+                    }
+
+                    await asyncBreakpoints.waitAfterInstructionBreakpoint((state) => {
+                        if (state) {
+                            logger.debug('Debug: Stopped in breakpoint after instruction execution');
+                        }
+                    });
+
+                    resolve(result);
+                }
+            });
+
+            Object.defineProperty(promise,'ifError', {
+                value: (interceptor: string | ((err: Error, ...args: any) => string)) => {
+                    if (typeof interceptor === 'function') {
+                        errorLogInterceptor = interceptor;
+                    } else if (interceptor === null || interceptor === undefined) {
+                        return Promise.reject('Error interceptor can not be empty');
+                    } else {
+                        errorLogInterceptor = () => interceptor.toString();
+                    }
+
+                    return promise;
+                },
+                enumerable: false,
+                writable: false,
+                configurable: false,
+            });
+
+            return promise;
+        };
+
+        for (let key in decorators) {
+            ((key) => {
+                if (Object.prototype.hasOwnProperty.call(decorators, key)) {
+                    const context = this;
+                    const originMethod = this[key];
+                    let logFn;
+                    let errorFn;
+
+                    if (typeof decorators[key] === 'function') {
+                        logFn = decorators[key];
+                        errorFn = (err) => err.message;
+                    } else {
+                        logFn = decorators[key].log;
+                        errorFn = decorators[key].error;
+                    }
+
+                    const method = (...args) => {
+                        return promiseGetter(context, logFn, errorFn, originMethod, args);
                     };
 
                     Object.defineProperty(method,'originFunction', {
@@ -451,6 +500,7 @@ export class WebApplication extends PluggableModule {
 
         if (!skipMoveToObject) {
             try {
+                await this.scrollIntoViewIfNeededCall(xpath);
                 await this.client.moveToObject(normalizedXPath, 1, 1);
             } catch (ignore) { /* ignore */ }
         }
@@ -1134,19 +1184,182 @@ export class WebApplication extends PluggableModule {
     }
 
     public async moveToObject(xpath, x: number = 1, y: number = 1, timeout: number = this.WAIT_TIMEOUT) {
-        await this.waitForExist(xpath, timeout);
+        await this.scrollIntoViewIfNeeded(xpath);
 
-        xpath = this.normalizeSelector(xpath);
-
-        return this.client.moveToObject(xpath, x, y);
+        let normalizedXpath = this.normalizeSelector(xpath);
+        return this.client.moveToObject(normalizedXpath, x, y);
     }
 
-    public async scroll(xpath, x: number = 1, y: number = 1, timeout: number = this.WAIT_TIMEOUT) {
-        await this.waitForExist(xpath, timeout);
+    public async scroll(xpath, x: number = 0, y: number = 0, timeout: number = this.WAIT_TIMEOUT) {
+        await this.waitForExist(xpath, timeout, true);
 
         xpath = this.normalizeSelector(xpath);
 
         return this.client.scroll(xpath, x, y);
+    }
+
+    protected async scrollIntoViewCall(
+        xpath,
+        topOffset: number = 0,
+        leftOffset: number = 0,
+    ) {
+        const normalizedXpath = this.normalizeSelector(xpath);
+
+        if (topOffset || leftOffset) {
+            const result = await this.client.executeAsync(function (xpath, topOffset, leftOffset, done) {
+                function getElementByXPath(xpath) {
+                    const element = document.evaluate(
+                        xpath,
+                        document,
+                        null,
+                        XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null,
+                    );
+
+                    if (element.snapshotLength > 0) {
+                        return element.snapshotItem(0) as any;
+                    }
+
+                    return null;
+                }
+
+                function isScrollable(el) {
+                    const hasScrollableContent = el.scrollHeight > el.clientHeight;
+
+                    const overflowYStyle = window.getComputedStyle(el).overflowY;
+                    const isOverflowHidden = overflowYStyle.indexOf('hidden') !== -1;
+
+                    return hasScrollableContent && !isOverflowHidden;
+                }
+
+                function getScrollableParent(el) {
+                    // eslint-disable-next-line no-nested-ternary
+                    return (!el || el === document.scrollingElement || document.body)
+                        ? document.scrollingElement || document.body
+                        : (isScrollable(el) ? el : getScrollableParent(el.parentNode));
+                }
+
+                try {
+                    const element = getElementByXPath(xpath);
+                    const parent = getScrollableParent(element);
+
+                    if (element) {
+                        element.scrollIntoView();
+                        parent.scrollBy(leftOffset, topOffset);
+                        setTimeout(done, 200); // Gives browser some time to update values
+                    } else {
+                        done('Element not found');
+                    }
+                } catch (err) {
+                    done(`${err.message} ${xpath}`);
+                }
+            }, normalizedXpath, topOffset, leftOffset);
+
+            if (result) {
+                throw new Error(result);
+            }
+        } else {
+            return this.client.scrollIntoView(normalizedXpath);
+        }
+    }
+
+    public async scrollIntoView(
+        xpath,
+        topOffset?: number,
+        leftOffset?: number,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
+        await this.waitForExist(xpath, timeout, true);
+
+        await this.scrollIntoViewCall(xpath, topOffset, leftOffset);
+    }
+
+    protected async scrollIntoViewIfNeededCall(
+        xpath,
+        topOffset: number = 0,
+        leftOffset: number = 0,
+    ) {
+        const normalizedXpath = this.normalizeSelector(xpath);
+
+        const result: string = await this.client.executeAsync(function (xpath, topOffset, leftOffset, done) {
+            function getElementByXPath(xpath) {
+                const element = document.evaluate(
+                    xpath,
+                    document,
+                    null,
+                    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null,
+                );
+
+                if (element.snapshotLength > 0) {
+                    return element.snapshotItem(0) as any;
+                }
+
+                return null;
+            }
+
+            function isScrollable(el) {
+                const hasScrollableContent = el.scrollHeight > el.clientHeight;
+
+                const overflowYStyle = window.getComputedStyle(el).overflowY;
+                const isOverflowHidden = overflowYStyle.indexOf('hidden') !== -1;
+
+                return hasScrollableContent && !isOverflowHidden;
+            }
+
+            function getScrollableParent(el) {
+                // eslint-disable-next-line no-nested-ternary
+                return (!el || el === document.scrollingElement || document.body)
+                    ? document.scrollingElement || document.body
+                    : (isScrollable(el) ? el : getScrollableParent(el.parentNode));
+            }
+
+            function scrollIntoViewIfNeeded(element, topOffset, leftOffset) {
+                const parent = element.parentNode;
+                const scrollableParent = getScrollableParent(element);
+                const parentComputedStyle = window.getComputedStyle(parent, null);
+                const parentBorderTopWidth = parseInt(parentComputedStyle.getPropertyValue('border-top-width')) + topOffset;
+                const parentBorderLeftWidth = parseInt(parentComputedStyle.getPropertyValue('border-left-width')) + leftOffset;
+                const overTop = element.offsetTop - parent.offsetTop < parent.scrollTop;
+                const overBottom = (element.offsetTop - parent.offsetTop + element.clientHeight - parentBorderTopWidth) > (parent.scrollTop + parent.clientHeight);
+                const overLeft = element.offsetLeft - parent.offsetLeft < parent.scrollLeft;
+                const overRight = (element.offsetLeft - parent.offsetLeft + element.clientWidth - parentBorderLeftWidth) > (parent.scrollLeft + parent.clientWidth);
+
+                if (overTop || overBottom || overLeft || overRight) {
+                    element.scrollIntoViewIfNeeded();
+                    scrollableParent.scrollBy(leftOffset, topOffset);
+                }
+            }
+
+            try {
+                const element = getElementByXPath(xpath);
+
+                if (element) {
+                    if (topOffset || leftOffset) {
+                        scrollIntoViewIfNeeded(element, topOffset, leftOffset);
+                    } else {
+                        element.scrollIntoViewIfNeeded();
+                    }
+                    setTimeout(done, 200);
+                } else {
+                    throw new Error('Element not found');
+                }
+            } catch (err) {
+                done(`${err.message} ${xpath}`);
+            }
+        }, normalizedXpath, topOffset, leftOffset);
+
+        if (result) {
+            throw new Error(result);
+        }
+    }
+
+    public async scrollIntoViewIfNeeded(
+        xpath,
+        topOffset?: number,
+        leftOffset?: number,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
+        await this.waitForExist(xpath, timeout, true);
+        await this.scrollIntoViewIfNeededCall(xpath, topOffset, leftOffset);
     }
 
     public async dragAndDrop(xpathSource, xpathDestination, timeout: number = this.WAIT_TIMEOUT) {
@@ -1275,6 +1488,10 @@ export class WebApplication extends PluggableModule {
         return this.client.newWindow(url, windowName, windowFeatures);
     }
 
+    private resetMainTabId() {
+        this.mainTabID = null;
+    }
+
     protected async initMainTabId() {
         if (this.mainTabID === null) {
             this.mainTabID = await this.client.getCurrentTabId();
@@ -1285,10 +1502,6 @@ export class WebApplication extends PluggableModule {
         await this.initMainTabId();
 
         return this.mainTabID;
-    }
-
-    private resetMainTabId() {
-        this.mainTabID = null;
     }
 
     public async getTabIds() {
@@ -1518,7 +1731,7 @@ export class WebApplication extends PluggableModule {
     public async makeScreenshot(force: boolean = false): Promise<string | null> {
         if (this.config.screenshotsEnabled && (this.screenshotsEnabledManually || force)) {
             const screenshot = await this.client.makeScreenshot();
-            
+
             return this.fileWriter.write( Buffer.from(screenshot.toString(), 'base64'), { encoding:'binary' });
         }
         return null;
