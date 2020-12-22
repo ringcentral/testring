@@ -451,7 +451,7 @@ export class WebApplication extends PluggableModule {
 
         if (!skipMoveToObject) {
             try {
-                await this.client.moveToObject(normalizedXPath, 1, 1);
+                await this.moveToObject(normalizedXPath, 1, 1);
             } catch (ignore) { /* ignore */ }
         }
 
@@ -1137,7 +1137,7 @@ export class WebApplication extends PluggableModule {
         await this.waitForExist(xpath, timeout);
 
         xpath = this.normalizeSelector(xpath);
-        await this.client.scrollIntoView(xpath);
+        await this.scrollIntoViewIfNeeded(xpath);
 
         return this.client.moveToObject(xpath, x, y);
     }
