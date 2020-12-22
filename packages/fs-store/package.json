@@ -1,6 +1,6 @@
 {
   "name": "@testring/fs-store",
-  "version": "0.5.31",
+  "version": "0.5.32",
   "description": "fs storage & operations service",
   "keywords": [
     "fs",
@@ -15,12 +15,12 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/cli-config": "0.5.31",
-    "@testring/logger": "0.5.31",
-    "@testring/pluggable-module": "0.5.31",
-    "@testring/transport": "0.5.31",
-    "@testring/types": "0.5.31",
-    "@testring/utils": "0.5.31",
+    "@testring/cli-config": "0.5.32",
+    "@testring/logger": "0.5.32",
+    "@testring/pluggable-module": "0.5.32",
+    "@testring/transport": "0.5.32",
+    "@testring/types": "0.5.32",
+    "@testring/utils": "0.5.32",
     "nanoid": "",
     "ts-loader": "8.0.2"
   },
