@@ -1,8 +1,12 @@
 import { promisify } from 'util';
 import {  writeFile } from 'fs';
 import { LoggerClient , loggerClient } from '@testring/logger';
+import { FSFileLogType } from '@testring/types';
 
 import { FSQueueClient } from './fs-queue-client';
+
+import { FSStore } from './fs-store';
+
 
 const write = promisify(writeFile);
 
@@ -27,7 +31,8 @@ export class FSFileWriter {
             const reqId = this.fsWriterClient.getPermission(async (filePath: string)=>{
                 await write(filePath, data, options);
                 this.fsWriterClient.releasePermission(reqId);
-                this.logger.file(filePath);
+
+                this.logger.file(new FSStore(filePath), { type:FSFileLogType.SCREENSHOT });
                 resolve(filePath);
             });
         });            

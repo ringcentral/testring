@@ -1,5 +1,6 @@
 import { Stack, generateUniqId } from '@testring/utils';
 import { transport } from '@testring/transport';
+import { IFSStore } from '@testring/types';
 import {
     ILogEntity,
     ILoggerClient,
@@ -142,8 +143,8 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
         this.createLog(LogTypes.media, LogLevel.info, [filename, content]);
     }
 
-    public file(filename: string, meta: {}={}): void {
-        this.createLog(LogTypes.file, LogLevel.info, [filename, meta]);
+    public file(file: IFSStore, meta: Record<string, any>={}): void {
+        this.createLog(LogTypes.file, LogLevel.info, [file.fileName, meta]);
     }
 
     public startStep(message: string, stepType?: LogStepTypes): void {

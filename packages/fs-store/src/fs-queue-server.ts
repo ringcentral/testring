@@ -5,7 +5,6 @@ import { IWriteAcquireData, IWriteAcquireDataReq , IConfig } from '@testring/typ
 import { generateUniqId }  from '@testring/utils';
 import { transport } from '@testring/transport';
 import { PluggableModule } from '@testring/pluggable-module';
-import { getConfig } from '@testring/cli-config';
 
 import { FSQueue, hooks as queHooks } from './fs-queue';
 
@@ -38,7 +37,7 @@ class FSQueueServer extends PluggableModule  {
 
     private initState: serverState = serverState.new;
     private initEnsured: Promise<any>;
-    private initialize: () => void;
+    private initialize: (any) => void;
     
     constructor(msgNamePrefix: string = 'fs-store') {
         super(Object.values(hooks));
@@ -58,7 +57,7 @@ class FSQueueServer extends PluggableModule  {
                 if (err && err.code !== 'EEXIST') {
                     reject(err);
                 } else {
-                    resolve();
+                    resolve(true);
                 }
             });
         });
@@ -103,10 +102,9 @@ class FSQueueServer extends PluggableModule  {
             this.queue.clean(workerId);
         });
 
-        config = await getConfig();
         await this.ensureDir();
 
-        this.initialize();
+        this.initialize(true);
         this.initState = serverState.initialized;
     }
 

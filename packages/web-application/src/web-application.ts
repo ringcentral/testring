@@ -223,7 +223,7 @@ export class WebApplication extends PluggableModule {
     };
 
     constructor(
-        private testUID: string,
+        protected testUID: string,
         protected transport: ITransport,
         config: Partial<IWebApplicationConfig> = {},
     ) {
