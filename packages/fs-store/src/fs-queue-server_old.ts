@@ -1,11 +1,12 @@
+import { join as pathJoin } from 'path';
 
-import { IQueAcqReq, IQueAcqResp , IQueTestReq, IQueTestResp, ITransport } from '@testring/types';
+// import { IWriteAcquireData, IWriteAcquireDataReq , IConfig } from '@testring/types';
 import { generateUniqId }  from '@testring/utils';
-import { transport  } from '@testring/transport';
+import { transport } from '@testring/transport';
 import { PluggableModule } from '@testring/pluggable-module';
 
-
 import { FSQueue, hooks as queHooks } from './fs-queue';
+// import { ensureDir } from './utils';
 
 
 enum serverState  {
@@ -21,90 +22,68 @@ const hooks = {
 
 export { hooks as fsQueueServerHooks }; 
 
-export class FSQueueServer extends PluggableModule  {
+export class FSQueueServerOld extends PluggableModule  {
 
     private reqName: string;
     private resName: string;
     private releaseName: string;
     private cleanName: string;
-    private testReq: string;
-    private testResp: string;
-    private unHookTestTransport: (() => void )| null = null;
     private unHookReqTransport: (() => void )| null = null;
     private unHookReleaseTransport: (() => void) | null = null;
     private unHookCleanWorkerTransport: (() => void) | null = null;
     private queue: FSQueue;
-    private IDs = {};
+    private fNames = {};
 
     private initState: serverState = serverState.new;
     private initEnsured: Promise<any>;
     private initialize: (any) => void;
-
-    private msgNamePrefix: string;
-
-    private transport: ITransport;
     
-    constructor(maxWriteThreadCount: number = 10, msgNamePrefix: string = 'fs-que', tr: ITransport= transport) {
+    constructor(msgNamePrefix: string = 'fs-queue') {
         super(Object.values(hooks));
-
-        this.transport = tr;
-        this.msgNamePrefix = msgNamePrefix;
-        this.testReq = msgNamePrefix +'_test';
-        this.testResp = msgNamePrefix + '_test_resp';
+        this.reqName = msgNamePrefix +'_request_write';
+        this.resName = msgNamePrefix +'_allow_write';
+        this.releaseName = msgNamePrefix +'_release_write';
+        this.cleanName = msgNamePrefix +'_release_worker';
         
-        this.reqName = msgNamePrefix +'_request_thread';
-        this.resName = msgNamePrefix +'_allow_thread';
-        this.releaseName = msgNamePrefix +'_release_thread';
-        this.cleanName = msgNamePrefix +'_release_worker_threads';
-        
-        this.queue = new FSQueue(maxWriteThreadCount);   
         this.initEnsured = new Promise(resolve=>{
             this.initialize = resolve;
         });
-        this.init();
     }
-
-    public getMsgPrefix = () => this.msgNamePrefix;
-    public getTransport = () => this.transport;
 
     public getInitState(): number {
         return this.initState;
     }
 
-    private async init(): Promise<void> {
+    public async init(maxWriteThreadCount: number = 10): Promise<void> {
         // ensure init once
         if (this.initState !== serverState.new) {
             throw new Error('Cannot reinitialize component (queue server is singleton)');
         }
         this.initState = serverState.initStarted;
-        
+
+        this.queue = new FSQueue(maxWriteThreadCount);        
+
         const acqHook = this.queue.getHook(queHooks.ON_ACQUIRE);
         if (acqHook) {
             acqHook.readHook('queServer', async ({ workerId, requestId })=>{
-                const id = await this.generateUniqID(workerId, requestId);
-                this.transport.send<IQueAcqResp>(workerId, this.resName, { requestId, id });
+                const fileName = await this.generateUniqFileName(workerId, requestId);
+                transport.send<IWriteAcquireData>(workerId, this.resName, { requestId, fileName });
             });
         }
 
-        this.unHookTestTransport = this
-            .transport.on<IQueTestReq>(this.testReq, async ({ requestId }, workerId = '*') => {
-            this.transport.send<IQueTestResp>(workerId, this.testResp, { requestId, state: `${this.initState}` });
-        });
-        
-        this.unHookReqTransport = this
-            .transport.on<IQueAcqReq>(this.reqName, async ({ requestId }, workerId = '*') => {
+        this.unHookReqTransport = transport.on<IWriteAcquireDataReq>(this.reqName, async (msgData, workerId='*')=>{
+            const { requestId } = msgData;
             await this.initEnsured;
             this.queue.acquire(workerId, requestId);
         });
 
-        this.unHookReleaseTransport = this
-            .transport.on<IQueAcqReq>(this.releaseName, ({ requestId }, workerId = '*') => {
+        this.unHookReleaseTransport = transport.on<IWriteAcquireDataReq>(this.releaseName, (msgData, workerId='*')=>{
+            const { requestId } = msgData;
             this.callHook(hooks.ON_RELEASE, { workerId, requestId });
             this.queue.release(workerId, requestId);
         });
 
-        this.unHookCleanWorkerTransport = this
-            .transport.on<{}>(this.cleanName, (msgData, workerId = '*') => {
+        this.unHookCleanWorkerTransport = transport.on<{}>(this.cleanName, (msgData, workerId='*')=>{
             this.queue.clean(workerId);
         });
 
@@ -113,39 +92,49 @@ export class FSQueueServer extends PluggableModule  {
     }
 
     public cleanUpTransport() {
-        this.unHookTestTransport && this.unHookTestTransport();
         this.unHookReqTransport && this.unHookReqTransport();
         this.unHookReleaseTransport && this.unHookReleaseTransport();
         this.unHookCleanWorkerTransport && this.unHookCleanWorkerTransport();
     }
 
-    public removeIDs(workerId: string, requestId: string | undefined) {
-        const delKeys = Object.keys(this.IDs).filter((fName)=>{
+    public removeFileNames(workerId: string, requestId: string | undefined) {
+        const delKeys = Object.keys(this.fNames).filter((fName)=>{
             const [wId, rId] = fName.split('-', 3);
             return workerId === wId && (!requestId || requestId === rId);
         });
         delKeys.forEach(fName=>{
-            delete this.IDs[fName];
+            delete this.fNames[fName];
         });
     } 
     
-    public removeID(fileName: string) {
-        delete this.IDs[fileName];
+    public removeFileName(fileName: string) {
+        delete this.fNames[fileName];
     }
 
-    private async generateUniqID(workerId: string, requestId: string, ext='png') {
+    public getNameList() {
+        return Object.keys(this.fNames);
+    }
+
+    private async generateUniqFileName(workerId: string, requestId: string, ext='png') {
         const screenDate = new Date();
         const formattedDate = (`${screenDate.toLocaleTimeString()} ${screenDate.toDateString()}`)
                 .replace(/\s+/g, '_');
         
-        const id = `${generateUniqId(5)}-${formattedDate}`;        
+        const fileNameBase = `${workerId.replace('/','.')}-${requestId}-${generateUniqId(5)}-${formattedDate}.${ext}`;
 
-        if (this.IDs[id]) {
+        const { fileName, path } = await this.callHook(hooks.ON_FILENAME,
+             { workerId, requestId, fileName: fileNameBase, path:this.savePath },
+             );  
+             
+        const resultFileName = pathJoin(path, fileName);
+
+        if (this.fNames[resultFileName]) {
             // eslint-disable-next-line ringcentral/specified-comment-with-task-id
             // FIXME: possible loop hence plugins can return same file name during every request
-            return this.generateUniqID(workerId, ext);
+            return this.generateUniqFileName(workerId, ext);
         }
-        this.IDs[id] = workerId;
-        return id; 
-    }    
+        this.fNames[resultFileName] = workerId;
+        return resultFileName; 
+    }
+    
 }

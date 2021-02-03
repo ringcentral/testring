@@ -4,5 +4,5 @@
 const fsStore = require('../src');
 
 describe('fs-store', () => {
-    it('needs tests');
+    it('needs tests', ()=> {});
 });

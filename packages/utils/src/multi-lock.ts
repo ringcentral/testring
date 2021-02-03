@@ -16,7 +16,7 @@ export class MultiLock {
      * 
      * @param lockLimit - max amount of locks for all ids
      */
-    constructor(public lockLimit: number = 1) {}
+    constructor(public lockLimit: number = 0) {}
     
      /**
      * try to one acquire lock - if lock acquired returns true otherwise false
@@ -25,7 +25,7 @@ export class MultiLock {
      */
     acquire(id: string): boolean {
         
-        if (this.lockLength >= this.lockLimit) {
+        if (this.lockLimit !== 0 && this.lockLength >= this.lockLimit) {
             return false;
         }
         const val = this.lockHash.get(id) || 0;

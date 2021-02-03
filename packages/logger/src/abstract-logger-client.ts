@@ -144,7 +144,7 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
     }
 
     public file(file: IFSStore, meta: Record<string, any>={}): void {
-        this.createLog(LogTypes.file, LogLevel.info, [file.fileName, meta]);
+        this.createLog(LogTypes.file, LogLevel.info, [file, meta]);
     }
 
     public startStep(message: string, stepType?: LogStepTypes): void {

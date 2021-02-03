@@ -35,7 +35,7 @@ export class FSQueue extends PluggableModule {
         this.callHook(hooks.ON_RELEASE, { workerId, requestId });
         const newItem = this.fsRequestQue.shift();
         if (newItem) {
-            this.callHook(hooks.ON_ACQUIRE, { workerId: newItem[0], requestId: newItem[1] });            
+            this.acquire(newItem[0], newItem[1]);            
         }
     }
 

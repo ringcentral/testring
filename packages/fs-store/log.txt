@@ -1,0 +1,11 @@
+
+> @testring/fs-store@0.5.32 test /home/sergey/_prog/_dins/test/testring/packages/fs-store
+> mocha
+
+
+
+  ․,
+
+  1 passing (18ms)
+  1 pending
+

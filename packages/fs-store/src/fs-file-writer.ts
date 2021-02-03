@@ -1,11 +1,7 @@
 import { promisify } from 'util';
 import {  writeFile } from 'fs';
-import { LoggerClient , loggerClient } from '@testring/logger';
-import { FSFileLogType } from '@testring/types';
 
-import { FSQueueClient } from './fs-queue-client';
-
-import { FSStore } from './fs-store';
+import { FSStoreClient } from './fs-store-client';
 
 
 const write = promisify(writeFile);
@@ -15,26 +11,24 @@ const write = promisify(writeFile);
  */
 export class FSFileWriter {
 
-    private fsWriterClient: FSQueueClient;
-    private logger: LoggerClient;
+    private fsWriterClient: FSStoreClient;
 
-    constructor(logger: LoggerClient = loggerClient) {
-        this.fsWriterClient = new FSQueueClient();
-        this.logger = logger;
+    constructor() {
+        this.fsWriterClient = new FSStoreClient();
     }
 
     // get unique name & write data into it & return filename
-    public async write(data: Buffer, options={}): Promise<string> {
+    public async write(data: Buffer, options:Record<string,any>={}): Promise<string> {
 
         return new Promise((resolve, reject) => {
             // get file name from master process
-            const reqId = this.fsWriterClient.getPermission(async (filePath: string)=>{
-                await write(filePath, data, options);
-                this.fsWriterClient.releasePermission(reqId);
-
-                this.logger.file(new FSStore(filePath), { type:FSFileLogType.SCREENSHOT });
-                resolve(filePath);
-            });
+            const reqId = this.fsWriterClient
+                .getWritePermission(async (filePath: string) => {
+                    await write(filePath, data, options);
+                    this.fsWriterClient.releasePermission(reqId);
+                    resolve(filePath);
+                },
+                {ext:options.ext || '.tmp'});
         });            
     }    
 }

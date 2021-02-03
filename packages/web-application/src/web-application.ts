@@ -10,6 +10,7 @@ import {
     IWebApplicationRegisterCompleteMessage,
     WebApplicationDevtoolCallback,
     ExtensionPostMessageTypes,
+    FSFileLogType,
 } from '@testring/types';
 
 import { asyncBreakpoints } from '@testring/async-breakpoints';
@@ -18,7 +19,7 @@ import { generateUniqId } from '@testring/utils';
 import { PluggableModule } from '@testring/pluggable-module';
 import { createElementPath, ElementPath } from '@testring/element-path';
 
-import { FSFileWriter } from '@testring/fs-store';
+import { FSFileWriter, FSStore } from '@testring/fs-store';
 
 import { createAssertion } from './assert';
 import { WebClient } from './web-client';
@@ -230,8 +231,9 @@ export class WebApplication extends PluggableModule {
         super();
         this.config = this.getConfig(config);
         this.decorateMethods();
-        this.fileWriter = new FSFileWriter(this.logger);
+        this.fileWriter = new FSFileWriter();
     }
+
 
     protected getConfig(userConfig: Partial<IWebApplicationConfig>): IWebApplicationConfig {
         return Object.assign({}, {
@@ -1732,7 +1734,10 @@ export class WebApplication extends PluggableModule {
         if (this.config.screenshotsEnabled && (this.screenshotsEnabledManually || force)) {
             const screenshot = await this.client.makeScreenshot();
 
-            return this.fileWriter.write( Buffer.from(screenshot.toString(), 'base64'), { encoding:'binary' });
+            const filePath = await this.fileWriter
+                .write(Buffer.from(screenshot.toString(), 'base64'), { encoding: 'binary' });
+            this.logger.file(new FSStore(filePath), { type: FSFileLogType.SCREENSHOT });
+            return filePath;                    
         }
         return null;
     }
