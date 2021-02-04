@@ -4,10 +4,18 @@
  * has a hook for event of all locks OFF (onLockFree(id, cb)) - to subscribe to the event
  */
 
-import { IFSStore } from '@testring/types';
-import { readFileSync, readFile, unlink, unlinkSync } from 'fs';
+
+import { promisify } from 'util';
+
+import { appendFile, writeFile, readFile, unlink } from 'fs/promises';
+import { readFileSync,  unlinkSync } from 'fs';
+
+import { FSStoreClient } from './fs-store-client';
+
+import { IFSStore, FSStoreOptions } from '@testring/types';
 
 
+const defaultOptions = {lock:false}
 export class FSStore implements IFSStore {
 
     private state: Record<string, any> = {};
@@ -18,10 +26,17 @@ export class FSStore implements IFSStore {
 
     private cache: Buffer | null = null;
 
-    constructor(private fileName: string) {
+    private fsWriterClient: FSStoreClient;
+
+    private fileName: string;
+
+    constructor(options:FSStoreOptions= defaultOptions) {
         this.state.valid = true;
+        this.fsWriterClient = new FSStoreClient();
+        this.fileName = options.fileName 
     }
 
+    
     // reading file from disk and pass a return a buffer, raise error if file is removed
     readSync(): Buffer {
         if (!this.cache) {

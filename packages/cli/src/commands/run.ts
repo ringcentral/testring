@@ -9,7 +9,7 @@ import { browserProxyControllerFactory, BrowserProxyController } from '@testring
 import { ICLICommand, IConfig, ITransport } from '@testring/types';
 import { DevtoolServerController } from '@testring/devtool-backend';
 
-import { fsQueueServer } from '@testring/fs-store';
+import { FSStoreServer } from '@testring/fs-store';
 
 
 class RunCommand implements ICLICommand {
@@ -24,10 +24,10 @@ class RunCommand implements ICLICommand {
     private httpServer: HttpServer;
     private devtoolServerController: DevtoolServerController;
 
+    private fsStoreServer: FSStoreServer;
+
     constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {
-        if (fsQueueServer.getInitState()===0) {
-                fsQueueServer.init(config);
-        }
+        this.fsStoreServer = new FSStoreServer(config.maxWriteThreadCount);
     }
 
     formatJSON(obj: object) {
@@ -89,7 +89,7 @@ class RunCommand implements ICLICommand {
         applyPlugins({
             logger: loggerServer,
             fsReader,
-            fsQueueServer,
+            fsStoreServer: this.fsStoreServer,
             testWorker,
             browserProxy: this.browserProxyController,
             testRunController: this.testRunController,
@@ -120,6 +120,8 @@ class RunCommand implements ICLICommand {
             testRunResult.forEach((error) => {
                 this.logger.error(error);
             });
+
+            console.error(testRunResult);
 
             throw `Failed ${testRunResult.length}/${tests.length} tests.`;
         } else {

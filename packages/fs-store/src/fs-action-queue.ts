@@ -10,32 +10,34 @@
  */ 
 import { PluggableModule } from '@testring/pluggable-module';
 import { MultiLock, Queue } from '@testring/utils';
-import { nextTick } from 'process';
 
 export const hooks = {
-    ON_READ_ACQUIRE : 'onReadAcquire',
-    ON_READ_RELEASE: 'onReadRelease',
-    ON_WRITE_ACQUIRE : 'onWriteAcquire',
-    ON_WRITE_RELEASE: 'onWriteRelease',
-    ON_UNLINK_ACQUIRE : 'onUnlinkAcquire',
-    // ON_UNLINK_RELEASE : 'onUnlinkRelease', // do we need to have a hook for ending delete call
+    ON_LOCK : 'onLockAcquire',
+    ON_UNLOCK: 'onLockRelease',
+    ON_ACCESS : 'onAccessAcquire',
+    ON_ACCESS_RELEASE: 'onAccessRelease',
+    ON_UNLINK : 'onUnlinkAcquire',
+    ON_UNLINK_RELEASE : 'onUnlinkRelease', // do we need to have a hook for ending delete call
 };
 
 export enum actionState { 
-    'read'=0,
-    'write',
-    'readWriteEmpty',
+    'access'=0,
+    'empty',
     'deleted',
 }
 
-export type actionCB = (dataId: string, cleanCB?: () => void) => void
+export type actionObject = {
+    dataId: string;
+    status?: actionState;
+}
+
+export type actionCB = (meta: actionObject, cleanCB?: () => void) => void
     
 export class FSActionQueue extends PluggableModule {
 
-    private read: MultiLock; // read pool
-    private readQue: Queue<[string, string, actionCB]> = new Queue<[string, string, actionCB]>();
-    private write: Queue<[string, string, actionCB]> = new Queue<[string, string, actionCB]>();
-    private writing = false;
+    private access: Queue<[string, string, actionCB]> = new Queue<[string, string, actionCB]>();
+    private accessing: boolean = false;
+    private lockPool: MultiLock; // lock pool
     private del: Queue<[string, string, actionCB]> = new Queue<[string, string, actionCB]>();
 
     private state: actionState;
@@ -43,138 +45,122 @@ export class FSActionQueue extends PluggableModule {
     /**
      * 
      * @param dataId - a string dataId (fileName)
-     * @param [readLockLimit] - a number for limiting readers amount at once, 0 - for unlimited
      * 
      */
-    constructor(private dataId: string, readLockLimit = 0) {
+    constructor(private dataId: string) {
         super(Object.values(hooks));
-        this.read = new MultiLock(readLockLimit); // no limit for read
-        this.state = actionState.read;
+        this.lockPool = new MultiLock(); // no limit for lock
+        this.state = actionState.access;
     }
 
     get status() {
         return this.state; 
     }
 
-    public getReadPoolSize() { 
-        return { active: this.read.getSize(), inQueue: this.readQue.length };
+    public getLockPoolSize() { 
+        return { queue: this.lockPool.getSize() };
     }
 
-    public getWriteQueueLength() { 
-        return { active: this.writing?1:0 , inQueue:this.write.length };
+    public getAccessQueueLength() { 
+        return { active: this.accessing?1:0 , queue:this.access.length };
     }
+
     public getUnlinkQueueLength() { 
-        return { inQueue:this.del.length };
+        return { queue:this.del.length };
     }
 
-    public acquireRead(workerId: string, requestId: string, cb: actionCB): boolean {
+    public lock(workerId: string, requestId: string, cb: actionCB): boolean {
         if (this.state === actionState.deleted) { 
             return false;
         }
-        if (this.state === actionState.write) { 
-            this.readQue.push([workerId, requestId, cb]);
-            return true;
-        }
-        this.state = actionState.read; //
-        if (this.read.acquire(workerId)) {
-            this.callHook(hooks.ON_READ_ACQUIRE, { workerId, requestId });
-            cb(this.dataId, () => {
-                this.releaseRead(workerId, requestId);
-            });
-        } else {
-            this.readQue.push([workerId, requestId, cb]);
+        if (this.lockPool.acquire(workerId)) { // should always be true since Multilock is unlimited 
+            this.callHook(hooks.ON_LOCK, { workerId, requestId });            
         }        
         return true;
     }
 
-    private doReadFromQue() { 
-        const newItem = this.readQue.shift();
-        if (newItem) {
-            return this.acquireRead(newItem[0], newItem[1], newItem[2]);
-        } else if (this.read.getSize() === 0) {
-            if (this.write.length === 0 && !this.writing) {
-                nextTick(() => {
-                    this.state = actionState.readWriteEmpty;
-                    return this.tryDelete();
-                });
-            } else if (!this.writing) {
-                nextTick(() => {
-                    this.state = actionState.write;
-                    return this.executeWrite();
-                });
-            }
-        }
-    }
-
-    public releaseRead(workerId: string, requestId: string) {
-        if (!this.read.release(workerId)) { 
+    public unlock(workerId: string, requestId: string) {
+        if (!this.lockPool.release(workerId)) { 
             return false;
         }
-        this.callHook(hooks.ON_READ_RELEASE, { workerId, requestId });
-        nextTick(() => this.doReadFromQue());
+        this.callHook(hooks.ON_UNLOCK, { workerId, requestId });
+        return this.onEmpty();
+    }
+
+    public cleanLock(workerId: string | void) {
+        if (!workerId) {
+            this.lockPool.clean();
+            this.callHook(hooks.ON_UNLOCK, {});
+        } else {
+            this.lockPool.clean(workerId);
+            this.callHook(hooks.ON_UNLOCK, { workerId });
+        }
+        
+        return this.onEmpty();
+    }
+
+    private onEmpty() { 
+        if (this.access.length === 0 && this.lockPool.getSize() === 0) {
+            this.state = actionState.empty;
+            return this.tryDelete();
+        }
         return true;
     }
 
-    public cleanRead(workerId: string | void) {
-        if (!workerId) {
-            this.read.clean();
-            this.readQue.clean();
-        } else {
-            this.read.clean(workerId);
-            this.readQue.remove(([itemWorkerId]) => itemWorkerId === workerId);
-        }
-        this.doReadFromQue();
-    }
-
-    private executeWrite() {
-        if (this.state !== actionState.write || this.writing) {
+    private tryAccess() {
+        if (this.state === actionState.deleted ) {
             return false;
         }
-        const item = this.write.shift();
+        if (this.accessing === true) { 
+            return true;
+        }
+        const item = this.access.shift();
         if (item) {
             const [workerId, requestId, cb] = item;
-            this.writing = true;
-            this.callHook(hooks.ON_WRITE_ACQUIRE, { workerId, requestId });            
-            cb(this.dataId, () => {
-                this.writing = false;
-                this.executeWrite();
-                this.callHook(hooks.ON_WRITE_RELEASE, { workerId, requestId });
+            this.accessing = true;
+            this.callHook(hooks.ON_ACCESS, { workerId, requestId });            
+            cb({ dataId: this.dataId }, () => {
+                this.accessing = false;
+                this.tryAccess();
+                this.callHook(hooks.ON_ACCESS_RELEASE, { workerId, requestId });
             });
         } else {
-            this.state = actionState.read;
-            this.doReadFromQue();
+            this.onEmpty();
         }
         return true;
     }
 
-    public hookWrite(workerId: string, requestId: string, cb: actionCB): boolean { 
+    public hookAccess(workerId: string, requestId: string, cb: actionCB): boolean { 
         if (this.state === actionState.deleted) { 
             return false;
         }
-        this.write.push([workerId, requestId, cb]);
-        this.executeWrite();
-        return true;
+        this.access.push([workerId, requestId, cb]);
+        return this.tryAccess();
     }
 
-    public cleanWrite(workerId: string | void) {
+    public cleanAccess(workerId: string | void) {
         if (!workerId) {
-            this.write.clean();
+            this.access.clean();
+            this.callHook(hooks.ON_ACCESS_RELEASE, {});        
         } else {
-            this.write.remove(([itemWorkerId]) => itemWorkerId === workerId);
+            this.access.remove(([itemWorkerId]) => itemWorkerId === workerId);
+            this.callHook(hooks.ON_ACCESS_RELEASE, { workerId });
         }
     }
 
     private tryDelete(): boolean { 
-        if (this.state < actionState.readWriteEmpty) {
+        if (this.state < actionState.empty) {
             return false;
         }
         const delItem = this.del.shift();
-        if (delItem) { 
-            const [workerId, requestId, cb] = delItem;            
-            this.callHook(hooks.ON_UNLINK_ACQUIRE, { workerId, requestId });
-            cb(this.dataId);
-            this.state = actionState.deleted;
-            this.tryDelete();
+        if (delItem) {
+            const [workerId, requestId, cb] = delItem;
+            this.callHook(hooks.ON_UNLINK, { workerId, requestId });
+            cb({ dataId: this.dataId, status: this.state },  ()=> {
+                this.state = actionState.deleted;
+                this.callHook(hooks.ON_UNLINK_RELEASE, { workerId, requestId });  
+                this.tryDelete();
+            });
         }
         return true;
     }
@@ -187,8 +173,10 @@ export class FSActionQueue extends PluggableModule {
     public cleanUnlink(workerId: string | void) {
         if (!workerId) {
             this.del.clean();
+            this.callHook(hooks.ON_UNLINK_RELEASE, {});        
         } else {
             this.del.remove(([itemWorkerId]) => itemWorkerId === workerId);
+            this.callHook(hooks.ON_UNLINK_RELEASE, { workerId });        
         }
     }
 }

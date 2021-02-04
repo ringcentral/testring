@@ -21,5 +21,5 @@ export interface IPluginModules {
     httpClientInstance: IHttpClient;
     httpServer: IHttpServerController & IPluggableModule;
     devtool: IDevtoolServerController & IPluggableModule;
-    fsQueueServer: IPluggableModule;
+    fsStoreServer: IPluggableModule;
 }

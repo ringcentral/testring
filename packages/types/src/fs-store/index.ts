@@ -66,8 +66,8 @@ export interface IDelAcqResp {
 }
 
 export enum fsReqType { 
-    'read',
-    'write',
+    'access'=1,
+    'lock',
     'unlink',
 }
 export interface IFSStoreReq {
@@ -76,12 +76,31 @@ export interface IFSStoreReq {
     fileName?: string;
     meta: Record<string,any>;
 }
+
+export interface IFSStoreReq {
+    requestId: string;
+    action: fsReqType;
+    fileName?: string;
+    meta: Record<string,any>;
+}
+export interface IFSStoreReqFixed {
+    requestId: string;
+    action: fsReqType;
+    fileName: string;
+    meta: Record<string,any>;
+}
 export interface IFSStoreResp {
     requestId: string;
     action: fsReqType;
     fileName: string;
 }
 
+
+export type FSStoreOptions = {
+    lock?: boolean;
+    fileName?: string;
+    path?: string;
+}
 
 export interface IOnFileReleaseHookData {
     workerId: string;

@@ -6,7 +6,7 @@ import { TestWorkerAPI } from './modules/test-worker';
 import { TestRunControllerAPI } from './modules/test-run-controller';
 import { DevtoolAPI } from './modules/devtool';
 import { HttpServerAPI } from './modules/http-server';
-import { FSQueueServerAPI } from './modules/fs-queue-server';
+import { FSStoreServerAPI } from './modules/fs-store-server';
 
 export class PluginAPI {
     constructor(private pluginName: string, private modules: IPluginModules) {
@@ -49,6 +49,6 @@ export class PluginAPI {
     }
     
     getFSQueueServer() {
-        return new FSQueueServerAPI(this.pluginName, this.modules.fsQueueServer);
+        return new FSStoreServerAPI(this.pluginName, this.modules.fsStoreServer);
     }
 }

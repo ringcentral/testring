@@ -10,6 +10,7 @@ import {
     // IDelAcqReq,
     // IDelAcqResp,
     IFSStoreReq,
+    IFSStoreReqFixed,
     IFSStoreResp,
     fsReqType,
     ITransport,
@@ -35,7 +36,7 @@ const hooks = {
     ON_RELEASE: 'onRelease',
 };
 
-export { hooks as fsQueueServerHooks }; 
+export { hooks as fsStoreServerHooks }; 
     
 type cbRecord = Record<string, Record<string, (() => void) | undefined>>
 
@@ -53,26 +54,21 @@ export class FSStoreServer extends PluggableModule  {
     private resName: string;
     private releaseName: string;
     private cleanName: string;
-    private savePath: string;
     private unHookReqTransport: (() => void )| null = null;
     private unHookReleaseTransport: (() => void) | null = null;
     private unHookCleanWorkerTransport: (() => void) | null = null;
     private fqs: FSQueueServer;
     private fqsTransport: ITransport;
     private queServerPrefix: string;
-    // private testReq: string;
-    // private testResp: string;
     private queReq: string;
     private queResp: string;
     private queRelease: string;
 
     private files: Record<string, [FSActionQueue, cbRecord]> = {}; 
-    private workerRequests: Record<string, [fsReqType, string]> = {};
+    private workerRequests: Record<string, Record<string, [fsReqType, string]>> = {};
     private usedFiles: Record<string, boolean> = {};
 
     private state: serverState = serverState.new;
-    // private initEnsured: Promise<any>;
-    // private initialize: (any) => void;
     
     /**
      * 
@@ -80,7 +76,7 @@ export class FSStoreServer extends PluggableModule  {
      * @param queServerPrefix 
      * @param FQS 
      */
-    constructor(msgNamePrefix: string = 'fs-store', FQS: FSQueueServer|number = 10) {
+    constructor( FQS: FSQueueServer|number = 10, msgNamePrefix: string = 'fs-store' ) {
         super(Object.values(hooks));
         
         if (typeof(FQS) === 'number') {
@@ -93,8 +89,6 @@ export class FSStoreServer extends PluggableModule  {
             this.queServerPrefix = this.fqs.getMsgPrefix(); 
         }
 
-        // this.testReq = this.queServerPrefix +'_test';
-        // this.testResp = this.queServerPrefix +'_test_resp';
         this.queReq = this.queServerPrefix +'_request_thread';
         this.queResp = this.queServerPrefix +'_allow_thread';
         this.queRelease = this.queServerPrefix +'_release_thread';
@@ -104,13 +98,11 @@ export class FSStoreServer extends PluggableModule  {
         this.releaseName = msgNamePrefix +'_release_action';
         this.cleanName = msgNamePrefix +'_release_worker';
         
-        // this.initEnsured = new Promise(resolve=>{
-        //     this.initialize = resolve;
-        // });
+        
         this.init();
     }
     
-    public getInitState(): number {
+    public getState(): number {
         return this.state;
     }
 
@@ -121,24 +113,22 @@ export class FSStoreServer extends PluggableModule  {
         }
         this.state = serverState.initStarted;
 
-        // const acqHook = this.queue.getHook(queHooks.ON_ACQUIRE);
-        // if (acqHook) {
-        //     acqHook.readHook('queServer', async ({ workerId, requestId })=>{
-        //         const fileName = await this.generateUniqFileName(workerId, requestId);
-        //         transport.send<IWriteAcquireData>(workerId, this.resName, { requestId, fileName });
-        //     });
-        // }
-
         this.fqsTransport.on<IQueAcqResp>(this.queResp, ({ requestId }) => { 
             const [wId, rId] = destructWRID(requestId);
-            const [action, fileName] = this.workerRequests[requestId];
+            const [action, fileName] = this.workerRequests[wId][rId];
 
             transport.send<IFSStoreResp>(wId, this.resName, { requestId:rId, fileName, action });
         });
 
-        this.unHookReqTransport = transport.on<IFSStoreReq>(this.reqName, async (msgData, workerId='*')=>{
-            // const { requestId, fileName, action} = msgData;
-            this.RequestAction(msgData, workerId);
+        this.unHookReqTransport = transport.on<IFSStoreReq>(this.reqName, async (msgData, workerId = '*') => {
+            const { requestId, action, meta } = msgData;
+            let { fileName } = msgData;
+            if (!fileName) {
+                const { ext, path } = meta;
+                fileName = await this.generateUniqFileName(workerId, requestId, ext, path );
+            }
+            
+            this.RequestAction({ requestId, fileName, action, meta }, workerId);
         });
 
         this.unHookReleaseTransport = transport.on<IFSStoreReq>(this.releaseName, (msgData, workerId='*')=>{
@@ -156,16 +146,12 @@ export class FSStoreServer extends PluggableModule  {
         this.unHookCleanWorkerTransport && this.unHookCleanWorkerTransport();
     }
 
-    private async ensureActionQueue({ action, requestId, fileName, meta }: IFSStoreReq, workerId: string) { 
-        if (!fileName) { 
-            fileName = await this.generateUniqFileName(workerId, requestId, meta && meta.ext);
-        }
+    private ensureActionQueue({ action, requestId, fileName, meta }: IFSStoreReqFixed, workerId: string) { 
         if (!this.files[fileName]) { 
             this.files[fileName] = [new FSActionQueue(fileName), {}];
-            this.workerRequests[constructWRID(workerId, requestId)] = [action, fileName];
+            this.workerRequests[workerId][requestId] = [action, fileName];
             delete this.usedFiles[fileName];
         }
-        return fileName;
     }
 
     private ensureCbRecord(cbRecord: cbRecord, workerId: string) { 
@@ -174,82 +160,93 @@ export class FSStoreServer extends PluggableModule  {
         }
     }
 
-    private async RequestAction(data: IFSStoreReq, workerId: string) { 
-        const fName = await this.ensureActionQueue(data, workerId);
-        const { action, requestId } = data;
+    private async RequestAction(data: IFSStoreReqFixed, workerId: string) { 
+        this.ensureActionQueue(data, workerId);
+        const { action, requestId, fileName } = data;
 
-        const cbRec = this.files[fName][1];
+        const [FAQ, cbRec] = this.files[fileName];
 
         this.ensureCbRecord(cbRec, workerId);
 
         switch (action) { 
-            case fsReqType.read:
-                this.files[fName][0].acquireRead(workerId, requestId, (dataId, endCb) => {
+            case fsReqType.lock:
+                FAQ.lock(workerId, requestId, (dataObj, endCb) => {
                     cbRec[workerId][requestId] = endCb;
-                    transport.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName:fName, action });
+                    transport.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action });
                 });
                 break;
-            case fsReqType.write:
-                this.files[fName][0].hookWrite(workerId, requestId, (dataId, endCb) => { 
+            case fsReqType.access:
+                FAQ.hookAccess(workerId, requestId, (dataObj, endCb) => { 
                     cbRec[workerId][requestId] = endCb;
                     this.fqsTransport
                         .broadcast<IQueAcqReq>(this.queReq, { requestId: constructWRID(workerId, requestId) });        
-            
                 });
                 break;
             case fsReqType.unlink:
-                this.files[fName][0].hookUnlink(workerId, requestId, (dataId, endCb) => { 
+                FAQ.hookUnlink(workerId, requestId, (dataObj, endCb) => { 
                     cbRec[workerId][requestId] = endCb;
-                    transport.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName:fName, action });
+                    transport.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action });
                 
-                    // this.fqsTransport
-                    //     .broadcast<IQueAcqReq>(
-                    //          this.queReq, 
-                    //          { requestId: constructWRID(workerId, requestId) });        
-                    
                 });
         }
     }
     
-    private async ReleaseAction(data: IFSStoreReq, workerId: string) { 
-        const fName = await this.ensureActionQueue(data, workerId);
-        const { requestId, action } = data;
-        const cbRec = this.files[fName][1];
-
-        if (action === fsReqType.write) { 
-            this.fqsTransport
-                .broadcast<IQueAcqReq>(this.queRelease, { requestId: constructWRID(workerId, requestId) });        
+    private async ReleaseAction(data: IFSStoreReq, workerId: string) {
+        const { requestId, action, fileName } = data;
+        if (!fileName) { 
+            return false;
         }
+        const cbRec = this.files[fileName][1];
+
+        if (action === fsReqType.access) {
+            this.fqsTransport
+                .broadcast<IQueAcqReq>(this.queRelease, { requestId: constructWRID(workerId, requestId) });
+            
+        }
+
+        this.callHook(hooks.ON_RELEASE, { workerId, requestId, fileName });
 
         const cb = cbRec[workerId] && cbRec[workerId][requestId];
 
-        cb && cb();        
+        cb && cb();
+        return true;
     }
-    
+
     private async ClearAction(data: IFSStoreReq, workerId: string) { 
-        const fName = await this.ensureActionQueue(data, workerId);
         const { action } = data;
-        const cbRec = this.files[fName][1];
 
-        this.ensureCbRecord(cbRec, workerId);
+        if (!action) {
 
+            Object.keys(this.files).forEach(fName => {
+                this.files[fName][0].cleanAccess(workerId);
+                this.files[fName][0].cleanLock(workerId);
+                this.files[fName][0].cleanUnlink(workerId);
+            });
+            return;
+        }
         switch (action) { 
-            case fsReqType.read:
-                this.files[fName][0].cleanRead(workerId);
+            case fsReqType.access:
+                Object.keys(this.files).forEach(fName => {
+                    this.files[fName][0].cleanAccess(workerId);
+                });
                 break;
-            case fsReqType.write:
-                this.files[fName][0].cleanWrite(workerId);
+            case fsReqType.lock:
+                Object.keys(this.files).forEach(fName => {
+                    this.files[fName][0].cleanLock(workerId);
+                });
                 break;
             case fsReqType.unlink:
-                this.files[fName][0].cleanUnlink(workerId);
+                Object.keys(this.files).forEach(fName => {
+                    this.files[fName][0].cleanUnlink(workerId);
+                });
         }
-    }    
+    }
 
     public getNameList() {
         return Object.keys(this.files);
     }
 
-    private async generateUniqFileName(workerId: string, requestId: string, ext='tmp'): Promise<string> {
+    private async generateUniqFileName(workerId: string, requestId: string, ext='tmp', savePath='/'): Promise<string> {
         const screenDate = new Date();
         const formattedDate = (`${screenDate.toLocaleTimeString()} ${screenDate.toDateString()}`)
                 .replace(/\s+/g, '_');
@@ -257,7 +254,7 @@ export class FSStoreServer extends PluggableModule  {
         const fileNameBase = `${workerId.replace('/','.')}-${requestId}-${generateUniqId(5)}-${formattedDate}.${ext}`;
 
         const { fileName, path } = await this.callHook(hooks.ON_FILENAME,
-             { workerId, requestId, fileName: fileNameBase, path:this.savePath },
+             { workerId, requestId, fileName: fileNameBase, path:savePath },
              );  
              
         const resultFileName = pathJoin(path, fileName);

@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { loggerClient } from '@testring/logger';
 import { FSReader } from '@testring/fs-reader';
-import { FSQueueClient } from '@testring/fs-store';
+import { FSStoreClient } from '@testring/fs-store';
 import { fork } from '@testring/child-process';
 import { generateUniqId } from '@testring/utils';
 import { TestWorkerLocal } from './test-worker-local';
@@ -54,7 +54,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private logger = loggerClient;
 
-    private fsWriterClient: FSQueueClient;
+    private fsWriterClient: FSStoreClient;
 
     private workerExitHandler = (exitCode) => {
         this.clearWorkerHandlers();
@@ -89,7 +89,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         workerConfig: Partial<ITestWorkerConfig> = {},
     ) {
         this.config = this.createConfig(workerConfig);
-        this.fsWriterClient = new FSQueueClient();
+        this.fsWriterClient = new FSStoreClient();
     }
 
     private createConfig(workerConfig: Partial<ITestWorkerConfig>): ITestWorkerConfig {
@@ -128,7 +128,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         } else if (this.worker !== null) {
             this.clearWorkerHandlers();
 
-            let waitForKill = new Promise((resolve) => {
+            let waitForKill = new Promise<void>((resolve) => {
                 if (this.worker !== null) {
                     this.worker.once('exit', () => {
                         resolve();

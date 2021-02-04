@@ -64,10 +64,10 @@ export class FSStoreClient {
      * @param options - an ID for find cb with resulting file name
      * @returns
      */
-    public getReadPermission(cb: (fName: string) => void, opts: requestMeta): string {
+    public getLockPermission(cb: (fName: string) => void, opts: requestMeta): string {
         let { requestId, fileName, ext } = opts;
         requestId = this.ensureRequestId(requestId);
-        const action =  fsReqType.read;
+        const action =  fsReqType.lock;
         this.reqHash[requestId] = { tries:0, cb , action };
         transport.broadcast<IFSStoreReq>(this.reqName, { requestId, action, fileName, meta: { ext } });
         return requestId;
@@ -79,11 +79,11 @@ export class FSStoreClient {
      * @param options - an ID for find cb with resulting file name
      * @returns
      */
-    public getWritePermission( cb: (fName: string) => void, opts: requestMeta): string {
+    public getAccessPermission( cb: (fName: string) => void, opts: requestMeta): string {
 
         let { requestId, fileName, ext } = opts;
         requestId = this.ensureRequestId(requestId);
-        const action =  fsReqType.write;        
+        const action =  fsReqType.access;        
         this.reqHash[requestId] = { tries:0, cb , action };
         transport.broadcast<IFSStoreReq>(this.reqName, { requestId, action, fileName, meta: { ext } });
         return requestId;
