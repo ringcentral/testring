@@ -117,13 +117,25 @@ export class FSStoreServer extends PluggableModule  {
             const [wId, rId] = destructWRID(requestId);
             const [action, fileName] = this.workerRequests[wId][rId];
 
-            transport.send<IFSStoreResp>(wId, this.resName, { requestId:rId, fileName, action });
+            transport.send<IFSStoreResp>(wId, this.resName, { requestId:rId, fileName, action, status:'OK' });
         });
 
         this.unHookReqTransport = transport.on<IFSStoreReq>(this.reqName, async (msgData, workerId = '*') => {
             const { requestId, action, meta } = msgData;
             let { fileName } = msgData;
-            if (!fileName) {
+            if (!fileName) { // no fileName giver - need to construct one
+                if (action === fsReqType.unlink) { // if no fileName during unlink -> ERROR
+                    transport.send<IFSStoreResp>(workerId,
+                        this.resName,
+                        {
+                            requestId,
+                            action,
+                            fileName:'',
+                            status: 'no fileName for action',
+                        });
+                
+                    return; 
+                }
                 const { ext, path } = meta;
                 fileName = await this.generateUniqFileName(workerId, requestId, ext, path );
             }
@@ -172,7 +184,7 @@ export class FSStoreServer extends PluggableModule  {
             case fsReqType.lock:
                 FAQ.lock(workerId, requestId, (dataObj, endCb) => {
                     cbRec[workerId][requestId] = endCb;
-                    transport.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action });
+                    transport.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action, status:'OK' });
                 });
                 break;
             case fsReqType.access:
@@ -183,10 +195,9 @@ export class FSStoreServer extends PluggableModule  {
                 });
                 break;
             case fsReqType.unlink:
-                FAQ.hookUnlink(workerId, requestId, (dataObj, endCb) => { 
+                FAQ.hookUnlink(workerId, requestId, (dataObj, endCb) => {
                     cbRec[workerId][requestId] = endCb;
-                    transport.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action });
-                
+                    transport.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action, status:'OK' });
                 });
         }
     }
@@ -201,7 +212,6 @@ export class FSStoreServer extends PluggableModule  {
         if (action === fsReqType.access) {
             this.fqsTransport
                 .broadcast<IQueAcqReq>(this.queRelease, { requestId: constructWRID(workerId, requestId) });
-            
         }
 
         this.callHook(hooks.ON_RELEASE, { workerId, requestId, fileName });
@@ -262,7 +272,7 @@ export class FSStoreServer extends PluggableModule  {
         if (this.files[resultFileName] !== undefined || this.usedFiles[resultFileName]) {
             // eslint-disable-next-line ringcentral/specified-comment-with-task-id
             // FIXME: possible loop hence plugins can return same file name during every request
-            return this.generateUniqFileName(workerId, ext);
+            return this.generateUniqFileName(workerId, requestId, ext, savePath);
         }
         this.usedFiles[resultFileName] = true;
         return resultFileName; 

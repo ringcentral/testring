@@ -1,18 +1,25 @@
-import { generateUniqId }  from '@testring/utils';
+/**
+ * An abstraction class to hide transport implementation 
+ */
+
+import { generateUniqId } from '@testring/utils';
 import { transport } from '@testring/transport';
 
 
-import {  
-    fsReqType, IFSStoreReq, IFSStoreResp,
+import {
+    fsReqType,    
+    IFSStoreReq,
+    IFSStoreResp,
 } from '@testring/types';
 
 export type requestMeta = {
     fileName?: string;
     ext?: string;
+    path?: string;
     requestId?: string;
 }
 
-type requestsTable = Record<string, Record<string,  fsReqType | number | ((string) => void)>>
+type requestsTable = Record<string, Record<string,  fsReqType | number | null | ((string) => void)>>
 
 export class FSStoreClient {
 
@@ -32,12 +39,22 @@ export class FSStoreClient {
     }
 
     private init() {
+
         // hook on response - get request Object according to requestID & call CB 
         transport.on<IFSStoreResp>(this.resName, (msgData) => {
-            const { requestId, fileName } = msgData;
+            const { requestId, fileName, status } = msgData;
+            if (status !== 'OK') { 
+                // eslint-disable-next-line no-console
+                console.error(msgData);
+            }
             const reqObj = this.reqHash[requestId];
-            if (reqObj && reqObj.cb && typeof reqObj.cb === 'function') {
-                reqObj.cb(fileName);
+            if (reqObj) {
+                if (reqObj.action && reqObj.action === fsReqType.release) { 
+                    delete this.reqHash[requestId];        
+                }
+                if (reqObj.cb && typeof reqObj.cb === 'function') {
+                    reqObj.cb(fileName);
+                }
             }
             // FIX: if no reqObj found - possible race with release or miss on transport endpoint           
         });
@@ -65,11 +82,11 @@ export class FSStoreClient {
      * @returns
      */
     public getLockPermission(cb: (fName: string) => void, opts: requestMeta): string {
-        let { requestId, fileName, ext } = opts;
+        let { requestId, fileName, ext, path } = opts;
         requestId = this.ensureRequestId(requestId);
         const action =  fsReqType.lock;
         this.reqHash[requestId] = { tries:0, cb , action };
-        transport.broadcast<IFSStoreReq>(this.reqName, { requestId, action, fileName, meta: { ext } });
+        transport.broadcast<IFSStoreReq>(this.reqName, { requestId, action, fileName, meta: { ext , path } });
         return requestId;
     }
 
@@ -81,11 +98,11 @@ export class FSStoreClient {
      */
     public getAccessPermission( cb: (fName: string) => void, opts: requestMeta): string {
 
-        let { requestId, fileName, ext } = opts;
+        let { requestId, fileName, ext, path } = opts;
         requestId = this.ensureRequestId(requestId);
         const action =  fsReqType.access;        
         this.reqHash[requestId] = { tries:0, cb , action };
-        transport.broadcast<IFSStoreReq>(this.reqName, { requestId, action, fileName, meta: { ext } });
+        transport.broadcast<IFSStoreReq>(this.reqName, { requestId, action, fileName, meta: { ext, path } });
         return requestId;
     }
 
@@ -97,18 +114,25 @@ export class FSStoreClient {
      */
     public getUnlinkPermission( cb: (fName: string) => void, opts: requestMeta): string {
 
-        let { requestId, fileName, ext } = opts;
+        let { requestId, fileName, ext, path } = opts;
+        if (!fileName) { 
+            throw new Error('NO FileName giver for unlink permission request task');
+        }
         requestId = this.ensureRequestId(requestId);
         const action = fsReqType.unlink;
         this.reqHash[requestId] = { tries:0, cb, action };
         transport
-            .broadcast<IFSStoreReq>(this.reqName, { requestId, action, fileName, meta: { ext } });
+            .broadcast<IFSStoreReq>(this.reqName, { requestId, action, fileName, meta: { ext, path } });
         return requestId;
     }
 
-    public releasePermission(requestId: string) {
-        const { action } =  this.reqHash[requestId];
-        delete this.reqHash[requestId];
+    public releasePermission(requestId: string, cb?: () => void) {
+        const { action } = this.reqHash[requestId];
+        const reqData: Record<string, any> = { tries: 0, action: fsReqType.release };   
+        if (cb) { 
+            reqData.cb = cb;
+        }
+        this.reqHash[requestId] = reqData;
         transport.broadcast<IFSStoreReq>(this.releaseName, { requestId, action: action as fsReqType, meta: {} });
     }   
 

@@ -23,14 +23,15 @@ export interface IFSFile {
 }
 
 export interface IFSStore {
-    readSync(): Buffer; // reading file from disk and pass a return a buffer, raise error if file is removed
+    lock(): Promise<void>; // locks file for read, ID key is used as identifier for unlock in future
+    unlock(options: FSUnlockOptions): Promise<boolean>; // unlocks file to read operation for process ID
     read(): Promise<Buffer>; // the same part but with promise wrapper
-    lock(id: string): boolean; // locks file for read, ID key is used as identifier for unlock in future
-    unlock(id: string); // unlocks file to read operation for process ID
-    onLockFree(id: string, cb: (IFSStore) => void): boolean; // subscribe to all unlock event 
+    write(Buffer): Promise<void>; // the same part but with promise wrapper
+    append(Buffer): Promise<void>; // the same part but with promise wrapper
     isLocked(): boolean; // returns bool variable, true if nobody locks current file
-    unlinkSync(id: string); // remove file from FS, raise an error if file is locked or object is invalid
-    unlink(id: string): Promise<boolean>;// async remove method 
+    unlink(): Promise<boolean>;// async remove method
+    waitForUnlock(): Promise<void>; //
+    transaction(cb: () => Promise<void>): Promise<void>;
 }
 
 export interface IQueAcqReq {
@@ -69,6 +70,7 @@ export enum fsReqType {
     'access'=1,
     'lock',
     'unlink',
+    'release',
 }
 export interface IFSStoreReq {
     requestId: string;
@@ -93,13 +95,22 @@ export interface IFSStoreResp {
     requestId: string;
     action: fsReqType;
     fileName: string;
+    status: string;
 }
 
 
 export type FSStoreOptions = {
-    lock?: boolean;
-    fileName?: string;
-    path?: string;
+    lock: boolean;
+    file: string | {
+        fileName?: string;
+        savePath: string;
+        ext?: string;
+    };
+    fsStorePrefix?: string;
+}
+
+export type FSUnlockOptions = {
+    doUnlink?: boolean;    
 }
 
 export interface IOnFileReleaseHookData {
