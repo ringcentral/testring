@@ -23,14 +23,14 @@ export class FSFileUnlinker {
         return new Promise((resolve, reject) => {
             // get file name from master process
             const reqId = this.fsStoreClient
-                .getUnlinkPermission(async (filePath: string ) => {
-                    await delFile(filePath);
-                    this.fsStoreClient.releasePermission(reqId);
-                    resolve(filePath);
-                },
-                {
-                    requestId: '11',                    
-                });
-        });            
-    }    
+                .getUnlink(
+                    { fileName },
+                    async (filePath: string) => {
+                        await delFile(filePath);
+                        this.fsStoreClient.release(reqId);
+                        resolve(filePath);
+                    },
+                );
+        });
+    }
 }

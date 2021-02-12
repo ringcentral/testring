@@ -21,6 +21,7 @@
     "@testring/types": "0.5.32",
     "@testring/utils": "0.5.32",
     "nanoid": "",
+    "pino": "6.11.1",
     "ts-loader": "8.0.2"
   },
   "scripts": {
@@ -28,5 +29,8 @@
   },
   "bugs": {
     "url": "https://github.com/ringcentral/testring/issues"
+  },
+  "devDependencies": {
+    "@types/pino": "6.3.5"
   }
 }

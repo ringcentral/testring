@@ -27,14 +27,17 @@ describe('Action queue', () => {
             { workerId : 'w2', requestId: 'r2' },
             { workerId : 'w3', requestId: 'r3' },
         ];
-        FAQ.lock(pData[0].workerId, pData[0].requestId, (fName) => {
-            chai.expect(fName).to.be.equals(fileName);
+        FAQ.lock(pData[0].workerId, pData[0].requestId, ({ dataId, status }) => {
+            chai.expect(status).to.be.equals(actionState.locked);
+            chai.expect(dataId).to.be.equals(fileName);
         });
-        FAQ.lock(pData[1].workerId, pData[1].requestId, (fName) => {
-            chai.expect(fName).to.be.equals(fileName);
+        FAQ.lock(pData[1].workerId, pData[1].requestId, ({ dataId, status }) => {
+            chai.expect(status).to.be.equals(actionState.locked);
+            chai.expect(dataId).to.be.equals(fileName);
         });
-        FAQ.lock(pData[2].workerId, pData[2].requestId, (fName) => {
-            chai.expect(fName).to.be.equals(fileName);
+        FAQ.lock(pData[2].workerId, pData[2].requestId, ({ dataId, status }) => {
+            chai.expect(status).to.be.equals(actionState.locked);
+            chai.expect(dataId).to.be.equals(fileName);
         });
         
         stateCheck(FAQ, { active: 0, queue: 0 },{ queue: 3 },  { queue: 0 }, 'on after lock 3');
@@ -69,7 +72,7 @@ describe('Action queue', () => {
         
         FAQ.hookUnlink(pData[0].workerId, pData[0].requestId, ({ dataId, status }, cleanCB) => {
             chai.expect(dataId).to.be.equals(fileName);
-            chai.expect(status).to.be.equals(actionState.empty, 'on first Unlink should get "empty"');
+            chai.expect(status).to.be.equals(actionState.free, 'on first Unlink should get "empty"');
             stateCheck(FAQ,
                 { active: 0, queue: 0 }, { queue: 0 }, { queue: 1 }, 'in unlinkHook');
             setTimeout(()=> cleanCB && cleanCB(), 100);            

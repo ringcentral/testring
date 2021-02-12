@@ -7,22 +7,24 @@
  * 
  * action flow - agents can request permissions for read write and delete(unlink) access 
  * 
- */ 
+ */
 import { PluggableModule } from '@testring/pluggable-module';
 import { MultiLock, Queue } from '@testring/utils';
 
 export const hooks = {
-    ON_LOCK : 'onLockAcquire',
+    ON_LOCK: 'onLockAcquire',
     ON_UNLOCK: 'onLockRelease',
-    ON_ACCESS : 'onAccessAcquire',
+    ON_ACCESS: 'onAccessAcquire',
     ON_ACCESS_RELEASE: 'onAccessRelease',
-    ON_UNLINK : 'onUnlinkAcquire',
-    ON_UNLINK_RELEASE : 'onUnlinkRelease', // do we need to have a hook for ending delete call
+    ON_UNLINK: 'onUnlinkAcquire',
+    ON_UNLINK_RELEASE: 'onUnlinkRelease', // do we need to have a hook for ending delete call
 };
 
-export enum actionState { 
-    'access'=0,
-    'empty',
+export enum actionState {
+    'init' = 0,
+    'locked',
+    'access',
+    'free',
     'deleted',
 }
 
@@ -32,7 +34,7 @@ export type actionObject = {
 }
 
 export type actionCB = (meta: actionObject, cleanCB?: () => void) => void
-    
+
 export class FSActionQueue extends PluggableModule {
 
     private access: Queue<[string, string, actionCB]> = new Queue<[string, string, actionCB]>();
@@ -50,41 +52,45 @@ export class FSActionQueue extends PluggableModule {
     constructor(private dataId: string) {
         super(Object.values(hooks));
         this.lockPool = new MultiLock(); // no limit for lock
-        this.state = actionState.access;
+        this.state = actionState.init;
     }
 
     get status() {
-        return this.state; 
+        return this.state;
     }
 
-    public getLockPoolSize() { 
+    public getLockPoolSize() {
         return { queue: this.lockPool.getSize() };
     }
 
-    public getAccessQueueLength() { 
-        return { active: this.accessing?1:0 , queue:this.access.length };
+    public getAccessQueueLength() {
+        return { active: this.accessing ? 1 : 0, queue: this.access.length };
     }
 
-    public getUnlinkQueueLength() { 
-        return { queue:this.del.length };
+    public getUnlinkQueueLength() {
+        return { queue: this.del.length };
     }
 
     public lock(workerId: string, requestId: string, cb: actionCB): boolean {
-        if (this.state === actionState.deleted) { 
+        if (this.state === actionState.deleted) {
             return false;
         }
         if (this.lockPool.acquire(workerId)) { // should always be true since Multilock is unlimited 
-            this.callHook(hooks.ON_LOCK, { workerId, requestId });            
-        }        
+            this.state = actionState.locked;
+            this.callHook(hooks.ON_LOCK, { workerId, requestId });
+            cb({ dataId: this.dataId, status: this.state }, () => {
+                this.unlock(workerId, requestId);
+            });
+        }
         return true;
     }
 
     public unlock(workerId: string, requestId: string) {
-        if (!this.lockPool.release(workerId)) { 
-            return false;
+        // console.log('FAQ unlock', workerId, requestId, Date.now());
+        if (this.lockPool.release(workerId)) {
+            this.callHook(hooks.ON_UNLOCK, { workerId, requestId });
         }
-        this.callHook(hooks.ON_UNLOCK, { workerId, requestId });
-        return this.onEmpty();
+        return this.chkEmpty();
     }
 
     public cleanLock(workerId: string | void) {
@@ -95,43 +101,53 @@ export class FSActionQueue extends PluggableModule {
             this.lockPool.clean(workerId);
             this.callHook(hooks.ON_UNLOCK, { workerId });
         }
-        
-        return this.onEmpty();
+
+        return this.chkEmpty();
     }
 
-    private onEmpty() { 
-        if (this.access.length === 0 && this.lockPool.getSize() === 0) {
-            this.state = actionState.empty;
-            return this.tryDelete();
+    private chkEmpty() {
+
+        // console.log('FAQ chkEmpty', this.lockPool.getSize(), this.access.length, this.accessing);
+        if (
+            this.lockPool.getSize() === 0 // no locks are present
+            && this.access.length === 0 // access queue is empty
+        ) {
+            if (!this.accessing) {  // no one currently accessing data
+                this.state = actionState.free;
+                return this.tryDelete();
+            }
+            this.state = actionState.access;
+        } else if (this.lockPool.getSize() !== 0) {
+            this.state = actionState.locked;
         }
         return true;
     }
 
     private tryAccess() {
-        if (this.state === actionState.deleted ) {
+        if (this.state === actionState.deleted) {
             return false;
         }
-        if (this.accessing === true) { 
+        if (this.accessing === true) {
             return true;
         }
         const item = this.access.shift();
         if (item) {
             const [workerId, requestId, cb] = item;
             this.accessing = true;
-            this.callHook(hooks.ON_ACCESS, { workerId, requestId });            
+            this.callHook(hooks.ON_ACCESS, { workerId, requestId });
             cb({ dataId: this.dataId }, () => {
                 this.accessing = false;
                 this.tryAccess();
                 this.callHook(hooks.ON_ACCESS_RELEASE, { workerId, requestId });
             });
         } else {
-            this.onEmpty();
+            this.chkEmpty();
         }
         return true;
     }
 
-    public hookAccess(workerId: string, requestId: string, cb: actionCB): boolean { 
-        if (this.state === actionState.deleted) { 
+    public hookAccess(workerId: string, requestId: string, cb: actionCB): boolean {
+        if (this.state === actionState.deleted) {
             return false;
         }
         this.access.push([workerId, requestId, cb]);
@@ -141,31 +157,33 @@ export class FSActionQueue extends PluggableModule {
     public cleanAccess(workerId: string | void) {
         if (!workerId) {
             this.access.clean();
-            this.callHook(hooks.ON_ACCESS_RELEASE, {});        
+            this.callHook(hooks.ON_ACCESS_RELEASE, {});
         } else {
             this.access.remove(([itemWorkerId]) => itemWorkerId === workerId);
             this.callHook(hooks.ON_ACCESS_RELEASE, { workerId });
         }
     }
 
-    private tryDelete(): boolean { 
-        if (this.state < actionState.empty) {
+    private tryDelete(): boolean {
+        // console.log('FAQ tryDelete', this.state, '<', actionState.free, this.del.length);
+
+        if (this.state < actionState.free) {
             return false;
         }
         const delItem = this.del.shift();
         if (delItem) {
             const [workerId, requestId, cb] = delItem;
             this.callHook(hooks.ON_UNLINK, { workerId, requestId });
-            cb({ dataId: this.dataId, status: this.state },  ()=> {
+            cb({ dataId: this.dataId, status: this.state }, () => {
                 this.state = actionState.deleted;
-                this.callHook(hooks.ON_UNLINK_RELEASE, { workerId, requestId });  
+                this.callHook(hooks.ON_UNLINK_RELEASE, { workerId, requestId });
                 this.tryDelete();
             });
         }
         return true;
     }
 
-    public hookUnlink(workerId: string, requestId: string, cb: actionCB) { 
+    public hookUnlink(workerId: string, requestId: string, cb: actionCB) {
         this.del.push([workerId, requestId, cb]);
         this.tryDelete();
     }
@@ -173,10 +191,10 @@ export class FSActionQueue extends PluggableModule {
     public cleanUnlink(workerId: string | void) {
         if (!workerId) {
             this.del.clean();
-            this.callHook(hooks.ON_UNLINK_RELEASE, {});        
+            this.callHook(hooks.ON_UNLINK_RELEASE, {});
         } else {
             this.del.remove(([itemWorkerId]) => itemWorkerId === workerId);
-            this.callHook(hooks.ON_UNLINK_RELEASE, { workerId });        
+            this.callHook(hooks.ON_UNLINK_RELEASE, { workerId });
         }
     }
 }

@@ -15,20 +15,25 @@ import {
     fsReqType,
     ITransport,
 } from '@testring/types';
-import { generateUniqId }  from '@testring/utils';
+import { generateUniqId } from '@testring/utils';
 import { transport } from '@testring/transport';
 import { PluggableModule } from '@testring/pluggable-module';
 
 // import { FSQueue, hooks as queHooks } from './fs-queue';
-import { FSQueueServer } from './fs-queue-server';
+import { FSActionServer } from './fs-action-server';
 import { FSActionQueue } from './fs-action-queue';
 import { LocalTransport } from './server_utils/LocalTransport';
 
 
-enum serverState  {
-    'new'=0,
+import { FS_CONSTANTS, getNewLog } from './utils';
+
+const logger = getNewLog({ m: 'fss' });
+const DW_ID = FS_CONSTANTS.DW_ID as string;
+
+export enum serverState {
+    'new' = 0,
     'initStarted',
-    'initialized', 
+    'initialized',
 }
 
 const hooks = {
@@ -36,72 +41,73 @@ const hooks = {
     ON_RELEASE: 'onRelease',
 };
 
-export { hooks as fsStoreServerHooks }; 
-    
+export { hooks as fsStoreServerHooks };
+
 type cbRecord = Record<string, Record<string, (() => void) | undefined>>
 
 
-function constructWRID(wId: string, rId: string) { 
+function constructWRID(wId: string, rId: string) {
     return `${wId}___${rId}`;
 }
-function destructWRID(id: string) { 
+function destructWRID(id: string) {
     return id.split('___');
 }
 
-export class FSStoreServer extends PluggableModule  {
+export class FSStoreServer extends PluggableModule {
 
     private reqName: string;
     private resName: string;
-    private releaseName: string;
-    private cleanName: string;
-    private unHookReqTransport: (() => void )| null = null;
+    private releaseReqName: string;
+    private cleanReqName: string;
+    private unHookReqTransport: (() => void) | null = null;
     private unHookReleaseTransport: (() => void) | null = null;
     private unHookCleanWorkerTransport: (() => void) | null = null;
-    private fqs: FSQueueServer;
+    private fqs: FSActionServer;
     private fqsTransport: ITransport;
     private queServerPrefix: string;
     private queReq: string;
     private queResp: string;
     private queRelease: string;
 
-    private files: Record<string, [FSActionQueue, cbRecord]> = {}; 
+    private files: Record<string, [FSActionQueue, cbRecord]> = {};
     private workerRequests: Record<string, Record<string, [fsReqType, string]>> = {};
     private usedFiles: Record<string, boolean> = {};
 
     private state: serverState = serverState.new;
-    
+
     /**
      * 
      * @param msgNamePrefix 
      * @param queServerPrefix 
      * @param FQS 
      */
-    constructor( FQS: FSQueueServer|number = 10, msgNamePrefix: string = 'fs-store' ) {
+    constructor(FQS: FSActionServer | number = 10, msgNamePrefix: string = 'fs-store') {
         super(Object.values(hooks));
-        
-        if (typeof(FQS) === 'number') {
+
+        if (typeof (FQS) === 'number') {
             this.fqsTransport = new LocalTransport();
             this.queServerPrefix = 'fs-que';
-            this.fqs = new FSQueueServer(FQS, this.queServerPrefix, this.fqsTransport);
+            this.fqs = new FSActionServer(FQS, this.queServerPrefix, this.fqsTransport);
         } else {
             this.fqs = FQS;
             this.fqsTransport = this.fqs.getTransport();
-            this.queServerPrefix = this.fqs.getMsgPrefix(); 
+            this.queServerPrefix = this.fqs.getMsgPrefix();
         }
 
-        this.queReq = this.queServerPrefix +'_request_thread';
-        this.queResp = this.queServerPrefix +'_allow_thread';
-        this.queRelease = this.queServerPrefix +'_release_thread';
-        
-        this.reqName = msgNamePrefix + '_request_action';
-        this.resName = msgNamePrefix +'_allow_action';
-        this.releaseName = msgNamePrefix +'_release_action';
-        this.cleanName = msgNamePrefix +'_release_worker';
-        
-        
+        this.queReq = this.queServerPrefix + FS_CONSTANTS.FAS_REQ_POSTFIX;
+        this.queResp = this.queServerPrefix + FS_CONSTANTS.FAS_RESP_POSTFIX;
+        this.queRelease = this.queServerPrefix + FS_CONSTANTS.FAS_RELEASE_POSTFIX;
+
+
+        this.reqName = msgNamePrefix + FS_CONSTANTS.FS_REQ_NAME_POSTFIX;
+        this.resName = msgNamePrefix + FS_CONSTANTS.FS_RESP_NAME_POSTFIX;
+        this.releaseReqName = msgNamePrefix + FS_CONSTANTS.FS_RELEASE_NAME_POSTFIX;
+        this.cleanReqName = msgNamePrefix + FS_CONSTANTS.FS_CLEAN_REQ_NAME_POSTFIX;
+
+
         this.init();
     }
-    
+
     public getState(): number {
         return this.state;
     }
@@ -113,43 +119,70 @@ export class FSStoreServer extends PluggableModule  {
         }
         this.state = serverState.initStarted;
 
-        this.fqsTransport.on<IQueAcqResp>(this.queResp, ({ requestId }) => { 
+        this.fqsTransport.on<IQueAcqResp>(this.queResp, ({ requestId }) => {
             const [wId, rId] = destructWRID(requestId);
+            logger.debug({ wReq: this.workerRequests, requestId, wId, rId }, 'on RESP');
+            if (!this.workerRequests[wId][rId]) {
+                logger.error({ wReq: this.workerRequests, requestId, wId, rId }, 'NO WORKER REQUEST');
+                return;
+            }
             const [action, fileName] = this.workerRequests[wId][rId];
 
-            transport.send<IFSStoreResp>(wId, this.resName, { requestId:rId, fileName, action, status:'OK' });
+            delete this.workerRequests[wId][rId];
+
+            this.send<IFSStoreResp>(wId, this.resName, { requestId: rId, fileName, action, status: 'OK' });
         });
 
-        this.unHookReqTransport = transport.on<IFSStoreReq>(this.reqName, async (msgData, workerId = '*') => {
-            const { requestId, action, meta } = msgData;
-            let { fileName } = msgData;
-            if (!fileName) { // no fileName giver - need to construct one
-                if (action === fsReqType.unlink) { // if no fileName during unlink -> ERROR
-                    transport.send<IFSStoreResp>(workerId,
-                        this.resName,
-                        {
-                            requestId,
-                            action,
-                            fileName:'',
-                            status: 'no fileName for action',
-                        });
-                
-                    return; 
+        this.unHookReqTransport = transport
+            .on<IFSStoreReq>(this.reqName, async (msgData, workerId = DW_ID) => {
+                logger.debug({ msgData, workerId, files: this.files }, 'GOT REQ...');
+                const { requestId, action, meta } = msgData;
+                let { fileName } = msgData;
+                if (!fileName) { // no fileName giver - need to construct one
+                    if (action === fsReqType.unlink) { // if no fileName during unlink -> ERROR
+                        this.send<IFSStoreResp>(workerId,
+                            this.resName,
+                            {
+                                requestId,
+                                action,
+                                fileName: '',
+                                status: 'no fileName for action',
+                            });
+
+                        return;
+                    }
+                    const { ext, path } = meta;
+                    fileName = await this.generateUniqFileName(workerId, requestId, ext, path);
                 }
-                const { ext, path } = meta;
-                fileName = await this.generateUniqFileName(workerId, requestId, ext, path );
-            }
-            
-            this.RequestAction({ requestId, fileName, action, meta }, workerId);
-        });
 
-        this.unHookReleaseTransport = transport.on<IFSStoreReq>(this.releaseName, (msgData, workerId='*')=>{
-            this.ReleaseAction(msgData, workerId);        
-        });
+                this.RequestAction({ requestId, fileName, action, meta }, workerId);
+            });
 
-        this.unHookCleanWorkerTransport = transport.on<IFSStoreReq>(this.cleanName, (msgData, workerId='*')=>{
-            this.ClearAction(msgData, workerId);        
-        });
+        this.unHookReleaseTransport = transport
+            .on<IFSStoreReq>(this.releaseReqName, (msgData, workerId = DW_ID) => {
+                this.ReleaseAction(msgData, workerId);
+            });
+
+        this.unHookCleanWorkerTransport = transport
+            .on<IFSStoreReq>(this.cleanReqName, (msgData, workerId = DW_ID) => {
+                this.ClearAction(msgData, workerId);
+            });
+
+        this.state = serverState.initialized;
+    }
+
+    private send<T>(workerId: string | undefined, msgId: string, data: T) {
+        logger.trace({ workerId, msgId, data }, 'fs send');
+        if (!workerId || workerId === DW_ID) {
+            transport.broadcastUniversally<T>(
+                msgId,
+                data);
+        } else {
+            transport.send<T>(
+                workerId,
+                msgId,
+                data);
+        }
     }
 
     public cleanUpTransport() {
@@ -158,21 +191,24 @@ export class FSStoreServer extends PluggableModule  {
         this.unHookCleanWorkerTransport && this.unHookCleanWorkerTransport();
     }
 
-    private ensureActionQueue({ action, requestId, fileName, meta }: IFSStoreReqFixed, workerId: string) { 
-        if (!this.files[fileName]) { 
+    private ensureActionQueue({ action, requestId, fileName, meta }: IFSStoreReqFixed, workerId: string) {
+        if (!this.files[fileName]) {
             this.files[fileName] = [new FSActionQueue(fileName), {}];
+            if (!this.workerRequests[workerId]) {
+                this.workerRequests[workerId] = {};
+            }
             this.workerRequests[workerId][requestId] = [action, fileName];
             delete this.usedFiles[fileName];
         }
     }
 
-    private ensureCbRecord(cbRecord: cbRecord, workerId: string) { 
-        if (!cbRecord[workerId]) { 
+    private ensureCbRecord(cbRecord: cbRecord, workerId: string) {
+        if (!cbRecord[workerId]) {
             cbRecord[workerId] = {};
         }
     }
 
-    private async RequestAction(data: IFSStoreReqFixed, workerId: string) { 
+    private async RequestAction(data: IFSStoreReqFixed, workerId: string) {
         this.ensureActionQueue(data, workerId);
         const { action, requestId, fileName } = data;
 
@@ -180,41 +216,53 @@ export class FSStoreServer extends PluggableModule  {
 
         this.ensureCbRecord(cbRec, workerId);
 
-        switch (action) { 
+        switch (action) {
             case fsReqType.lock:
                 FAQ.lock(workerId, requestId, (dataObj, endCb) => {
                     cbRec[workerId][requestId] = endCb;
-                    transport.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action, status:'OK' });
+                    this.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action, status: 'OK' });
                 });
                 break;
             case fsReqType.access:
-                FAQ.hookAccess(workerId, requestId, (dataObj, endCb) => { 
+                FAQ.hookAccess(workerId, requestId, (dataObj, endCb) => {
                     cbRec[workerId][requestId] = endCb;
+                    this.workerRequests[workerId][requestId] = [action, fileName];
+
                     this.fqsTransport
-                        .broadcast<IQueAcqReq>(this.queReq, { requestId: constructWRID(workerId, requestId) });        
+                        .broadcastUniversally<IQueAcqReq>(
+                            this.queReq,
+                            {
+                                requestId: constructWRID(workerId, requestId),
+                            });
                 });
                 break;
             case fsReqType.unlink:
                 FAQ.hookUnlink(workerId, requestId, (dataObj, endCb) => {
                     cbRec[workerId][requestId] = endCb;
-                    transport.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action, status:'OK' });
+                    logger.debug({ cbRec, action, requestId }, 'on unlink req');
+                    this.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action, status: 'OK' });
                 });
         }
+        logger.debug({ cbRec, action, requestId }, 'request action done');
+
     }
-    
+
     private async ReleaseAction(data: IFSStoreReq, workerId: string) {
+        logger.debug({ data, workerId }, 'FSS on release');
         const { requestId, action, fileName } = data;
-        if (!fileName) { 
+        if (!fileName) {
+            logger.warn({ workerId, requestId }, 'no fileName to release');
             return false;
         }
         const cbRec = this.files[fileName][1];
 
         if (action === fsReqType.access) {
+            this.workerRequests[workerId][requestId] = [action, fileName];
             this.fqsTransport
-                .broadcast<IQueAcqReq>(this.queRelease, { requestId: constructWRID(workerId, requestId) });
+                .broadcastUniversally<IQueAcqReq>(this.queRelease, { requestId: constructWRID(workerId, requestId) });
         }
 
-        this.callHook(hooks.ON_RELEASE, { workerId, requestId, fileName });
+        this.callHook(hooks.ON_RELEASE, { workerId, requestId, fileName, action });
 
         const cb = cbRec[workerId] && cbRec[workerId][requestId];
 
@@ -222,7 +270,7 @@ export class FSStoreServer extends PluggableModule  {
         return true;
     }
 
-    private async ClearAction(data: IFSStoreReq, workerId: string) { 
+    private async ClearAction(data: IFSStoreReq, workerId: string) {
         const { action } = data;
 
         if (!action) {
@@ -234,7 +282,7 @@ export class FSStoreServer extends PluggableModule  {
             });
             return;
         }
-        switch (action) { 
+        switch (action) {
             case fsReqType.access:
                 Object.keys(this.files).forEach(fName => {
                     this.files[fName][0].cleanAccess(workerId);
@@ -256,17 +304,23 @@ export class FSStoreServer extends PluggableModule  {
         return Object.keys(this.files);
     }
 
-    private async generateUniqFileName(workerId: string, requestId: string, ext='tmp', savePath='/'): Promise<string> {
+    private async generateUniqFileName(
+        workerId: string,
+        requestId: string,
+        ext = 'tmp',
+        savePath = '/',
+    ): Promise<string> {
+
         const screenDate = new Date();
         const formattedDate = (`${screenDate.toLocaleTimeString()} ${screenDate.toDateString()}`)
-                .replace(/\s+/g, '_');
-        
-        const fileNameBase = `${workerId.replace('/','.')}-${requestId}-${generateUniqId(5)}-${formattedDate}.${ext}`;
+            .replace(/\s+/g, '_');
+
+        const fileNameBase = `${workerId.replace('/', '.')}-${requestId}-${generateUniqId(5)}-${formattedDate}.${ext}`;
 
         const { fileName, path } = await this.callHook(hooks.ON_FILENAME,
-             { workerId, requestId, fileName: fileNameBase, path:savePath },
-             );  
-             
+            { workerId, requestId, fileName: fileNameBase, path: savePath },
+        );
+
         const resultFileName = pathJoin(path, fileName);
 
         if (this.files[resultFileName] !== undefined || this.usedFiles[resultFileName]) {
@@ -275,7 +329,7 @@ export class FSStoreServer extends PluggableModule  {
             return this.generateUniqFileName(workerId, requestId, ext, savePath);
         }
         this.usedFiles[resultFileName] = true;
-        return resultFileName; 
+        return resultFileName;
     }
-    
+
 }
