@@ -49,6 +49,7 @@ export class Transport implements ITransport {
     }
 
     public broadcastUniversally<T = any>(messageType: string, payload: T): void {
+        console.log('broadcastUniv', { messageType, payload, child: this.isChildProcess() });
         if (this.isChildProcess()) {
             this.broadcast(messageType, payload);
         } else {

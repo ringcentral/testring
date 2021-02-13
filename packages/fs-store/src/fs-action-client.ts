@@ -4,15 +4,13 @@
 
 import { generateUniqId } from '@testring/utils';
 import { transport } from '@testring/transport';
-import {
-    fsReqType,
-    IFSStoreReq,
-    IFSStoreResp,
-} from '@testring/types';
+
+import { IQueAcqReq, IQueAcqResp, IQueStateReq, IQueStateResp, ITransport } from '@testring/types';
+
 
 import { FS_CONSTANTS, getNewLog } from './utils';
 
-const logger = getNewLog({ m: 'fsc' });
+const logger = getNewLog({ m: 'fac' });
 
 export type requestMeta = {
     fileName: string; // fullFileName
@@ -28,35 +26,50 @@ export type requestMeta = {
 
 // type requestsTable = Record<string, Record<string, fsReqType | string | number | null | ((string) => void)>>
 type requestsTableItem = {
-    action: fsReqType;
-    cb?: (string) => void;
-    fileName?: string;
-    valid: boolean;
-    releaseCb?: boolean | (() => void);
+    cb?: ((rId: string, state: Record<string, any>) => void);
+    dataId: string;
 }
 type requestsTable = Record<string, requestsTableItem>;
 
-export class FSStoreClient {
+export class FSActionClient {
 
     private reqName: string;
     private resName: string;
-    private releaseReqName: string;
-    private cleanReqName: string;
+    private releaseName: string;
+    private cleanName: string;
+
+    private stateReq: string;
+    private stateResp: string;
+
     private reqHash: requestsTable = {};
 
-    constructor(msgNamePrefix: string = 'fs-store') {
-        this.reqName = msgNamePrefix + FS_CONSTANTS.FS_REQ_NAME_POSTFIX;
-        this.resName = msgNamePrefix + FS_CONSTANTS.FS_RESP_NAME_POSTFIX;
-        this.releaseReqName = msgNamePrefix + FS_CONSTANTS.FS_RELEASE_NAME_POSTFIX;
-        this.cleanReqName = msgNamePrefix + FS_CONSTANTS.FS_CLEAN_REQ_NAME_POSTFIX;
+    constructor(private msgNamePrefix: string = 'fs-store', tr: ITransport = transport) {
+
+        this.stateReq = msgNamePrefix + FS_CONSTANTS.FAS_REQ_ST_POSTFIX;
+        this.stateResp = msgNamePrefix + FS_CONSTANTS.FAS_RESP_ST_POSTFIX;
+
+        this.reqName = msgNamePrefix + FS_CONSTANTS.FAS_REQ_POSTFIX;
+        this.resName = msgNamePrefix + FS_CONSTANTS.FAS_RESP_POSTFIX;
+        this.releaseName = msgNamePrefix + FS_CONSTANTS.FAS_RELEASE_POSTFIX;
+        this.cleanName = msgNamePrefix + FS_CONSTANTS.FAS_CLEAN_POSTFIX;
 
         this.init();
     }
 
+    getPrefix = () => this.msgNamePrefix;
+
     private init() {
 
         // hook on response - get request Object according to requestID & call CB 
-        transport.on<IFSStoreResp>(this.resName, (msgData) => {
+        transport.on<IQueStateResp>(this.resName, (msgData) => {
+            const { requestId, state } = msgData;
+            const reqData = this.reqHash[requestId];
+            if (reqData) {
+                reqData.cb && reqData.cb(requestId, state);
+            }
+        });
+
+        transport.on<IQueAcqResp>(this.resName, (msgData) => {
             const { requestId, fileName, status, action } = msgData;
             if (status !== 'OK') {
                 logger.error({ requestId, fileName, status, action, reqHash: this.reqHash }, 'status not OK');
@@ -82,6 +95,7 @@ export class FSStoreClient {
             }
             // FIX: if no reqObj found - possible race with release or miss on transport endpoint           
         });
+
     }
 
     private ensureRequestId(requestId: string | undefined) {

@@ -6,7 +6,7 @@ import * as chai from 'chai';
 import { FSActionServer } from '../src/fs-action-server';
 import { LocalTransport } from '../src/server_utils/LocalTransport';
 
-import { IQueTestReq, IQueTestResp } from '@testring/types';
+import { IQueStateReq, IQueStateResp } from '@testring/types';
 
 const msgNamePrefix = 'fs-q';
 const testReq = msgNamePrefix + '_test';
@@ -16,7 +16,7 @@ const testResp = msgNamePrefix + '_test_resp';
 // const releaseName = msgNamePrefix +'_release_thread';
 // const cleanName = msgNamePrefix +'_release_worker_threads';
 
-describe('Store queue server', () => {
+describe('fs-store-queue-server', () => {
     it('should init fqs and test the transport', (done) => {
         // const spy = sinon.spy();
         const transport = new LocalTransport();
@@ -29,14 +29,14 @@ describe('Store queue server', () => {
         const localRequestID = 'test';
 
 
-        transport.on<IQueTestResp>(testResp, ({ requestId, state }) => {
+        transport.on<IQueStateResp>(testResp, ({ requestId, state }) => {
             chai.expect(requestId).to.be.equal(localRequestID);
-            chai.expect(state).to.be.a('string');
+            chai.expect(state).to.be.an('object');
             done();
         });
 
 
-        transport.broadcastUniversally<IQueTestReq>(testReq, { requestId: localRequestID });
+        transport.broadcastUniversally<IQueStateReq>(testReq, { requestId: localRequestID });
 
     });
 

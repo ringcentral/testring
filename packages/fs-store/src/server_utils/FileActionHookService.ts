@@ -35,7 +35,7 @@ export type actionObject = {
 
 export type actionCB = (meta: actionObject, cleanCB?: () => void) => void
 
-export class FSActionQueue extends PluggableModule {
+export class FileActionHookService extends PluggableModule {
 
     private access: Queue<[string, string, actionCB]> = new Queue<[string, string, actionCB]>();
     private accessing: boolean = false;
@@ -154,6 +154,14 @@ export class FSActionQueue extends PluggableModule {
         return this.tryAccess();
     }
 
+    public unhookAccess(workerId: string, requestId: string): boolean {
+        if (this.state === actionState.deleted) {
+            return false;
+        }
+        this.access.remove(([wId, rId]) => wId !== workerId && rId !== requestId);
+        return this.tryAccess();
+    }
+
     public cleanAccess(workerId: string | void) {
         if (!workerId) {
             this.access.clean();
@@ -186,6 +194,11 @@ export class FSActionQueue extends PluggableModule {
     public hookUnlink(workerId: string, requestId: string, cb: actionCB) {
         this.del.push([workerId, requestId, cb]);
         this.tryDelete();
+    }
+
+    public unhookUnlink(workerId: string, requestId: string): boolean {
+        this.del.remove(([wId, rId]) => wId !== workerId && rId !== requestId);
+        return this.tryAccess();
     }
 
     public cleanUnlink(workerId: string | void) {

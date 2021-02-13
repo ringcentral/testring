@@ -22,7 +22,7 @@ const respName = msgNamePrefix + FS_CONSTANTS.FS_RESP_NAME_POSTFIX;
 const releaseReqName = msgNamePrefix + FS_CONSTANTS.FS_RELEASE_NAME_POSTFIX;
 const cleanReqName = msgNamePrefix + FS_CONSTANTS.FS_CLEAN_REQ_NAME_POSTFIX;
 
-describe('Store server', () => {
+describe('fs-store-server', () => {
     it('should init fss and test the transport lock', (done) => {
 
         const FSS = new FSStoreServer(10, msgNamePrefix);

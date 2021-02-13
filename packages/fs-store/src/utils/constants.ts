@@ -6,6 +6,8 @@ export const FS_CONSTANTS: Record<string, string | number> = {
   FS_RELEASE_NAME_POSTFIX: '_release_request',
   FS_CLEAN_REQ_NAME_POSTFIX: '_release_worker',
 
+  FAS_REQ_ST_POSTFIX: '_req_state',
+  FAS_RESP_ST_Q_POSTFIX: '_state',
   FAS_REQ_POSTFIX: '_request_thread',
   FAS_RESP_POSTFIX: '_allow_thread',
   FAS_RELEASE_POSTFIX: '_release_thread',

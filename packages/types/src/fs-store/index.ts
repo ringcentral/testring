@@ -22,7 +22,7 @@ export interface IFSFile {
     content: string;
 }
 
-export interface IFSStore {
+export interface IFSStoreFile {
     lock(): Promise<void>; // locks file for read, ID key is used as identifier for unlock in future
     unlock(options: FSUnlockOptions): Promise<boolean>; // unlocks file to read operation for process ID
     read(): Promise<Buffer>; // the same part but with promise wrapper
@@ -40,13 +40,12 @@ export interface IQueAcqReq {
 
 export interface IQueAcqResp {
     requestId: string;
-    id: string;
 }
 
-export type IQueTestReq = IQueAcqReq
-export interface IQueTestResp {
+export type IQueStateReq = IQueAcqReq
+export interface IQueStateResp {
     requestId: string;
-    state: string;
+    state: Record<string, any>;
 }
 
 export interface IChgAcqReq {
@@ -66,8 +65,8 @@ export interface IDelAcqResp {
     fileName: string;
 }
 
-export enum fsReqType { 
-    'access'=1,
+export enum fsReqType {
+    'access' = 1,
     'lock',
     'unlink',
     'release',
@@ -76,20 +75,20 @@ export interface IFSStoreReq {
     requestId: string;
     action: fsReqType;
     fileName?: string;
-    meta: Record<string,any>;
+    meta: Record<string, any>;
 }
 
 export interface IFSStoreReq {
     requestId: string;
     action: fsReqType;
     fileName?: string;
-    meta: Record<string,any>;
+    meta: Record<string, any>;
 }
 export interface IFSStoreReqFixed {
     requestId: string;
     action: fsReqType;
     fileName: string;
-    meta: Record<string,any>;
+    meta: Record<string, any>;
 }
 export interface IFSStoreResp {
     requestId: string;
@@ -100,7 +99,7 @@ export interface IFSStoreResp {
 
 
 export type FSStoreOptions = {
-    lock: boolean;
+    lock?: boolean;
     file: string | {
         fileName?: string;
         savePath: string;
@@ -110,7 +109,7 @@ export type FSStoreOptions = {
 }
 
 export type FSUnlockOptions = {
-    doUnlink?: boolean;    
+    doUnlink?: boolean;
 }
 
 export interface IOnFileReleaseHookData {
@@ -119,8 +118,8 @@ export interface IOnFileReleaseHookData {
 }
 
 export interface IOnFileNameHookData {
-    workerId: string; 
-    requestId: string; 
-    fileName: string; 
+    workerId: string;
+    requestId: string;
+    fileName: string;
     path: string;
 }

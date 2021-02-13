@@ -1,34 +1,62 @@
 import { promisify } from 'util';
-import { writeFile } from 'fs';
+import * as fs from 'fs';
 
 import { FSStoreClient } from './fs-store-client';
 
+const { writeFile, appendFile, unlink } = fs.promises;
 
-const write = promisify(writeFile);
+export type ActionOptionsType = { path?: string; fileName: string; opts?: Record<string, any> }
+    | { path: string; fileName?: string; opts?: Record<string, any> }
 
 /**
  * 
  */
 export class FSFileWriter {
 
-    private fsWriterClient: FSStoreClient;
+    private fsStoreClient: FSStoreClient;
 
     constructor() {
-        this.fsWriterClient = new FSStoreClient();
+        this.fsStoreClient = new FSStoreClient();
     }
 
-    // get unique name & write data into it & return filename
-    public async write(data: Buffer, options: Record<string, any> = {}): Promise<string> {
+    public async write(data: Buffer, options: ActionOptionsType): Promise<string> {
 
         return new Promise((resolve, reject) => {
-            // get file name from master process
-            const reqId = this.fsWriterClient
-                .getAccess({ path: options.path, fileName: options.fileName },
+            const reqId = this.fsStoreClient
+                .getAccess(options,
                     async (filePath: string) => {
-                        await write(filePath, data, options);
-                        this.fsWriterClient.release(reqId);
+                        await appendFile(filePath, data, options.opts);
+                        this.fsStoreClient.release(reqId);
                         resolve(filePath);
                     });
+        });
+    }
+
+    public async append(data: Buffer, options: ActionOptionsType): Promise<string> {
+
+        return new Promise((resolve, reject) => {
+            const reqId = this.fsStoreClient
+                .getAccess(options,
+                    async (filePath: string) => {
+                        await writeFile(filePath, data, options.opts);
+                        this.fsStoreClient.release(reqId);
+                        resolve(filePath);
+                    });
+        });
+    }
+
+    public async unlink(fileName: string): Promise<string> {
+
+        return new Promise((resolve, reject) => {
+            const reqId = this.fsStoreClient
+                .getUnlink(
+                    { fileName },
+                    async (filePath: string) => {
+                        await unlink(filePath);
+                        this.fsStoreClient.release(reqId);
+                        resolve(filePath);
+                    },
+                );
         });
     }
 }

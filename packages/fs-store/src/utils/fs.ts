@@ -1,4 +1,7 @@
-import { mkdir } from 'fs';
+import * as fs from 'fs';
+
+const { mkdir, promises } = fs;
+const { open } = promises;
 
 export async function ensureDir(savePath: string) {
   return new Promise((resolve, reject) => {
@@ -10,4 +13,8 @@ export async function ensureDir(savePath: string) {
       }
     });
   });
+}
+
+export async function touchFile(fName: string) {
+  return open(fName, 'a+').then(fHandle => fHandle.close());
 }

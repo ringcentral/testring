@@ -9,23 +9,27 @@ import * as  fs from 'fs';
 
 import { FSStoreClient } from './fs-store-client';
 
-import { IFSStore, FSStoreOptions, FSUnlockOptions } from '@testring/types';
+import { IFSStoreFile, FSStoreOptions, FSUnlockOptions } from '@testring/types';
 import { generateUniqId } from '@testring/utils';
+
+
+import { getNewLog, touchFile } from './utils';
+
+const logger = getNewLog({ m: 'fsf' });
 
 import * as path from 'path';
 
-const { constants: fsConstants } = fs;
-const { appendFile, writeFile, readFile, unlink, open, stat } = fs.promises;
+
+const { appendFile, writeFile, readFile, unlink, stat } = fs.promises;
 
 const defaultOptions = { lock: false };
-export class FSStore implements IFSStore {
+export class FSStoreFile implements IFSStoreFile {
 
     private state: Record<string, any> = {};
 
     private fsWriterClient: FSStoreClient;
 
     private fullFileName: string;
-    // private shortFileName: string| null = null;
     private fileSavePath: string;
 
     private initPromise: Promise<void>;
@@ -48,7 +52,7 @@ export class FSStore implements IFSStore {
 
     private async ensureFile(fileData: string | { fileName?: string; savePath: string }) {
 
-        console.log('ensureFile', { fileData })
+        logger.debug({ fileData }, 'ensureFile');
         if (typeof fileData === 'string' || fileData.fileName !== undefined) {
             let fName: string;
             if (typeof fileData === 'string') {
@@ -58,20 +62,15 @@ export class FSStore implements IFSStore {
                 fName = fileData;
             } else {
                 this.fileSavePath = fileData.savePath;
-                // this.shortFileName = fileData.fileName || '';// || '' - needed for TS error suppression
                 fName = path.join(fileData.savePath, fileData.fileName || ''); // || '' - avoid TS error 
             }
-            await this.touchFile(fName);
+            await touchFile(fName);
             this.state.fileEnsured = true;
             return fName;
         }
         this.fileSavePath = fileData.savePath;
         this.state.fileEnsured = false;
         return '';
-    }
-
-    private async touchFile(fName: string) {
-        return open(fName, fsConstants.R_OK | fsConstants.W_OK).then(fHandle => fHandle.close());
     }
 
     /**
@@ -82,9 +81,9 @@ export class FSStore implements IFSStore {
         if (this.state.fileEnsured === false) {
             this.state.fileEnsured = true;
             this.fullFileName = fName;
-            // this.shortFileName = path.basename(fName);
             this.fileSavePath = path.dirname(fName);
-            await this.touchFile(fName);
+            logger.info('before touch');
+            await touchFile(fName);
         }
     }
 
@@ -112,6 +111,8 @@ export class FSStore implements IFSStore {
      * @returns
      */
     async unlock(options: FSUnlockOptions = { doUnlink: false }): Promise<boolean> {
+        logger.info({ state: this.state }, 'in unlock');
+
         if (this.state.inTransaction) {
             return false;
         }
@@ -159,6 +160,7 @@ export class FSStore implements IFSStore {
             return false;
         }
         return new Promise<boolean>((res) => {
+            logger.debug('in release promise');
             this.fsWriterClient.release(id, () => {
                 res(true);
             });
@@ -223,10 +225,12 @@ export class FSStore implements IFSStore {
 
     // async remove method - need to call writeLock before call remove
     unlink(): Promise<boolean> {
+        logger.debug({ state: this.state }, 'in unlink');
+
         return new Promise<boolean>((res) => {
             const requestId = generateUniqId(10);
             this.fsWriterClient.getUnlink(
-                { fileName: this.fullFileName },
+                { fileName: this.fullFileName, requestId },
                 async () => {
                     if (!this.isValid()) {
                         res(false);

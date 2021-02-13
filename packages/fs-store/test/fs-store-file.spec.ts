@@ -3,24 +3,27 @@
 import * as chai from 'chai';
 
 import { FSStoreServer, fsStoreServerHooks } from '../src/fs-store-server';
-import { FSStore } from '../src/fs-store';
+import { FSStoreFile } from '../src/fs-store-file';
 import { getNewLog } from '../src/utils';
 
-const logger = getNewLog({ m: 'fsc-test' });
+const logger = getNewLog({ m: 'fsf-test' });
 
 import {
     fsReqType,
 } from '@testring/types';
 
-const FSS = new FSStoreServer(10);
+const prefix = 'fsf-test';
+
+const FSS = new FSStoreServer(10, prefix);
 
 
-describe('fs-store', () => {
-    it('store object should lock access & unlink data', async (done) => {
+describe('fs-store-file', () => {
+    it('store object should lock access & unlink data', async () => {
 
         const fileName = '/tmp/tmp.tmp';
-        const file = new FSStore({
+        const file = new FSStoreFile({
             file: fileName,
+            fsStorePrefix: prefix,
         });
 
 
@@ -29,23 +32,46 @@ describe('fs-store', () => {
         chai.expect(onRelease).not.to.be.an('undefined', 'Hook ON_RELEASE in undefined');
 
         onRelease && onRelease.readHook('testRelease', ({ fileName, action }) => {
-            logger.debug({ fileName, action }, 'on release');
+            logger.debug({ fileName, action }, 'on release hook');
             switch (action) {
                 case fsReqType.lock: state.lock -= 1; break;
                 case fsReqType.access: state.access -= 1; break;
                 case fsReqType.unlink: state.unlink -= 1; break;
             }
             chai.expect(fileName).to.be.a('string');
+            logger.debug({ fileName, state }, 'release hook done');
         });
 
-        await file.lock();
-        await file.write(Buffer.from('data'));
-        await file.append(Buffer.from(' more data'));
-        const content = await file.read();
-        chai.expect(content.toString()).to.be.equal('data more data');
-        await file.unlock();
-        await file.unlink();
-        done();
+        try {
+            logger.info('before lock');
+            await file.lock();
+            state.lock += 1;
+            logger.info('after lock');
+            await file.write(Buffer.from('data'));
+            state.access += 1;
+            logger.info('after write');
+            await file.append(Buffer.from(' more data'));
+            state.access += 1;
+            logger.info('after append');
+            const content = await file.read();
+            state.access += 1;
+            chai.expect(content.toString()).to.be.equal('data more data');
+            logger.info('after read');
+            const wasUnlocked = await file.unlock();
+            // state.lock += 1;
+            chai.expect(wasUnlocked).to.be.equal(true);
+            logger.info('after unlock');
+            await file.unlink();
+            logger.info('after unlink');
+            state.unlink += 1;
+        } catch (e) {
+            logger.error(e, 'ERROR during file write test');
+            throw e;
+        }
+
+        chai.expect(state).to.be.deep.equal({ lock: 0, access: 0, unlink: 0 });
+
+        return Promise.resolve();
 
         // const lockReqId = FSC.getLock({ fileName }, (fName) => {
         //     chai.expect(fileName).to.be.equal(fName);
