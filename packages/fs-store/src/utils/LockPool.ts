@@ -21,7 +21,7 @@ export class LockPool extends PluggableModule {
     private poolLock: MultiLock;
     private requestQue: Queue<[string, string]> = new Queue<[string, string]>();
 
-    constructor(private maxLockCount: number = 10) {
+    constructor(maxLockCount: number = 10) {
         super(Object.values(hooks));
         this.poolLock = new MultiLock(maxLockCount);
     }

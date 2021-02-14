@@ -7,27 +7,13 @@ import { transport } from '@testring/transport';
 
 import { IQueAcqReq, IQueAcqResp, IQueStateReq, IQueStateResp, ITransport } from '@testring/types';
 
-
 import { FS_CONSTANTS, getNewLog } from './utils';
 
 const logger = getNewLog({ m: 'fac' });
 
-export type requestMeta = {
-    fileName: string; // fullFileName
-    ext?: string;
-    path?: string;
-    requestId?: string;
-} | {
-    fileName?: string;
-    ext?: string; // by default 'tmp'
-    path: string;
-    requestId?: string;
-}
-
 // type requestsTable = Record<string, Record<string, fsReqType | string | number | null | ((string) => void)>>
 type requestsTableItem = {
-    cb?: ((rId: string, state: Record<string, any>) => void);
-    dataId: string;
+    cb?: ((rId: string, state?: Record<string, any>) => void);
 }
 type requestsTable = Record<string, requestsTableItem>;
 
@@ -35,23 +21,28 @@ export class FSActionClient {
 
     private reqName: string;
     private resName: string;
-    private releaseName: string;
-    private cleanName: string;
+    private releaseReqName: string;
+    private releaseRespName: string;
+    private cleanReqName: string;
 
     private stateReq: string;
     private stateResp: string;
 
-    private reqHash: requestsTable = {};
+    private requestInWork: requestsTable = {};
+
+    private transport: ITransport;
 
     constructor(private msgNamePrefix: string = 'fs-store', tr: ITransport = transport) {
 
+        this.transport = tr;
         this.stateReq = msgNamePrefix + FS_CONSTANTS.FAS_REQ_ST_POSTFIX;
         this.stateResp = msgNamePrefix + FS_CONSTANTS.FAS_RESP_ST_POSTFIX;
 
         this.reqName = msgNamePrefix + FS_CONSTANTS.FAS_REQ_POSTFIX;
         this.resName = msgNamePrefix + FS_CONSTANTS.FAS_RESP_POSTFIX;
-        this.releaseName = msgNamePrefix + FS_CONSTANTS.FAS_RELEASE_POSTFIX;
-        this.cleanName = msgNamePrefix + FS_CONSTANTS.FAS_CLEAN_POSTFIX;
+        this.releaseReqName = msgNamePrefix + FS_CONSTANTS.FAS_RELEASE_POSTFIX;
+        this.releaseRespName = msgNamePrefix + FS_CONSTANTS.FAS_RELEASE_RESP_POSTFIX;
+        this.cleanReqName = msgNamePrefix + FS_CONSTANTS.FAS_CLEAN_POSTFIX;
 
         this.init();
     }
@@ -61,51 +52,51 @@ export class FSActionClient {
     private init() {
 
         // hook on response - get request Object according to requestID & call CB 
-        transport.on<IQueStateResp>(this.resName, (msgData) => {
-            const { requestId, state } = msgData;
-            const reqData = this.reqHash[requestId];
-            if (reqData) {
-                reqData.cb && reqData.cb(requestId, state);
+        this.transport.on<IQueStateResp>(this.stateResp, ({ requestId, state }) => {
+            const reqObj = this.requestInWork[requestId];
+            if (reqObj) {
+                delete this.requestInWork[requestId];
+                if (reqObj.cb && typeof reqObj.cb === 'function') {
+                    reqObj.cb && reqObj.cb(requestId, state);
+                }
+            } else {
+                logger.warn({ rId: requestId }, 'NO object for requestId');
             }
         });
 
-        transport.on<IQueAcqResp>(this.resName, (msgData) => {
-            const { requestId, fileName, status, action } = msgData;
-            if (status !== 'OK') {
-                logger.error({ requestId, fileName, status, action, reqHash: this.reqHash }, 'status not OK');
-            }
-            logger.debug({ requestId, fileName, status, action }, 'on fss resp');
-            const reqObj = this.reqHash[requestId];
+        this.transport.on<IQueAcqResp>(this.resName, ({ requestId }) => {
+            const reqObj = this.requestInWork[requestId];
             if (reqObj) {
-                if (reqObj.action && reqObj.action === fsReqType.release) {
-                    delete this.reqHash[requestId];
-                }
                 if (reqObj.cb && typeof reqObj.cb === 'function') {
-                    reqObj.cb(fileName);
-                    // execute release if it in queue
-                    // this.reqHash[requestId] = { ...reqObj, fileName };
-                    // if (reqObj.releaseCb) {
-                    //     this.release(
-                    //         requestId,
-                    //         typeof (reqObj.releaseCb) === 'function'
-                    //             ? reqObj.releaseCb
-                    //             : undefined);
-                    // }
+                    reqObj.cb(requestId);
                 }
+            } else {
+                logger.warn({ rId: requestId }, 'NO object for requestId');
             }
-            // FIX: if no reqObj found - possible race with release or miss on transport endpoint           
+        });
+
+        this.transport.on<IQueAcqResp>(this.releaseRespName, ({ requestId }) => {
+            const reqObj = this.requestInWork[requestId];
+            if (reqObj) {
+                delete this.requestInWork[requestId];
+                if (reqObj.cb && typeof reqObj.cb === 'function') {
+                    reqObj.cb(requestId);
+                }
+            } else {
+                logger.warn({ rId: requestId }, 'NO object for requestId');
+            }
         });
 
     }
 
-    private ensureRequestId(requestId: string | undefined) {
+    private ensureRequestId(requestId: string | null | undefined) {
         if (!requestId || requestId === '') {
             requestId = generateUniqId(10);
-            while (this.reqHash[requestId]) {
+            while (this.requestInWork[requestId]) {
                 requestId = generateUniqId(10);
             }
         } else {
-            if (this.reqHash[requestId]) {
+            if (this.requestInWork[requestId]) {
                 throw new Error('Not uniq requestId given!');
             }
         }
@@ -114,88 +105,95 @@ export class FSActionClient {
 
 
     /**
-     * acquire/request permission to write file - give CB for call with valid fileName 
-     * @param cb - CB to call with resulting file name from server & plugins
-     * @param options - an ID for find cb with resulting file name
+     * acquire/request permission for action - give CB 
+     * @param reqName - request Name - type of request to server
+     * @param requestId - requestId
+     * @param cb - CB to call with resulting data
      * @returns
      */
-    public getLock(opts: requestMeta, cb: (fName: string) => void): string {
-        let { requestId, fileName, ext, path } = opts;
+    private getServerData(
+        reqName: string,
+        requestId: string | null,
+        cb: (rId: string, state?: Record<string, any>) => void): string {
+
         requestId = this.ensureRequestId(requestId);
-        const action = fsReqType.lock;
-        this.reqHash[requestId] = { cb, action, fileName, valid: typeof (fileName) === 'string' };
-        transport.broadcastUniversally<IFSStoreReq>(this.reqName, { requestId, action, fileName, meta: { ext, path } });
+        this.requestInWork[requestId] = { cb };
+        this.transport.broadcastUniversally<IQueStateReq>(reqName, { requestId });
         return requestId;
     }
 
+
     /**
-     * acquire/request permission to write file - give CB for call with valid fileName 
-     * @param cb - CB to call with resulting file name from server & plugins
-     * @param options - an ID for find cb with resulting file name
+     * acquire/request permission for action - give CB 
+     * @param rId - requestId
+     * @param cb - CB to call with resulting data
      * @returns
      */
-    public getAccess(opts: requestMeta, cb: (fName: string) => void): string {
-
-        let { requestId, fileName, ext, path } = opts;
-        requestId = this.ensureRequestId(requestId);
-        const action = fsReqType.access;
-        this.reqHash[requestId] = { cb, action, fileName, valid: typeof (fileName) === 'string' };
-        transport.broadcastUniversally<IFSStoreReq>(this.reqName, { requestId, action, fileName, meta: { ext, path } });
-        return requestId;
+    public getState(rId: string | null, cb: (rId: string, state: Record<string, any>) => void): string {
+        return this.getServerData(this.stateReq, rId, cb);
     }
 
     /**
-     * acquire/request permission to write file - give CB for call with valid fileName 
-     * @param cb - CB to call with resulting file name from server & plugins
-     * @param options - an ID for find cb with resulting file name
+     * acquire/request permission for action - give CB 
+     * @param rId - requestId
+     * @param cb - CB to call as permission was acquired
      * @returns
      */
-    public getUnlink(opts: requestMeta, cb: (fName: string) => void): string {
+    public getThread(rId: string | null, cb: (dId: string) => void): string {
+        return this.getServerData(this.reqName, rId, cb);
 
-        let { requestId, fileName, ext, path } = opts;
-        if (!fileName) {
-            throw new Error('NO FileName giver for unlink permission request task');
-        }
-        requestId = this.ensureRequestId(requestId);
-        const action = fsReqType.unlink;
-        this.reqHash[requestId] = { cb, action, fileName, valid: true };
-        transport
-            .broadcastUniversally<IFSStoreReq>(this.reqName, { requestId, action, fileName, meta: { ext, path } });
-        return requestId;
     }
 
     public release(requestId: string, cb?: () => void) {
-        const curReqData = this.reqHash[requestId];
+        const curReqData = this.requestInWork[requestId];
         if (!curReqData) {
-            logger.error({ requestId }, 'NO request data for release');
+            logger.error({ rId: requestId }, 'NO request data for release');
             return false;
         }
-        const { action, fileName, valid } = curReqData;
-        logger.debug({ action, fileName, valid }, 'on release start');
-        if (!valid) {
-            this.reqHash[requestId].releaseCb = cb || true;
-            return false;
-        }
-        const reqData: requestsTableItem = { action: fsReqType.release, valid, fileName };
+        const reqData: requestsTableItem = {};
         if (cb) {
             reqData.cb = cb;
         }
-        this.reqHash[requestId] = reqData;
+        this.requestInWork[requestId] = reqData;
 
         logger.debug({ requestId, reqData }, 'on release');
 
-        transport.broadcastUniversally<IFSStoreReq>(
+        this.transport.broadcastUniversally<IQueAcqReq>(
             this.releaseReqName,
             {
                 requestId,
-                fileName,
-                action: action as fsReqType,
-                meta: {},
             });
         return true;
     }
 
     public releaseAllWorkerActions() {
-        transport.broadcastUniversally(this.cleanReqName, {});
+        this.transport.broadcastUniversally(this.cleanReqName, {});
+    }
+
+
+    public promisedThread(limit: number = 0): Promise<string> {
+        return new Promise((res, rej) => {
+            let to: number;
+            let rId = '';
+            if (limit) {
+                to = setTimeout(() => {
+                    rej('');
+                    this.release(rId);
+                }, limit);
+            }
+            rId = this.getThread(null, (rId: string) => {
+                if (to) {
+                    clearTimeout(to);
+                }
+                res(rId);
+            });
+        });
+    }
+    public releasePromisedThread(rId: string): Promise<void> {
+        return new Promise((res, rej) => {
+            this.release(rId, () => {
+                res();
+            });
+        });
     }
 }

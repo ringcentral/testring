@@ -1,8 +1,8 @@
 import { join as pathJoin } from 'path';
 
 import {
-    // IQueAcqReq,
-    // IQueAcqResp,
+    IQueAcqReq,
+    IQueAcqResp,
     // IQueTestReq,
     // IQueTestResp,
     // IChgAcqReq,
@@ -21,8 +21,6 @@ import { PluggableModule } from '@testring/pluggable-module';
 
 // import { FSQueue, hooks as queHooks } from './fs-queue';
 import { FSActionServer } from './fs-action-server';
-import { FSActionClient } from './fs-action-client';
-
 import { FileActionHookService } from './server_utils/FileActionHookService';
 import { LocalTransport } from './server_utils/LocalTransport';
 
@@ -45,15 +43,15 @@ const hooks = {
 
 export { hooks as fsStoreServerHooks };
 
-type cleanCBRecord = Record<string, Record<string, (() => void) | undefined>>
+type cbRecord = Record<string, Record<string, (() => void) | undefined>>
 
 
-// function constructWRID(wId: string, rId: string) {
-//     return `${wId}___${rId}`;
-// }
-// function destructWRID(id: string) {
-//     return id.split('___');
-// }
+function constructWRID(wId: string, rId: string) {
+    return `${wId}___${rId}`;
+}
+function destructWRID(id: string) {
+    return id.split('___');
+}
 
 const asyncActions = new Set([fsReqType.access, fsReqType.unlink]);
 
@@ -66,16 +64,15 @@ export class FSStoreServer extends PluggableModule {
     private unHookReqTransport: (() => void) | null = null;
     private unHookReleaseTransport: (() => void) | null = null;
     private unHookCleanWorkerTransport: (() => void) | null = null;
-    private fas: FSActionServer;
-    private fac: FSActionClient;
-    private fasTransport: ITransport;
+    private fqs: FSActionServer;
+    private fqsTransport: ITransport;
     private queServerPrefix: string;
-    // private queReq: string;
-    // private queResp: string;
-    // private queRelease: string;
+    private queReq: string;
+    private queResp: string;
+    private queRelease: string;
 
-    private files: Record<string, [FileActionHookService, cleanCBRecord]> = {};
-    private inWorkRequests: Record<string, Record<string, [fsReqType, string, string?]>> = {};
+    private files: Record<string, [FileActionHookService, cbRecord]> = {};
+    private workerRequests: Record<string, Record<string, [fsReqType, string]>> = {};
     private usedFiles: Record<string, boolean> = {};
 
     private state: serverState = serverState.new;
@@ -86,20 +83,22 @@ export class FSStoreServer extends PluggableModule {
      * @param queServerPrefix 
      * @param FQS 
      */
-    constructor(FQS: FSActionServer | number = 10, msgNamePrefix: string = 'fs-store', queServerPrefix = 'fs-que') {
+    constructor(FQS: FSActionServer | number = 10, msgNamePrefix: string = 'fs-store') {
         super(Object.values(hooks));
 
         if (typeof (FQS) === 'number') {
-            this.fasTransport = new LocalTransport();
-            this.queServerPrefix = queServerPrefix;
-            this.fas = new FSActionServer(FQS, this.queServerPrefix, this.fasTransport);
+            this.fqsTransport = new LocalTransport();
+            this.queServerPrefix = 'fs-que';
+            this.fqs = new FSActionServer(FQS, this.queServerPrefix, this.fqsTransport);
         } else {
-            this.fas = FQS;
-            this.fasTransport = this.fas.getTransport();
-            this.queServerPrefix = this.fas.getMsgPrefix();
+            this.fqs = FQS;
+            this.fqsTransport = this.fqs.getTransport();
+            this.queServerPrefix = this.fqs.getMsgPrefix();
         }
 
-        this.fac = new FSActionClient(this.queServerPrefix, this.fasTransport);
+        this.queReq = this.queServerPrefix + FS_CONSTANTS.FAS_REQ_POSTFIX;
+        this.queResp = this.queServerPrefix + FS_CONSTANTS.FAS_RESP_POSTFIX;
+        this.queRelease = this.queServerPrefix + FS_CONSTANTS.FAS_RELEASE_POSTFIX;
 
 
         this.reqName = msgNamePrefix + FS_CONSTANTS.FS_REQ_NAME_POSTFIX;
@@ -122,21 +121,21 @@ export class FSStoreServer extends PluggableModule {
         }
         this.state = serverState.initStarted;
 
-        // this.fasTransport.on<IQueAcqResp>(this.queResp, ({ requestId }) => {
-        //     const [wId, rId] = destructWRID(requestId);
-        //     logger.debug({ wReq: this.inWorkRequests, requestId, wId, rId }, 'on FAS RESP');
-        //     if (!this.inWorkRequests[wId][rId]) {
-        //         logger.error({ wReq: this.inWorkRequests, requestId, wId, rId }, 'NO WORKER REQUEST');
-        //         return;
-        //     }
-        //     const [action, fileName] = this.inWorkRequests[wId][rId];
+        this.fqsTransport.on<IQueAcqResp>(this.queResp, ({ requestId }) => {
+            const [wId, rId] = destructWRID(requestId);
+            logger.debug({ wReq: this.workerRequests, requestId, wId, rId }, 'on FAS RESP');
+            if (!this.workerRequests[wId][rId]) {
+                logger.error({ wReq: this.workerRequests, requestId, wId, rId }, 'NO WORKER REQUEST');
+                return;
+            }
+            const [action, fileName] = this.workerRequests[wId][rId];
 
-        //     delete this.inWorkRequests[wId][rId];
+            delete this.workerRequests[wId][rId];
 
-        //     this.send<IFSStoreResp>(wId, this.resName, { requestId: rId, fileName, action, status: 'OK' });
-        //     // this.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action, status: 'OK' });
+            this.send<IFSStoreResp>(wId, this.resName, { requestId: rId, fileName, action, status: 'OK' });
+            // this.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action, status: 'OK' });
 
-        // });
+        });
 
 
         this.unHookReqTransport = transport
@@ -200,17 +199,17 @@ export class FSStoreServer extends PluggableModule {
     private ensureActionQueue({ action, requestId, fileName, meta }: IFSStoreReqFixed, workerId: string) {
         if (!this.files[fileName]) {
             this.files[fileName] = [new FileActionHookService(fileName), {}];
-            if (!this.inWorkRequests[workerId]) {
-                this.inWorkRequests[workerId] = {};
+            if (!this.workerRequests[workerId]) {
+                this.workerRequests[workerId] = {};
             }
-            this.inWorkRequests[workerId][requestId] = [action, fileName];
+            this.workerRequests[workerId][requestId] = [action, fileName];
             delete this.usedFiles[fileName];
         }
     }
 
-    private ensureCleanCBRecord(cleanCBRecord: cleanCBRecord, workerId: string) {
-        if (!cleanCBRecord[workerId]) {
-            cleanCBRecord[workerId] = {};
+    private ensureCbRecord(cbRecord: cbRecord, workerId: string) {
+        if (!cbRecord[workerId]) {
+            cbRecord[workerId] = {};
         }
     }
 
@@ -218,52 +217,45 @@ export class FSStoreServer extends PluggableModule {
         this.ensureActionQueue(data, workerId);
         const { action, requestId, fileName } = data;
 
-        const [FAQ, cleanCBRec] = this.files[fileName];
+        const [FAQ, cbRec] = this.files[fileName];
 
-        this.ensureCleanCBRecord(cleanCBRec, workerId);
+        this.ensureCbRecord(cbRec, workerId);
 
         switch (action) {
             case fsReqType.lock:
-                FAQ.lock(workerId, requestId, (dataObj, cleanCb) => {
-                    cleanCBRec[workerId][requestId] = cleanCb;
+                FAQ.lock(workerId, requestId, (dataObj, endCb) => {
+                    cbRec[workerId][requestId] = endCb;
                     this.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action, status: 'OK' });
                 });
                 break;
             case fsReqType.access:
-                FAQ.hookAccess(workerId, requestId, async (dataObj, cleanCb) => {
-                    cleanCBRec[workerId][requestId] = cleanCb;
+                FAQ.hookAccess(workerId, requestId, (dataObj, endCb) => {
+                    cbRec[workerId][requestId] = endCb;
+                    this.workerRequests[workerId][requestId] = [action, fileName];
 
-                    const threadRId = await this.fac.promisedThread();
-                    this.inWorkRequests[workerId][requestId] = [action, fileName, threadRId];
-                    this.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action, status: 'OK' });
-
-                    // this.fasTransport
-                    //     .broadcastUniversally<IQueAcqReq>(
-                    //         this.queReq,
-                    //         {
-                    //             requestId: constructWRID(workerId, requestId),
-                    //         });
+                    this.fqsTransport
+                        .broadcastUniversally<IQueAcqReq>(
+                            this.queReq,
+                            {
+                                requestId: constructWRID(workerId, requestId),
+                            });
                 });
                 break;
             case fsReqType.unlink:
-                FAQ.hookUnlink(workerId, requestId, async (dataObj, cleanCb) => {
-                    cleanCBRec[workerId][requestId] = cleanCb;
-                    logger.debug({ cleanCBRec, action, requestId }, 'on unlink req');
+                FAQ.hookUnlink(workerId, requestId, (dataObj, endCb) => {
+                    cbRec[workerId][requestId] = endCb;
+                    logger.debug({ cbRec, action, requestId }, 'on unlink req');
+                    this.workerRequests[workerId][requestId] = [action, fileName];
 
-                    const threadRId = await this.fac.promisedThread();
-                    this.inWorkRequests[workerId][requestId] = [action, fileName, threadRId];
-                    this.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action, status: 'OK' });
-
-
-                    // this.fasTransport
-                    //     .broadcastUniversally<IQueAcqReq>(
-                    //         this.queReq,
-                    //         {
-                    //             requestId: constructWRID(workerId, requestId),
-                    //         });
+                    this.fqsTransport
+                        .broadcastUniversally<IQueAcqReq>(
+                            this.queReq,
+                            {
+                                requestId: constructWRID(workerId, requestId),
+                            });
                 });
         }
-        logger.debug({ cleanCBRec, action, requestId }, 'request action done');
+        logger.debug({ cbRec, action, requestId }, 'request action done');
 
     }
 
@@ -274,42 +266,29 @@ export class FSStoreServer extends PluggableModule {
             logger.warn({ workerId, requestId }, 'no fileName to release');
             return false;
         }
-        const [FAQ, cleanCBRec] = this.files[fileName];
+        const [FAQ, cbRec] = this.files[fileName];
 
         if (asyncActions.has(action)) {
-            const inProgress = this.inWorkRequests[workerId][requestId];
-            this.inWorkRequests[workerId][requestId] = [action, fileName];
+            this.workerRequests[workerId][requestId] = [action, fileName];
+            this.fqsTransport
+                .broadcastUniversally<IQueAcqReq>(this.queRelease, { requestId: constructWRID(workerId, requestId) });
+            const cb = cbRec[workerId] && cbRec[workerId][requestId];
 
+            logger.debug({ fileName, action, cb }, 'before CB');
 
-            if (inProgress) {
-                const [, , threadRId] = inProgress;
-                if (threadRId) {
-                    await this.fac.releasePromisedThread(threadRId);
-                }
-            }
-            // this.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action, status: 'OK' });
-            this.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action: fsReqType.release, status: 'OK' });
-
-            // this.fasTransport
-            //     .broadcastUniversally<IQueAcqReq>(this.queRelease, { requestId: constructWRID(workerId, requestId) });
-
-            const cleanUpCB = cleanCBRec[workerId] && cleanCBRec[workerId][requestId];
-
-            logger.debug({ fileName, action, cleanUpCB }, 'before next file async action step');
-            cleanUpCB && cleanUpCB();
+            cb && cb();
         } else {
             switch (action) {
                 case fsReqType.lock:
 
-                    const cleanUpCB = cleanCBRec && cleanCBRec[workerId] && cleanCBRec[workerId][requestId];
-                    logger.debug({ fileName, action, cleanUpCB }, 'before next file action step');
-                    if (cleanUpCB) {
-                        cleanUpCB();
+                    const cb = cbRec && cbRec[workerId] && cbRec[workerId][requestId];
+                    logger.debug({ fileName, action, cb }, 'before CB');
+                    if (cb) {
+                        cb();
                     } else {
                         FAQ.unlock(workerId, requestId);
                     }
-                    // this.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action, status: 'OK' });
-                    this.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action: fsReqType.release, status: 'OK' });
+                    this.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action, status: 'OK' });
 
             }
         }
