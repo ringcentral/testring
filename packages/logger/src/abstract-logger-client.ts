@@ -1,6 +1,6 @@
 import { Stack, generateUniqId } from '@testring/utils';
 import { transport } from '@testring/transport';
-import { IFSStore } from '@testring/types';
+import { IFSStoreFile } from '@testring/types';
 import {
     ILogEntity,
     ILoggerClient,
@@ -79,7 +79,7 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
         const previousStepID = previousStep ? previousStep.stepID : null;
 
         const stepUid = isStepType && currentStepID ? currentStepID : null;
-        const parentStep = isStepType  ? previousStepID : currentStepID;
+        const parentStep = isStepType ? previousStepID : currentStepID;
         const stepType = isStepType ? stepGroupType : null;
 
         return {
@@ -143,7 +143,7 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
         this.createLog(LogTypes.media, LogLevel.info, [filename, content]);
     }
 
-    public file(file: IFSStore, meta: Record<string, any>={}): void {
+    public file(file: IFSStoreFile, meta: Record<string, any> = {}): void {
         this.createLog(LogTypes.file, LogLevel.info, [file, meta]);
     }
 

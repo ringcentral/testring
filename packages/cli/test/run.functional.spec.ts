@@ -23,7 +23,6 @@ describe('testring CLI', () => {
         ]);
 
         const command = runTests(config, transport, stdout);
-
         await command.execute();
     });
 

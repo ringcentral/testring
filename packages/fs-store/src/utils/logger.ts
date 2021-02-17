@@ -4,9 +4,11 @@ const logLevel = process.env.LOG_LEVEL || 'info';
 
 const logger = logGen({ level: logLevel });
 
-export function commonLog() {
+function commonLog() {
     return logger;
 }
-export function getNewLog(logData: Record<string, any>) {
+function getNewLog(logData: Record<string, any>) {
     return logger.child(logData);
 }
+
+export { commonLog, getNewLog };
