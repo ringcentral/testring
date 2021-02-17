@@ -7,9 +7,9 @@ import { transport } from '@testring/transport';
 
 import { IQueAcqReq, IQueAcqResp, IQueStateReq, IQueStateResp, ITransport } from '@testring/types';
 
-import { FS_CONSTANTS, getNewLog } from './utils';
+import { FS_CONSTANTS, logger } from './utils';
 
-const logger = getNewLog({ m: 'fac' });
+const log = logger.getNewLog({ m: 'fac' });
 
 // type requestsTable = Record<string, Record<string, fsReqType | string | number | null | ((string) => void)>>
 type requestsTableItem = {
@@ -60,7 +60,7 @@ export class FSActionClient {
                     reqObj.cb && reqObj.cb(requestId, state);
                 }
             } else {
-                logger.warn({ rId: requestId }, 'NO object for requestId');
+                log.warn({ rId: requestId }, 'NO object for requestId');
             }
         });
 
@@ -71,7 +71,7 @@ export class FSActionClient {
                     reqObj.cb(requestId);
                 }
             } else {
-                logger.warn({ rId: requestId }, 'NO object for requestId');
+                log.warn({ rId: requestId }, 'NO object for requestId');
             }
         });
 
@@ -83,7 +83,7 @@ export class FSActionClient {
                     reqObj.cb(requestId);
                 }
             } else {
-                logger.warn({ rId: requestId }, 'NO object for requestId');
+                log.warn({ rId: requestId }, 'NO object for requestId');
             }
         });
 
@@ -147,7 +147,7 @@ export class FSActionClient {
     public release(requestId: string, cb?: () => void) {
         const curReqData = this.requestInWork[requestId];
         if (!curReqData) {
-            logger.error({ rId: requestId }, 'NO request data for release');
+            log.error({ rId: requestId }, 'NO request data for release');
             return false;
         }
         const reqData: requestsTableItem = {};
@@ -156,7 +156,7 @@ export class FSActionClient {
         }
         this.requestInWork[requestId] = reqData;
 
-        logger.debug({ requestId, reqData }, 'on release');
+        log.debug({ requestId, reqData }, 'on release');
 
         this.transport.broadcastUniversally<IQueAcqReq>(
             this.releaseReqName,
@@ -173,7 +173,7 @@ export class FSActionClient {
 
     public promisedThread(limit: number = 0): Promise<string> {
         return new Promise((res, rej) => {
-            let to: number;
+            let to: NodeJS.Timeout | number;
             let rId = '';
             if (limit) {
                 to = setTimeout(() => {
@@ -183,7 +183,7 @@ export class FSActionClient {
             }
             rId = this.getThread(null, (rId: string) => {
                 if (to) {
-                    clearTimeout(to);
+                    clearTimeout(to as NodeJS.Timeout);
                 }
                 res(rId);
             });

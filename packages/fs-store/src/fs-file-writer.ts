@@ -1,4 +1,3 @@
-import { promisify } from 'util';
 import * as fs from 'fs';
 
 import { FSStoreClient } from './fs-store-client';

@@ -9,13 +9,13 @@ import * as  fs from 'fs';
 
 import { FSStoreClient } from './fs-store-client';
 
-import { IFSStoreFile, FSStoreOptions, FSUnlockOptions } from '@testring/types';
+import { IFSStoreFile, FSStoreOptions } from '@testring/types';
 import { generateUniqId } from '@testring/utils';
 
 
-import { getNewLog, touchFile } from './utils';
+import { logger, fs as fsTool } from './utils';
 
-const logger = getNewLog({ m: 'fsf' });
+const log = logger.getNewLog({ m: 'fsf' });
 
 import * as path from 'path';
 
@@ -33,6 +33,9 @@ export class FSStoreFile implements IFSStoreFile {
     private fileSavePath: string;
 
     private initPromise: Promise<void>;
+    private transactionQueue: Array<(any?) => void> = [];
+    private lockQueue: Array<string> = [];
+
 
     private options: FSStoreOptions;
 
@@ -52,7 +55,7 @@ export class FSStoreFile implements IFSStoreFile {
 
     private async ensureFile(fileData: string | { fileName?: string; savePath: string }) {
 
-        logger.debug({ fileData }, 'ensureFile');
+        log.debug({ fileData }, 'ensureFile');
         if (typeof fileData === 'string' || fileData.fileName !== undefined) {
             let fName: string;
             if (typeof fileData === 'string') {
@@ -64,7 +67,7 @@ export class FSStoreFile implements IFSStoreFile {
                 this.fileSavePath = fileData.savePath;
                 fName = path.join(fileData.savePath, fileData.fileName || ''); // || '' - avoid TS error 
             }
-            await touchFile(fName);
+            await fsTool.touchFile(fName);
             this.state.fileEnsured = true;
             return fName;
         }
@@ -72,6 +75,8 @@ export class FSStoreFile implements IFSStoreFile {
         this.state.fileEnsured = false;
         return '';
     }
+
+    public getState = () => this.state;
 
     /**
      * ensure internal state for object is corresponding to file system
@@ -82,8 +87,7 @@ export class FSStoreFile implements IFSStoreFile {
             this.state.fileEnsured = true;
             this.fullFileName = fName;
             this.fileSavePath = path.dirname(fName);
-            logger.info('before touch');
-            await touchFile(fName);
+            await fsTool.touchFile(fName);
         }
     }
 
@@ -95,9 +99,12 @@ export class FSStoreFile implements IFSStoreFile {
         await this.initPromise;
 
         return new Promise<void>((res) => {
-            this.state.lockId = this.fsWriterClient.getLock(
+            this.fsWriterClient.getLock(
                 { fileName: this.fullFileName || undefined, path: this.fileSavePath },
-                async (fName) => {
+                async (fName, lockId) => {
+                    if (lockId) {
+                        this.lockQueue.push(lockId);
+                    }
                     await this.fixShortFile(fName);
                     res();
                 },
@@ -110,21 +117,29 @@ export class FSStoreFile implements IFSStoreFile {
      * @param options - {unlink - sign up for unlink }
      * @returns
      */
-    async unlock(options: FSUnlockOptions = { doUnlink: false }): Promise<boolean> {
-        logger.info({ state: this.state }, 'in unlock');
+    async unlock(): Promise<boolean> {
 
         if (this.state.inTransaction) {
             return false;
         }
-        if (!this.state.lockId) {
+        if (!this.lockQueue.length) {
             return false;
         }
-        await this.release(this.state.lockId);
-        this.state.lockId = null;
 
-        if (options.doUnlink) {
-            await this.unlink();
+        const lockId = this.lockQueue.pop();
+        if (lockId && !(await this.release(lockId))) {
+            this.lockQueue.push(lockId);
         }
+        return true;
+    }
+
+    async unlockAll(): Promise<boolean> {
+
+        if (this.state.inTransaction) {
+            return false;
+        }
+        await Promise.all(this.lockQueue.map((lockId) => this.release(lockId)));
+
         return true;
     }
 
@@ -133,14 +148,16 @@ export class FSStoreFile implements IFSStoreFile {
      * @returns
      */
     private async getAccess() {
+
         if (this.state.inTransaction) {
             return;
         }
         await this.initPromise;
         return new Promise<void>((res) => {
-            this.state.accessId = this.fsWriterClient.getAccess(
+            this.fsWriterClient.getAccess(
                 { fileName: this.fullFileName || undefined, path: this.fileSavePath },
-                async (fName) => {
+                async (fName, accessId) => {
+                    this.state.accessId = accessId;
                     await this.fixShortFile(fName);
                     res();
                 },
@@ -160,7 +177,7 @@ export class FSStoreFile implements IFSStoreFile {
             return false;
         }
         return new Promise<boolean>((res) => {
-            logger.debug('in release promise');
+            log.debug('in release promise');
             this.fsWriterClient.release(id, () => {
                 res(true);
             });
@@ -168,8 +185,11 @@ export class FSStoreFile implements IFSStoreFile {
     }
 
     private async releaseAccess() {
+
         const res = await this.release(this.state.accessId);
-        this.state.accessId = null;
+        if (res) {
+            this.state.accessId = null;
+        }
         return res;
     }
 
@@ -225,7 +245,10 @@ export class FSStoreFile implements IFSStoreFile {
 
     // async remove method - need to call writeLock before call remove
     unlink(): Promise<boolean> {
-        logger.debug({ state: this.state }, 'in unlink');
+
+        if (this.state.enterTransaction) {
+            throw new Error('Cannot unlink during transaction');
+        }
 
         return new Promise<boolean>((res) => {
             const requestId = generateUniqId(10);
@@ -244,18 +267,31 @@ export class FSStoreFile implements IFSStoreFile {
         });
     }
 
-    async transaction(cb: () => Promise<void>, unlockOpt: FSUnlockOptions = { doUnlink: false }) {
-        await this.lock();
+    async transaction(cb: () => Promise<void>) {
+        if (this.state.enterTransaction) {
+            const wait = new Promise(res => {
+                this.transactionQueue.push(res);
+            });
+            await wait;
+        }
+        this.state.enterTransaction = true;
         await this.getAccess();
+        await this.lock();
         this.state.inTransaction = true;
         try {
             await cb();
         } catch (e) {
             // eslint-disable-next-line no-console
-            console.error(e, 'Error during ');
+            console.error(e, 'Error during transaction');
         }
         this.state.inTransaction = false;
         await this.releaseAccess();
-        await this.unlock(unlockOpt);
+        await this.unlock();
+        this.state.enterTransaction = false;
+        // start next transaction in queue 
+        if (this.transactionQueue.length) {
+            const res = this.transactionQueue.shift();
+            res && res();
+        }
     }
 }

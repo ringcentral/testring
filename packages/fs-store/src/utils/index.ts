@@ -1,4 +1,6 @@
-export { ensureDir, touchFile } from './fs';
-export { FS_CONSTANTS } from './constants';
-export { commonLog, getNewLog } from './logger';
+export * as fs from './fs';
+export * as logger from './logger';
+
+
 export { LockPool, hooks as LockPoolHooks } from './LockPool';
+export { FS_CONSTANTS } from './constants';

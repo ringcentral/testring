@@ -8,9 +8,9 @@ import { PluggableModule } from '@testring/pluggable-module';
 
 import { LockPool, LockPoolHooks } from './utils';
 
-import { FS_CONSTANTS, getNewLog } from './utils';
+import { FS_CONSTANTS, logger } from './utils';
 
-const logger = getNewLog({ m: 'fas' });
+const log = logger.getNewLog({ m: 'fas' });
 const { DW_ID } = FS_CONSTANTS;
 
 
@@ -91,14 +91,14 @@ export class FSActionServer extends PluggableModule {
         const acqHook = this.queue.getHook(LockPoolHooks.ON_ACQUIRE);
         if (acqHook) {
             acqHook.readHook('queServerAcc', async ({ workerId, requestId }) => {
-                logger.debug({ workerId, requestId }, 'inAcquire hook');
+                log.debug({ workerId, requestId }, 'inAcquire hook');
                 this.send<IQueAcqResp>(workerId, this.resName, { requestId });
             });
         }
         const releaseHook = this.queue.getHook(LockPoolHooks.ON_RELEASE);
         if (releaseHook) {
             releaseHook.readHook('queServerRel', async ({ workerId, requestId }) => {
-                logger.debug({ workerId, requestId }, 'inRelease hook');
+                log.debug({ workerId, requestId }, 'inRelease hook');
                 this.send<IQueAcqResp>(workerId, this.resName, { requestId });
             });
         }
@@ -111,20 +111,20 @@ export class FSActionServer extends PluggableModule {
         this.unHookReqTransport = this
             .transport.on<IQueAcqReq>(this.reqName, async ({ requestId }, workerId = '*') => {
                 await this.initEnsured;
-                logger.debug({ workerId, requestId }, 'request action');
+                log.debug({ workerId, requestId }, 'request action');
                 this.queue.acquire(workerId, requestId);
             });
 
         this.unHookReleaseTransport = this
             .transport.on<IQueAcqReq>(this.releaseName, ({ requestId }, workerId = '*') => {
-                logger.debug({ workerId, requestId }, 'release action');
+                log.debug({ workerId, requestId }, 'release action');
                 this.callHook(hooks.ON_RELEASE, { workerId, requestId });
                 this.queue.release(workerId, requestId);
             });
 
         this.unHookCleanWorkerTransport = this
             .transport.on<{}>(this.cleanName, (msgData, workerId = '*') => {
-                logger.debug({ workerId }, 'clean worker actions');
+                log.debug({ workerId }, 'clean worker actions');
                 this.queue.clean(workerId);
             });
 
@@ -133,7 +133,7 @@ export class FSActionServer extends PluggableModule {
     }
 
     private send<T>(workerId: string | undefined, msgId: string, data: T) {
-        logger.debug({ workerId, msgId, data }, 'on send');
+        log.debug({ workerId, msgId, data }, 'on send');
         if (!workerId || workerId === DW_ID) {
             this.transport.broadcastUniversally<T>(
                 msgId,

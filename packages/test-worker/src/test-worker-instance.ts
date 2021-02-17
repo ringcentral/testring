@@ -58,7 +58,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private workerExitHandler = (exitCode) => {
         this.clearWorkerHandlers();
-        this.fsWriterClient.releaseAllWorkerPermissions();
+        this.fsWriterClient.releaseAllWorkerActions();
         this.worker = null;
 
         if (this.abortTestExecution !== null) {
@@ -73,7 +73,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
 
     private workerErrorHandler = (error) => {
-        this.fsWriterClient.releaseAllWorkerPermissions();
+        this.fsWriterClient.releaseAllWorkerActions();
         if (this.abortTestExecution !== null) {
             this.abortTestExecution(error);
 

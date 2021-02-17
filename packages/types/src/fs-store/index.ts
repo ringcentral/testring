@@ -24,7 +24,7 @@ export interface IFSFile {
 
 export interface IFSStoreFile {
     lock(): Promise<void>; // locks file for read, ID key is used as identifier for unlock in future
-    unlock(options: FSUnlockOptions): Promise<boolean>; // unlocks file to read operation for process ID
+    unlock(options: FSActionOptions): Promise<boolean>; // unlocks file to read operation for process ID
     read(): Promise<Buffer>; // the same part but with promise wrapper
     write(Buffer): Promise<void>; // the same part but with promise wrapper
     append(Buffer): Promise<void>; // the same part but with promise wrapper
@@ -108,8 +108,9 @@ export type FSStoreOptions = {
     fsStorePrefix?: string;
 }
 
-export type FSUnlockOptions = {
+export type FSActionOptions = {
     doUnlink?: boolean;
+    waitForUnlink?: boolean;
 }
 
 export interface IOnFileReleaseHookData {

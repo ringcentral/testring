@@ -55,7 +55,7 @@ class RunCommand implements ICLICommand {
     }
 
     async execute() {
-        
+
         const devtoolEnabled = this.config.devtool;
 
         if (devtoolEnabled) {
@@ -74,7 +74,7 @@ class RunCommand implements ICLICommand {
         this.testRunController = new TestRunController(
             this.config,
             testWorker,
-            this.devtoolServerController ? this.devtoolServerController.getRuntimeConfiguration(): null,
+            this.devtoolServerController ? this.devtoolServerController.getRuntimeConfiguration() : null,
         );
 
         this.webApplicationController = new WebApplicationController(this.browserProxyController, this.transport);
@@ -120,8 +120,6 @@ class RunCommand implements ICLICommand {
             testRunResult.forEach((error) => {
                 this.logger.error(error);
             });
-
-            console.error(testRunResult);
 
             throw `Failed ${testRunResult.length}/${tests.length} tests.`;
         } else {

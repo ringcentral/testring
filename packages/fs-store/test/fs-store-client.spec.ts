@@ -4,9 +4,9 @@ import * as chai from 'chai';
 
 import { FSStoreServer, fsStoreServerHooks } from '../src/fs-store-server';
 import { FSStoreClient } from '../src/fs-store-client';
-import { getNewLog } from '../src/utils';
+import { logger } from '../src/utils';
 
-const logger = getNewLog({ m: 'fsc-test' });
+const log = logger.getNewLog({ m: 'fsc-test' });
 
 import {
     fsReqType,
@@ -27,7 +27,7 @@ describe('fs-store-client', () => {
         chai.expect(onRelease).not.to.be.an('undefined', 'Hook ON_RELEASE in undefined');
 
         onRelease && onRelease.readHook('testRelease', ({ fileName, action }) => {
-            logger.debug({ fileName, action }, 'on release');
+            log.debug({ fileName, action }, 'on release');
             switch (action) {
                 case fsReqType.lock: state.lock -= 1; break;
                 case fsReqType.access: state.access -= 1; break;

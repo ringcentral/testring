@@ -10,9 +10,9 @@ import {
     IFSStoreResp,
 } from '@testring/types';
 
-import { FS_CONSTANTS, getNewLog } from './utils';
+import { FS_CONSTANTS, logger } from './utils';
 
-const logger = getNewLog({ m: 'fsc' });
+const log = logger.getNewLog({ m: 'fsc' });
 
 export type requestMeta = {
     fileName: string; // fullFileName
@@ -29,7 +29,7 @@ export type requestMeta = {
 // type requestsTable = Record<string, Record<string, fsReqType | string | number | null | ((string) => void)>>
 type requestsTableItem = {
     action: fsReqType;
-    cb?: (string) => void;
+    cb?: (f: string, r: string | null | undefined) => void;
     fileName?: string;
     valid: boolean;
     releaseCb?: boolean | (() => void);
@@ -59,25 +59,16 @@ export class FSStoreClient {
         transport.on<IFSStoreResp>(this.resName, (msgData) => {
             const { requestId, fileName, status, action } = msgData;
             if (status !== 'OK') {
-                logger.error({ requestId, fileName, status, action, reqHash: this.reqHash }, 'status not OK');
+                log.error({ requestId, fileName, status, action, reqHash: this.reqHash }, 'status not OK');
             }
-            logger.debug({ requestId, fileName, status, action }, 'on fss resp');
+            log.debug({ requestId, fileName, status, action }, 'on fss resp');
             const reqObj = this.reqHash[requestId];
             if (reqObj) {
                 if (reqObj.action && reqObj.action === fsReqType.release) {
                     delete this.reqHash[requestId];
                 }
                 if (reqObj.cb && typeof reqObj.cb === 'function') {
-                    reqObj.cb(fileName);
-                    // execute release if it in queue
-                    // this.reqHash[requestId] = { ...reqObj, fileName };
-                    // if (reqObj.releaseCb) {
-                    //     this.release(
-                    //         requestId,
-                    //         typeof (reqObj.releaseCb) === 'function'
-                    //             ? reqObj.releaseCb
-                    //             : undefined);
-                    // }
+                    reqObj.cb(fileName, requestId);
                 }
             }
             // FIX: if no reqObj found - possible race with release or miss on transport endpoint           
@@ -105,7 +96,7 @@ export class FSStoreClient {
      * @param options - an ID for find cb with resulting file name
      * @returns
      */
-    public getLock(opts: requestMeta, cb: (fName: string) => void): string {
+    public getLock(opts: requestMeta, cb: (fName: string, requestId?: string) => void): string {
         let { requestId, fileName, ext, path } = opts;
         requestId = this.ensureRequestId(requestId);
         const action = fsReqType.lock;
@@ -120,7 +111,7 @@ export class FSStoreClient {
      * @param options - an ID for find cb with resulting file name
      * @returns
      */
-    public getAccess(opts: requestMeta, cb: (fName: string) => void): string {
+    public getAccess(opts: requestMeta, cb: (fName: string, requestId?: string) => void): string {
 
         let { requestId, fileName, ext, path } = opts;
         requestId = this.ensureRequestId(requestId);
@@ -136,7 +127,7 @@ export class FSStoreClient {
      * @param options - an ID for find cb with resulting file name
      * @returns
      */
-    public getUnlink(opts: requestMeta, cb: (fName: string) => void): string {
+    public getUnlink(opts: requestMeta, cb: (fName: string, requestId?: string) => void): string {
 
         let { requestId, fileName, ext, path } = opts;
         if (!fileName) {
@@ -153,11 +144,11 @@ export class FSStoreClient {
     public release(requestId: string, cb?: () => void) {
         const curReqData = this.reqHash[requestId];
         if (!curReqData) {
-            logger.error({ requestId }, 'NO request data for release');
+            log.error({ requestId }, 'NO request data for release');
             return false;
         }
         const { action, fileName, valid } = curReqData;
-        logger.debug({ action, fileName, valid }, 'on release start');
+        log.debug({ action, fileName, valid }, 'on release start');
         if (!valid) {
             this.reqHash[requestId].releaseCb = cb || true;
             return false;
@@ -168,7 +159,7 @@ export class FSStoreClient {
         }
         this.reqHash[requestId] = reqData;
 
-        logger.debug({ requestId, reqData }, 'on release');
+        log.debug({ requestId, reqData }, 'on release');
 
         transport.broadcastUniversally<IFSStoreReq>(
             this.releaseReqName,
