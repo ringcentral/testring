@@ -107,7 +107,6 @@ export class FileActionHookService extends PluggableModule {
 
     private chkEmpty() {
 
-        // console.log('FAQ chkEmpty', this.lockPool.getSize(), this.access.length, this.accessing);
         if (
             this.lockPool.getSize() === 0 // no locks are present
             && this.access.length === 0 // access queue is empty
@@ -173,8 +172,6 @@ export class FileActionHookService extends PluggableModule {
     }
 
     private tryDelete(): boolean {
-        // console.log('FAQ tryDelete', this.state, '<', actionState.free, this.del.length);
-
         if (this.state < actionState.free) {
             return false;
         }
