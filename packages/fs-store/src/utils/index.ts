@@ -1,6 +1,6 @@
-export * as fs from './fs';
-export * as logger from './logger';
+import * as fs from './fs';
+import * as logger from './logger';
 
-
+export { fs, logger };
 export { LockPool, hooks as LockPoolHooks } from './LockPool';
 export { FS_CONSTANTS } from './constants';

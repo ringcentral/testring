@@ -76,7 +76,7 @@ export function formatLog(
     let prefixes = logEntity.prefix ? [logEntity.prefix] : [];
 
     switch (logEntity.type) {
-        case LogTypes.media: {
+        case LogTypes.screenshot: {
             const filename = logEntity.content[0];
             const media = logEntity.content[1];
             prefixes.push('[media]');

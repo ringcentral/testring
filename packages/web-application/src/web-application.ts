@@ -20,7 +20,7 @@ import { generateUniqId } from '@testring/utils';
 import { PluggableModule } from '@testring/pluggable-module';
 import { createElementPath, ElementPath } from '@testring/element-path';
 
-import { FSFileWriter, FSStoreFile } from '@testring/fs-store';
+import { FSFileWriter } from '@testring/fs-store';
 
 import { createAssertion } from './assert';
 import { WebClient } from './web-client';
@@ -1741,7 +1741,8 @@ export class WebApplication extends PluggableModule {
                 .write(
                     Buffer.from(screenshot.toString(), 'base64'),
                     { path: screenPath, opts: { encoding: 'binary' } });
-            this.logger.file(new FSStoreFile({ file: filePath }), { type: FSFileLogType.SCREENSHOT });
+
+            this.logger.file(filePath, { type: FSFileLogType.SCREENSHOT });
             return filePath;
         }
         return null;

@@ -24,7 +24,7 @@ export class FSFileWriter {
             const reqId = this.fsStoreClient
                 .getAccess(options,
                     async (filePath: string) => {
-                        await appendFile(filePath, data, options.opts);
+                        await writeFile(filePath, data, options.opts);
                         this.fsStoreClient.release(reqId);
                         resolve(filePath);
                     });
@@ -37,7 +37,7 @@ export class FSFileWriter {
             const reqId = this.fsStoreClient
                 .getAccess(options,
                     async (filePath: string) => {
-                        await writeFile(filePath, data, options.opts);
+                        await appendFile(filePath, data, options.opts);
                         this.fsStoreClient.release(reqId);
                         resolve(filePath);
                     });

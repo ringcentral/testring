@@ -15,7 +15,7 @@ const { DW_ID } = FS_CONSTANTS;
 
 
 enum serverState {
-    'new' = 0,
+    'new',
     'initStarted',
     'initialized',
 }

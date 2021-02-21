@@ -77,6 +77,7 @@ export class FSStoreFile implements IFSStoreFile {
     }
 
     public getState = () => this.state;
+    public getFilename = () => this.fullFileName;
 
     /**
      * ensure internal state for object is corresponding to file system
