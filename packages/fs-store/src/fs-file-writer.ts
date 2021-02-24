@@ -1,5 +1,7 @@
 import * as fs from 'fs';
+import * as path from 'path';
 
+import * as utils from './utils';
 import { FSStoreClient } from './fs-store-client';
 
 const { writeFile, appendFile, unlink } = fs.promises;
@@ -24,6 +26,7 @@ export class FSFileWriter {
             const reqId = this.fsStoreClient
                 .getAccess(options,
                     async (filePath: string) => {
+                        await utils.fs.ensureDir(path.dirname(filePath));
                         await writeFile(filePath, data, options.opts);
                         this.fsStoreClient.release(reqId);
                         resolve(filePath);
@@ -37,6 +40,7 @@ export class FSFileWriter {
             const reqId = this.fsStoreClient
                 .getAccess(options,
                     async (filePath: string) => {
+                        await utils.fs.ensureDir(path.dirname(filePath));
                         await appendFile(filePath, data, options.opts);
                         this.fsStoreClient.release(reqId);
                         resolve(filePath);
