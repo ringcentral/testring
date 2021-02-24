@@ -1,6 +1,5 @@
 import * as process from 'process';
 import * as util from 'util';
-import * as bytes from 'bytes';
 import { default as chalk } from 'chalk';
 import {
     ILogEntity,
@@ -78,13 +77,11 @@ export function formatLog(
     switch (logEntity.type) {
         case LogTypes.screenshot: {
             const filename = logEntity.content[0];
-            const media = logEntity.content[1];
-            prefixes.push('[media]');
+            prefixes.push('[screenshot]');
 
             return util.format(
                 formattedPrefix, ...prefixes,
                 `Filename: ${filename};`,
-                `Size: ${bytes.format(media ? media.length : 0)};`,
             );
         }
 
