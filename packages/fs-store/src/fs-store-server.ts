@@ -12,7 +12,6 @@ import { transport } from '@testring/transport';
 import { PluggableModule } from '@testring/pluggable-module';
 import { TransportMock } from '@testring/test-utils';
 
-// import { FSQueue, hooks as queHooks } from './fs-queue';
 import { FSActionServer } from './fs-action-server';
 import { FSActionClient } from './fs-action-client';
 

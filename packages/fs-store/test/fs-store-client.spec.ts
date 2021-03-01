@@ -1,5 +1,5 @@
+/// <reference types="mocha" />
 
-'use strict';
 import * as chai from 'chai';
 
 import { FSStoreServer, fsStoreServerHooks } from '../src/fs-store-server';

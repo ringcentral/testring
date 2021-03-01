@@ -11,7 +11,6 @@ import { FS_CONSTANTS, logger } from './utils';
 
 const log = logger.getNewLog({ m: 'fac' });
 
-// type requestsTable = Record<string, Record<string, fsReqType | string | number | null | ((string) => void)>>
 type requestsTableItem = {
     cb?: ((rId: string, state?: Record<string, any>) => void);
 }

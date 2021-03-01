@@ -9,9 +9,6 @@ const { writeFile, appendFile, unlink } = fs.promises;
 export type ActionOptionsType = { path?: string; fileName: string; opts?: Record<string, any> }
     | { path: string; fileName?: string; opts?: Record<string, any> }
 
-/**
- * 
- */
 export class FSFileWriter {
 
     private fsStoreClient: FSStoreClient;

@@ -13,11 +13,6 @@ const msgNamePrefix = 'fs-action';
 const stateReq = msgNamePrefix + FS_CONSTANTS.FAS_REQ_ST_POSTFIX;
 const stateResp = msgNamePrefix + FS_CONSTANTS.FAS_RESP_ST_POSTFIX;
 
-// const reqName = msgNamePrefix +'_request_thread';
-// const resName = msgNamePrefix +'_allow_thread';
-// const releaseName = msgNamePrefix +'_release_thread';
-// const cleanName = msgNamePrefix +'_release_worker_threads';
-
 describe('fs-action-server', () => {
     it('should init fqs and test the transport', (done) => {
         const transport = new TransportMock();

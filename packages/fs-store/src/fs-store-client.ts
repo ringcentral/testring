@@ -26,7 +26,6 @@ export type requestMeta = {
     requestId?: string;
 }
 
-// type requestsTable = Record<string, Record<string, fsReqType | string | number | null | ((string) => void)>>
 type requestsTableItem = {
     action: fsReqType;
     cb?: (f: string, r: string | null | undefined) => void;

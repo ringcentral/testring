@@ -1,9 +1,7 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-// import * as sinon from 'sinon';
 
-// import { FSQueueServer } from '../src/fs-queue-server';
 import { FSStoreServer, serverState, fsStoreServerHooks } from '../src/fs-store-server';
 import { FS_CONSTANTS } from '../src/utils';
 
