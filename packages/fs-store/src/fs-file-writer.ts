@@ -1,35 +1,62 @@
-import { promisify } from 'util';
-import {  writeFile } from 'fs';
-import { LoggerClient , loggerClient } from '@testring/logger';
+import * as fs from 'fs';
+import * as path from 'path';
 
-import { FSQueueClient } from './fs-queue-client';
+import * as utils from './utils';
+import { FSStoreClient } from './fs-store-client';
 
-const write = promisify(writeFile);
+const { writeFile, appendFile, unlink } = fs.promises;
 
-/**
- * 
- */
+export type ActionOptionsType = { path?: string; fileName: string; opts?: Record<string, any> }
+    | { path: string; fileName?: string; opts?: Record<string, any> }
+
 export class FSFileWriter {
 
-    private fsWriterClient: FSQueueClient;
-    private logger: LoggerClient;
+    private fsStoreClient: FSStoreClient;
 
-    constructor(logger: LoggerClient = loggerClient) {
-        this.fsWriterClient = new FSQueueClient();
-        this.logger = logger;
+    constructor() {
+        this.fsStoreClient = new FSStoreClient();
     }
 
-    // get unique name & write data into it & return filename
-    public async write(data: Buffer, options={}): Promise<string> {
+    public async write(data: Buffer, options: ActionOptionsType): Promise<string> {
 
         return new Promise((resolve, reject) => {
-            // get file name from master process
-            const reqId = this.fsWriterClient.getPermission(async (filePath: string)=>{
-                await write(filePath, data, options);
-                this.fsWriterClient.releasePermission(reqId);
-                this.logger.file(filePath);
-                resolve(filePath);
-            });
-        });            
-    }    
+            const reqId = this.fsStoreClient
+                .getAccess(options,
+                    async (filePath: string) => {
+                        await utils.fs.ensureDir(path.dirname(filePath));
+                        await writeFile(filePath, data, options.opts);
+                        this.fsStoreClient.release(reqId);
+                        resolve(filePath);
+                    });
+        });
+    }
+
+    public async append(data: Buffer, options: ActionOptionsType): Promise<string> {
+
+        return new Promise((resolve, reject) => {
+            const reqId = this.fsStoreClient
+                .getAccess(options,
+                    async (filePath: string) => {
+                        await utils.fs.ensureDir(path.dirname(filePath));
+                        await appendFile(filePath, data, options.opts);
+                        this.fsStoreClient.release(reqId);
+                        resolve(filePath);
+                    });
+        });
+    }
+
+    public async unlink(fileName: string): Promise<string> {
+
+        return new Promise((resolve, reject) => {
+            const reqId = this.fsStoreClient
+                .getUnlink(
+                    { fileName },
+                    async (filePath: string) => {
+                        await unlink(filePath);
+                        this.fsStoreClient.release(reqId);
+                        resolve(filePath);
+                    },
+                );
+        });
+    }
 }

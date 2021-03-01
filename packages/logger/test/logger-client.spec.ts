@@ -4,7 +4,7 @@ import * as chai from 'chai';
 import * as sinon from 'sinon';
 
 import { TransportMock } from '@testring/test-utils';
-import { LoggerMessageTypes, LogTypes } from '@testring/types';
+import { LoggerMessageTypes, LogTypes, FSFileLogType } from '@testring/types';
 
 import { LoggerClient } from '../src/logger-client';
 import { report, stepsTypes } from './fixtures/constants';
@@ -24,7 +24,7 @@ describe('Logger client', () => {
         loggerClient.debug(...report);
         loggerClient.success(...report);
         loggerClient.verbose(...report);
-        loggerClient.media('filename', Buffer.from('file'));
+        loggerClient.file('README.md', { type: FSFileLogType.SCREENSHOT });
 
         chai.expect(spy.callCount).to.be.equal(8);
 
@@ -47,7 +47,7 @@ describe('Logger client', () => {
         loggerClient.debug(...report);
         loggerClient.success(...report);
         loggerClient.verbose(...report);
-        loggerClient.media('filename', Buffer.from('file'));
+        loggerClient.file('README.md', { type: FSFileLogType.SCREENSHOT });
 
         chai.expect(spy.callCount).to.be.equal(8);
 
@@ -123,7 +123,7 @@ describe('Logger client', () => {
         chai.expect(spy.getCall(0).args[0]).to.deep.include(stepsTypes[0]);
 
         for (let i = 1, len = spy.callCount; i < len; i++) {
-            chai.expect(spy.getCall(i).args[0].parentStep).to.be.equal(spy.getCall(i-1).args[0].stepUid);
+            chai.expect(spy.getCall(i).args[0].parentStep).to.be.equal(spy.getCall(i - 1).args[0].stepUid);
             chai.expect(spy.getCall(i).args[0]).to.deep.include(stepsTypes[i]);
         }
     });
@@ -156,7 +156,7 @@ describe('Logger client', () => {
         chai.expect(spy.getCall(0).args[0]).to.deep.include(stepsTypes[0]);
 
         for (let i = 1, len = spy.callCount; i < len; i++) {
-            chai.expect(spy.getCall(i).args[0].parentStep).to.be.equal(spy.getCall(i-1).args[0].stepUid);
+            chai.expect(spy.getCall(i).args[0].parentStep).to.be.equal(spy.getCall(i - 1).args[0].stepUid);
             chai.expect(spy.getCall(i).args[0]).to.deep.include(stepsTypes[i]);
         }
     });
@@ -197,8 +197,8 @@ describe('Logger client', () => {
         transport.on(LoggerMessageTypes.REPORT, spy);
 
         try {
-            await loggerClient.stepLog('log',async () => {
-                await loggerClient.stepInfo('info',async () => {
+            await loggerClient.stepLog('log', async () => {
+                await loggerClient.stepInfo('info', async () => {
                     throw TypeError('Preventing');
                 });
             });

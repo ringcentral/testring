@@ -9,7 +9,7 @@ import { browserProxyControllerFactory, BrowserProxyController } from '@testring
 import { ICLICommand, IConfig, ITransport } from '@testring/types';
 import { DevtoolServerController } from '@testring/devtool-backend';
 
-import { fsQueueServer } from '@testring/fs-store';
+import { FSStoreServer } from '@testring/fs-store';
 
 
 class RunCommand implements ICLICommand {
@@ -24,10 +24,10 @@ class RunCommand implements ICLICommand {
     private httpServer: HttpServer;
     private devtoolServerController: DevtoolServerController;
 
+    private fsStoreServer: FSStoreServer;
+
     constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {
-        if (fsQueueServer.getInitState()===0) {
-                fsQueueServer.init(config);
-        }
+        this.fsStoreServer = new FSStoreServer(config.maxWriteThreadCount);
     }
 
     formatJSON(obj: object) {
@@ -55,7 +55,7 @@ class RunCommand implements ICLICommand {
     }
 
     async execute() {
-        
+
         const devtoolEnabled = this.config.devtool;
 
         if (devtoolEnabled) {
@@ -74,7 +74,7 @@ class RunCommand implements ICLICommand {
         this.testRunController = new TestRunController(
             this.config,
             testWorker,
-            this.devtoolServerController ? this.devtoolServerController.getRuntimeConfiguration(): null,
+            this.devtoolServerController ? this.devtoolServerController.getRuntimeConfiguration() : null,
         );
 
         this.webApplicationController = new WebApplicationController(this.browserProxyController, this.transport);
@@ -89,7 +89,7 @@ class RunCommand implements ICLICommand {
         applyPlugins({
             logger: loggerServer,
             fsReader,
-            fsQueueServer,
+            fsStoreServer: this.fsStoreServer,
             testWorker,
             browserProxy: this.browserProxyController,
             testRunController: this.testRunController,

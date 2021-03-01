@@ -1,4 +1,5 @@
 import * as url from 'url';
+
 import {
     IWebApplicationConfig,
     IAssertionErrorMeta,
@@ -10,6 +11,7 @@ import {
     IWebApplicationRegisterCompleteMessage,
     WebApplicationDevtoolCallback,
     ExtensionPostMessageTypes,
+    FSFileLogType,
 } from '@testring/types';
 
 import { asyncBreakpoints } from '@testring/async-breakpoints';
@@ -89,7 +91,7 @@ export class WebApplication extends PluggableModule {
             if (typeof uri === 'string') {
                 return `Opening page uri: ${uri}`;
             }
-                return 'Opening page';
+            return 'Opening page';
 
         },
         isBecomeVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
@@ -204,14 +206,14 @@ export class WebApplication extends PluggableModule {
             if (reverse) {
                 return `Waiting for element ${this.formatXpath(xpath)} doesn't has value for ${timeout}`;
             }
-                return `Waiting for any value of ${this.formatXpath(xpath)} for ${timeout}`;
+            return `Waiting for any value of ${this.formatXpath(xpath)} for ${timeout}`;
 
         },
         waitForSelected(xpath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean) {
             if (reverse) {
                 return `Waiting for element ${this.formatXpath(xpath)} isn't selected for ${timeout}`;
             }
-                return `Waiting for element ${this.formatXpath(xpath)} is selected for ${timeout}`;
+            return `Waiting for element ${this.formatXpath(xpath)} is selected for ${timeout}`;
 
         },
         waitUntil(condition, timeout: number = this.WAIT_TIMEOUT, timeoutMsg?: string, interval?: number) {
@@ -223,15 +225,16 @@ export class WebApplication extends PluggableModule {
     };
 
     constructor(
-        private testUID: string,
+        protected testUID: string,
         protected transport: ITransport,
         config: Partial<IWebApplicationConfig> = {},
     ) {
         super();
         this.config = this.getConfig(config);
         this.decorateMethods();
-        this.fileWriter = new FSFileWriter(this.logger);
+        this.fileWriter = new FSFileWriter();
     }
+
 
     protected getConfig(userConfig: Partial<IWebApplicationConfig>): IWebApplicationConfig {
         return Object.assign({}, {
@@ -319,7 +322,7 @@ export class WebApplication extends PluggableModule {
                 }
             });
 
-            Object.defineProperty(promise,'ifError', {
+            Object.defineProperty(promise, 'ifError', {
                 value: (interceptor: string | ((err: Error, ...args: any) => string)) => {
                     if (typeof interceptor === 'function') {
                         errorLogInterceptor = interceptor;
@@ -359,7 +362,7 @@ export class WebApplication extends PluggableModule {
                         return promiseGetter(context, logFn, errorFn, originMethod, args);
                     };
 
-                    Object.defineProperty(method,'originFunction', {
+                    Object.defineProperty(method, 'originFunction', {
                         value: originMethod,
                         enumerable: false,
                         writable: false,
@@ -367,10 +370,10 @@ export class WebApplication extends PluggableModule {
                     });
 
                     Object.defineProperty(this, key, {
-                       value: method,
-                       enumerable: false,
-                       writable: true,
-                       configurable: true,
+                        value: method,
+                        enumerable: false,
+                        writable: true,
+                        configurable: true,
                     });
                 }
             })(key);
@@ -870,9 +873,9 @@ export class WebApplication extends PluggableModule {
         if (emulateViaJs) {
             return this.simulateJSFieldClear(xpath);
         }
-            await this.client.setValue(xpath,' ');
-            await this.waitForExist(xpath, timeout);
-            return this.client.keys(['Backspace']);
+        await this.client.setValue(xpath, ' ');
+        await this.waitForExist(xpath, timeout);
+        return this.client.keys(['Backspace']);
 
     }
 
@@ -1731,8 +1734,16 @@ export class WebApplication extends PluggableModule {
     public async makeScreenshot(force: boolean = false): Promise<string | null> {
         if (this.config.screenshotsEnabled && (this.screenshotsEnabledManually || force)) {
             const screenshot = await this.client.makeScreenshot();
+            const screenPath = this.config.screenshotPath;
 
-            return this.fileWriter.write( Buffer.from(screenshot.toString(), 'base64'), { encoding:'binary' });
+
+            const filePath = await this.fileWriter
+                .write(
+                    Buffer.from(screenshot.toString(), 'base64'),
+                    { path: screenPath, opts: { encoding: 'binary' } });
+
+            this.logger.file(filePath, { type: FSFileLogType.SCREENSHOT });
+            return filePath;
         }
         return null;
     }
