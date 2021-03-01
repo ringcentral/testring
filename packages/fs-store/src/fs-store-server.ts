@@ -10,13 +10,13 @@ import {
 import { generateUniqId } from '@testring/utils';
 import { transport } from '@testring/transport';
 import { PluggableModule } from '@testring/pluggable-module';
+import { TransportMock } from '@testring/test-utils';
 
 // import { FSQueue, hooks as queHooks } from './fs-queue';
 import { FSActionServer } from './fs-action-server';
 import { FSActionClient } from './fs-action-client';
 
 import { FileActionHookService } from './server_utils/FileActionHookService';
-import { LocalTransport } from './server_utils/LocalTransport';
 
 
 import { FS_CONSTANTS, logger } from './utils';
@@ -71,7 +71,7 @@ export class FSStoreServer extends PluggableModule {
         super(Object.values(hooks));
 
         if (typeof (FQS) === 'number') {
-            this.fasTransport = new LocalTransport();
+            this.fasTransport = new TransportMock();
             this.queServerPrefix = queServerPrefix;
             this.fas = new FSActionServer(FQS, this.queServerPrefix, this.fasTransport);
         } else {
@@ -238,7 +238,6 @@ export class FSStoreServer extends PluggableModule {
                     await this.fac.releasePromisedThread(threadRId);
                 }
             }
-            // this.send<IFSStoreResp>(workerId, this.resName, { requestId, fileName, action, status: 'OK' });
             this.send<IFSStoreResp>(
                 workerId,
                 this.resName,
@@ -344,8 +343,6 @@ export class FSStoreServer extends PluggableModule {
         const resultFileName = pathJoin(path, fileName);
 
         if (this.files[resultFileName] !== undefined || this.usedFiles[resultFileName]) {
-            // eslint-disable-next-line ringcentral/specified-comment-with-task-id
-            // FIXME: possible loop hence plugins can return same file name during every request
             return this.generateUniqFileName(workerId, requestId, ext, savePath);
         }
         this.usedFiles[resultFileName] = true;

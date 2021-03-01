@@ -27,7 +27,6 @@ describe('fs-store-server', () => {
 
         const FSS = new FSStoreServer(10, msgNamePrefix);
 
-        // chai.expect(FSS.getState()).to.be.oneOf([serverState.initStarted, serverState.initialized]);
         chai.expect(FSS.getState()).to.be.equal(serverState.initialized);
 
         const lockRequestID = 'lock_test';
@@ -101,14 +100,6 @@ describe('fs-store-server', () => {
 
         setTimeout(() => {
             chai.expect(state).to.be.deep.equal({ lock: 1, access: 0, unlink: 1 });
-            // transport.broadcastUniversally<IFSStoreReq>(
-            //     releaseName,
-            //     {
-            //         requestId: accessRequestID,
-            //         fileName: '/tmp.tmp',
-            //         action: fsReqType.access,
-            //         meta: { ext: '.tmp', path: '/' },
-            //     });
             transport.broadcastUniversally<IFSStoreReq>(
                 releaseReqName,
                 {

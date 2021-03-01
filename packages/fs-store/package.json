@@ -20,7 +20,7 @@
     "@testring/transport": "0.5.32",
     "@testring/types": "0.5.32",
     "@testring/utils": "0.5.32",
-    "nanoid": "",
+    "@testring/test-utils": "0.5.32",
     "pino": "6.11.1",
     "ts-loader": "8.0.2"
   },

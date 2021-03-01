@@ -1,7 +1,6 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-// import * as sinon from 'sinon';
 
 import { FileActionHookService, actionState } from '../src/server_utils/FileActionHookService';
 

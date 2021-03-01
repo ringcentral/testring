@@ -1,10 +1,9 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-// import * as sinon from 'sinon';
 
 import { FSActionServer } from '../src/fs-action-server';
-import { LocalTransport } from '../src/server_utils/LocalTransport';
+import { TransportMock } from '@testring/test-utils';
 
 import { IQueStateReq, IQueStateResp } from '@testring/types';
 import { FS_CONSTANTS } from '../src/utils';
@@ -21,8 +20,7 @@ const stateResp = msgNamePrefix + FS_CONSTANTS.FAS_RESP_ST_POSTFIX;
 
 describe('fs-action-server', () => {
     it('should init fqs and test the transport', (done) => {
-        // const spy = sinon.spy();
-        const transport = new LocalTransport();
+        const transport = new TransportMock();
 
         const FQS = new FSActionServer(10, msgNamePrefix, transport);
 
