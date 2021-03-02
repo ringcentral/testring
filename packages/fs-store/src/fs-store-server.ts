@@ -21,7 +21,10 @@ import { FileActionHookService } from './server_utils/FileActionHookService';
 import { FS_CONSTANTS, logger } from './utils';
 
 const log = logger.getNewLog({ m: 'fss' });
-const DW_ID = FS_CONSTANTS.DW_ID as string;
+const {
+    DW_ID,
+    FS_DEFAULT_MSG_PREFIX,
+    FS_DEFAULT_QUEUE_PREFIX } = FS_CONSTANTS;
 
 export enum serverState {
     'new' = 0,
@@ -66,7 +69,10 @@ export class FSStoreServer extends PluggableModule {
      * @param queServerPrefix 
      * @param FQS 
      */
-    constructor(FQS: FSActionServer | number = 10, msgNamePrefix: string = 'fs-store', queServerPrefix = 'fs-que') {
+    constructor(FQS: FSActionServer | number = 10,
+        msgNamePrefix: string = FS_DEFAULT_MSG_PREFIX,
+        queServerPrefix = FS_DEFAULT_QUEUE_PREFIX) {
+
         super(Object.values(hooks));
 
         if (typeof (FQS) === 'number') {
@@ -163,12 +169,13 @@ export class FSStoreServer extends PluggableModule {
     private ensureActionQueue({ action, requestId, fileName, meta }: IFSStoreReqFixed, workerId: string) {
         if (!this.files[fileName]) {
             this.files[fileName] = [new FileActionHookService(fileName), {}];
-            if (!this.inWorkRequests[workerId]) {
-                this.inWorkRequests[workerId] = {};
-            }
-            this.inWorkRequests[workerId][requestId] = [action, fileName];
             delete this.usedFiles[fileName];
         }
+        if (!this.inWorkRequests[workerId]) {
+            this.inWorkRequests[workerId] = {};
+        }
+        this.inWorkRequests[workerId][requestId] = [action, fileName];
+
     }
 
     private ensureCleanCBRecord(cleanCBRecord: cleanCBRecord, workerId: string) {

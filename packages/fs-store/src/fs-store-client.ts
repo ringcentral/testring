@@ -43,7 +43,7 @@ export class FSStoreClient {
     private cleanReqName: string;
     private reqHash: requestsTable = {};
 
-    constructor(msgNamePrefix: string = 'fs-store') {
+    constructor(msgNamePrefix: string = FS_CONSTANTS.FS_DEFAULT_MSG_PREFIX) {
         this.reqName = msgNamePrefix + FS_CONSTANTS.FS_REQ_NAME_POSTFIX;
         this.resName = msgNamePrefix + FS_CONSTANTS.FS_RESP_NAME_POSTFIX;
         this.releaseReqName = msgNamePrefix + FS_CONSTANTS.FS_RELEASE_NAME_POSTFIX;
@@ -65,6 +65,9 @@ export class FSStoreClient {
             if (reqObj) {
                 if (reqObj.action && reqObj.action === fsReqType.release) {
                     delete this.reqHash[requestId];
+                } else {
+                    this.reqHash[requestId].fileName = fileName;
+                    this.reqHash[requestId].valid = true;
                 }
                 if (reqObj.cb && typeof reqObj.cb === 'function') {
                     reqObj.cb(fileName, requestId);
@@ -130,7 +133,7 @@ export class FSStoreClient {
 
         let { requestId, fileName, ext, path } = opts;
         if (!fileName) {
-            throw new Error('NO FileName giver for unlink permission request task');
+            throw new Error('NO FileName given for unlink permission request task');
         }
         requestId = this.ensureRequestId(requestId);
         const action = fsReqType.unlink;

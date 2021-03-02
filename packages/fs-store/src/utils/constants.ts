@@ -1,5 +1,5 @@
 
-export const FS_CONSTANTS: Record<string, string | number> = {
+export const FS_CONSTANTS: Record<string, string> = {
   DW_ID: '*', // default worker ID
   FS_REQ_NAME_POSTFIX: '_action_request',
   FS_RESP_NAME_POSTFIX: '_action_response',
@@ -13,4 +13,7 @@ export const FS_CONSTANTS: Record<string, string | number> = {
   FAS_RESP_POSTFIX: '_allow_thread',
   FAS_RELEASE_POSTFIX: '_release_thread',
   FAS_CLEAN_POSTFIX: '_release_worker_threads',
+
+  FS_DEFAULT_MSG_PREFIX: 'fs-store',
+  FS_DEFAULT_QUEUE_PREFIX: 'fs-que',
 };
