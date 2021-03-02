@@ -1,4 +1,5 @@
 import * as url from 'url';
+import * as path from 'path';
 
 import {
     IWebApplicationConfig,
@@ -232,7 +233,7 @@ export class WebApplication extends PluggableModule {
         super();
         this.config = this.getConfig(config);
         this.decorateMethods();
-        this.fileWriter = new FSFileWriter();
+        this.fileWriter = new FSFileWriter(this.logger);
     }
 
 
@@ -1734,13 +1735,12 @@ export class WebApplication extends PluggableModule {
     public async makeScreenshot(force: boolean = false): Promise<string | null> {
         if (this.config.screenshotsEnabled && (this.screenshotsEnabledManually || force)) {
             const screenshot = await this.client.makeScreenshot();
-            const screenPath = this.config.screenshotPath;
-
+            const screenPath = path.join(this.config.screenshotPath, this.testUID);
 
             const filePath = await this.fileWriter
                 .write(
                     Buffer.from(screenshot.toString(), 'base64'),
-                    { path: screenPath, opts: { encoding: 'binary' } });
+                    { path: screenPath, opts: { encoding: 'binary', ext: 'png' } });
 
             this.logger.file(filePath, { type: FSFileLogType.SCREENSHOT });
             return filePath;

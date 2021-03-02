@@ -11,7 +11,10 @@ import { LockPool, LockPoolHooks } from './utils';
 import { FS_CONSTANTS, logger } from './utils';
 
 const log = logger.getNewLog({ m: 'fas' });
-const { DW_ID } = FS_CONSTANTS;
+const {
+    DW_ID,
+    FS_DEFAULT_QUEUE_PREFIX,
+} = FS_CONSTANTS;
 
 
 enum serverState {
@@ -51,7 +54,10 @@ export class FSActionServer extends PluggableModule {
 
     private transport: ITransport;
 
-    constructor(maxWriteThreadCount: number = 10, msgNamePrefix: string = 'fs-que', tr: ITransport = transport) {
+    constructor(maxWriteThreadCount: number = 10,
+        msgNamePrefix: string = FS_DEFAULT_QUEUE_PREFIX,
+        tr: ITransport = transport) {
+
         super(Object.values(hooks));
 
         this.transport = tr;

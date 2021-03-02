@@ -31,7 +31,7 @@ export class FSActionClient {
 
     private transport: ITransport;
 
-    constructor(private msgNamePrefix: string = 'fs-store', tr: ITransport = transport) {
+    constructor(private msgNamePrefix: string = FS_CONSTANTS.FS_DEFAULT_QUEUE_PREFIX, tr: ITransport = transport) {
 
         this.transport = tr;
         this.stateReq = msgNamePrefix + FS_CONSTANTS.FAS_REQ_ST_POSTFIX;
