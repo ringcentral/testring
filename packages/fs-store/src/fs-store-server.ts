@@ -65,10 +65,10 @@ export class FSStoreServer extends PluggableModule {
     private state: serverState = serverState.new;
 
     /**
-     * 
-     * @param msgNamePrefix 
-     * @param queServerPrefix 
-     * @param FQS 
+     *
+     * @param msgNamePrefix
+     * @param queServerPrefix
+     * @param FQS
      */
     constructor(FQS: FSActionServer | number = 10,
         msgNamePrefix: string = FS_DEFAULT_MSG_PREFIX,
@@ -339,6 +339,7 @@ export class FSStoreServer extends PluggableModule {
 
         const screenDate = new Date();
         const formattedDate = (`${screenDate.toLocaleTimeString()} ${screenDate.toDateString()}`)
+            .replace(/:/g, '_')
             .replace(/\s+/g, '_');
 
         const fileNameBase = `${workerId.replace('/', '.')}-${requestId}-${generateUniqId(5)}-${formattedDate}.${ext}`;
