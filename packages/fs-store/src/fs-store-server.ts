@@ -24,7 +24,8 @@ const log = logger.getNewLog({ m: 'fss' });
 const {
     DW_ID,
     FS_DEFAULT_MSG_PREFIX,
-    FS_DEFAULT_QUEUE_PREFIX } = FS_CONSTANTS;
+    FS_DEFAULT_QUEUE_PREFIX,
+} = FS_CONSTANTS;
 
 export enum serverState {
     'new' = 0,

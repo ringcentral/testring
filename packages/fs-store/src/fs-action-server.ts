@@ -13,7 +13,8 @@ import { FS_CONSTANTS, logger } from './utils';
 const log = logger.getNewLog({ m: 'fas' });
 const {
     DW_ID,
-    FS_DEFAULT_QUEUE_PREFIX } = FS_CONSTANTS;
+    FS_DEFAULT_QUEUE_PREFIX,
+} = FS_CONSTANTS;
 
 
 enum serverState {
