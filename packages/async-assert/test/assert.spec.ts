@@ -1,7 +1,7 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { createAssertion } from '../src/assert';
+import { createAssertion } from '..';
 
 
 describe('assertion functional', () => {
@@ -108,7 +108,7 @@ describe('assertion functional', () => {
 
     it('should call onError assertion callback without changed error object', async () => {
         const assert = createAssertion({
-            onError: (meta) => {},
+            onError: (meta) => { },
         });
 
         try {

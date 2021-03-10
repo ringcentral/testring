@@ -23,7 +23,7 @@ import { createElementPath, ElementPath } from '@testring/element-path';
 
 import { FSFileWriter } from '@testring/fs-store';
 
-import { createAssertion } from './assert';
+import { createAssertion } from '@testring/async-assert';
 import { WebClient } from './web-client';
 import * as utils from './utils';
 
