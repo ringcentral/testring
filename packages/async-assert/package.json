@@ -1,11 +1,11 @@
 {
-  "name": "async-assert",
+  "name": "@testring/async-assert",
   "version": "0.5.35",
   "description": "an async wrapper around chai",
   "keywords": [
     "assert"
   ],
-  "author": "Sergei.Zhurin <Sergei.Zhurin@nordigy.ru>",
+  "author": "RingCentral",
   "homepage": "https://github.com/ringcentral/testring#readme",
   "license": "ISC",
   "main": "./dist/index.js",
