@@ -240,6 +240,7 @@ export class WebApplication extends PluggableModule {
     protected getConfig(userConfig: Partial<IWebApplicationConfig>): IWebApplicationConfig {
         return Object.assign({}, {
             screenshotsEnabled: false,
+            screenshotsForceEnabled: false,
             screenshotPath: './_tmp/',
             devtool: null,
         }, userConfig);
@@ -1733,7 +1734,8 @@ export class WebApplication extends PluggableModule {
     }
 
     public async makeScreenshot(force: boolean = false): Promise<string | null> {
-        if (this.config.screenshotsEnabled && (this.screenshotsEnabledManually || force)) {
+        if ((this.config.screenshotsForceEnabled && force) ||
+            (this.config.screenshotsEnabled && (this.screenshotsEnabledManually || force))) {
             const screenshot = await this.client.makeScreenshot();
             const screenPath = path.join(this.config.screenshotPath, this.testUID);
 

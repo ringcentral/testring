@@ -172,6 +172,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
     private getQueueItemWithRunData(queueItem): IQueuedTest {
         let screenshotsEnabled = false;
+        let screenshotsForceEnabled = false;
         let isRetryRun = queueItem.retryCount > 0;
         const {
             debug,
@@ -185,6 +186,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             screenshotsEnabled = true;
         } else if (this.config.screenshots === 'afterError') {
             screenshotsEnabled = isRetryRun;
+            screenshotsForceEnabled = true;
         }
 
         let devtoolConfig: IDevtoolRuntimeConfiguration | null = null;
@@ -197,6 +199,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             logLevel,
             httpThrottle,
             screenshotsEnabled,
+            screenshotsForceEnabled,
             devtool: devtoolConfig,
             isRetryRun,
             screenshotPath,

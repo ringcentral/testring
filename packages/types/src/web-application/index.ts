@@ -33,6 +33,7 @@ export interface ICoverageConfig {
 
 export interface IWebApplicationConfig {
     screenshotsEnabled: boolean;
+    screenshotsForceEnabled: boolean;
     screenshotPath: string;
     coverage?: ICoverageConfig;
     devtool: null | IDevtoolRuntimeConfiguration;

@@ -18,6 +18,7 @@ export interface ITestQueuedTestRunData {
     logLevel: LogLevel;
     httpThrottle: number;
     screenshotsEnabled: boolean;
+    screenshotsForceEnabled: boolean;
     isRetryRun: boolean;
     devtool: IDevtoolRuntimeConfiguration | null;
     screenshotPath: string;
