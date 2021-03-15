@@ -68,6 +68,8 @@ class RunCommand implements ICLICommand {
             screenshots: this.config.screenshots,
         });
 
+        this.config.envParameters.screenshots = this.config.screenshots;
+
         this.httpServer = createHttpServer(this.transport);
         this.browserProxyController = browserProxyControllerFactory(this.transport);
 
