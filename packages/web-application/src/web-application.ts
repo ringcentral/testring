@@ -57,8 +57,6 @@ export class WebApplication extends PluggableModule {
 
     private applicationId: string = `webApp-${generateUniqId()}`;
 
-    private fileWriter: FSFileWriter;
-
     public assert = createAssertion({
         onSuccess: (meta) => this.successAssertionHandler(meta),
         onError: (meta) => this.errorAssertionHandler(meta),
@@ -233,9 +231,11 @@ export class WebApplication extends PluggableModule {
         super();
         this.config = this.getConfig(config);
         this.decorateMethods();
-        this.fileWriter = new FSFileWriter(this.logger);
     }
 
+    private get fileWriter(): FSFileWriter {
+        return new FSFileWriter(this.logger);
+    }
 
     protected getConfig(userConfig: Partial<IWebApplicationConfig>): IWebApplicationConfig {
         return Object.assign({}, {
