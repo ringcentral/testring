@@ -234,7 +234,16 @@ export class WebApplication extends PluggableModule {
     }
 
     private get fileWriter(): FSFileWriter {
-        return new FSFileWriter(this.logger);
+        const fsWriter = new FSFileWriter(this.logger);
+
+        Object.defineProperty(this, 'fileWriter', {
+            value: fsWriter,
+            enumerable: false,
+            writable: true,
+            configurable: true,
+        });
+
+        return fsWriter;
     }
 
     protected getConfig(userConfig: Partial<IWebApplicationConfig>): IWebApplicationConfig {
