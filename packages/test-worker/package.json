@@ -1,6 +1,6 @@
 {
   "name": "@testring/test-worker",
-  "version": "0.5.30",
+  "version": "0.5.32",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,21 +10,21 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/api": "0.5.30",
-    "@testring/async-breakpoints": "0.5.30",
-    "@testring/child-process": "0.5.30",
-    "@testring/dependencies-builder": "0.5.30",
-    "@testring/fs-reader": "0.5.30",
-    "@testring/fs-store": "0.5.30",
-    "@testring/logger": "0.5.30",
-    "@testring/pluggable-module": "0.5.30",
-    "@testring/sandbox": "0.5.30",
-    "@testring/transport": "0.5.30",
-    "@testring/types": "0.5.30",
-    "@testring/utils": "0.5.30"
+    "@testring/api": "0.5.32",
+    "@testring/async-breakpoints": "0.5.32",
+    "@testring/child-process": "0.5.32",
+    "@testring/dependencies-builder": "0.5.32",
+    "@testring/fs-reader": "0.5.32",
+    "@testring/fs-store": "0.5.32",
+    "@testring/logger": "0.5.32",
+    "@testring/pluggable-module": "0.5.32",
+    "@testring/sandbox": "0.5.32",
+    "@testring/transport": "0.5.32",
+    "@testring/types": "0.5.32",
+    "@testring/utils": "0.5.32"
   },
   "devDependencies": {
-    "@testring/test-utils": "0.5.30",
+    "@testring/test-utils": "0.5.32",
     "@types/node": "14.6.0"
   }
 }

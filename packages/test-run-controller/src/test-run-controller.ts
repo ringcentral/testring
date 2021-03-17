@@ -77,7 +77,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
         if (!!shouldNotExecute) {
             this.logger.info('The run queue execution was stopped.');
-            return  null;
+            return null;
         }
 
         try {

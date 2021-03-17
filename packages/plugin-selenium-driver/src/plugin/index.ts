@@ -441,9 +441,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        const elem = await client.$(xpath);
-        await elem.scrollIntoView();
-        return elem.moveTo(x, y);
+        const selector = await client.$(xpath);
+        return selector.moveTo(x || 0, y || 0);
     }
 
     public async execute(applicant: string, fn: any, args: Array<any>) {
@@ -584,6 +583,14 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const element = await client.$(xpath);
         await element.scrollIntoView();
         return element.moveTo(x, y);
+    }
+
+    public async scrollIntoView(applicant: string, xpath: string, scrollIntoViewOptions?: boolean | null) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const element = await client.$(xpath);
+        await element.scrollIntoView(scrollIntoViewOptions !== null ? scrollIntoViewOptions : undefined);
     }
 
     public async isAlertOpen(applicant: string) {

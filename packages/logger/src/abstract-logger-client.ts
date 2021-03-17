@@ -78,7 +78,7 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
         const previousStepID = previousStep ? previousStep.stepID : null;
 
         const stepUid = isStepType && currentStepID ? currentStepID : null;
-        const parentStep = isStepType  ? previousStepID : currentStepID;
+        const parentStep = isStepType ? previousStepID : currentStepID;
         const stepType = isStepType ? stepGroupType : null;
 
         return {
@@ -138,11 +138,11 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
         this.createLog(LogTypes.debug, LogLevel.verbose, args);
     }
 
-    public media(filename: string, content: Buffer): void {
-        this.createLog(LogTypes.media, LogLevel.info, [filename, content]);
+    public screenshot(filename: string, content: Buffer): void {
+        this.createLog(LogTypes.screenshot, LogLevel.info, [filename, content]);
     }
 
-    public file(filename: string, meta: {}={}): void {
+    public file(filename: string, meta: Record<string, any> = {}): void {
         this.createLog(LogTypes.file, LogLevel.info, [filename, meta]);
     }
 

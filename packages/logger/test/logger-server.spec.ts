@@ -25,7 +25,7 @@ describe('Logger Server', () => {
         const onLog = loggerServer.getHook(LoggerPlugins.onLog);
 
         if (beforeLog && onLog) {
-            beforeLog.writeHook('testPlugin',  (entry, { processID }) => {
+            beforeLog.writeHook('testPlugin', (entry, { processID }) => {
                 chai.expect(processID).to.be.equal(PROCESS_ID);
                 return entry;
             });
@@ -110,7 +110,7 @@ describe('Logger Server', () => {
                 try {
                     chai.expect(processID).to.be.equal(PROCESS_ID);
                     callback();
-                }  catch (e) {
+                } catch (e) {
                     callback(e);
                 }
             });

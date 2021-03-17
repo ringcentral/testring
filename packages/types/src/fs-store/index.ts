@@ -4,6 +4,12 @@ export const enum FSFileType {
     TEXT = 1,
 }
 
+export const enum FSFileLogType {
+    SCREENSHOT = 1,
+    COVERAGE = 2,
+    TEXT = 3,
+}
+
 export const enum FSFileEncoding {
     NONE = 0,
     BASE64 = 1,
@@ -16,24 +22,95 @@ export interface IFSFile {
     content: string;
 }
 
-export interface IFSStore {
-    fName: string; // absolute file path
-    readSync(): Buffer; // reading file from disk and pass a return a buffer, raise error if file is removed
+export interface IFSStoreFile {
+    lock(): Promise<void>; // locks file for read, ID key is used as identifier for unlock in future
+    unlock(options: FSActionOptions): Promise<boolean>; // unlocks file to read operation for process ID
     read(): Promise<Buffer>; // the same part but with promise wrapper
-    lock(id: string): boolean; // locks file for remove, key is used as identifier for unlock in future
-    unlock(id: string); // unlocks file for remove operation
+    write(Buffer): Promise<void>; // the same part but with promise wrapper
+    append(Buffer): Promise<void>; // the same part but with promise wrapper
     isLocked(): boolean; // returns bool variable, true if nobody locks current file
-    removeSync(); // removing file from file system, raise error if file is locked
-    remove(): Promise<boolean>;// async remove method 
+    unlink(): Promise<boolean>;// async remove method
+    waitForUnlock(): Promise<void>; //
+    transaction(cb: () => Promise<void>): Promise<void>;
 }
 
-export interface IWriteAcquireData {
+export interface IQueAcqReq {
+    requestId: string;
+}
+
+export interface IQueAcqResp {
+    requestId: string;
+}
+
+export type IQueStateReq = IQueAcqReq
+export interface IQueStateResp {
+    requestId: string;
+    state: Record<string, any>;
+}
+
+export interface IChgAcqReq {
+    requestId: string;
+    fileName?: string;
+}
+export interface IChgAcqResp {
+    requestId: string;
+    fileName: string;
+}
+export interface IDelAcqReq {
+    requestId: string;
+    fileName: string;
+}
+export interface IDelAcqResp {
     requestId: string;
     fileName: string;
 }
 
-export interface IWriteAcquireDataReq {
+export enum fsReqType {
+    'access' = 1,
+    'lock',
+    'unlink',
+    'release',
+}
+export interface IFSStoreReq {
     requestId: string;
+    action: fsReqType;
+    fileName?: string;
+    meta: Record<string, any>;
+}
+
+export interface IFSStoreReq {
+    requestId: string;
+    action: fsReqType;
+    fileName?: string;
+    meta: Record<string, any>;
+}
+export interface IFSStoreReqFixed {
+    requestId: string;
+    action: fsReqType;
+    fileName: string;
+    meta: Record<string, any>;
+}
+export interface IFSStoreResp {
+    requestId: string;
+    action: fsReqType;
+    fileName: string;
+    status: string;
+}
+
+
+export type FSStoreOptions = {
+    lock?: boolean;
+    file: string | {
+        fileName?: string;
+        savePath: string;
+        ext?: string;
+    };
+    fsStorePrefix?: string;
+}
+
+export type FSActionOptions = {
+    doUnlink?: boolean;
+    waitForUnlink?: boolean;
 }
 
 export interface IOnFileReleaseHookData {
@@ -42,8 +119,8 @@ export interface IOnFileReleaseHookData {
 }
 
 export interface IOnFileNameHookData {
-    workerId: string; 
-    requestId: string; 
-    fileName: string; 
+    workerId: string;
+    requestId: string;
+    fileName: string;
     path: string;
 }

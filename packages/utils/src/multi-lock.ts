@@ -6,7 +6,7 @@
  *  
  * on any given id lock can be acquired and released in the future
  * all locks can be cleared for specified id 
- */ 
+ */
 export class MultiLock {
 
     private lockHash: Map<string, number> = new Map();
@@ -16,16 +16,16 @@ export class MultiLock {
      * 
      * @param lockLimit - max amount of locks for all ids
      */
-    constructor(public lockLimit: number = 1) {}
-    
-     /**
-     * try to one acquire lock - if lock acquired returns true otherwise false
-     * 
-     * @param {string} id  - lockID
-     */
+    constructor(public lockLimit: number = 0) { }
+
+    /**
+    * try to one acquire lock - if lock acquired returns true otherwise false
+    * 
+    * @param {string} id  - lockID
+    */
     acquire(id: string): boolean {
-        
-        if (this.lockLength >= this.lockLimit) {
+
+        if (this.lockLimit !== 0 && this.lockLength >= this.lockLimit) {
             return false;
         }
         const val = this.lockHash.get(id) || 0;
@@ -46,30 +46,30 @@ export class MultiLock {
         if (val === 1) {
             this.lockHash.delete(id);
         } else {
-            this.lockHash.set(id, val-1);
+            this.lockHash.set(id, val - 1);
         }
         this.lockLength -= 1;
         return true;
-    }  
-    
+    }
+
     /**
      * unlocks all locks for given Id
      * 
      * @param {string|void} id  - lockID
      */
-    clean(id: string | void) {  
+    clean(id: string | void) {
         if (id) {
-            const count = this.lockHash.get(id) || 0;     
+            const count = this.lockHash.get(id) || 0;
             this.lockHash.delete(id);
             this.lockLength -= count;
-            return; 
-        }  
-        this.lockHash.forEach((_, key)=>{
+            return;
+        }
+        this.lockHash.forEach((_, key) => {
             this.lockHash.delete(key);
         });
         this.lockLength = 0;
-    }   
-    
+    }
+
     /**
      * if given a string, returns lock amount for that id else returns total amount for all ids in sum
      * 
@@ -80,5 +80,12 @@ export class MultiLock {
             return this.lockHash.get(id) || 0;
         }
         return this.lockLength;
+    }
+    /**
+     * return map if given a string, returns lock amount for that id else returns total amount for all ids in sum
+     * 
+     */
+    getIds() {
+        return new Map<string, number>(this.lockHash);
     }
 }

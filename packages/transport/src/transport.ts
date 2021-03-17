@@ -49,7 +49,7 @@ export class Transport implements ITransport {
     }
 
     public broadcastUniversally<T = any>(messageType: string, payload: T): void {
-            if (this.isChildProcess()) {
+        if (this.isChildProcess()) {
             this.broadcast(messageType, payload);
         } else {
             this.broadcastLocal(messageType, payload);
