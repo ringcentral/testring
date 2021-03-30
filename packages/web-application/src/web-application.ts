@@ -57,7 +57,7 @@ export class WebApplication extends PluggableModule {
 
     private applicationId: string = `webApp-${generateUniqId()}`;
 
-    private fileWriter: FSFileWriter;
+    protected fileWriter: FSFileWriter;
 
     public assert = createAssertion({
         onSuccess: (meta) => this.successAssertionHandler(meta),

@@ -12,6 +12,7 @@ import { transport } from '@testring/transport';
 import { PluggableModule } from '@testring/pluggable-module';
 import { TransportMock } from '@testring/test-utils';
 
+import { FSCollectionServer } from './fs-collection-server';
 import { FSActionServer } from './fs-action-server';
 import { FSActionClient } from './fs-action-client';
 
@@ -44,6 +45,7 @@ type cleanCBRecord = Record<string, Record<string, (() => void) | undefined>>
 
 const asyncActions = new Set([fsReqType.access, fsReqType.unlink]);
 
+
 export class FSStoreServer extends PluggableModule {
 
     private reqName: string;
@@ -75,6 +77,8 @@ export class FSStoreServer extends PluggableModule {
         queServerPrefix = FS_DEFAULT_QUEUE_PREFIX) {
 
         super(Object.values(hooks));
+
+        new FSCollectionServer(); // initiating uniqCollection server
 
         if (typeof (FQS) === 'number') {
             this.fasTransport = new TransportMock();

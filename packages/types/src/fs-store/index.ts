@@ -124,3 +124,27 @@ export interface IOnFileNameHookData {
     fileName: string;
     path: string;
 }
+
+
+// COLLECTIONS
+
+export interface ICollectionFilterRequestData {
+    requestId: string;
+    collectionId: string;
+    filterArray: string[];
+}
+export interface ICollectionFilterResponseData {
+    requestId: string;
+    collectionId: string;
+    filtered: string[];
+}
+export interface ICollectionConfirmationData {
+    requestId: string;
+    collectionId: string;
+    loaded: string[];
+    getResult?: boolean;
+}
+export interface ICollectionConfirmationResult {
+    requestId: string;
+    loaded: null | string[];
+}

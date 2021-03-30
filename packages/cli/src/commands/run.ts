@@ -11,7 +11,6 @@ import { DevtoolServerController } from '@testring/devtool-backend';
 
 import { FSStoreServer } from '@testring/fs-store';
 
-
 class RunCommand implements ICLICommand {
 
     private logger = loggerClient;
