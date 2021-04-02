@@ -80,6 +80,22 @@ export class FSFileWriter {
         });
     }
 
+    public exists(fName: string) {
+        return new Promise((res, rej) => {
+            fs.stat(fName, (err) => {
+                if (err) {
+                    if (err.code === 'ENOENT') {
+                        res(false);
+                    } else {
+                        rej(err);
+                    }
+                } else {
+                    res(true);
+                }
+            });
+        });
+    }
+
     public async filterLoad(urls: string[], collectionId: string): Promise<string[]> {
         const filterResult = await this.fsCollectionClient.filter(urls, collectionId) as { filtered: string[] };
         return filterResult.filtered;
