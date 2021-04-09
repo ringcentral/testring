@@ -3,7 +3,6 @@ import * as path from 'path';
 
 import * as utils from './utils';
 import { FSStoreClient } from './fs-store-client';
-import { FSCollectionClient } from './fs-collection-client';
 
 const { writeFile, appendFile, unlink } = fs.promises;
 
@@ -15,14 +14,12 @@ export type ActionOptionsType = { path?: string; fileName: string; opts?: Record
 export class FSFileWriter {
 
     private fsStoreClient: FSStoreClient;
-    private fsCollectionClient: FSCollectionClient;
 
     constructor(private logger: ILog,
         prefix: string = utils.FS_CONSTANTS.FS_DEFAULT_MSG_PREFIX,
         collectionPrefix: string = utils.FS_CONSTANTS.FS_DEFAULT_COLLECTION_PREFIX) {
 
         this.fsStoreClient = new FSStoreClient(prefix);
-        this.fsCollectionClient = new FSCollectionClient(collectionPrefix);
     }
 
     public async write(data: Buffer, options: ActionOptionsType): Promise<string> {
