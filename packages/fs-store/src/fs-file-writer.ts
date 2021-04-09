@@ -95,13 +95,4 @@ export class FSFileWriter {
             });
         });
     }
-
-    public async filterLoad(urls: string[], collectionId: string): Promise<string[]> {
-        const filterResult = await this.fsCollectionClient.filter(urls, collectionId) as { filtered: string[] };
-        return filterResult.filtered;
-    }
-
-    public async confirmLoaded(urls: string[], collectionId: string) {
-        return this.fsCollectionClient.confirmLoad(urls, collectionId);
-    }
 }
