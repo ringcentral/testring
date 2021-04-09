@@ -46,14 +46,12 @@ export type IWebApplicationClient = {
     [K in keyof IBrowserProxyPlugin]: (...args: Array<any>) => Promise<any>
 };
 
-export interface ICoverageConfig {
-    path: string;
-}
 
 export interface IWebApplicationConfig {
     screenshotsEnabled: boolean;
     screenshotPath: string;
-    coverage?: ICoverageConfig;
+    coverage: boolean;
+    coveragePath?: string;
     devtool: null | IDevtoolRuntimeConfiguration;
 }
 

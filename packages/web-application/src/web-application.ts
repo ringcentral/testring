@@ -241,6 +241,7 @@ export class WebApplication extends PluggableModule {
         return Object.assign({}, {
             screenshotsEnabled: false,
             screenshotPath: './_tmp/',
+            coverage: false,
             devtool: null,
         }, userConfig);
     }

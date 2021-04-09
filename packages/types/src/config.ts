@@ -16,6 +16,8 @@ export interface IConfig extends IConfigLogger {
     restartWorker: boolean;
     screenshots: ScreenshotsConfig;
     screenshotPath: string;
+    coverage: boolean;
+    coveragePath?: string;
     config: string;
     debug: boolean;
     bail: boolean;

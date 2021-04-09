@@ -200,6 +200,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             devtool: devtoolConfig,
             isRetryRun,
             screenshotPath,
+            coverage:this.config.coverage || !!this.config.coveragePath, // can supply only path
+            coveragePath:this.config.coveragePath,
         };
 
         return {

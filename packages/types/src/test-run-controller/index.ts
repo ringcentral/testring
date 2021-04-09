@@ -21,6 +21,8 @@ export interface ITestQueuedTestRunData {
     isRetryRun: boolean;
     devtool: IDevtoolRuntimeConfiguration | null;
     screenshotPath: string;
+    coverage: boolean;
+    coveragePath?: string;
 }
 
 export interface IQueuedTest {
