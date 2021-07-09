@@ -1,6 +1,6 @@
 {
   "name": "@testring/async-breakpoints",
-  "version": "0.5.36",
+  "version": "0.5.37",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
