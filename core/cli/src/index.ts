@@ -4,7 +4,7 @@ import { loggerClient, LoggerServer } from '@testring/logger';
 import { getConfig } from '@testring/cli-config';
 import { transport } from '@testring/transport';
 import { ICLICommand, IConfig } from '@testring/types';
-import { runTests } from './commands/run';
+import { runTests } from './commands/runCommand';
 
 const pkg = require('../package.json');
 

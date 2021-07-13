@@ -1,7 +1,8 @@
 {
   "independent": false,
   "packages": [
-    "packages/*"
+    "packages/*",
+    "core/*"
   ],
   "command": {
     "exec": {

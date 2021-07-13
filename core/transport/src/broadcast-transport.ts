@@ -32,7 +32,7 @@ class BroadcastTransport {
     }
 
     private registerRootProcess() {
-        this.rootProcess.on('message', (message) => this.handleRootProcessMessage(message));
+        this.rootProcess.on('message', (message) => this.handleRootProcessMessage(message as any));
     }
 
     private handleRootProcessMessage(message: ITransportDirectMessage) {

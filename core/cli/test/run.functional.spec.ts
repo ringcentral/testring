@@ -4,7 +4,7 @@ import * as path from 'path';
 import { Writable } from 'stream';
 import { getConfig } from '@testring/cli-config';
 import { Transport } from '@testring/transport';
-import { runTests } from '../src/commands/run';
+import { runTests } from '../src/commands/runCommand';
 
 const fixturesPath = path.resolve(__dirname, './fixtures');
 const stdout = new Writable({
