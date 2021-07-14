@@ -3,7 +3,7 @@ import { LogLevel } from './logger/enums';
 
 export type ScreenshotsConfig = 'disable' | 'enable' | 'afterError';
 
-export type ConfigPluginDescriptor = string | [string, PluginConfig];
+export type ConfigPluginDescriptor = string | [string] | [string, PluginConfig];
 
 export interface IConfigLogger {
     logLevel: LogLevel;

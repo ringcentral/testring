@@ -17,7 +17,7 @@ function mergePlugins(target: Array<any>, source: Array<any>, options) {
 
         if (Array.isArray(element)) {
             const plugin = element[0];
-            const config = element[1];
+            const config = element[1] || {};
 
             if (!(plugin in plugins)) {
                 plugins[plugin] = clone(config, options);

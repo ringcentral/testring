@@ -26,7 +26,7 @@ export class PluginController {
             pluginConfig = null;
         } else if (Array.isArray(plugin)) {
             pluginName = plugin[0];
-            pluginConfig = plugin[1];
+            pluginConfig = plugin[1] || {};
         } else {
             throw new SyntaxError(`Invalid plugin. Index: ${index}, got ${JSON.stringify(plugin)}`);
         }

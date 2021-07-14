@@ -135,6 +135,35 @@ describe('getConfig', () => {
         });
     });
 
+    it('should get config with correct array of plugins (array + empty array value)', () => {
+        const config = mergeConfigs<Partial<IConfig>>(
+            {
+                plugins: [
+                    ['plugin1', {
+                        debug: true,
+                    }],
+                ],
+            },
+            {
+                plugins: [
+                    ['plugin2'],
+                    ['plugin1', {
+                        debug: undefined,
+                    }],
+                ],
+            },
+        );
+
+        chai.expect(config).to.be.deep.equals({
+            plugins: [
+                ['plugin1', {
+                    debug: undefined,
+                }],
+                ['plugin2', {}],
+            ],
+        });
+    });
+
     it('should get config with correct array of plugins with array of objects config property', () => {
         const config = mergeConfigs<Partial<IConfig>>(
             {

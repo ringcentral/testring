@@ -32,7 +32,7 @@ describe('babelPlugin', () => {
         const pluginAPIMock = new PluginAPIMock();
 
         babelPlugin(pluginAPIMock as any, {
-            presets: ['es2015'],
+            presets: ['@babel/preset-env'],
         });
 
         const testWorkerMock = pluginAPIMock.$getLastTestWorker();

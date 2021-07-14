@@ -20,11 +20,7 @@ module.exports = async (config) => {
                     },
                 },
             }],
-            ['babel', {
-                presets: [
-                    'es2015',
-                ],
-            }],
+            ['babel'],
         ],
     };
 };

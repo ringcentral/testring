@@ -163,7 +163,6 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         // Calling external hooks to compile source
         const compiledSource = await this.compileSource(file.content, file.path);
-        // TODO (flops) implement code instrumentation here
 
         const compiledFile = {
             path: file.path,

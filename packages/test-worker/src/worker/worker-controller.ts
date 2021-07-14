@@ -247,7 +247,20 @@ export class WorkerController {
 
         // Test file execution, should throw exception,
         // if something goes wrong
-        await sandbox.execute();
+        try {
+            await sandbox.execute();
+        } catch (err) {
+            if (err instanceof Error) {
+                throw err;
+            } else {
+                const errObj = new Error(err.message || err);
+                if (err.stack) {
+                    errObj.stack = err.stack;
+                }
+
+                throw errObj;
+            }
+        }
 
         if (isAsync) {
             return new Promise<void>((resolve, reject) => {
