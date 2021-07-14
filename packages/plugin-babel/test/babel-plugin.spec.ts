@@ -12,9 +12,9 @@ const DEFAULT_INPUT = `
 const TRANSFORMED_INPUT = `
 "use strict";
 
-(function () {
+() => {
   console.log(1);
-});`.trim();
+};`.trim();
 
 describe('babelPlugin', () => {
     it('should not convert code, if there is no config', async () => {
@@ -25,14 +25,13 @@ describe('babelPlugin', () => {
         const testWorkerMock = pluginAPIMock.$getLastTestWorker();
         const result = await testWorkerMock.$compile(DEFAULT_INPUT, DEFAULT_FILENAME);
 
-        chai.expect(result).to.be.equal(DEFAULT_INPUT);
+        chai.expect(result).to.be.equal(TRANSFORMED_INPUT);
     });
 
     it('should convert code with given preset', async () => {
         const pluginAPIMock = new PluginAPIMock();
 
         babelPlugin(pluginAPIMock as any, {
-            presets: ['@babel/preset-env'],
         });
 
         const testWorkerMock = pluginAPIMock.$getLastTestWorker();

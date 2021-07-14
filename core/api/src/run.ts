@@ -1,19 +1,10 @@
 import { loggerClient } from '@testring/logger';
+import { restructureError } from '@testring/utils';
+
 import { TestContext } from './test-context';
 import { testAPIController } from './test-api-controller';
 
 type TestFunction = (api: TestContext) => void | Promise<any>;
-
-function getValidCopyVmError(error) {
-    if (error instanceof Error) {
-        return error;
-    }
-
-    // TODO (flops) check signature
-    let tmpError = new Error(error.message);
-    tmpError.stack = error.stack;
-    return tmpError;
-}
 
 export function beforeRun(callback) {
     testAPIController.registerBeforeRunCallback(callback);
@@ -55,7 +46,7 @@ export async function run(...tests: Array<TestFunction>) {
 
         passed = true;
     } catch (error) {
-        catchedError = getValidCopyVmError(error);
+        catchedError = restructureError(error);
     } finally {
         if (passed) {
             loggerClient.endStep(testID, 'Test passed');

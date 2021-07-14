@@ -1,3 +1,6 @@
+import * as process from 'process';
+import * as path from 'path';
+
 import {
     ITransport,
     ITestEvaluationMessage,
@@ -8,9 +11,7 @@ import {
     TestStatus,
     TestEvents,
 } from '@testring/types';
-
-import * as process from 'process';
-import * as path from 'path';
+import { restructureError } from '@testring/utils';
 
 import { Sandbox } from '@testring/sandbox';
 import { testAPIController, TestAPIController } from '@testring/api';
@@ -250,16 +251,7 @@ export class WorkerController {
         try {
             await sandbox.execute();
         } catch (err) {
-            if (err instanceof Error) {
-                throw err;
-            } else {
-                const errObj = new Error(err.message || err);
-                if (err.stack) {
-                    errObj.stack = err.stack;
-                }
-
-                throw errObj;
-            }
+            throw restructureError(err);
         }
 
         if (isAsync) {

@@ -11,7 +11,7 @@
     "node_modules/@testring/client-ws-transport/src/index.ts"
   ],
   "files": [
-    "../types/src/index.ts",
+    "../../core/types/src/index.ts",
     "../client-ws-transport/src/index.ts"
   ]
 }

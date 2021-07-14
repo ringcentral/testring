@@ -26,3 +26,7 @@ export {
 export {
     throttle,
 } from './throttle';
+
+export {
+    restructureError,
+} from './restructure-error';
