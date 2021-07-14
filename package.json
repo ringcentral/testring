@@ -57,6 +57,7 @@
       "packages/*/src/**/*.ts"
     ],
     "exclude": [
+      "core/*/src/index.ts",
       "packages/*/src/index.ts",
       "packages/types",
       "packages/web-application/src/web-application.ts",

@@ -1211,6 +1211,7 @@ export class WebApplication extends PluggableModule {
         return this.client.scroll(xpath, x, y);
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     protected async scrollIntoViewCall(
         xpath,
         topOffset: number = 0,
@@ -1220,6 +1221,7 @@ export class WebApplication extends PluggableModule {
 
         if (topOffset || leftOffset) {
             const result = await this.client.executeAsync(function (xpath, topOffset, leftOffset, done) {
+                // eslint-disable-next-line sonarjs/no-identical-functions
                 function getElementByXPath(xpath) {
                     const element = document.evaluate(
                         xpath,
@@ -1286,6 +1288,7 @@ export class WebApplication extends PluggableModule {
         await this.scrollIntoViewCall(xpath, topOffset, leftOffset);
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     protected async scrollIntoViewIfNeededCall(
         xpath,
         topOffset: number = 0,
@@ -1294,6 +1297,7 @@ export class WebApplication extends PluggableModule {
         const normalizedXpath = this.normalizeSelector(xpath);
 
         const result: string = await this.client.executeAsync(function (xpath, topOffset, leftOffset, done) {
+            // eslint-disable-next-line sonarjs/no-identical-functions
             function getElementByXPath(xpath) {
                 const element = document.evaluate(
                     xpath,
@@ -1309,6 +1313,7 @@ export class WebApplication extends PluggableModule {
                 return null;
             }
 
+            // eslint-disable-next-line sonarjs/no-identical-functions
             function isScrollable(el) {
                 const hasScrollableContent = el.scrollHeight > el.clientHeight;
 
@@ -1318,6 +1323,7 @@ export class WebApplication extends PluggableModule {
                 return hasScrollableContent && !isOverflowHidden;
             }
 
+            // eslint-disable-next-line sonarjs/no-identical-functions
             function getScrollableParent(el) {
                 // eslint-disable-next-line no-nested-ternary
                 return (!el || el === document.scrollingElement || document.body)
@@ -1329,12 +1335,14 @@ export class WebApplication extends PluggableModule {
                 const parent = element.parentNode;
                 const scrollableParent = getScrollableParent(element);
                 const parentComputedStyle = window.getComputedStyle(parent, null);
+                /* eslint-disable max-len */
                 const parentBorderTopWidth = parseInt(parentComputedStyle.getPropertyValue('border-top-width')) + topOffset;
                 const parentBorderLeftWidth = parseInt(parentComputedStyle.getPropertyValue('border-left-width')) + leftOffset;
                 const overTop = element.offsetTop - parent.offsetTop < parent.scrollTop;
                 const overBottom = (element.offsetTop - parent.offsetTop + element.clientHeight - parentBorderTopWidth) > (parent.scrollTop + parent.clientHeight);
                 const overLeft = element.offsetLeft - parent.offsetLeft < parent.scrollLeft;
                 const overRight = (element.offsetLeft - parent.offsetLeft + element.clientWidth - parentBorderLeftWidth) > (parent.scrollLeft + parent.clientWidth);
+                /* eslint-enable max-len */
 
                 if (overTop || overBottom || overLeft || overRight) {
                     element.scrollIntoViewIfNeeded();

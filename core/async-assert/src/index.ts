@@ -12,6 +12,7 @@ type WrappedPromisedAssertionApi = PromisedAssert & {
 
 export function createAssertion(options: IAssertionOptions = {}) {
     const isSoft = options.isSoft === true;
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     const proxyGetter = (target, fieldName: string) => {
         if (fieldName === errorMessagesField) {
             return target[errorMessagesField];

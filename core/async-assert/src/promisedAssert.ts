@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 // Copy paste from @types/chai
 
 export interface PromisedAssert {

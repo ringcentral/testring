@@ -225,6 +225,7 @@ export class FSStoreServer extends PluggableModule {
 
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     private async ReleaseAction(data: IFSStoreReq, workerId: string) {
         log.debug({ data, workerId }, 'FSS on release');
         const { requestId, action, fileName } = data;
