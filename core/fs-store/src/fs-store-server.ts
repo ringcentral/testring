@@ -8,6 +8,7 @@ import {
     ITransport,
 } from '@testring/types';
 import { generateUniqId } from '@testring/utils';
+import { loggerClient } from '@testring/logger';
 import { transport } from '@testring/transport';
 import { PluggableModule } from '@testring/pluggable-module';
 import { TransportMock } from '@testring/test-utils';
@@ -18,9 +19,9 @@ import { FSActionClient } from './fs-action-client';
 import { FileActionHookService } from './server_utils/FileActionHookService';
 
 
-import { FS_CONSTANTS, logger } from './utils';
+import { FS_CONSTANTS } from './utils';
 
-const log = logger.getNewLog({ m: 'fss' });
+const log = loggerClient.withPrefix('fss');
 const {
     DW_ID,
     FS_DEFAULT_MSG_PREFIX,
@@ -148,7 +149,7 @@ export class FSStoreServer extends PluggableModule {
     }
 
     private send<T>(workerId: string | undefined, msgId: string, data: T) {
-        log.trace({ workerId, msgId, data }, 'fs send');
+        log.debug({ workerId, msgId, data }, 'fs send');
         if (!workerId || workerId === DW_ID) {
             transport.broadcastUniversally<T>(
                 msgId,

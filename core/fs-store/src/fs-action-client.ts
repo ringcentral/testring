@@ -3,13 +3,14 @@
  */
 
 import { generateUniqId } from '@testring/utils';
+import { loggerClient } from '@testring/logger';
 import { transport } from '@testring/transport';
 
 import { IQueAcqReq, IQueAcqResp, IQueStateReq, IQueStateResp, ITransport } from '@testring/types';
 
-import { FS_CONSTANTS, logger } from './utils';
+import { FS_CONSTANTS } from './utils';
 
-const log = logger.getNewLog({ m: 'fac' });
+const log = loggerClient.withPrefix('fac');
 
 type requestsTableItem = {
     cb?: ((rId: string, state?: Record<string, any>) => void);

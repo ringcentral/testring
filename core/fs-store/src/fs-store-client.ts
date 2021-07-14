@@ -3,6 +3,7 @@
  */
 
 import { generateUniqId } from '@testring/utils';
+import { loggerClient } from '@testring/logger';
 import { transport } from '@testring/transport';
 import {
     fsReqType,
@@ -10,9 +11,9 @@ import {
     IFSStoreResp,
 } from '@testring/types';
 
-import { FS_CONSTANTS, logger } from './utils';
+import { FS_CONSTANTS } from './utils';
 
-const log = logger.getNewLog({ m: 'fsc' });
+const log = loggerClient.withPrefix('fsc');
 
 export type requestMeta = {
     fileName: string; // fullFileName

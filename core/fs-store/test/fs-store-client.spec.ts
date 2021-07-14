@@ -4,13 +4,13 @@ import * as chai from 'chai';
 
 import { FSStoreServer, fsStoreServerHooks } from '../src/fs-store-server';
 import { FSStoreClient } from '../src/fs-store-client';
-import { logger } from '../src/utils';
-
-const log = logger.getNewLog({ m: 'fsc-test' });
 
 import {
     fsReqType,
 } from '@testring/types';
+import { loggerClient } from '@testring/logger';
+
+const log = loggerClient.withPrefix('fsc-test');
 
 const FSS = new FSStoreServer(10);
 

@@ -2,18 +2,17 @@
 
 import * as chai from 'chai';
 
+import { loggerClient } from '@testring/logger';
+
 import { FSStoreServer, fsStoreServerHooks } from '../src/fs-store-server';
 import { FSStoreFile } from '../src/fs-store-file';
-import { logger } from '../src/utils';
-
-const log = logger.getNewLog({ m: 'fsf-test' });
 
 import {
     fsReqType,
 } from '@testring/types';
 
 const prefix = 'fsf-test';
-
+const log = loggerClient.withPrefix(prefix);
 const FSS = new FSStoreServer(10, prefix);
 
 

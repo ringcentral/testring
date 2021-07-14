@@ -10,12 +10,13 @@ import * as  fs from 'fs';
 import { FSStoreClient } from './fs-store-client';
 
 import { IFSStoreFile, FSStoreOptions } from '@testring/types';
+import { loggerClient } from '@testring/logger';
 import { generateUniqId } from '@testring/utils';
 
 
-import { logger, fs as fsTool } from './utils';
+import { fs as fsTool } from './utils';
 
-const log = logger.getNewLog({ m: 'fsf' });
+const log = loggerClient.withPrefix('fsf');
 
 import * as path from 'path';
 

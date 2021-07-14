@@ -4,13 +4,14 @@
  */
 import { IQueAcqReq, IQueAcqResp, IQueStateReq, IQueStateResp, ITransport } from '@testring/types';
 import { transport } from '@testring/transport';
+import { loggerClient } from '@testring/logger';
 import { PluggableModule } from '@testring/pluggable-module';
 
 import { LockPool, LockPoolHooks } from './utils';
 
-import { FS_CONSTANTS, logger } from './utils';
+import { FS_CONSTANTS } from './utils';
 
-const log = logger.getNewLog({ m: 'fas' });
+const log = loggerClient.withPrefix('fas');
 const {
     DW_ID,
     FS_DEFAULT_QUEUE_PREFIX,
