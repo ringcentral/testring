@@ -3,7 +3,7 @@
 
 import * as chai from 'chai';
 import { TestWorkerMock } from '@testring/test-utils';
-import { TestRunControllerPlugins } from '../../types/src/test-run-controller';
+import { TestRunControllerPlugins } from '@testring/types/src/test-run-controller';
 import { TestRunController } from '../src/test-run-controller';
 
 const DEFAULT_TIMEOUT = 60 * 1000;
