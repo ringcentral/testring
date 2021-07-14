@@ -11,7 +11,7 @@ dist: xenial
 
 node_js:
   - "12"
-  - "10"
+  - "14"
 
 cache:
   npm: true
@@ -31,7 +31,7 @@ stages:
 jobs:
   include:
     - stage: npm release
-      node_js: "10"
+      node_js: "14"
       script: npm run build
       deploy:
         provider: script

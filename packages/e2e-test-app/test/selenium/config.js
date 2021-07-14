@@ -4,7 +4,7 @@ module.exports = async (config) => {
     return {
         devtool,
         screenshotPath: './_tmp/',
-        workerLimit: devtool ? 1 : 5,
+        workerLimit: devtool ? 'local' : 5,
         maxWriteThreadCount: 2,
         screenshots: 'disable',
         retryCount: 0,
