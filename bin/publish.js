@@ -1,40 +1,34 @@
-const childProcess = require('child_process');
 const path = require('path');
 const batchPackages = require('@lerna/batch-packages');
 const filterPackages = require('@lerna/filter-packages');
 const runParallelBatches = require('@lerna/run-parallel-batches');
 const { getPackages } = require('@lerna/project');
+const npmPublish = require('@jsdevtools/npm-publish');
 
+const token = process.env.NPM_TOKEN;
+
+if (!token) {
+    throw new Error('NPM_TOKEN required');
+}
 
 async function task(pkg) {
     process.stdout.write(`Publishing package: ${pkg.name}...\n  path: ${pkg.location}\n`);
+    let published = false;
+    try {
+        await npmPublish({
+            package: path.join(pkg.location, 'package.json'),
+            token,
+        });
+        published = true;
+    } catch (error) {
+        process.stderr.write(error.toString());
+    }
 
-    // return new Promise((resolve) => {
-    //     childProcess.exec(
-    //         `node ${path.resolve(__dirname, './publish-package-task.js')}`,
-    //         {
-    //             cwd: pkg.location,
-    //             stdio: process.stdio,
-    //         },
-    //         (error) => {
-    //             let published;
-    //
-    //             if (error) {
-    //                 // ignoring error with output
-    //                 process.stderr.write(error.toString());
-    //                 published = false;
-    //             } else {
-    //                 published = true;
-    //             }
-    //
-    //             resolve({
-    //                 name: pkg.name,
-    //                 location: pkg.location,
-    //                 published,
-    //             });
-    //         },
-    //     );
-    // });
+    return {
+        name: pkg.name,
+        location: pkg.location,
+        published,
+    };
 }
 
 async function main() {
@@ -50,8 +44,7 @@ async function main() {
         process.stdout.write(`Packages published: ${totalPackages}\n`);
     } catch (e) {
         process.stderr.write(e.toString());
-        process.exit(1);
     }
 }
 
-main();
+main().catch(() => process.exit(1));
