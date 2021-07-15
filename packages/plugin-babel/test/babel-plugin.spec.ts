@@ -58,5 +58,5 @@ describe('babelPlugin', () => {
         const result = await testWorkerMock.$compile(REQUIRE_CODE, DEFAULT_FILENAME);
 
         chai.expect(result).to.be.equal(REQUIRE_OUTPUT);
-    })
+    });
 });
