@@ -2,7 +2,7 @@
 
 import * as chai from 'chai';
 import * as fs from 'fs';
-import { loggerClient } from '@testring/logger'
+import { loggerClient } from '@testring/logger';
 
 const { readFile } = fs.promises;
 
@@ -18,17 +18,10 @@ const FSS = new FSStoreServer(10, prefix);
 
 describe('fs-file-writer', () => {
     it('store object should lock access & unlink data', async () => {
-
         const path = '/tmp/';
-
         const fileWriter = new FSFileWriter(log);
-        // const file = new FSStoreFile({
-        //     file: fileName,
-        //     fsStorePrefix: prefix,
-        // });
-
-
         const onRelease = FSS.getHook(fsStoreServerHooks.ON_RELEASE);
+
         chai.expect(onRelease).not.to.be.an('undefined', 'Hook ON_RELEASE in undefined');
 
         onRelease && onRelease.readHook('testRelease', ({ fileName, action }) => {
