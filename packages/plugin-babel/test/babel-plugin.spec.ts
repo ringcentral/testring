@@ -10,11 +10,19 @@ const DEFAULT_INPUT = `
   console.log(1);
 };`.trim();
 const TRANSFORMED_INPUT = `
-"use strict";
-
 () => {
   console.log(1);
 };`.trim();
+
+const REQUIRE_CODE = `
+import { data } from 'somewhere';
+console.log(data);
+`.trim();
+const REQUIRE_OUTPUT = `
+var _somewhere = require("somewhere");
+
+console.log(_somewhere.data);
+`.trim();
 
 describe('babelPlugin', () => {
     it('should not convert code, if there is no config', async () => {
@@ -39,4 +47,16 @@ describe('babelPlugin', () => {
 
         chai.expect(result).to.be.equal(TRANSFORMED_INPUT);
     });
+
+    it('import convert check', async () => {
+        const pluginAPIMock = new PluginAPIMock();
+
+        babelPlugin(pluginAPIMock as any, {
+        });
+
+        const testWorkerMock = pluginAPIMock.$getLastTestWorker();
+        const result = await testWorkerMock.$compile(REQUIRE_CODE, DEFAULT_FILENAME);
+
+        chai.expect(result).to.be.equal(REQUIRE_OUTPUT);
+    })
 });

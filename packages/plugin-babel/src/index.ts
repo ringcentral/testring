@@ -3,7 +3,9 @@ import { PluginAPI } from '@testring/plugin-api';
 import * as babelCore from '@babel/core';
 
 export const babelPlugins = [
-    require('@babel/plugin-transform-modules-commonjs'),
+    [require('@babel/plugin-transform-modules-commonjs'), {
+        strictMode: false,
+    }],
 ];
 // eslint-disable-next-line import/no-default-export
 export default (pluginAPI: PluginAPI, config: babelCore.TransformOptions | null = {}) => {
