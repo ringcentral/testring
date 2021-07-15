@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as childProcess from 'child_process';
 
+// eslint-disable-next-line ringcentral/specified-comment-with-task-id
 // TODO after migration on nodejs >= 11 use crx3-utils instead
 import { getPlatform } from 'chrome-launcher/dist/utils';
 import * as chromeFinder from 'chrome-launcher/dist/chrome-finder';
@@ -40,7 +41,7 @@ export class CRXPlugin {
     }
 
     private async writeFile(filepath, data) {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             fs.writeFile(filepath, data, (err) => {
                 if (err) {
                     reject(err);
@@ -58,7 +59,7 @@ export class CRXPlugin {
             throw Error('Chrome not found');
         }
 
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             // eslint-disable-next-line max-len
             childProcess.exec(`${installations[0]} --pack-extension=${this.getDirectory()} --pack-extension-key=${this.getInputKeyPath()}`, {
                 cwd: this.options.rootPath,
@@ -82,7 +83,7 @@ export class CRXPlugin {
 
         await this.writeFile(this.getExtensionPath(), output);
 
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             fs.unlink(generatedFilepath, (err) => {
                 if (err) {
                     reject(err);

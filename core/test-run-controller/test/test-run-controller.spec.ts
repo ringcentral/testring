@@ -132,7 +132,7 @@ describe('TestRunController', () => {
         const runQueue = testRunController.runQueue(tests);
 
         // Starting a race with execution workers and kill command
-        await new Promise(resolve => setTimeout(() => {
+        await new Promise<void>(resolve => setTimeout(() => {
             testRunController.kill();
             resolve();
         }, 100));

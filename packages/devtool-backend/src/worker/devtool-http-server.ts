@@ -10,7 +10,7 @@ import {
 import * as express from 'express';
 
 export class DevtoolHttpServer implements IServer {
-    private server: Express;
+    private server: Express | null = null;
 
     private waitForStart: Promise<void> | void;
 
@@ -26,12 +26,13 @@ export class DevtoolHttpServer implements IServer {
 
     public async run() {
         this.server = express();
+        const srv = this.server as Express;
 
-        this.initRoutes();
-        this.initStaticRoutes();
+        this.initRoutes(srv);
+        this.initStaticRoutes(srv);
 
         this.waitForStart = new Promise((resolve) => {
-            this.server.listen(this.port, this.hostName, () => resolve());
+            srv.listen(this.port, this.hostName, () => resolve());
         });
 
         await this.waitForStart;
@@ -42,21 +43,22 @@ export class DevtoolHttpServer implements IServer {
 
         if (this.server) {
             const server = this.server;
-            delete this.server;
+            this.server = null;
 
             (server as any).close();
         }
     }
 
     public getUrl() {
-        return `http://${this.hostName}:${this.port}`;
+        const protocol = 'http';
+        return `${protocol}://${this.hostName}:${this.port}`;
     }
 
-    private initStaticRoutes() {
+    private initStaticRoutes(server: Express) {
         for (let key in this.staticRoutes) {
             let route = this.staticRoutes[key];
 
-            this.server.use(route.rootPath, express.static(route.directory, { etag: false }));
+            server.use(route.rootPath, express.static(route.directory, { etag: false }));
         }
     }
 
@@ -72,14 +74,14 @@ export class DevtoolHttpServer implements IServer {
         }
     }
 
-    private initRoutes() {
+    private initRoutes(server: Express) {
         for (let route of this.routes) {
             switch (route.method) {
                 case 'get':
                 case 'post':
                 case 'delete':
                 case 'put':
-                    this.server[route.method](
+                    server[route.method](
                         route.mask,
                         (req, res) => this.routeHandler(req, res, route.handler, route.options),
                     );

@@ -30,7 +30,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
     private externalPlugin: IBrowserProxyWorkerConfig;
 
-    private lastWorkerIndex: number;
+    private lastWorkerIndex: number = -1;
 
     private workerLimit: number = 1;
 
@@ -103,9 +103,9 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
         this.applicantWorkerMap.clear();
 
-        delete this.externalPlugin;
+        this.externalPlugin = this.defaultExternalPlugin;
 
-        delete this.lastWorkerIndex;
+        this.lastWorkerIndex = -1;
 
         this.workerLimit = 1;
     }

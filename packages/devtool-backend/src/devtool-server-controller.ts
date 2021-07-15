@@ -154,7 +154,7 @@ export class DevtoolServerController extends PluggableModule implements IDevtool
 
         this.transport.once(DevtoolWorkerMessages.START_SERVER_COMPLETE, (error) => handler(error));
 
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             if (pending) {
                 handler = (error) => {
                     if (error) {

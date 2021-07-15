@@ -9,32 +9,32 @@ const { getPackages } = require('@lerna/project');
 async function task(pkg) {
     process.stdout.write(`Publishing package: ${pkg.name}...\n  path: ${pkg.location}\n`);
 
-    return new Promise((resolve) => {
-        childProcess.exec(
-            `node ${path.resolve(__dirname, './publish-package-task.js')}`,
-            {
-                cwd: pkg.location,
-                stdio: process.stdio,
-            },
-            (error) => {
-                let published;
-
-                if (error) {
-                    // ignoring error with output
-                    process.stderr.write(error.toString());
-                    published = false;
-                } else {
-                    published = true;
-                }
-
-                resolve({
-                    name: pkg.name,
-                    location: pkg.location,
-                    published,
-                });
-            },
-        );
-    });
+    // return new Promise((resolve) => {
+    //     childProcess.exec(
+    //         `node ${path.resolve(__dirname, './publish-package-task.js')}`,
+    //         {
+    //             cwd: pkg.location,
+    //             stdio: process.stdio,
+    //         },
+    //         (error) => {
+    //             let published;
+    //
+    //             if (error) {
+    //                 // ignoring error with output
+    //                 process.stderr.write(error.toString());
+    //                 published = false;
+    //             } else {
+    //                 published = true;
+    //             }
+    //
+    //             resolve({
+    //                 name: pkg.name,
+    //                 location: pkg.location,
+    //                 published,
+    //             });
+    //         },
+    //     );
+    // });
 }
 
 async function main() {

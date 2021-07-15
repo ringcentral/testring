@@ -23,10 +23,10 @@ export class DevtoolWsServer extends EventEmitter implements IServer {
         super();
     }
 
-    private server: WSS;
+    private server: WSS | null = null;
 
     public async run(): Promise<void> {
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             try {
                 this.server = new WSS({
                     host: this.hostName,
@@ -34,6 +34,7 @@ export class DevtoolWsServer extends EventEmitter implements IServer {
                 }, resolve);
             } catch (e) {
                 reject(e);
+                return;
             }
 
             this.server.on('connection', (socket: WebSocket) => this.registerConnection(socket));
@@ -90,13 +91,13 @@ export class DevtoolWsServer extends EventEmitter implements IServer {
     }
 
     public async stop(): Promise<void> {
-        if (!this.server) {
+        if (this.server === null) {
             return;
         }
 
         return new Promise<void>((resolve, reject) => {
-            this.server.close((error) => {
-                delete this.server;
+            (this.server as WSS).close((error) => {
+                this.server = null;
 
                 if (error) {
                     reject(error);

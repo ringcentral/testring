@@ -64,8 +64,8 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
                     ) {
                         return Reflect.get(ctx, key).apply((thisArg as any).__getInstance(), argumentsList);
                     }
-                        return Reflect.get(ctx, key).apply(thisArg, argumentsList);
 
+                    return Reflect.get(ctx, key).apply(thisArg, argumentsList);
                 },
             });
         }
@@ -211,7 +211,7 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
         throw new TypeError('Immutable object');
     }
 
-    function ownKeysTrap(target: ElementPath): KeyType[] {
+    function ownKeysTrap(target: ElementPath): ArrayLike<string | symbol> {
         return PROXY_OWN_PROPS.concat(Object.keys(instance.getFlows() || {}));
     }
 
@@ -249,7 +249,7 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
         return undefined;
     }
 
-    function getPrototypeOfTrap(target: ElementPath): object {
+    function getPrototypeOfTrap(target: ElementPath): object | null {
         return Reflect.getPrototypeOf(instance);
     }
 

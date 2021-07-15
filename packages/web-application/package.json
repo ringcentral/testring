@@ -19,7 +19,7 @@
     "@testring/transport": "0.5.37",
     "@testring/types": "0.5.37",
     "@testring/utils": "0.5.37",
-    "chai": "4.2.0"
+    "chai": "4.3.4"
   },
   "devDependencies": {
     "@testring/child-process": "0.5.37",

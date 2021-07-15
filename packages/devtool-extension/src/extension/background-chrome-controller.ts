@@ -97,7 +97,7 @@ export class BackgroundChromeController {
             await this.waitForReadyPromise;
         }
 
-        await new Promise((resolve) => {
+        await new Promise<void>((resolve) => {
             setImmediate(() => {
                 this.backgroundServer.send(conId, {
                     type: ExtensionMessagingTransportTypes.IS_READY,

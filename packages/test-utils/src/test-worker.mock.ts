@@ -28,7 +28,7 @@ class TestWorkerMockInstance implements ITestWorkerInstance {
 
         if (this.shouldFail) {
             if (this.executionDelay > 0) {
-                return new Promise((resolve, reject) => {
+                return new Promise<void>((resolve, reject) => {
                     this.callback = () => resolve();
                     this.timeout = setTimeout(() => reject(this.$getErrorInstance()), this.executionDelay);
                 });
@@ -38,7 +38,7 @@ class TestWorkerMockInstance implements ITestWorkerInstance {
         }
 
         if (this.executionDelay > 0) {
-            return new Promise((resolve) => {
+            return new Promise<void>((resolve) => {
                 this.callback = () => resolve();
                 this.timeout = setTimeout(resolve, this.executionDelay);
             });
