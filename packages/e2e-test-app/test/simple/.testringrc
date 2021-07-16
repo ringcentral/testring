@@ -1,14 +1,7 @@
 {
   "tests": "test/simple/*.spec.js",
   "plugins": [
-    [
-      "babel",
-      {
-        "presets": [
-          "es2015"
-        ]
-      }
-    ]
+    "babel"
   ],
   "envParameters": {
     "test": 1,

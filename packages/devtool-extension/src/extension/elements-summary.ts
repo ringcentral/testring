@@ -1,7 +1,10 @@
-import { ElementSummary } from '@testring/types';
+import {ElementSummary} from '@testring/types';
 
-const composePath = (element: HTMLElement, path: Array<HTMLElement> = []): Array<HTMLElement> => {
-    const nextPath = [ ...path, element ];
+const composePath = (
+    element: HTMLElement,
+    path: Array<HTMLElement> = [],
+): Array<HTMLElement> => {
+    const nextPath = [...path, element];
 
     if (!element.parentElement) {
         return nextPath;
@@ -20,24 +23,35 @@ const getEventComposedPath = (event: any): Array<HTMLElement> => {
     return composePath(event.target);
 };
 
-export const getElementsSummary = (elements: Array<HTMLElement>, withChildren: boolean = true): ElementSummary[] => {
+export const getElementsSummary = (
+    elements: Array<HTMLElement>,
+    withChildren = true,
+): ElementSummary[] => {
     return elements
-        .filter(({ tagName, attributes }) => tagName && attributes)
+        .filter(({tagName, attributes}) => tagName && attributes)
         .map((element) => {
             let value;
-            const { tagName, attributes, innerText, children } = element;
+            const {tagName, attributes, innerText, children} = element;
 
             if (element instanceof HTMLInputElement) {
                 value = element.value;
             }
 
             const attributesSummary = {};
-            Array.from(attributes).forEach(({ name, value }) => attributesSummary[name] = value);
+            Array.from(attributes).forEach(
+                (attr) => (attributesSummary[attr.name] = attr.value),
+            );
 
-            const elementSummary: ElementSummary = { tagName, value, attributes: attributesSummary };
+            const elementSummary: ElementSummary = {
+                tagName,
+                value,
+                attributes: attributesSummary,
+            };
 
             if (withChildren) {
-                const childrenArray = (Array.from(children) as  Array<HTMLElement>);
+                const childrenArray = Array.from(
+                    children,
+                ) as Array<HTMLElement>;
                 elementSummary.children = getElementsSummary(childrenArray);
             }
 
@@ -46,19 +60,23 @@ export const getElementsSummary = (elements: Array<HTMLElement>, withChildren: b
             }
 
             return elementSummary;
-    });
+        });
 };
 
-export const getAffectedElementsSummary = (event: Event): ElementSummary[] | void => {
+export const getAffectedElementsSummary = (
+    event: Event,
+): ElementSummary[] | void => {
     if (!event.isTrusted) {
         throw new Error('Event is not evoked by user');
     }
 
     const affectedElements = getEventComposedPath(event);
-    const affectedElementsSummary = getElementsSummary(affectedElements, false).reverse();
+    const affectedElementsSummary = getElementsSummary(
+        affectedElements,
+        false,
+    ).reverse();
 
     if (affectedElementsSummary.length > 0) {
         return affectedElementsSummary;
     }
 };
-

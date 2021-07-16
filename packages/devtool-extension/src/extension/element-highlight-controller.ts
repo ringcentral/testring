@@ -1,16 +1,16 @@
-import { throttle } from '@testring/utils';
+import {throttle} from '@testring/utils';
 
-import { HighlightElement } from './highlight-element';
+import {HighlightElement} from './highlight-element';
 
 function whichTransitionEvent(document: Document): string | null {
-    let el = document.createElement('fakeelement');
+    const el = document.createElement('fakeelement');
 
-    let transitions = {
-        'transition'      : 'transitionend',
-        'WebkitTransition': 'webkitTransitionEnd',
+    const transitions = {
+        transition: 'transitionend',
+        WebkitTransition: 'webkitTransitionEnd',
     };
 
-    for (let key in transitions) {
+    for (const key in transitions) {
         if (el.style[key] !== undefined) {
             return transitions[key];
         }
@@ -20,14 +20,14 @@ function whichTransitionEvent(document: Document): string | null {
 }
 
 function whichAnimationEvent(document: Document): string | null {
-    let el = document.createElement('fakeelement');
+    const el = document.createElement('fakeelement');
 
-    let animations = {
-        'animation'      : 'animationend',
-        'WebkitAnimation': 'webkitAnimationEnd',
+    const animations = {
+        animation: 'animationend',
+        WebkitAnimation: 'webkitAnimationEnd',
     };
 
-    for (let key in animations) {
+    for (const key in animations) {
         if (el.style[key] !== undefined) {
             return animations[key];
         }
@@ -52,14 +52,13 @@ const ROOT_STYLES = {
     'z-index': '2147483647',
 };
 
-
 const ROOT_INNER_HTML = `
 <style>
     * {
         margin: 0;
         padding: 0;
     }
-    
+
     .highlight {
         position: absolute;
         outline: 3px solid orange;
@@ -97,11 +96,16 @@ export class ElementHighlightController {
         const transitionEvent = whichTransitionEvent(document);
 
         this.redrawHandler = throttle(() => this.redrawHighlights(), 50);
-        this.checkElementsHandler = throttle(() => this.checkHtmlElements(), 150);
+        this.checkElementsHandler = throttle(
+            () => this.checkHtmlElements(),
+            150,
+        );
 
         this.window.addEventListener('resize', this.redrawHandler);
-        animationEvent && document.body.addEventListener(animationEvent, this.redrawHandler);
-        transitionEvent && document.body.addEventListener(transitionEvent, this.redrawHandler);
+        animationEvent &&
+            document.body.addEventListener(animationEvent, this.redrawHandler);
+        transitionEvent &&
+            document.body.addEventListener(transitionEvent, this.redrawHandler);
 
         const config = {
             attributes: true,
@@ -110,7 +114,7 @@ export class ElementHighlightController {
         };
 
         this.mutationObserver = new MutationObserver((mutations) => {
-            for (let mutation of mutations) {
+            for (const mutation of mutations) {
                 if (mutation.type === 'attributes') {
                     (this as any).redrawHandler();
                 } else if (mutation.type === 'childList') {
@@ -127,7 +131,7 @@ export class ElementHighlightController {
 
         const styles: string[] = [];
 
-        for (let prop in rootStyle) {
+        for (const prop in rootStyle) {
             // safety call on guest page browser
             if (Object.prototype.hasOwnProperty.call(rootStyle, prop)) {
                 styles.push(`${prop}: ${rootStyle[prop]} !important`);
@@ -159,7 +163,7 @@ export class ElementHighlightController {
     private reselectElements(): Set<HTMLElement> {
         let elements: HTMLElement[] = [];
 
-        for (let xpath of this.xpathSelectors) {
+        for (const xpath of this.xpathSelectors) {
             elements = elements.concat(this.getElementByXPath(xpath));
         }
 
@@ -172,22 +176,25 @@ export class ElementHighlightController {
         const unlinkedHighlights: HighlightElement[] = [];
         const addedElements: HTMLElement[] = [];
 
-        for (let htmlElement of selectedElements) {
+        for (const htmlElement of selectedElements) {
             if (!this.highlightElements.has(htmlElement)) {
                 addedElements.push(htmlElement);
             }
         }
 
-        for (let [htmlElement, highlightElement] of this.highlightElements) {
-            if (!document.body.contains(htmlElement) || !selectedElements.has(htmlElement)) {
+        for (const [htmlElement, highlightElement] of this.highlightElements) {
+            if (
+                !document.body.contains(htmlElement) ||
+                !selectedElements.has(htmlElement)
+            ) {
                 unlinkedHighlights.push(highlightElement);
                 this.highlightElements.delete(htmlElement);
             }
         }
 
-        for (let htmlElement of addedElements) {
+        for (const htmlElement of addedElements) {
             if (unlinkedHighlights.length > 0) {
-                let usedHighlight = unlinkedHighlights.shift() as HighlightElement;
+                const usedHighlight = unlinkedHighlights.shift() as HighlightElement;
 
                 this.highlightElements.set(htmlElement, usedHighlight);
 
@@ -197,20 +204,22 @@ export class ElementHighlightController {
             }
         }
 
-        for (let usedHighlight of unlinkedHighlights) {
+        for (const usedHighlight of unlinkedHighlights) {
             usedHighlight.destroy();
         }
     }
 
     private redrawHighlights(): void {
-        for (let [htmlElement, highlightElement] of this.highlightElements) {
+        for (const [htmlElement, highlightElement] of this.highlightElements) {
             highlightElement.update(htmlElement);
         }
     }
 
     private addHighlight(element: HTMLElement): void {
         if (!this.highlightElements.has(element)) {
-            const highlightElement = new HighlightElement(this.rootShadowElement);
+            const highlightElement = new HighlightElement(
+                this.rootShadowElement,
+            );
 
             highlightElement.update(element);
 
@@ -220,15 +229,23 @@ export class ElementHighlightController {
 
     private getElementByXPath(xpath): HTMLElement[] {
         const document = this.getDocument();
-        const elements = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        const elements = document.evaluate(
+            xpath,
+            document,
+            null,
+            XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+            null,
+        );
         if (elements.snapshotLength > 0) {
             const arr: Node[] = [];
 
             for (let i = 0, len = elements.snapshotLength; i < len; i++) {
-                arr.push(<Node>elements.snapshotItem(i));
+                arr.push(elements.snapshotItem(i) as Node);
             }
 
-            return arr.filter(element => element instanceof HTMLElement) as HTMLElement[];
+            return arr.filter(
+                (element) => element instanceof HTMLElement,
+            ) as HTMLElement[];
         }
 
         return [];
@@ -248,8 +265,16 @@ export class ElementHighlightController {
 
         if (this.redrawHandler) {
             this.window.removeEventListener('resize', this.redrawHandler);
-            animationEvent && document.body.removeEventListener(animationEvent, this.redrawHandler);
-            transitionEvent && document.body.removeEventListener(transitionEvent, this.redrawHandler);
+            animationEvent &&
+                document.body.removeEventListener(
+                    animationEvent,
+                    this.redrawHandler,
+                );
+            transitionEvent &&
+                document.body.removeEventListener(
+                    transitionEvent,
+                    this.redrawHandler,
+                );
 
             delete this.redrawHandler;
         }
@@ -264,7 +289,7 @@ export class ElementHighlightController {
             this.xpathSelectors.add(xpath);
             const elements = this.getElementByXPath(xpath);
 
-            for (let element of elements) {
+            for (const element of elements) {
                 if (element instanceof HTMLElement) {
                     this.addHighlight(element);
                 }

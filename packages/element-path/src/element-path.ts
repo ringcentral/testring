@@ -1,8 +1,4 @@
-import {
-    hasOwn,
-    isInteger,
-    keysCount,
-} from './utils';
+import {hasOwn, isInteger, keysCount} from './utils';
 
 export type FlowFn = () => any;
 
@@ -36,11 +32,13 @@ export type SearchSubQueryObject = {
     subQuery?: SearchMaskObject & SearchTextObject;
 };
 
-export type SearchObject = SearchMaskObject & SearchTextObject & SearchSubQueryObject & {
-    index?: number;
-    xpath?: string;
-    id?: string;
-};
+export type SearchObject = SearchMaskObject &
+    SearchTextObject &
+    SearchSubQueryObject & {
+        index?: number;
+        xpath?: string;
+        id?: string;
+    };
 
 export type NodePath = {
     query?: SearchObject;
@@ -68,13 +66,15 @@ export class ElementPath {
     private readonly searchOptions: SearchObject;
     private readonly parent: ElementPath | null;
 
-    constructor(options: {
-        flows?: FlowsObject;
-        searchMask?: SearchMaskPrimitive | null;
-        searchOptions?: SearchObject;
-        attributeName?: string;
-        parent?: ElementPath;
-    } = {}) {
+    constructor(
+        options: {
+            flows?: FlowsObject;
+            searchMask?: SearchMaskPrimitive | null;
+            searchOptions?: SearchObject;
+            attributeName?: string;
+            parent?: ElementPath;
+        } = {},
+    ) {
         this.flows = options.flows || {};
 
         this.attributeName = options.attributeName || 'data-test-automation-id';
@@ -84,16 +84,22 @@ export class ElementPath {
         if (options.searchOptions && this.searchMask !== undefined) {
             throw Error('Only one search parameter allowed');
         } else if (
-           (options.searchMask === undefined || options.searchMask === null) &&
+            (options.searchMask === undefined || options.searchMask === null) &&
             options.searchOptions !== undefined
         ) {
             this.searchOptions = options.searchOptions;
-            if (Object.keys(options.searchOptions).length === 1 && typeof options.searchOptions.exactKey === 'string') {
+            if (
+                Object.keys(options.searchOptions).length === 1 &&
+                typeof options.searchOptions.exactKey === 'string'
+            ) {
                 this.searchMask = options.searchOptions.exactKey;
             } else {
                 this.searchMask = null;
             }
-        } else if (options.searchMask !== undefined && options.searchMask !== null) {
+        } else if (
+            options.searchMask !== undefined &&
+            options.searchMask !== null
+        ) {
             this.searchOptions = this.parseQueryKey(options.searchMask);
             this.searchMask = options.searchMask;
         } else {
@@ -109,9 +115,10 @@ export class ElementPath {
     // noinspection JSMethodCanBeStatic
     // eslint-disable-next-line sonarjs/cognitive-complexity
     protected parseMask(mask: string): SearchMaskObject {
-        let maskFilter: SearchMaskObject = {};
+        const maskFilter: SearchMaskObject = {};
 
-        if (mask === '*' || mask === '' || mask === undefined) { // * || empty
+        if (mask === '*' || mask === '' || mask === undefined) {
+            // * || empty
             return {
                 anyKey: true,
             };
@@ -122,23 +129,34 @@ export class ElementPath {
         const prefixed = mask[mask.length - 1] === '*';
         const hasInnerSplit = searchStr.indexOf('*') > -1;
 
-        if (hasInnerSplit && (prefixed || suffixed)) { // *foo*bar*
-            throw new TypeError('Masks prefix, suffix and inner ask are not supported');
-        } else if (suffixed && !prefixed) { // *foo
+        if (hasInnerSplit && (prefixed || suffixed)) {
+            // *foo*bar*
+            throw new TypeError(
+                'Masks prefix, suffix and inner ask are not supported',
+            );
+        } else if (suffixed && !prefixed) {
+            // *foo
             maskFilter.suffix = searchStr;
-        } else if (!suffixed && prefixed) { // foo*
+        } else if (!suffixed && prefixed) {
+            // foo*
             maskFilter.prefix = searchStr;
-        } else if (suffixed && prefixed) { // *foo*
+        } else if (suffixed && prefixed) {
+            // *foo*
             maskFilter.containsKey = searchStr;
-        } else if (!suffixed && !prefixed && !hasInnerSplit) { // foo
+        } else if (!suffixed && !prefixed && !hasInnerSplit) {
+            // foo
             maskFilter.exactKey = searchStr;
-        } else if (hasInnerSplit) { // foo*bar
-            let parts = searchStr.split('*');
+        } else if (hasInnerSplit) {
+            // foo*bar
+            const parts = searchStr.split('*');
 
             if (parts.length === 2) {
                 maskFilter.parts = parts;
-            } else { // foo*bar*baz...
-                throw new TypeError('Masks with more than two parts are not supported');
+            } else {
+                // foo*bar*baz...
+                throw new TypeError(
+                    'Masks with more than two parts are not supported',
+                );
             }
         }
 
@@ -178,7 +196,9 @@ export class ElementPath {
             subQuery: Object.assign(
                 {},
                 this.parseMask(mask),
-                textSearch === undefined ? undefined : this.parseText(textSearch),
+                textSearch === undefined
+                    ? undefined
+                    : this.parseText(textSearch),
             ),
         };
     }
@@ -189,7 +209,11 @@ export class ElementPath {
         const textSearch = parts[2];
         const subQueryPart = parts[4];
 
-        if (mask === undefined && textSearch === undefined && subQueryPart !== undefined) {
+        if (
+            mask === undefined &&
+            textSearch === undefined &&
+            subQueryPart !== undefined
+        ) {
             throw new TypeError('Selector can not contain only sub query');
         }
 
@@ -197,7 +221,9 @@ export class ElementPath {
             {},
             this.parseMask(mask),
             textSearch === undefined ? undefined : this.parseText(textSearch),
-            subQueryPart === undefined ? undefined : this.parseSubQuery(subQueryPart),
+            subQueryPart === undefined
+                ? undefined
+                : this.parseSubQuery(subQueryPart),
         );
     }
 
@@ -221,28 +247,42 @@ export class ElementPath {
         parts?: string[];
     }): string[] {
         const attr = this.getAttributeName();
-        let conditions: string[] = [];
+        const conditions: string[] = [];
 
-        if (searchOptions.anyKey === true) { // *
+        if (searchOptions.anyKey === true) {
+            // *
             conditions.push(`@${attr}`);
-        } else if (searchOptions.prefix !== undefined) { // foo*
+        } else if (searchOptions.prefix !== undefined) {
+            // foo*
             conditions.push(`starts-with(@${attr}, '${searchOptions.prefix}')`);
-        } else if (searchOptions.suffix !== undefined) { // *foo
+        } else if (searchOptions.suffix !== undefined) {
+            // *foo
             // Emulate ends-with method for xpath 1.0
             // eslint-disable-next-line max-len
-            conditions.push(`substring(@${attr}, string-length(@${attr}) - string-length('${searchOptions.suffix}') + 1) = '${searchOptions.suffix}'`);
-        } else if (searchOptions.parts !== undefined) { // foo*bar
+            conditions.push(
+                `substring(@${attr}, string-length(@${attr}) - string-length('${searchOptions.suffix}') + 1) = '${searchOptions.suffix}'`,
+            );
+        } else if (searchOptions.parts !== undefined) {
+            // foo*bar
             const start = searchOptions.parts[0];
             const end = searchOptions.parts[1];
 
             // Emulate ends-with method for xpath 1.0
-            conditions.push(`substring(@${attr}, string-length(@${attr}) - string-length('${end}') + 1) = '${end}'`);
+            conditions.push(
+                `substring(@${attr}, string-length(@${attr}) - string-length('${end}') + 1) = '${end}'`,
+            );
             conditions.push(`starts-with(@${attr}, '${start}')`);
-            conditions.push(`string-length(@${attr}) > ${start.length + end.length}`);
-        } else if (searchOptions.exactKey !== undefined) { // foo
+            conditions.push(
+                `string-length(@${attr}) > ${start.length + end.length}`,
+            );
+        } else if (searchOptions.exactKey !== undefined) {
+            // foo
             conditions.push(`@${attr}='${searchOptions.exactKey}'`);
-        } else if (searchOptions.containsKey !== undefined) { // *foo*
-            conditions.push(`contains(@${attr},'${searchOptions.containsKey}')`);
+        } else if (searchOptions.containsKey !== undefined) {
+            // *foo*
+            conditions.push(
+                `contains(@${attr},'${searchOptions.containsKey}')`,
+            );
         }
 
         return conditions;
@@ -253,7 +293,7 @@ export class ElementPath {
         containsText?: string;
         equalsText?: string;
     }): string[] {
-        let conditions: string[] = [];
+        const conditions: string[] = [];
 
         if (searchOptions.containsText) {
             conditions.push(`contains(., "${searchOptions.containsText}")`);
@@ -266,7 +306,7 @@ export class ElementPath {
 
     protected getSearchQueryXpath(): string {
         const searchOptions: SearchObject = this.searchOptions;
-        let conditions: string[] = [];
+        const conditions: string[] = [];
         let xpath = '';
 
         if (searchOptions.xpath !== undefined) {
@@ -276,18 +316,23 @@ export class ElementPath {
         conditions.push(...this.getMaskXpathParts(searchOptions));
 
         if (searchOptions.subQuery) {
-            const { subQuery } = searchOptions;
+            const {subQuery} = searchOptions;
             const subChildConditions: string[] = [
                 ...this.getMaskXpathParts(subQuery),
                 ...this.getTextXpathParts(subQuery),
             ];
 
-            conditions.push(`descendant::*[${subChildConditions.join(' and ')}]`);
+            conditions.push(
+                `descendant::*[${subChildConditions.join(' and ')}]`,
+            );
         }
 
         conditions.push(...this.getTextXpathParts(searchOptions));
 
-        if (hasOwn(searchOptions, 'exactKey') && keysCount(searchOptions) === 1) {
+        if (
+            hasOwn(searchOptions, 'exactKey') &&
+            keysCount(searchOptions) === 1
+        ) {
             xpath += `//*[${conditions[0]}]`;
         } else {
             xpath += `/descendant::*[${conditions.join(' and ')}]`;
@@ -299,7 +344,6 @@ export class ElementPath {
 
         return xpath;
     }
-
 
     /*
         Public methods
@@ -334,36 +378,41 @@ export class ElementPath {
         return key;
     }
 
-    public getReversedChain(withRoot: boolean = true): string {
-        // eslint-disable-next-line sonarjs/cognitive-complexity
-        let parts = this.getElementPathChain().reduce((memo: string[], node: any): string[] => {
-            if (node.isRoot) {
-                if (withRoot) {
-                    memo.push(node.name);
-                }
-            } else if (node.query && node.query.xpath) {
-                let queryId = node.query.id ? `"${node.query.id}", ` : '';
+    public getReversedChain(withRoot = true): string {
+        const parts = this.getElementPathChain().reduce(
+            // eslint-disable-next-line sonarjs/cognitive-complexity
+            (memo: string[], node: any): string[] => {
+                if (node.isRoot) {
+                    if (withRoot) {
+                        memo.push(node.name);
+                    }
+                } else if (node.query && node.query.xpath) {
+                    const queryId = node.query.id ? `"${node.query.id}", ` : '';
 
-                memo.push(`.xpath(${queryId}"${node.query.xpath}")`);
-            } else {
-                const queryLength = Object.keys(node.query).length;
-
-                if (
-                    (node.query.exactKey && queryLength === 1)
-                    || (hasOwn(node.query, 'exactKey') && hasOwn(node.query, 'index') && queryLength === 2)
-                ) {
-                    memo.push(`.${node.query.exactKey}`);
+                    memo.push(`.xpath(${queryId}"${node.query.xpath}")`);
                 } else {
-                    memo.push(`["${this.queryToString(node.query)}"]`);
+                    const queryLength = Object.keys(node.query).length;
+
+                    if (
+                        (node.query.exactKey && queryLength === 1) ||
+                        (hasOwn(node.query, 'exactKey') &&
+                            hasOwn(node.query, 'index') &&
+                            queryLength === 2)
+                    ) {
+                        memo.push(`.${node.query.exactKey}`);
+                    } else {
+                        memo.push(`["${this.queryToString(node.query)}"]`);
+                    }
+
+                    if (hasOwn(node.query, 'index')) {
+                        memo.push(`[${node.query.index}]`);
+                    }
                 }
 
-                if (hasOwn(node.query, 'index')) {
-                    memo.push(`[${node.query.index}]`);
-                }
-            }
-
-            return memo;
-        }, []);
+                return memo;
+            },
+            [],
+        );
 
         return parts.join('');
     }
@@ -373,27 +422,34 @@ export class ElementPath {
         const rootSelector = this.getRootSelector();
 
         if (this.parent === null) {
-            // TODO (@flops) make deep equal with this.parseQuery(rootSelector)
-            if (Object.keys(this.searchOptions).length === 1 && this.searchOptions.exactKey === rootSelector) {
-                return [{
-                    isRoot,
-                    name: 'root',
-                    xpath: this.getSearchQueryXpath(),
-                }];
+            // TODO (flops) make deep equal with this.parseQuery(rootSelector)
+            if (
+                Object.keys(this.searchOptions).length === 1 &&
+                this.searchOptions.exactKey === rootSelector
+            ) {
+                return [
+                    {
+                        isRoot,
+                        name: 'root',
+                        xpath: this.getSearchQueryXpath(),
+                    },
+                ];
             }
-                return [{
+            return [
+                {
                     isRoot: false,
                     query: this.searchOptions,
                     xpath: this.getSearchQueryXpath(),
-                }];
-
+                },
+            ];
         }
-            return (this.getParentElementPathChain() || []).concat([{
+        return (this.getParentElementPathChain() || []).concat([
+            {
                 isRoot,
                 query: this.searchOptions,
                 xpath: this.getSearchQueryXpath(),
-            }]);
-
+            },
+        ]);
     }
 
     public getParentElementPathChain(): NodePath[] | null {
@@ -404,20 +460,27 @@ export class ElementPath {
         return null;
     }
 
-    public generateChildElementPathByOptions(searchOptions: SearchObject, withoutParent = false): ElementPath {
+    public generateChildElementPathByOptions(
+        searchOptions: SearchObject,
+        withoutParent = false,
+    ): ElementPath {
         // @TODO (flops) move validation into constructor
         if (hasOwn(searchOptions, 'index')) {
-
             // If search called with searchMask and index in the same time we are selecting child by index
-            const isCurrentElementSearch = hasOwn(searchOptions, 'anyKey')
-                || hasOwn(searchOptions, 'prefix')
-                || hasOwn(searchOptions, 'containsKey')
-                || hasOwn(searchOptions, 'exactKey')
-                || hasOwn(searchOptions, 'parts');
+            const isCurrentElementSearch =
+                hasOwn(searchOptions, 'anyKey') ||
+                hasOwn(searchOptions, 'prefix') ||
+                hasOwn(searchOptions, 'containsKey') ||
+                hasOwn(searchOptions, 'exactKey') ||
+                hasOwn(searchOptions, 'parts');
 
-
-            if (!isCurrentElementSearch && hasOwn(this.searchOptions, 'index')) {
-                throw Error('Can not select index element from already sliced element');
+            if (
+                !isCurrentElementSearch &&
+                hasOwn(this.searchOptions, 'index')
+            ) {
+                throw Error(
+                    'Can not select index element from already sliced element',
+                );
             }
 
             if (this.parent === null) {
@@ -438,28 +501,31 @@ export class ElementPath {
             }
 
             return new ElementPath({
-                searchOptions: { ...searchOptions },
+                searchOptions: {...searchOptions},
                 flows: this.flows,
                 parent: withoutParent ? undefined : this,
             });
         }
-            return new ElementPath({
-                searchOptions: { ...searchOptions },
-                flows: this.flows,
-                parent: this,
-            });
-
+        return new ElementPath({
+            searchOptions: {...searchOptions},
+            flows: this.flows,
+            parent: this,
+        });
     }
 
     public generateChildElementsPath(key: string | number): ElementPath {
         if (isInteger(key)) {
-            return this.generateChildElementPathByOptions({ index: +key });
+            return this.generateChildElementPathByOptions({index: +key});
         }
-            return this.generateChildElementPathByOptions(this.parseQueryKey(`${key}`));
-
+        return this.generateChildElementPathByOptions(
+            this.parseQueryKey(`${key}`),
+        );
     }
 
-    public generateChildByXpath(element: { id: string; xpath: string }): ElementPath {
+    public generateChildByXpath(element: {
+        id: string;
+        xpath: string;
+    }): ElementPath {
         return this.generateChildElementPathByOptions({
             xpath: element.xpath,
             id: element.id,
@@ -475,36 +541,45 @@ export class ElementPath {
         }
 
         if (locator.parent === null || locator.parent === undefined) {
-            return this.generateChildElementPathByOptions({
-                xpath: locator.xpath,
-                id: locator.id,
-            }, true);
+            return this.generateChildElementPathByOptions(
+                {
+                    xpath: locator.xpath,
+                    id: locator.id,
+                },
+                true,
+            );
         } else if (locator.parent === '') {
             return this.generateChildElementPathByOptions({
                 xpath: locator.xpath,
                 id: locator.id,
             });
         } else if (typeof locator.parent === 'string') {
-            const genParent = locator.parent.split('.').reduce((memo: ElementPath, key: string) => {
-                return memo.generateChildElementsPath(key);
-            }, this);
+            const genParent = locator.parent
+                .split('.')
+                .reduce((memo: ElementPath, key: string) => {
+                    return memo.generateChildElementsPath(key);
+                }, this);
 
             return genParent.generateChildElementPathByOptions({
                 xpath: locator.xpath,
                 id: locator.id,
             });
         }
-            return this.generateChildElementPathByOptions({
+        return this.generateChildElementPathByOptions(
+            {
                 xpath: locator.xpath,
                 id: locator.id,
-            }, true);
-
+            },
+            true,
+        );
     }
 
     public hasFlow(key: string | number): boolean {
-        return this.searchMask !== null
-            && hasOwn(this.flows, this.searchMask)
-            && hasOwn(this.flows[this.searchMask], key);
+        return (
+            this.searchMask !== null &&
+            hasOwn(this.flows, this.searchMask) &&
+            hasOwn(this.flows[this.searchMask], key)
+        );
     }
 
     public getFlow(key: string | number): FlowFn | undefined {
@@ -523,16 +598,14 @@ export class ElementPath {
         if (typeof flow === 'function') {
             return flow;
         }
-            throw new TypeError(`Flow ${key} is not a function`);
-
+        throw new TypeError(`Flow ${key} is not a function`);
     }
 
     public getFlows(): FlowsFnObject {
         if (this.searchMask && hasOwn(this.flows, this.searchMask)) {
             return this.flows[this.searchMask];
         }
-            return {};
-
+        return {};
     }
 
     public getSearchOptions(): SearchObject {
@@ -542,24 +615,24 @@ export class ElementPath {
     public getElementType(): string | symbol {
         const searchOptions = this.getSearchOptions();
 
-        if (hasOwn(searchOptions, 'exactKey') && searchOptions.exactKey !== undefined) {
+        if (
+            hasOwn(searchOptions, 'exactKey') &&
+            searchOptions.exactKey !== undefined
+        ) {
             return searchOptions.exactKey;
         }
 
         return this.GENERIC_TYPE;
     }
 
-    public toString(allowMultipleNodesInResult: boolean = false): string {
-        let xpath = this.getElementPathChain()
-            .map((item: { xpath: string }) => item.xpath)
+    public toString(allowMultipleNodesInResult = false): string {
+        const xpath = this.getElementPathChain()
+            .map((item: {xpath: string}) => item.xpath)
             .join('');
 
         if (allowMultipleNodesInResult) {
             return xpath;
         }
-            return `(${xpath})[1]`;
-
+        return `(${xpath})[1]`;
     }
 }
-
-

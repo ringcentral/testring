@@ -1,36 +1,40 @@
-import { expect } from 'chai';
-import { createElementPath } from '../../src';
+import {expect} from 'chai';
+import {createElementPath} from '../../src';
 import {
     getDescriptor,
     getPrivateDescriptor,
-
     checkAccessMethods,
     checkPreventExtensions,
     checkProperty,
 } from '../utils';
 
-
-describe('empty options ElementPath root[\'*foo\']', () => {
-    let root = createElementPath();
-    let childFoo = root['*foo'];
+describe("empty options ElementPath root['*foo']", () => {
+    const root = createElementPath();
+    const childFoo = root['*foo'];
 
     describe('basic Object methods', () => {
         it('.toString()', () => {
-            expect(childFoo.toString()).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
-                '/descendant::*[substring(@data-test-automation-id, ' +
-                'string-length(@data-test-automation-id) - string-length(\'foo\') + 1) = \'foo\'])[1]');
+            expect(childFoo.toString()).to.be.equal(
+                "(//*[@data-test-automation-id='root']" +
+                    '/descendant::*[substring(@data-test-automation-id, ' +
+                    "string-length(@data-test-automation-id) - string-length('foo') + 1) = 'foo'])[1]",
+            );
         });
 
         it('to string converting', () => {
-            expect(`${childFoo}`).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
-                '/descendant::*[substring(@data-test-automation-id, ' +
-                'string-length(@data-test-automation-id) - string-length(\'foo\') + 1) = \'foo\'])[1]');
+            expect(`${childFoo}`).to.be.equal(
+                "(//*[@data-test-automation-id='root']" +
+                    '/descendant::*[substring(@data-test-automation-id, ' +
+                    "string-length(@data-test-automation-id) - string-length('foo') + 1) = 'foo'])[1]",
+            );
         });
 
         it('.toString(true)', () => {
-            expect(childFoo.toString(true)).to.be.equal('//*[@data-test-automation-id=\'root\']' +
-                '/descendant::*[substring(@data-test-automation-id, ' +
-                'string-length(@data-test-automation-id) - string-length(\'foo\') + 1) = \'foo\']');
+            expect(childFoo.toString(true)).to.be.equal(
+                "//*[@data-test-automation-id='root']" +
+                    '/descendant::*[substring(@data-test-automation-id, ' +
+                    "string-length(@data-test-automation-id) - string-length('foo') + 1) = 'foo']",
+            );
         });
 
         checkAccessMethods(childFoo);
@@ -47,17 +51,18 @@ describe('empty options ElementPath root[\'*foo\']', () => {
             key: '__path',
             valueDescriptor: getDescriptor([
                 {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    isRoot: true,
+                    name: 'root',
+                    xpath: "//*[@data-test-automation-id='root']",
                 },
                 {
-                    'isRoot': false,
-                    'query': {
-                        'suffix': 'foo',
+                    isRoot: false,
+                    query: {
+                        suffix: 'foo',
                     },
-                    'xpath': '/descendant::*[substring(@data-test-automation-id, ' +
-                    'string-length(@data-test-automation-id) - string-length(\'foo\') + 1) = \'foo\']',
+                    xpath:
+                        '/descendant::*[substring(@data-test-automation-id, ' +
+                        "string-length(@data-test-automation-id) - string-length('foo') + 1) = 'foo']",
                 },
             ]),
         });
@@ -76,7 +81,7 @@ describe('empty options ElementPath root[\'*foo\']', () => {
             object: childFoo,
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
-                'suffix': 'foo',
+                suffix: 'foo',
             }),
         });
     });
@@ -86,9 +91,9 @@ describe('empty options ElementPath root[\'*foo\']', () => {
             key: '__parentPath',
             valueDescriptor: getPrivateDescriptor([
                 {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    isRoot: true,
+                    name: 'root',
+                    xpath: "//*[@data-test-automation-id='root']",
                 },
             ]),
         });

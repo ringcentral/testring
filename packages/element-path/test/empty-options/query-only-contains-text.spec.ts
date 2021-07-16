@@ -1,33 +1,37 @@
-import { expect } from 'chai';
-import { createElementPath } from '../../src';
+import {expect} from 'chai';
+import {createElementPath} from '../../src';
 import {
     getDescriptor,
     getPrivateDescriptor,
-
     checkAccessMethods,
     checkPreventExtensions,
     checkProperty,
 } from '../utils';
 
-
-describe('empty options ElementPath root[\'{Text element}\']', () => {
-    let root = createElementPath();
-    let childFoo = root['{Text element}'];
+describe("empty options ElementPath root['{Text element}']", () => {
+    const root = createElementPath();
+    const childFoo = root['{Text element}'];
 
     describe('basic Object methods', () => {
         it('.toString()', () => {
-            expect(childFoo.toString()).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
-                '/descendant::*[@data-test-automation-id and contains(., "Text element")])[1]');
+            expect(childFoo.toString()).to.be.equal(
+                "(//*[@data-test-automation-id='root']" +
+                    '/descendant::*[@data-test-automation-id and contains(., "Text element")])[1]',
+            );
         });
 
         it('to string converting', () => {
-            expect(`${childFoo}`).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
-                '/descendant::*[@data-test-automation-id and contains(., "Text element")])[1]');
+            expect(`${childFoo}`).to.be.equal(
+                "(//*[@data-test-automation-id='root']" +
+                    '/descendant::*[@data-test-automation-id and contains(., "Text element")])[1]',
+            );
         });
 
         it('.toString(true)', () => {
-            expect(childFoo.toString(true)).to.be.equal('//*[@data-test-automation-id=\'root\']' +
-                '/descendant::*[@data-test-automation-id and contains(., "Text element")]');
+            expect(childFoo.toString(true)).to.be.equal(
+                "//*[@data-test-automation-id='root']" +
+                    '/descendant::*[@data-test-automation-id and contains(., "Text element")]',
+            );
         });
 
         checkAccessMethods(childFoo);
@@ -44,17 +48,18 @@ describe('empty options ElementPath root[\'{Text element}\']', () => {
             key: '__path',
             valueDescriptor: getDescriptor([
                 {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    isRoot: true,
+                    name: 'root',
+                    xpath: "//*[@data-test-automation-id='root']",
                 },
                 {
-                    'isRoot': false,
-                    'query': {
-                        'anyKey': true,
-                        'containsText': 'Text element',
+                    isRoot: false,
+                    query: {
+                        anyKey: true,
+                        containsText: 'Text element',
                     },
-                    'xpath': '/descendant::*[@data-test-automation-id and contains(., "Text element")]',
+                    xpath:
+                        '/descendant::*[@data-test-automation-id and contains(., "Text element")]',
                 },
             ]),
         });
@@ -73,8 +78,8 @@ describe('empty options ElementPath root[\'{Text element}\']', () => {
             object: childFoo,
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
-                'anyKey': true,
-                'containsText': 'Text element',
+                anyKey: true,
+                containsText: 'Text element',
             }),
         });
     });
@@ -84,9 +89,9 @@ describe('empty options ElementPath root[\'{Text element}\']', () => {
             key: '__parentPath',
             valueDescriptor: getPrivateDescriptor([
                 {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    isRoot: true,
+                    name: 'root',
+                    xpath: "//*[@data-test-automation-id='root']",
                 },
             ]),
         });
@@ -94,10 +99,14 @@ describe('empty options ElementPath root[\'{Text element}\']', () => {
 
     describe('.__getReversedChain() call', () => {
         it('with root', () => {
-            expect(childFoo.__getReversedChain()).to.be.equal('root["*{Text element}"]');
+            expect(childFoo.__getReversedChain()).to.be.equal(
+                'root["*{Text element}"]',
+            );
         });
         it('without root', () => {
-            expect(childFoo.__getReversedChain(false)).to.be.equal('["*{Text element}"]');
+            expect(childFoo.__getReversedChain(false)).to.be.equal(
+                '["*{Text element}"]',
+            );
         });
     });
 

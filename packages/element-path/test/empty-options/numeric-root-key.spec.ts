@@ -1,9 +1,8 @@
-import { expect } from 'chai';
-import { createElementPath } from '../../src';
-
+import {expect} from 'chai';
+import {createElementPath} from '../../src';
 
 describe('empty options ElementPath root[0]', () => {
-    let empty = createElementPath();
+    const empty = createElementPath();
 
     it('error handling for root numeric path', () => {
         const getter = () => empty[0];

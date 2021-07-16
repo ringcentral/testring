@@ -1,6 +1,4 @@
-import {
-    Action,
-} from 'redux';
+import {Action} from 'redux';
 
 export enum devtoolWindowsActions {
     OPEN_WINDOW = 'WINDOWS@OPEN_WINDOW',

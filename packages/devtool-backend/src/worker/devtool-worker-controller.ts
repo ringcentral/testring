@@ -17,20 +17,22 @@ import {
     TestWorkerAction,
     WebApplicationDevtoolActions,
 } from '@testring/types';
-import { Request } from 'express-serve-static-core';
+// eslint-disable-next-line import/no-unresolved
+import type {Request} from 'express-serve-static-core';
 
-import { Store } from 'redux';
-import { loggerClient } from '@testring/logger';
+import {Store} from 'redux';
+import {loggerClient} from '@testring/logger';
 
-import { DevtoolHttpServer } from './devtool-http-server';
-import { DevtoolWsServer } from './devtool-ws-server';
-import { initStore } from './store';
+import {DevtoolHttpServer} from './devtool-http-server';
+import {DevtoolWsServer} from './devtool-ws-server';
+import {initStore} from './store';
 
-
-import { devtoolWebAppAction, IDevtoolWebAppRegisterData } from '../reducers/web-applications-reducer';
-import { devtoolConfigActions } from '../reducers/devtool-config-reducer';
-import { devtoolWorkerStateActions } from '../reducers/worker-state-reducer';
-
+import {
+    devtoolWebAppAction,
+    IDevtoolWebAppRegisterData,
+} from '../reducers/web-applications-reducer';
+import {devtoolConfigActions} from '../reducers/devtool-config-reducer';
+import {devtoolWorkerStateActions} from '../reducers/worker-state-reducer';
 
 export class DevtoolWorkerController {
     private logger = loggerClient.withPrefix('[recorder-worker]');
@@ -49,9 +51,12 @@ export class DevtoolWorkerController {
     private config: IDevtoolServerConfig;
 
     constructor(private transport: ITransport) {
-        this.transport.on(DevtoolWorkerMessages.START_SERVER, (config: IDevtoolServerConfig) => {
-            this.init(config);
-        });
+        this.transport.on(
+            DevtoolWorkerMessages.START_SERVER,
+            (config: IDevtoolServerConfig) => {
+                this.init(config);
+            },
+        );
 
         this.addDevtoolMessageListeners();
 
@@ -97,7 +102,9 @@ export class DevtoolWorkerController {
         return null;
     }
 
-    private async getOrRegisterStoreByWorkerId(workerId: string): Promise<Store> {
+    private async getOrRegisterStoreByWorkerId(
+        workerId: string,
+    ): Promise<Store> {
         const store = await this.getStoreByWorkerId(workerId);
 
         if (store === null) {
@@ -128,42 +135,54 @@ export class DevtoolWorkerController {
             this.workerIdByWebAppId.delete(webAppId);
             this.storesByWebAppId.delete(webAppId);
         } else {
-            throw Error(`Error while unregistering web app with id ${webAppId}`);
+            throw Error(
+                `Error while unregistering web app with id ${webAppId}`,
+            );
         }
     }
 
     private addDevtoolMessageListeners() {
-        this.transport.on<IDevtoolProxyMessage>(DevtoolProxyMessages.TO_WORKER, async (message) => {
-            try {
-                await this.handleProxiedMessages(message);
-            } catch (e) {
-                this.logger.error(e);
-            }
-        });
+        this.transport.on<IDevtoolProxyMessage>(
+            DevtoolProxyMessages.TO_WORKER,
+            async (message) => {
+                try {
+                    await this.handleProxiedMessages(message);
+                } catch (e) {
+                    this.logger.error(e);
+                }
+            },
+        );
     }
 
     private async handleProxiedMessages(message: IDevtoolProxyMessage) {
-        const {
-            messageType,
-            ...rest
-        } = message;
+        const {messageType, ...rest} = message;
 
         switch (messageType) {
             case TestWorkerAction.register:
-                await this.updateExecutionState(message as IDevtoolWorkerRegisterMessage);
+                await this.updateExecutionState(
+                    message as IDevtoolWorkerRegisterMessage,
+                );
                 break;
             case TestWorkerAction.updateExecutionState:
-                await this.updateExecutionState(message as IDevtoolWorkerUpdateStateMessage);
+                await this.updateExecutionState(
+                    message as IDevtoolWorkerUpdateStateMessage,
+                );
                 break;
             case TestWorkerAction.unregister:
-                await this.unregisterWorker(message as IDevtoolWorkerRegisterMessage);
+                await this.unregisterWorker(
+                    message as IDevtoolWorkerRegisterMessage,
+                );
                 break;
 
             case WebApplicationDevtoolActions.register:
-                await this.registerWebApplication(rest as IDevtoolWebAppRegisterMessage);
+                await this.registerWebApplication(
+                    rest as IDevtoolWebAppRegisterMessage,
+                );
                 break;
             case WebApplicationDevtoolActions.unregister:
-                await this.unregisterWebApplication(rest as IDevtoolWebAppRegisterMessage);
+                await this.unregisterWebApplication(
+                    rest as IDevtoolWebAppRegisterMessage,
+                );
                 break;
 
             default:
@@ -172,31 +191,51 @@ export class DevtoolWorkerController {
         }
     }
 
-    private async sendProxiedMessage(messageType: string, message: IDevtoolProxyCleanedMessage) {
-        this.transport.broadcastUniversally<IDevtoolProxyMessage>(DevtoolProxyMessages.FROM_WORKER, {
-            ...message,
-            messageType,
-        });
+    private async sendProxiedMessage(
+        messageType: string,
+        message: IDevtoolProxyCleanedMessage,
+    ) {
+        this.transport.broadcastUniversally<IDevtoolProxyMessage>(
+            DevtoolProxyMessages.FROM_WORKER,
+            {
+                ...message,
+                messageType,
+            },
+        );
     }
 
-    private async sendToWorkerMessage(workerId: string, messageType: string, messageData: any) {
+    private async sendToWorkerMessage(
+        workerId: string,
+        messageType: string,
+        messageData: any,
+    ) {
         const source = this.denormalizeWorkerId(workerId);
 
-        this.transport.broadcastUniversally<IDevtoolProxyMessage>(DevtoolProxyMessages.FROM_WORKER, {
-            messageData,
-            source,
-            messageType,
-        });
+        this.transport.broadcastUniversally<IDevtoolProxyMessage>(
+            DevtoolProxyMessages.FROM_WORKER,
+            {
+                messageData,
+                source,
+                messageType,
+            },
+        );
     }
 
-    private updateWorkerState(store: Store, payload: ITestControllerExecutionState) {
+    private updateWorkerState(
+        store: Store,
+        payload: ITestControllerExecutionState,
+    ) {
         store.dispatch({
             type: devtoolWorkerStateActions.UPDATE,
             payload,
         });
     }
 
-    private async updateExecutionState(message: IDevtoolWorkerRegisterMessage | IDevtoolWorkerUpdateStateMessage) {
+    private async updateExecutionState(
+        message:
+            | IDevtoolWorkerRegisterMessage
+            | IDevtoolWorkerUpdateStateMessage,
+    ) {
         const workerId = this.normalizeWorkerId(message.source);
 
         const store = await this.getOrRegisterStoreByWorkerId(workerId);
@@ -208,13 +247,13 @@ export class DevtoolWorkerController {
         const workerId = this.normalizeWorkerId(message.source);
         const workerStore = this.storesByWorkerId.get(workerId);
 
-        for (let [key, store] of this.storesByWebAppId) {
+        for (const [key, store] of this.storesByWebAppId) {
             if (workerStore === store) {
                 this.storesByWebAppId.delete(key);
             }
         }
 
-        for (let [webAppKey, workerMappedId] of this.workerIdByWebAppId) {
+        for (const [webAppKey, workerMappedId] of this.workerIdByWebAppId) {
             if (workerMappedId === workerId) {
                 this.workerIdByWebAppId.delete(webAppKey);
             }
@@ -223,7 +262,9 @@ export class DevtoolWorkerController {
         this.storesByWorkerId.delete(workerId);
     }
 
-    private async registerWebApplication(message: IDevtoolWebAppRegisterMessage) {
+    private async registerWebApplication(
+        message: IDevtoolWebAppRegisterMessage,
+    ) {
         let error = null;
 
         try {
@@ -231,7 +272,7 @@ export class DevtoolWorkerController {
             const store = await this.getOrRegisterStoreByWorkerId(workerId);
             const id = message.messageData.id;
             await this.registerWebAppId(workerId, id);
-            const payload: IDevtoolWebAppRegisterData = { id };
+            const payload: IDevtoolWebAppRegisterData = {id};
 
             this.logger.debug(`Register web app ${id}`);
 
@@ -252,15 +293,19 @@ export class DevtoolWorkerController {
         });
     }
 
-    private async unregisterWebApplication(message: IDevtoolWebAppRegisterMessage) {
+    private async unregisterWebApplication(
+        message: IDevtoolWebAppRegisterMessage,
+    ) {
         let error = null;
 
         try {
-            const store = await this.getStoreByWorkerId(this.normalizeWorkerId(message.source));
+            const store = await this.getStoreByWorkerId(
+                this.normalizeWorkerId(message.source),
+            );
 
             if (store) {
                 const id = message.messageData.id;
-                const payload: IDevtoolWebAppRegisterData = { id };
+                const payload: IDevtoolWebAppRegisterData = {id};
 
                 await this.unregisterWebAppId(id);
 
@@ -277,18 +322,21 @@ export class DevtoolWorkerController {
 
         const workerId = this.denormalizeWorkerId(message.source);
 
-        this.sendProxiedMessage(WebApplicationDevtoolActions.unregisterComplete, {
-            ...message,
-            source: workerId,
-            messageData: {
-                ...message.messageData,
-                error,
+        this.sendProxiedMessage(
+            WebApplicationDevtoolActions.unregisterComplete,
+            {
+                ...message,
+                source: workerId,
+                messageData: {
+                    ...message.messageData,
+                    error,
+                },
             },
-        });
+        );
     }
 
     private loadHandler(filepath: string) {
-        let handlerExports = require(filepath);
+        const handlerExports = require(filepath);
 
         if (handlerExports.default) {
             return handlerExports.default;
@@ -298,7 +346,7 @@ export class DevtoolWorkerController {
     }
 
     private getHttpRouter(): IDevtoolHttpRoute[] {
-        return this.config.router.map(route => ({
+        return this.config.router.map((route) => ({
             ...route,
             handler: this.loadHandler(route.handler),
         }));
@@ -316,15 +364,23 @@ export class DevtoolWorkerController {
             await this.initHttpServer(config);
             await this.initWSServer(config);
 
-            this.transport.broadcastUniversally(DevtoolWorkerMessages.START_SERVER_COMPLETE, null);
+            this.transport.broadcastUniversally(
+                DevtoolWorkerMessages.START_SERVER_COMPLETE,
+                null,
+            );
         } catch (err) {
-            this.transport.broadcastUniversally(DevtoolWorkerMessages.START_SERVER_COMPLETE, err);
+            this.transport.broadcastUniversally(
+                DevtoolWorkerMessages.START_SERVER_COMPLETE,
+                err,
+            );
         }
     }
 
-    async httpContextResolver(req: Request): Promise<{ context: Store; key: string }> {
+    async httpContextResolver(
+        req: Request,
+    ): Promise<{context: Store; key: string}> {
         const PARAM_KEY = 'appId';
-        const webAppId = req.query[PARAM_KEY] as string || null;
+        const webAppId = (req.query[PARAM_KEY] as string) || null;
 
         if (webAppId === null) {
             throw Error(`${PARAM_KEY} search query is required.`);
@@ -336,8 +392,7 @@ export class DevtoolWorkerController {
                 key: webAppId,
             };
         }
-            throw Error(`Store id ${webAppId} is not found.`);
-
+        throw Error(`Store id ${webAppId} is not found.`);
     }
 
     async initHttpServer(config: IDevtoolServerConfig) {
@@ -353,25 +408,22 @@ export class DevtoolWorkerController {
     }
 
     async initWSServer(config: IDevtoolServerConfig) {
-        this.wsServer = new DevtoolWsServer(
-            config.host,
-            config.wsPort,
-        );
+        this.wsServer = new DevtoolWsServer(config.host, config.wsPort);
         await this.wsServer.run();
 
         this.wsServer.on(
             DevtoolWSServerEvents.MESSAGE,
-            (data: IDevtoolWSMessage, meta: IDevtoolWSMeta) => this.WSSMessageHandler(data, meta),
+            (data: IDevtoolWSMessage, meta: IDevtoolWSMeta) =>
+                this.WSSMessageHandler(data, meta),
         );
-        this.wsServer.on(
-            DevtoolWSServerEvents.CLOSE,
-            (meta: IDevtoolWSMeta) => this.WSSDisconnectHandler(meta),
+        this.wsServer.on(DevtoolWSServerEvents.CLOSE, (meta: IDevtoolWSMeta) =>
+            this.WSSDisconnectHandler(meta),
         );
         this.logger.debug(`WS server listening: ${this.wsServer.getUrl()}`);
     }
 
     private WSSDisconnectHandler(meta: IDevtoolWSMeta) {
-        const { connectionId } = meta;
+        const {connectionId} = meta;
         const unsubscribe = this.handlersByConnectionId.get(connectionId);
 
         if (unsubscribe) {
@@ -383,11 +435,11 @@ export class DevtoolWorkerController {
     }
 
     private WSSMessageHandler(data: IDevtoolWSMessage, meta: IDevtoolWSMeta) {
-        const { connectionId } = meta;
+        const {connectionId} = meta;
 
         switch (data.type) {
             case DevtoolEvents.HANDSHAKE_REQUEST: {
-                const { appId } = data.payload;
+                const {appId} = data.payload;
                 const payload = {
                     appId: data.payload.appId,
                     connectionId,
@@ -408,7 +460,11 @@ export class DevtoolWorkerController {
                     this.handlersByConnectionId.set(connectionId, unsubscribe);
                 }
 
-                this.wsServer.send(meta.connectionId, DevtoolEvents.HANDSHAKE_RESPONSE, payload);
+                this.wsServer.send(
+                    meta.connectionId,
+                    DevtoolEvents.HANDSHAKE_RESPONSE,
+                    payload,
+                );
                 // @TODO (flops) make error handler
                 break;
             }

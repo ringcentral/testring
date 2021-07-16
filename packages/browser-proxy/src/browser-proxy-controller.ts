@@ -1,4 +1,4 @@
-import { ChildProcess } from 'child_process';
+import {ChildProcess} from 'child_process';
 
 import {
     BrowserProxyActions,
@@ -9,16 +9,16 @@ import {
     IBrowserProxyWorkerConfig,
     ITransport,
 } from '@testring/types';
-import { PluggableModule } from '@testring/pluggable-module';
-import { loggerClient } from '@testring/logger';
+import {PluggableModule} from '@testring/pluggable-module';
+import {loggerClient} from '@testring/logger';
 
-import { BrowserProxyWorker } from './browser-proxy-worker';
-
+import {BrowserProxyWorker} from './browser-proxy-worker';
 
 const logger = loggerClient.withPrefix('[browser-proxy-controller]');
 
-
-export class BrowserProxyController extends PluggableModule implements IBrowserProxyController {
+export class BrowserProxyController
+    extends PluggableModule
+    implements IBrowserProxyController {
     private workersPool: Set<IBrowserProxyWorker> = new Set();
 
     private applicantWorkerMap: Map<string, IBrowserProxyWorker> = new Map();
@@ -30,36 +30,50 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
     private externalPlugin: IBrowserProxyWorkerConfig;
 
-    private lastWorkerIndex: number;
+    private lastWorkerIndex = -1;
 
-    private workerLimit: number = 1;
+    private workerLimit = 1;
 
     private logger = logger;
 
     constructor(
         private transport: ITransport,
-        private workerCreator: (onActionPluginPath: string, config: any) => ChildProcess | Promise<ChildProcess>,
+        private workerCreator: (
+            onActionPluginPath: string,
+            config: any,
+        ) => ChildProcess | Promise<ChildProcess>,
     ) {
-        super([ BrowserProxyPlugins.getPlugin ]);
+        super([BrowserProxyPlugins.getPlugin]);
     }
 
     public async init(): Promise<void> {
         if (typeof this.workerCreator !== 'function') {
-            this.logger.error(`Unsupported worker type "${typeof this.workerCreator}"`);
-            throw new Error(`Unsupported worker type "${typeof this.workerCreator}"`);
+            this.logger.error(
+                `Unsupported worker type "${typeof this.workerCreator}"`,
+            );
+            throw new Error(
+                `Unsupported worker type "${typeof this.workerCreator}"`,
+            );
         }
 
-        this.externalPlugin = await this.callHook(BrowserProxyPlugins.getPlugin, this.defaultExternalPlugin);
+        this.externalPlugin = await this.callHook(
+            BrowserProxyPlugins.getPlugin,
+            this.defaultExternalPlugin,
+        );
 
-        const { config } = this.externalPlugin;
+        const {config} = this.externalPlugin;
 
-        if (config && typeof config.workerLimit === 'number' && !isNaN(config.workerLimit)) {
+        if (
+            config &&
+            typeof config.workerLimit === 'number' &&
+            !isNaN(config.workerLimit)
+        ) {
             this.workerLimit = config.workerLimit;
         }
     }
 
     private getWorker(applicant: string): IBrowserProxyWorker {
-        let mappedWorker = this.applicantWorkerMap.get(applicant);
+        const mappedWorker = this.applicantWorkerMap.get(applicant);
         let worker;
 
         if (mappedWorker) {
@@ -67,11 +81,18 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
         }
 
         if (this.workersPool.size < this.workerLimit) {
-            worker = new BrowserProxyWorker(this.transport, this.workerCreator, this.externalPlugin);
+            worker = new BrowserProxyWorker(
+                this.transport,
+                this.workerCreator,
+                this.externalPlugin,
+            );
             this.workersPool.add(worker);
             this.lastWorkerIndex = this.workersPool.size - 1;
         } else {
-            this.lastWorkerIndex = (this.lastWorkerIndex + 1 < this.workersPool.size) ? this.lastWorkerIndex + 1 : 0;
+            this.lastWorkerIndex =
+                this.lastWorkerIndex + 1 < this.workersPool.size
+                    ? this.lastWorkerIndex + 1
+                    : 0;
             worker = [...this.workersPool.values()][this.lastWorkerIndex];
         }
 
@@ -80,7 +101,10 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
         return worker;
     }
 
-    public async execute(applicant: string, command: IBrowserProxyCommand): Promise<any> {
+    public async execute(
+        applicant: string,
+        command: IBrowserProxyCommand,
+    ): Promise<any> {
         let worker;
 
         if (command.action === BrowserProxyActions.end) {
@@ -103,15 +127,17 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
         this.applicantWorkerMap.clear();
 
-        delete this.externalPlugin;
+        this.externalPlugin = this.defaultExternalPlugin;
 
-        delete this.lastWorkerIndex;
+        this.lastWorkerIndex = -1;
 
         this.workerLimit = 1;
     }
 
     public async kill(): Promise<void> {
-        const workersToKill = [...this.workersPool.values()].map(worker => worker.kill());
+        const workersToKill = [...this.workersPool.values()].map((worker) =>
+            worker.kill(),
+        );
 
         try {
             await Promise.all(workersToKill);

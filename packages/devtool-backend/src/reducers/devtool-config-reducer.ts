@@ -1,13 +1,11 @@
-import {
-    Action,
-} from 'redux';
-import { IDevtoolServerConfig } from '@testring/types';
+import {Action} from 'redux';
+import {IDevtoolServerConfig} from '@testring/types';
 
 export enum devtoolConfigActions {
     UPDATE = 'CONFIG@UPDATE_CONFIG',
 }
 
-interface IDevtoolWebAppStore extends Partial<IDevtoolServerConfig>{
+interface IDevtoolWebAppStore extends Partial<IDevtoolServerConfig> {
     initialized: boolean;
 }
 

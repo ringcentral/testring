@@ -1,0 +1,32 @@
+{
+  "name": "@testring/fs-store",
+  "version": "0.5.37",
+  "description": "fs storage & operations service",
+  "keywords": [
+    "fs",
+    "storage"
+  ],
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "dependencies": {
+    "@testring/cli-config": "0.5.37",
+    "@testring/logger": "0.5.37",
+    "@testring/pluggable-module": "0.5.37",
+    "@testring/test-utils": "0.5.37",
+    "@testring/transport": "0.5.37",
+    "@testring/types": "0.5.37",
+    "@testring/utils": "0.5.37"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "bugs": {
+    "url": "https://github.com/ringcentral/testring/issues"
+  }
+}

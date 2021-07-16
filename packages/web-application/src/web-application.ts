@@ -1,3 +1,5 @@
+// TODO (flops) rework and merge with selenium backend
+/* eslint-disable @typescript-eslint/no-shadow,@typescript-eslint/no-this-alias */
 import * as url from 'url';
 import * as path from 'path';
 
@@ -15,16 +17,16 @@ import {
     FSFileLogType,
 } from '@testring/types';
 
-import { asyncBreakpoints } from '@testring/async-breakpoints';
-import { loggerClient, LoggerClient } from '@testring/logger';
-import { generateUniqId } from '@testring/utils';
-import { PluggableModule } from '@testring/pluggable-module';
-import { createElementPath, ElementPath } from '@testring/element-path';
+import {asyncBreakpoints} from '@testring/async-breakpoints';
+import {loggerClient, LoggerClient} from '@testring/logger';
+import {generateUniqId} from '@testring/utils';
+import {PluggableModule} from '@testring/pluggable-module';
+import {createElementPath, ElementPath} from '@testring/element-path';
 
-import { FSFileWriter } from '@testring/fs-store';
+import {FSFileWriter} from '@testring/fs-store';
 
-import { createAssertion } from '@testring/async-assert';
-import { WebClient } from './web-client';
+import {createAssertion} from '@testring/async-assert';
+import {WebClient} from './web-client';
 import * as utils from './utils';
 
 type valueType = string | number | null | undefined;
@@ -35,27 +37,27 @@ type ClickOptions = {
 };
 
 export class WebApplication extends PluggableModule {
-    protected LOGGER_PREFIX: string = '[web-application]';
+    protected LOGGER_PREFIX = '[web-application]';
 
     protected WAIT_PAGE_LOAD_TIMEOUT: number = 3 * 60000;
 
-    protected WAIT_TIMEOUT: number = 30000;
+    protected WAIT_TIMEOUT = 30000;
 
-    protected TICK_TIMEOUT: number = 100;
+    protected TICK_TIMEOUT = 100;
 
     protected config: IWebApplicationConfig;
 
-    private screenshotsEnabledManually: boolean = true;
+    private screenshotsEnabledManually = true;
 
-    private isLogOpened: boolean = false;
+    private isLogOpened = false;
 
-    private isSessionStopped: boolean = false;
+    private isSessionStopped = false;
 
     private mainTabID: number | null = null;
 
-    private isRegisteredInDevtool: boolean = false;
+    private isRegisteredInDevtool = false;
 
-    private applicationId: string = `webApp-${generateUniqId()}`;
+    private applicationId = `webApp-${generateUniqId()}`;
 
     public assert = createAssertion({
         onSuccess: (meta) => this.successAssertionHandler(meta),
@@ -78,26 +80,35 @@ export class WebApplication extends PluggableModule {
             return `Waiting ${this.formatXpath(xpath)} for ${timeout}`;
         },
         waitForNotExists(xpath, timeout: number = this.WAIT_TIMEOUT) {
-            return `Waiting not exists ${this.formatXpath(xpath)} for ${timeout}`;
+            return `Waiting not exists ${this.formatXpath(
+                xpath,
+            )} for ${timeout}`;
         },
         waitForNotVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
-            return `Waiting for not visible ${this.formatXpath(xpath)} for ${timeout}`;
+            return `Waiting for not visible ${this.formatXpath(
+                xpath,
+            )} for ${timeout}`;
         },
         waitForVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
-            return `Waiting for visible ${this.formatXpath(xpath)} for ${timeout}`;
+            return `Waiting for visible ${this.formatXpath(
+                xpath,
+            )} for ${timeout}`;
         },
         openPage(uri: string) {
             if (typeof uri === 'string') {
                 return `Opening page uri: ${uri}`;
             }
             return 'Opening page';
-
         },
         isBecomeVisible(xpath, timeout: number = this.WAIT_TIMEOUT) {
-            return `Waiting for become visible ${this.formatXpath(xpath)} for ${timeout}`;
+            return `Waiting for become visible ${this.formatXpath(
+                xpath,
+            )} for ${timeout}`;
         },
         isBecomeHidden(xpath, timeout: number = this.WAIT_TIMEOUT) {
-            return `Waiting for become hidden ${this.formatXpath(xpath)} for ${timeout}`;
+            return `Waiting for become hidden ${this.formatXpath(
+                xpath,
+            )} for ${timeout}`;
         },
         click(xpath) {
             return `Click on ${this.formatXpath(xpath)}`;
@@ -106,7 +117,9 @@ export class WebApplication extends PluggableModule {
             return `Click on ${this.formatXpath(xpath)} in the middle`;
         },
         clickCoordinates(xpath, options: ClickOptions) {
-            return `Click on ${this.formatXpath(xpath)} in ${JSON.stringify(options || { x: 1, y: 1 })}`;
+            return `Click on ${this.formatXpath(xpath)} in ${JSON.stringify(
+                options || {x: 1, y: 1},
+            )}`;
         },
         clickHiddenElement(xpath) {
             return `Make ${this.formatXpath(xpath)} visible and click`;
@@ -144,7 +157,7 @@ export class WebApplication extends PluggableModule {
         isChecked(xpath) {
             return `Is checked ${this.formatXpath(xpath)}`;
         },
-        setChecked(xpath, checked: boolean = true) {
+        setChecked(xpath, checked = true) {
             return `Set checked ${this.formatXpath(xpath)} ${!!checked}`;
         },
         isVisible(xpath) {
@@ -169,16 +182,22 @@ export class WebApplication extends PluggableModule {
             return `Get attributes 'enabled' from ${this.formatXpath(xpath)}`;
         },
         isCSSClassExists(xpath, ...suitableClasses) {
-            return `Checking classes ${suitableClasses.join(', ')} is\\are exisists in ${this.formatXpath(xpath)}`;
+            return `Checking classes ${suitableClasses.join(
+                ', ',
+            )} is\\are exisists in ${this.formatXpath(xpath)}`;
         },
-        moveToObject(xpath, x: number = 1, y: number = 1) {
-            return `Move cursor to ${this.formatXpath(xpath)} points (${x}, ${y})`;
+        moveToObject(xpath, x = 1, y = 1) {
+            return `Move cursor to ${this.formatXpath(
+                xpath,
+            )} points (${x}, ${y})`;
         },
-        scroll(xpath, x: number = 1, y: number = 1) {
+        scroll(xpath, x = 1, y = 1) {
             return `Scroll ${this.formatXpath(xpath)} to (${x}, ${y})`;
         },
         dragAndDrop(xpathSource, xpathDestination) {
-            return `dragAndDrop ${this.formatXpath(xpathSource)} to ${this.formatXpath(xpathDestination)}`;
+            return `dragAndDrop ${this.formatXpath(
+                xpathSource,
+            )} to ${this.formatXpath(xpathDestination)}`;
         },
         elements(xpath) {
             return `elements ${this.formatXpath(xpath)}`;
@@ -196,26 +215,47 @@ export class WebApplication extends PluggableModule {
             return `Clear element ${this.formatXpath(xpath)}`;
         },
         getCssProperty(xpath, cssProperty) {
-            return `Get CSS property ${cssProperty} from ${this.formatXpath(xpath)}`;
+            return `Get CSS property ${cssProperty} from ${this.formatXpath(
+                xpath,
+            )}`;
         },
         getSource() {
             return 'Get source of current page';
         },
-        waitForValue(xpath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean) {
+        waitForValue(
+            xpath,
+            timeout: number = this.WAIT_TIMEOUT,
+            reverse: boolean,
+        ) {
             if (reverse) {
-                return `Waiting for element ${this.formatXpath(xpath)} doesn't has value for ${timeout}`;
+                return `Waiting for element ${this.formatXpath(
+                    xpath,
+                )} doesn't has value for ${timeout}`;
             }
-            return `Waiting for any value of ${this.formatXpath(xpath)} for ${timeout}`;
-
+            return `Waiting for any value of ${this.formatXpath(
+                xpath,
+            )} for ${timeout}`;
         },
-        waitForSelected(xpath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean) {
+        waitForSelected(
+            xpath,
+            timeout: number = this.WAIT_TIMEOUT,
+            reverse: boolean,
+        ) {
             if (reverse) {
-                return `Waiting for element ${this.formatXpath(xpath)} isn't selected for ${timeout}`;
+                return `Waiting for element ${this.formatXpath(
+                    xpath,
+                )} isn't selected for ${timeout}`;
             }
-            return `Waiting for element ${this.formatXpath(xpath)} is selected for ${timeout}`;
-
+            return `Waiting for element ${this.formatXpath(
+                xpath,
+            )} is selected for ${timeout}`;
         },
-        waitUntil(condition, timeout: number = this.WAIT_TIMEOUT, timeoutMsg?: string, interval?: number) {
+        waitUntil(
+            condition,
+            timeout: number = this.WAIT_TIMEOUT,
+            timeoutMsg?: string,
+            interval?: number,
+        ) {
             return `Waiting by condition for ${timeout}`;
         },
         selectByAttribute(xpath, attribute: string, value: string) {
@@ -246,12 +286,18 @@ export class WebApplication extends PluggableModule {
         return fsWriter;
     }
 
-    protected getConfig(userConfig: Partial<IWebApplicationConfig>): IWebApplicationConfig {
-        return Object.assign({}, {
-            screenshotsEnabled: false,
-            screenshotPath: './_tmp/',
-            devtool: null,
-        }, userConfig);
+    protected getConfig(
+        userConfig: Partial<IWebApplicationConfig>,
+    ): IWebApplicationConfig {
+        return Object.assign(
+            {},
+            {
+                screenshotsEnabled: false,
+                screenshotPath: './_tmp/',
+                devtool: null,
+            },
+            userConfig,
+        );
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -264,7 +310,10 @@ export class WebApplication extends PluggableModule {
         }
 
         const promiseGetter = (self, logFn, errorFn, originMethod, args) => {
-            let errorLogInterceptor: (err: Error, ...args: any) => string = errorFn;
+            let errorLogInterceptor: (
+                err: Error,
+                ...args: any
+            ) => string = errorFn;
 
             // eslint-disable-next-line no-async-promise-executor
             const promise = new Promise(async (resolve, reject) => {
@@ -282,32 +331,45 @@ export class WebApplication extends PluggableModule {
                         reject(err);
                     }
                 } else {
-                    await asyncBreakpoints.waitBeforeInstructionBreakpoint((state) => {
-                        if (state) {
-                            logger.debug('Debug: Stopped in breakpoint before instruction execution');
-                        }
-                    });
+                    await asyncBreakpoints.waitBeforeInstructionBreakpoint(
+                        (state) => {
+                            if (state) {
+                                logger.debug(
+                                    'Debug: Stopped in breakpoint before instruction execution',
+                                );
+                            }
+                        },
+                    );
                     logger.startStep(message);
                     self.isLogOpened = true;
 
                     try {
                         result = originMethod.apply(self, args);
 
-                        if (result && result.catch && typeof result.catch === 'function') {
-                            result.catch(async (err) => {
-                                err.message = errorLogInterceptor(err, ...args);
+                        if (
+                            result &&
+                            result.catch &&
+                            typeof result.catch === 'function'
+                        ) {
+                            result
+                                .catch(async (err) => {
+                                    err.message = errorLogInterceptor(
+                                        err,
+                                        ...args,
+                                    );
 
-                                await self.asyncErrorHandler(err);
-                                logger.endStep(message);
-                                self.isLogOpened = false;
+                                    await self.asyncErrorHandler(err);
+                                    logger.endStep(message);
+                                    self.isLogOpened = false;
 
-                                reject(err);
-                            }).then((result) => {
-                                logger.endStep(message);
-                                self.isLogOpened = false;
+                                    reject(err);
+                                })
+                                .then((result) => {
+                                    logger.endStep(message);
+                                    self.isLogOpened = false;
 
-                                resolve(result);
-                            });
+                                    resolve(result);
+                                });
                         } else {
                             logger.endStep(message);
                             self.isLogOpened = false;
@@ -322,22 +384,35 @@ export class WebApplication extends PluggableModule {
                         reject(err);
                     }
 
-                    await asyncBreakpoints.waitAfterInstructionBreakpoint((state) => {
-                        if (state) {
-                            logger.debug('Debug: Stopped in breakpoint after instruction execution');
-                        }
-                    });
+                    await asyncBreakpoints.waitAfterInstructionBreakpoint(
+                        (state) => {
+                            if (state) {
+                                logger.debug(
+                                    'Debug: Stopped in breakpoint after instruction execution',
+                                );
+                            }
+                        },
+                    );
 
                     resolve(result);
                 }
             });
 
             Object.defineProperty(promise, 'ifError', {
-                value: (interceptor: string | ((err: Error, ...args: any) => string)) => {
+                value: (
+                    interceptor:
+                        | string
+                        | ((err: Error, ...args: any) => string),
+                ) => {
                     if (typeof interceptor === 'function') {
                         errorLogInterceptor = interceptor;
-                    } else if (interceptor === null || interceptor === undefined) {
-                        return Promise.reject('Error interceptor can not be empty');
+                    } else if (
+                        interceptor === null ||
+                        interceptor === undefined
+                    ) {
+                        return Promise.reject(
+                            'Error interceptor can not be empty',
+                        );
                     } else {
                         errorLogInterceptor = () => interceptor.toString();
                     }
@@ -352,7 +427,7 @@ export class WebApplication extends PluggableModule {
             return promise;
         };
 
-        for (let key in decorators) {
+        for (const key in decorators) {
             ((key) => {
                 if (Object.prototype.hasOwnProperty.call(decorators, key)) {
                     const context = this;
@@ -369,7 +444,13 @@ export class WebApplication extends PluggableModule {
                     }
 
                     const method = (...args) => {
-                        return promiseGetter(context, logFn, errorFn, originMethod, args);
+                        return promiseGetter(
+                            context,
+                            logFn,
+                            errorFn,
+                            originMethod,
+                            args,
+                        );
                     };
 
                     Object.defineProperty(method, 'originFunction', {
@@ -391,7 +472,7 @@ export class WebApplication extends PluggableModule {
     }
 
     protected async successAssertionHandler(meta: IAssertionSuccessMeta) {
-        const { successMessage, assertMessage } = meta;
+        const {successMessage, assertMessage} = meta;
         const logger = this.logger;
 
         if (successMessage) {
@@ -407,7 +488,7 @@ export class WebApplication extends PluggableModule {
     }
 
     protected async errorAssertionHandler(meta: IAssertionErrorMeta) {
-        const { successMessage, assertMessage } = meta;
+        const {successMessage, assertMessage} = meta;
         const logger = this.logger;
 
         if (successMessage) {
@@ -433,7 +514,6 @@ export class WebApplication extends PluggableModule {
             configurable: true,
         });
 
-
         return value;
     }
 
@@ -447,7 +527,6 @@ export class WebApplication extends PluggableModule {
             configurable: true,
         });
 
-
         return value;
     }
 
@@ -459,7 +538,10 @@ export class WebApplication extends PluggableModule {
         return this.root;
     }
 
-    protected normalizeSelector(selector: string | ElementPath, allowMultipleNodesInResult = false): string {
+    protected normalizeSelector(
+        selector: string | ElementPath,
+        allowMultipleNodesInResult = false,
+    ): string {
         if (!selector) {
             return this.getRootSelector().toString();
         }
@@ -475,21 +557,32 @@ export class WebApplication extends PluggableModule {
         this.logger.error(error);
     }
 
-    protected async devtoolHighlight(xpath: string | ElementPath | null, multiple: boolean = false): Promise<void> {
-        const normalizedXPath = (xpath !== null) ? this.normalizeSelector(xpath, multiple) : null;
+    protected async devtoolHighlight(
+        xpath: string | ElementPath | null,
+        multiple = false,
+    ): Promise<void> {
+        const normalizedXPath =
+            xpath !== null ? this.normalizeSelector(xpath, multiple) : null;
 
         if (this.config.devtool) {
             try {
                 await this.client.execute((addHighlightXpath) => {
-                    window.postMessage({
-                        type: ExtensionPostMessageTypes.CLEAR_HIGHLIGHTS,
-                    }, '*');
+                    window.postMessage(
+                        {
+                            type: ExtensionPostMessageTypes.CLEAR_HIGHLIGHTS,
+                        },
+                        '*',
+                    );
 
                     if (addHighlightXpath) {
-                        window.postMessage({
-                            type: ExtensionPostMessageTypes.ADD_XPATH_HIGHLIGHT,
-                            xpath: addHighlightXpath,
-                        }, '*');
+                        window.postMessage(
+                            {
+                                type:
+                                    ExtensionPostMessageTypes.ADD_XPATH_HIGHLIGHT,
+                                xpath: addHighlightXpath,
+                            },
+                            '*',
+                        );
                     }
                 }, normalizedXPath);
             } catch (e) {
@@ -502,20 +595,23 @@ export class WebApplication extends PluggableModule {
         return [...this.softAssert._errorMessages];
     }
 
-    public async waitForExist(xpath, timeout: number = this.WAIT_TIMEOUT, skipMoveToObject: boolean = false) {
+    public async waitForExist(
+        xpath,
+        timeout: number = this.WAIT_TIMEOUT,
+        skipMoveToObject = false,
+    ) {
         await this.devtoolHighlight(xpath);
 
         const normalizedXPath = this.normalizeSelector(xpath);
-        const exists = await this.client.waitForExist(
-            normalizedXPath,
-            timeout,
-        );
+        const exists = await this.client.waitForExist(normalizedXPath, timeout);
 
         if (!skipMoveToObject) {
             try {
                 await this.scrollIntoViewIfNeededCall(xpath);
                 await this.client.moveToObject(normalizedXPath, 1, 1);
-            } catch (ignore) { /* ignore */ }
+            } catch (ignore) {
+                /* ignore */
+            }
         }
 
         return exists;
@@ -539,16 +635,26 @@ export class WebApplication extends PluggableModule {
             xpath = this.normalizeSelector(xpath);
             await this.client.waitForExist(xpath, timeout);
             exists = true;
-        } catch (ignore) { /* ignore */ }
+        } catch (ignore) {
+            /* ignore */
+        }
 
         if (exists) {
-            throw new Error(`Wait for not exists failed, element ${this.formatXpath(xpath)} is exists`);
+            throw new Error(
+                `Wait for not exists failed, element ${this.formatXpath(
+                    xpath,
+                )} is exists`,
+            );
         }
 
         return !exists;
     }
 
-    public async waitForVisible(xpath, timeout: number = this.WAIT_TIMEOUT, skipMoveToObject: boolean = false) {
+    public async waitForVisible(
+        xpath,
+        timeout: number = this.WAIT_TIMEOUT,
+        skipMoveToObject = false,
+    ) {
         const startTime = Date.now();
 
         await this.waitForExist(xpath, timeout, skipMoveToObject);
@@ -557,7 +663,9 @@ export class WebApplication extends PluggableModule {
         const waitTime = timeout - spentTime;
 
         if (waitTime <= 0) {
-            throw new Error(`Wait for visible failed, element not exists after ${timeout}ms`);
+            throw new Error(
+                `Wait for visible failed, element not exists after ${timeout}ms`,
+            );
         }
 
         xpath = this.normalizeSelector(xpath);
@@ -574,11 +682,13 @@ export class WebApplication extends PluggableModule {
         try {
             await this.waitForRoot(timeout);
         } catch (error) {
-            throw new Error('Wait for not visible is failed, root element is still pending');
+            throw new Error(
+                'Wait for not visible is failed, root element is still pending',
+            );
         }
 
         while (expires - Date.now() >= 0) {
-            let visible = await this.client.isVisible(xpath);
+            const visible = await this.client.isVisible(xpath);
 
             if (!visible) {
                 return false;
@@ -587,7 +697,9 @@ export class WebApplication extends PluggableModule {
             await this.pause(this.TICK_TIMEOUT);
         }
 
-        throw new Error('Wait for not visible failed, element ' + path + ' is visible');
+        throw new Error(
+            'Wait for not visible failed, element ' + path + ' is visible',
+        );
     }
 
     public async getTitle() {
@@ -595,7 +707,9 @@ export class WebApplication extends PluggableModule {
     }
 
     public async logNavigatorVersion() {
-        const userAgent = await this.execute(() => window.navigator && window.navigator.userAgent);
+        const userAgent = await this.execute(
+            () => window.navigator && window.navigator.userAgent,
+        );
         this.logger.debug(userAgent);
         return userAgent;
     }
@@ -607,7 +721,9 @@ export class WebApplication extends PluggableModule {
         let i = 0;
         let result = false;
         while (i < attemptCount) {
-            const ready = await this.execute(() => document.readyState === 'complete');
+            const ready = await this.execute(
+                () => document.readyState === 'complete',
+            );
 
             if (ready) {
                 result = true;
@@ -644,7 +760,7 @@ export class WebApplication extends PluggableModule {
     ): Promise<any> {
         let timer;
 
-        let result = await Promise.race([
+        const result = await Promise.race([
             this.openPageFromURI(page),
             new Promise((resolve, reject) => {
                 timer = setTimeout(
@@ -693,7 +809,7 @@ export class WebApplication extends PluggableModule {
         await this.waitForExist(normalizedSelector, timeout);
         await this.makeScreenshot();
 
-        return this.client.click(normalizedSelector, { x: 1, y: 1 });
+        return this.client.click(normalizedSelector, {x: 1, y: 1});
     }
 
     public async clickButton(xpath, timeout: number = this.WAIT_TIMEOUT) {
@@ -702,10 +818,14 @@ export class WebApplication extends PluggableModule {
         await this.waitForExist(normalizedSelector, timeout);
         await this.makeScreenshot();
 
-        return this.client.click(normalizedSelector, { button: 'middle' });
+        return this.client.click(normalizedSelector, {button: 'middle'});
     }
 
-    public async clickCoordinates(xpath, options: ClickOptions, timeout: number = this.WAIT_TIMEOUT) {
+    public async clickCoordinates(
+        xpath,
+        options: ClickOptions,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
         const normalizedSelector = this.normalizeSelector(xpath);
 
         await this.waitForExist(normalizedSelector, timeout);
@@ -715,7 +835,9 @@ export class WebApplication extends PluggableModule {
         let vPos = 1;
 
         if (typeof options?.x === 'string' || typeof options?.y === 'string') {
-            const { width, height } = await this.client.getSize(normalizedSelector);
+            const {width, height} = await this.client.getSize(
+                normalizedSelector,
+            );
 
             switch (options?.x) {
                 case 'left':
@@ -752,7 +874,7 @@ export class WebApplication extends PluggableModule {
             }
         }
 
-        return this.client.click(normalizedSelector, { x: hPos, y: vPos });
+        return this.client.click(normalizedSelector, {x: hPos, y: vPos});
     }
 
     public async getSize(xpath, timeout: number = this.WAIT_TIMEOUT) {
@@ -776,98 +898,110 @@ export class WebApplication extends PluggableModule {
     // eslint-disable-next-line sonarjs/cognitive-complexity
     public async simulateJSFieldChange(xpath, value) {
         /* eslint-disable object-shorthand, no-var */
-        const result = await this.client.executeAsync((xpath, value, done) => {
-            var supportedInputTypes = {
-                color: true,
-                date: true,
-                datetime: true,
-                'datetime-local': true,
-                email: true,
-                month: true,
-                number: true,
-                password: true,
-                range: true,
-                search: true,
-                tel: true,
-                text: true,
-                time: true,
-                url: true,
-                week: true,
-            };
+        const result = await this.client.executeAsync(
+            (xpath, value, done) => {
+                var supportedInputTypes = {
+                    color: true,
+                    date: true,
+                    datetime: true,
+                    'datetime-local': true,
+                    email: true,
+                    month: true,
+                    number: true,
+                    password: true,
+                    range: true,
+                    search: true,
+                    tel: true,
+                    text: true,
+                    time: true,
+                    url: true,
+                    week: true,
+                };
 
-            function isTextNode(el) {
-                var nodeName = el.nodeName.toLowerCase();
+                function isTextNode(el) {
+                    var nodeName = el.nodeName.toLowerCase();
 
-                return nodeName === 'textarea'
-                    || (nodeName === 'input' && supportedInputTypes[el.getAttribute('type')]);
-            }
-
-            function simulateEvent(el, type) {
-                var oEvent = new CustomEvent(type, {
-                    bubbles: true,
-                    cancelable: true,
-                });
-
-                el.dispatchEvent(oEvent);
-            }
-
-            function simulateKey(el, type, keyCode, key) {
-                var oEvent = new KeyboardEvent(type, {
-                    bubbles: true,
-                    cancelable: true,
-                    key: key,
-                });
-
-                // Chromium Hack
-                Object.defineProperty(oEvent, 'keyCode', {
-                    get: function () {
-                        return this.keyCodeVal;
-                    },
-                });
-                Object.defineProperty(oEvent, 'which', {
-                    get: function () {
-                        return this.keyCodeVal;
-                    },
-                });
-
-                (oEvent as any).keyCodeVal = keyCode;
-
-                el.dispatchEvent(oEvent);
-            }
-
-            function getElementByXPath(xpath) {
-                var element = document.evaluate(xpath, document, null,
-                    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                if (element.snapshotLength > 0) {
-                    return element.snapshotItem(0) as any;
+                    return (
+                        nodeName === 'textarea' ||
+                        (nodeName === 'input' &&
+                            supportedInputTypes[el.getAttribute('type')])
+                    );
                 }
 
-                return null;
-            }
+                function simulateEvent(el, type) {
+                    var oEvent = new CustomEvent(type, {
+                        bubbles: true,
+                        cancelable: true,
+                    });
 
-            try {
-                (function (el) {
-                    if (el) {
-                        el.focus();
+                    el.dispatchEvent(oEvent);
+                }
 
-                        if (isTextNode(el)) {
-                            simulateKey(el, 'keydown', 8, 'Backspace');
-                            simulateKey(el, 'keypress', 8, 'Backspace');
-                            simulateKey(el, 'keyup', 8, 'Backspace');
-                        }
+                function simulateKey(el, type, keyCode, key) {
+                    var oEvent = new KeyboardEvent(type, {
+                        bubbles: true,
+                        cancelable: true,
+                        key: key,
+                    });
 
-                        el.value = value;
-                        simulateEvent(el, 'input');
-                        simulateEvent(el, 'change');
-                        done();
-                    } else {
-                        throw Error(`Element ${xpath} not found.`);
+                    // Chromium Hack
+                    Object.defineProperty(oEvent, 'keyCode', {
+                        get: function () {
+                            return this.keyCodeVal;
+                        },
+                    });
+                    Object.defineProperty(oEvent, 'which', {
+                        get: function () {
+                            return this.keyCodeVal;
+                        },
+                    });
+
+                    (oEvent as any).keyCodeVal = keyCode;
+
+                    el.dispatchEvent(oEvent);
+                }
+
+                function getElementByXPath(xpath) {
+                    var element = document.evaluate(
+                        xpath,
+                        document,
+                        null,
+                        XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+                        null,
+                    );
+                    if (element.snapshotLength > 0) {
+                        return element.snapshotItem(0) as any;
                     }
-                })(getElementByXPath(xpath));
-            } catch (e) {
-                done(`${e.message} ${xpath}`);
-            }
-        }, xpath, value);
+
+                    return null;
+                }
+
+                try {
+                    (function (el) {
+                        if (el) {
+                            el.focus();
+
+                            if (isTextNode(el)) {
+                                simulateKey(el, 'keydown', 8, 'Backspace');
+                                simulateKey(el, 'keypress', 8, 'Backspace');
+                                simulateKey(el, 'keyup', 8, 'Backspace');
+                            }
+
+                            el.value = value;
+                            simulateEvent(el, 'input');
+                            simulateEvent(el, 'change');
+                            done();
+                        } else {
+                            throw Error(`Element ${xpath} not found.`);
+                        }
+                    })(getElementByXPath(xpath));
+                } catch (e) {
+                    done(`${e.message} ${xpath}`);
+                }
+            },
+            xpath,
+            value,
+        );
 
         if (result) {
             throw new Error(result);
@@ -875,7 +1009,11 @@ export class WebApplication extends PluggableModule {
         /* eslint-enable object-shorthand, no-var */
     }
 
-    public async clearElement(xpath, emulateViaJs: boolean = false, timeout: number = this.WAIT_TIMEOUT) {
+    public async clearElement(
+        xpath,
+        emulateViaJs = false,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
         await this.waitForExist(xpath, timeout);
 
         xpath = this.normalizeSelector(xpath);
@@ -886,10 +1024,14 @@ export class WebApplication extends PluggableModule {
         await this.client.setValue(xpath, ' ');
         await this.waitForExist(xpath, timeout);
         return this.client.keys(['Backspace']);
-
     }
 
-    public async setValue(xpath, value: valueType, emulateViaJS: boolean = false, timeout: number = this.WAIT_TIMEOUT) {
+    public async setValue(
+        xpath,
+        value: valueType,
+        emulateViaJS = false,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
         if (value === '' || value === null || value === undefined) {
             await this.clearElement(xpath, emulateViaJS, timeout);
         } else {
@@ -899,95 +1041,144 @@ export class WebApplication extends PluggableModule {
             if (emulateViaJS) {
                 this.simulateJSFieldChange(xpath, value);
 
-                this.logger.debug(`Value ${value} was entered into ${this.formatXpath(xpath)} using JS emulation`);
+                this.logger.debug(
+                    `Value ${value} was entered into ${this.formatXpath(
+                        xpath,
+                    )} using JS emulation`,
+                );
             } else {
                 await this.client.setValue(xpath, value);
-                this.logger.debug(`Value ${value} was entered into ${this.formatXpath(xpath)} using Selenium`);
+                this.logger.debug(
+                    `Value ${value} was entered into ${this.formatXpath(
+                        xpath,
+                    )} using Selenium`,
+                );
             }
         }
 
         await this.makeScreenshot();
     }
 
-    public async getText(xpath, trim: boolean = true, timeout: number = this.WAIT_TIMEOUT) {
+    public async getText(
+        xpath,
+        trim = true,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
         await this.waitForExist(xpath, timeout);
 
         const text = (await this.getTextsInternal(xpath, trim)).join(' ');
 
-        this.logger.debug(`Get text from ${this.formatXpath(xpath)} returns "${text}"`);
+        this.logger.debug(
+            `Get text from ${this.formatXpath(xpath)} returns "${text}"`,
+        );
 
         return text;
     }
 
-    public async getTextWithoutFocus(xpath, timeout: number = this.WAIT_TIMEOUT) {
+    public async getTextWithoutFocus(
+        xpath,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
         await this.waitForExist(xpath, timeout, true);
 
-        let text = (await this.getTextsInternal(xpath, true)).join(' ');
+        const text = (await this.getTextsInternal(xpath, true)).join(' ');
 
-        this.logger.debug(`Get tooltip text from ${this.formatXpath(xpath)} returns "${text}"`);
+        this.logger.debug(
+            `Get tooltip text from ${this.formatXpath(
+                xpath,
+            )} returns "${text}"`,
+        );
         return text;
     }
 
-    public async getTexts(xpath, trim = true, timeout: number = this.WAIT_TIMEOUT) {
+    public async getTexts(
+        xpath,
+        trim = true,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
         await this.waitForExist(xpath, timeout);
 
-        let texts = await this.getTextsInternal(xpath, trim, true);
+        const texts = await this.getTextsInternal(xpath, trim, true);
 
-        this.logger.debug(`Get texts from ${this.formatXpath(xpath)} returns "${texts.join('\n')}"`);
+        this.logger.debug(
+            `Get texts from ${this.formatXpath(xpath)} returns "${texts.join(
+                '\n',
+            )}"`,
+        );
         return texts;
     }
 
-    public async getOptionsProperty(xpath, prop: string, timeout: number = this.WAIT_TIMEOUT) {
+    public async getOptionsProperty(
+        xpath,
+        prop: string,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
         await this.waitForExist(xpath, timeout);
 
         xpath = this.normalizeSelector(xpath);
 
-        return this.client.executeAsync(function (xpath, prop, done) {
-            function getElementByXPath(xpath) {
+        return this.client.executeAsync(
+            function (xpath, prop, done) {
+                function getElementByXPath(xpath) {
+                    const element = document.evaluate(
+                        xpath,
+                        document,
+                        null,
+                        XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+                        null,
+                    );
 
-                const element = document.evaluate(
-                    xpath,
-                    document,
-                    null,
-                    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null,
-                );
-
-                if (element.snapshotLength > 0) {
-                    return element.snapshotItem(0) as any;
-                }
-
-                return null;
-            }
-
-            try {
-                const element = getElementByXPath(xpath);
-
-                if (element && element.tagName.toLowerCase() === 'select') {
-                    const texts: Array<any> = [];
-
-                    for (let i = 0, len = element.options.length; i < len; i++) {
-                        texts.push(element.options[i][prop]);
+                    if (element.snapshotLength > 0) {
+                        return element.snapshotItem(0) as any;
                     }
 
-                    done(texts);
-                } else {
-                    throw Error('Element not found');
+                    return null;
                 }
-            } catch (e) {
-                throw Error(`${e.message} ${xpath}`);
-            }
-        }, xpath, prop);
+
+                try {
+                    const element = getElementByXPath(xpath);
+
+                    if (element && element.tagName.toLowerCase() === 'select') {
+                        const texts: Array<any> = [];
+
+                        for (
+                            let i = 0, len = element.options.length;
+                            i < len;
+                            i++
+                        ) {
+                            texts.push(element.options[i][prop]);
+                        }
+
+                        done(texts);
+                    } else {
+                        throw Error('Element not found');
+                    }
+                } catch (e) {
+                    throw Error(`${e.message} ${xpath}`);
+                }
+            },
+            xpath,
+            prop,
+        );
     }
 
-    public async getSelectTexts(xpath, trim: boolean = true, timeout: number = this.WAIT_TIMEOUT) {
-        const texts: string[] = await this.getOptionsProperty(xpath, 'text', timeout);
+    public async getSelectTexts(
+        xpath,
+        trim = true,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
+        const texts: string[] = await this.getOptionsProperty(
+            xpath,
+            'text',
+            timeout,
+        );
 
         if (!texts) {
             return [];
         }
 
         if (trim) {
-            return texts.map(item => item.trim());
+            return texts.map((item) => item.trim());
         }
 
         return texts;
@@ -998,16 +1189,22 @@ export class WebApplication extends PluggableModule {
     }
 
     public async selectNotCurrent(xpath, timeout: number = this.WAIT_TIMEOUT) {
-        let options: any[] = await this.getSelectValues(xpath, timeout);
-        let value: any = await this.client.getValue(this.normalizeSelector(xpath));
-        let index = options.indexOf(value);
+        const options: any[] = await this.getSelectValues(xpath, timeout);
+        const value: any = await this.client.getValue(
+            this.normalizeSelector(xpath),
+        );
+        const index = options.indexOf(value);
         if (index > -1) {
             options.splice(index, 1);
         }
         await this.selectByValue(xpath, options[0]);
     }
 
-    public async selectByIndex(xpath, value: string | number, timeout: number = this.WAIT_TIMEOUT) {
+    public async selectByIndex(
+        xpath,
+        value: string | number,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
         const logXpath = this.formatXpath(xpath);
         const errorMessage = `Could not select by index "${value}": ${logXpath}`;
 
@@ -1023,8 +1220,14 @@ export class WebApplication extends PluggableModule {
         }
     }
 
-    public async selectByValue(xpath, value: string | number, timeout: number = this.WAIT_TIMEOUT) {
-        const errorMessage = `Could not select by value "${value}": ${this.formatXpath(xpath)}`;
+    public async selectByValue(
+        xpath,
+        value: string | number,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
+        const errorMessage = `Could not select by value "${value}": ${this.formatXpath(
+            xpath,
+        )}`;
 
         xpath = this.normalizeSelector(xpath);
 
@@ -1038,7 +1241,11 @@ export class WebApplication extends PluggableModule {
         }
     }
 
-    public async selectByVisibleText(xpath, value: string | number, timeout: number = this.WAIT_TIMEOUT) {
+    public async selectByVisibleText(
+        xpath,
+        value: string | number,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
         const logXpath = this.formatXpath(xpath);
         const errorMessage = `Could not select by visible text "${value}": ${logXpath}`;
 
@@ -1059,19 +1266,21 @@ export class WebApplication extends PluggableModule {
 
         await this.waitForExist(xpath, timeout);
 
-        let value = await this.client.getValue(xpath);
+        const value = await this.client.getValue(xpath);
 
         if (typeof value === 'string' || typeof value === 'number') {
             // TODO (flops) rework this for supporting custom selectors
             xpath += `//option[@value='${value}']`;
 
             try {
-                let options = await this.client.getText(xpath);
+                const options = await this.client.getText(xpath);
                 if (options instanceof Array) {
                     return options[0] || '';
                 }
                 return options || '';
-            } catch (ignore) { /* ignore */ }
+            } catch (ignore) {
+                /* ignore */
+            }
         }
         return '';
     }
@@ -1079,20 +1288,22 @@ export class WebApplication extends PluggableModule {
     public async getElementsIds(xpath, timeout: number = this.WAIT_TIMEOUT) {
         // TODO (flops) need to add log ?
         await this.waitForExist(xpath, timeout);
-        let elements: any = await this.elements(xpath);
-        let elementIds: any[] = [];
+        const elements: any = await this.elements(xpath);
+        const elementIds: any[] = [];
 
         for (let i = 0; i < elements.length; i++) {
-            let elem: any = elements[i];
+            const elem: any = elements[i];
             elementIds.push(elem.ELEMENT);
         }
 
-        return (elementIds.length > 1) ? elementIds : elementIds[0];
+        return elementIds.length > 1 ? elementIds : elementIds[0];
     }
 
     public async isElementSelected(elementId) {
         // todo (flops) need to add log ?
-        let elementSelected: any = await this.client.elementIdSelected(elementId.toString());
+        const elementSelected: any = await this.client.elementIdSelected(
+            elementId.toString(),
+        );
 
         return !!elementSelected;
     }
@@ -1107,7 +1318,11 @@ export class WebApplication extends PluggableModule {
         return !!isSelected;
     }
 
-    public async setChecked(xpath, checked: boolean = true, timeout: number = this.WAIT_TIMEOUT) {
+    public async setChecked(
+        xpath,
+        checked = true,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
         xpath = this.normalizeSelector(xpath);
 
         await this.waitForExist(xpath, timeout);
@@ -1129,12 +1344,21 @@ export class WebApplication extends PluggableModule {
 
     public async isCSSClassExists(xpath, ...suitableClasses) {
         const elemClasses: any = await this.getAttribute(xpath, 'class');
-        const elemClassesArr = elemClasses.trim().toLowerCase().split(/\s+/g);
+        const elemClassesArr = (elemClasses || '')
+            .trim()
+            .toLowerCase()
+            .split(/\s+/g);
 
-        return suitableClasses.some((suitableClass) => elemClassesArr.includes(suitableClass.toLowerCase()));
+        return suitableClasses.some((suitableClass) =>
+            elemClassesArr.includes(suitableClass.toLowerCase()),
+        );
     }
 
-    public async getAttribute(xpath, attr: string, timeout: number = this.WAIT_TIMEOUT) {
+    public async getAttribute(
+        xpath,
+        attr: string,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
         xpath = this.normalizeSelector(xpath);
 
         await this.waitForExist(xpath, timeout);
@@ -1143,17 +1367,16 @@ export class WebApplication extends PluggableModule {
     }
 
     public async isReadOnly(xpath, timeout: number = this.WAIT_TIMEOUT) {
-        const inputTags = [
-            'input',
-            'select',
-            'textarea',
-        ];
+        const inputTags = ['input', 'select', 'textarea'];
 
         xpath = this.normalizeSelector(xpath);
 
         await this.waitForExist(xpath, timeout);
 
-        const readonly: string = await this.client.getAttribute(xpath, 'readonly');
+        const readonly: string = await this.client.getAttribute(
+            xpath,
+            'readonly',
+        );
         const str: string = await this.client.getTagName(xpath);
 
         if (
@@ -1165,12 +1388,12 @@ export class WebApplication extends PluggableModule {
             return true;
         }
 
-        const disabled: string = await this.client.getAttribute(xpath, 'disabled');
-
-        return (
-            disabled === 'true' ||
-            disabled === 'disabled'
+        const disabled: string = await this.client.getAttribute(
+            xpath,
+            'disabled',
         );
+
+        return disabled === 'true' || disabled === 'disabled';
     }
 
     public async isEnabled(xpath, timeout: number = this.WAIT_TIMEOUT) {
@@ -1196,14 +1419,24 @@ export class WebApplication extends PluggableModule {
         }
     }
 
-    public async moveToObject(xpath, x: number = 1, y: number = 1, timeout: number = this.WAIT_TIMEOUT) {
+    public async moveToObject(
+        xpath,
+        x = 1,
+        y = 1,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
         await this.scrollIntoViewIfNeeded(xpath);
 
-        let normalizedXpath = this.normalizeSelector(xpath);
+        const normalizedXpath = this.normalizeSelector(xpath);
         return this.client.moveToObject(normalizedXpath, x, y);
     }
 
-    public async scroll(xpath, x: number = 0, y: number = 0, timeout: number = this.WAIT_TIMEOUT) {
+    public async scroll(
+        xpath,
+        x = 0,
+        y = 0,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
         await this.waitForExist(xpath, timeout, true);
 
         xpath = this.normalizeSelector(xpath);
@@ -1211,61 +1444,72 @@ export class WebApplication extends PluggableModule {
         return this.client.scroll(xpath, x, y);
     }
 
-    protected async scrollIntoViewCall(
-        xpath,
-        topOffset: number = 0,
-        leftOffset: number = 0,
-    ) {
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    protected async scrollIntoViewCall(xpath, topOffset = 0, leftOffset = 0) {
         const normalizedXpath = this.normalizeSelector(xpath);
 
         if (topOffset || leftOffset) {
-            const result = await this.client.executeAsync(function (xpath, topOffset, leftOffset, done) {
-                function getElementByXPath(xpath) {
-                    const element = document.evaluate(
-                        xpath,
-                        document,
-                        null,
-                        XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null,
-                    );
+            const result = await this.client.executeAsync(
+                function (xpath, topOffset, leftOffset, done) {
+                    // eslint-disable-next-line sonarjs/no-identical-functions
+                    function getElementByXPath(xpath) {
+                        const element = document.evaluate(
+                            xpath,
+                            document,
+                            null,
+                            XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+                            null,
+                        );
 
-                    if (element.snapshotLength > 0) {
-                        return element.snapshotItem(0) as any;
+                        if (element.snapshotLength > 0) {
+                            return element.snapshotItem(0) as any;
+                        }
+
+                        return null;
                     }
 
-                    return null;
-                }
+                    function isScrollable(el) {
+                        const hasScrollableContent =
+                            el.scrollHeight > el.clientHeight;
 
-                function isScrollable(el) {
-                    const hasScrollableContent = el.scrollHeight > el.clientHeight;
+                        const overflowYStyle = window.getComputedStyle(el)
+                            .overflowY;
+                        const isOverflowHidden =
+                            overflowYStyle.indexOf('hidden') !== -1;
 
-                    const overflowYStyle = window.getComputedStyle(el).overflowY;
-                    const isOverflowHidden = overflowYStyle.indexOf('hidden') !== -1;
-
-                    return hasScrollableContent && !isOverflowHidden;
-                }
-
-                function getScrollableParent(el) {
-                    // eslint-disable-next-line no-nested-ternary
-                    return (!el || el === document.scrollingElement || document.body)
-                        ? document.scrollingElement || document.body
-                        : (isScrollable(el) ? el : getScrollableParent(el.parentNode));
-                }
-
-                try {
-                    const element = getElementByXPath(xpath);
-                    const parent = getScrollableParent(element);
-
-                    if (element) {
-                        element.scrollIntoView();
-                        parent.scrollBy(leftOffset, topOffset);
-                        setTimeout(done, 200); // Gives browser some time to update values
-                    } else {
-                        done('Element not found');
+                        return hasScrollableContent && !isOverflowHidden;
                     }
-                } catch (err) {
-                    done(`${err.message} ${xpath}`);
-                }
-            }, normalizedXpath, topOffset, leftOffset);
+
+                    function getScrollableParent(el) {
+                        // eslint-disable-next-line no-nested-ternary
+                        return !el ||
+                            el === document.scrollingElement ||
+                            document.body
+                            ? document.scrollingElement || document.body
+                            : isScrollable(el)
+                            ? el
+                            : getScrollableParent(el.parentNode);
+                    }
+
+                    try {
+                        const element = getElementByXPath(xpath);
+                        const parent = getScrollableParent(element);
+
+                        if (element) {
+                            element.scrollIntoView();
+                            parent.scrollBy(leftOffset, topOffset);
+                            setTimeout(done, 200); // Gives browser some time to update values
+                        } else {
+                            done('Element not found');
+                        }
+                    } catch (err) {
+                        done(`${err.message} ${xpath}`);
+                    }
+                },
+                normalizedXpath,
+                topOffset,
+                leftOffset,
+            );
 
             if (result) {
                 throw new Error(result);
@@ -1286,79 +1530,132 @@ export class WebApplication extends PluggableModule {
         await this.scrollIntoViewCall(xpath, topOffset, leftOffset);
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     protected async scrollIntoViewIfNeededCall(
         xpath,
-        topOffset: number = 0,
-        leftOffset: number = 0,
+        topOffset = 0,
+        leftOffset = 0,
     ) {
         const normalizedXpath = this.normalizeSelector(xpath);
 
-        const result: string = await this.client.executeAsync(function (xpath, topOffset, leftOffset, done) {
-            function getElementByXPath(xpath) {
-                const element = document.evaluate(
-                    xpath,
-                    document,
-                    null,
-                    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null,
-                );
+        const result: string = await this.client.executeAsync(
+            function (xpath, topOffset, leftOffset, done) {
+                // eslint-disable-next-line sonarjs/no-identical-functions
+                function getElementByXPath(xpath) {
+                    const element = document.evaluate(
+                        xpath,
+                        document,
+                        null,
+                        XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+                        null,
+                    );
 
-                if (element.snapshotLength > 0) {
-                    return element.snapshotItem(0) as any;
-                }
-
-                return null;
-            }
-
-            function isScrollable(el) {
-                const hasScrollableContent = el.scrollHeight > el.clientHeight;
-
-                const overflowYStyle = window.getComputedStyle(el).overflowY;
-                const isOverflowHidden = overflowYStyle.indexOf('hidden') !== -1;
-
-                return hasScrollableContent && !isOverflowHidden;
-            }
-
-            function getScrollableParent(el) {
-                // eslint-disable-next-line no-nested-ternary
-                return (!el || el === document.scrollingElement || document.body)
-                    ? document.scrollingElement || document.body
-                    : (isScrollable(el) ? el : getScrollableParent(el.parentNode));
-            }
-
-            function scrollIntoViewIfNeeded(element, topOffset, leftOffset) {
-                const parent = element.parentNode;
-                const scrollableParent = getScrollableParent(element);
-                const parentComputedStyle = window.getComputedStyle(parent, null);
-                const parentBorderTopWidth = parseInt(parentComputedStyle.getPropertyValue('border-top-width')) + topOffset;
-                const parentBorderLeftWidth = parseInt(parentComputedStyle.getPropertyValue('border-left-width')) + leftOffset;
-                const overTop = element.offsetTop - parent.offsetTop < parent.scrollTop;
-                const overBottom = (element.offsetTop - parent.offsetTop + element.clientHeight - parentBorderTopWidth) > (parent.scrollTop + parent.clientHeight);
-                const overLeft = element.offsetLeft - parent.offsetLeft < parent.scrollLeft;
-                const overRight = (element.offsetLeft - parent.offsetLeft + element.clientWidth - parentBorderLeftWidth) > (parent.scrollLeft + parent.clientWidth);
-
-                if (overTop || overBottom || overLeft || overRight) {
-                    element.scrollIntoViewIfNeeded();
-                    scrollableParent.scrollBy(leftOffset, topOffset);
-                }
-            }
-
-            try {
-                const element = getElementByXPath(xpath);
-
-                if (element) {
-                    if (topOffset || leftOffset) {
-                        scrollIntoViewIfNeeded(element, topOffset, leftOffset);
-                    } else {
-                        element.scrollIntoViewIfNeeded();
+                    if (element.snapshotLength > 0) {
+                        return element.snapshotItem(0) as any;
                     }
-                    setTimeout(done, 200);
-                } else {
-                    throw new Error('Element not found');
+
+                    return null;
                 }
-            } catch (err) {
-                done(`${err.message} ${xpath}`);
-            }
-        }, normalizedXpath, topOffset, leftOffset);
+
+                // eslint-disable-next-line sonarjs/no-identical-functions
+                function isScrollable(el) {
+                    const hasScrollableContent =
+                        el.scrollHeight > el.clientHeight;
+
+                    const overflowYStyle = window.getComputedStyle(el)
+                        .overflowY;
+                    const isOverflowHidden =
+                        overflowYStyle.indexOf('hidden') !== -1;
+
+                    return hasScrollableContent && !isOverflowHidden;
+                }
+
+                // eslint-disable-next-line sonarjs/no-identical-functions
+                function getScrollableParent(el) {
+                    // eslint-disable-next-line no-nested-ternary
+                    return !el ||
+                        el === document.scrollingElement ||
+                        document.body
+                        ? document.scrollingElement || document.body
+                        : isScrollable(el)
+                        ? el
+                        : getScrollableParent(el.parentNode);
+                }
+
+                function scrollIntoViewIfNeeded(
+                    element,
+                    topOffset,
+                    leftOffset,
+                ) {
+                    const parent = element.parentNode;
+                    const scrollableParent = getScrollableParent(element);
+                    const parentComputedStyle = window.getComputedStyle(
+                        parent,
+                        null,
+                    );
+                    /* eslint-disable max-len */
+                    const parentBorderTopWidth =
+                        parseInt(
+                            parentComputedStyle.getPropertyValue(
+                                'border-top-width',
+                            ),
+                        ) + topOffset;
+                    const parentBorderLeftWidth =
+                        parseInt(
+                            parentComputedStyle.getPropertyValue(
+                                'border-left-width',
+                            ),
+                        ) + leftOffset;
+                    const overTop =
+                        element.offsetTop - parent.offsetTop < parent.scrollTop;
+                    const overBottom =
+                        element.offsetTop -
+                            parent.offsetTop +
+                            element.clientHeight -
+                            parentBorderTopWidth >
+                        parent.scrollTop + parent.clientHeight;
+                    const overLeft =
+                        element.offsetLeft - parent.offsetLeft <
+                        parent.scrollLeft;
+                    const overRight =
+                        element.offsetLeft -
+                            parent.offsetLeft +
+                            element.clientWidth -
+                            parentBorderLeftWidth >
+                        parent.scrollLeft + parent.clientWidth;
+                    /* eslint-enable max-len */
+
+                    if (overTop || overBottom || overLeft || overRight) {
+                        element.scrollIntoViewIfNeeded();
+                        scrollableParent.scrollBy(leftOffset, topOffset);
+                    }
+                }
+
+                try {
+                    const element = getElementByXPath(xpath);
+
+                    if (element) {
+                        if (topOffset || leftOffset) {
+                            scrollIntoViewIfNeeded(
+                                element,
+                                topOffset,
+                                leftOffset,
+                            );
+                        } else {
+                            element.scrollIntoViewIfNeeded();
+                        }
+                        setTimeout(done, 200);
+                    } else {
+                        throw new Error('Element not found');
+                    }
+                } catch (err) {
+                    done(`${err.message} ${xpath}`);
+                }
+            },
+            normalizedXpath,
+            topOffset,
+            leftOffset,
+        );
 
         if (result) {
             throw new Error(result);
@@ -1375,7 +1672,11 @@ export class WebApplication extends PluggableModule {
         await this.scrollIntoViewIfNeededCall(xpath, topOffset, leftOffset);
     }
 
-    public async dragAndDrop(xpathSource, xpathDestination, timeout: number = this.WAIT_TIMEOUT) {
+    public async dragAndDrop(
+        xpathSource,
+        xpathDestination,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
         await this.waitForExist(xpathSource, timeout);
         await this.waitForExist(xpathDestination, timeout);
 
@@ -1407,7 +1708,7 @@ export class WebApplication extends PluggableModule {
             timeout,
         );
 
-        return (elementsCount === 0);
+        return elementsCount === 0;
     }
 
     public async isElementsExist(xpath, timeout: number = this.WAIT_TIMEOUT) {
@@ -1416,7 +1717,7 @@ export class WebApplication extends PluggableModule {
             timeout,
         );
 
-        return (elementsCount > 0);
+        return elementsCount > 0;
     }
 
     public async isAlertOpen() {
@@ -1497,7 +1798,11 @@ export class WebApplication extends PluggableModule {
         return this.client.window(handle);
     }
 
-    public async newWindow(url: string, windowName: string, windowFeatures: WindowFeaturesConfig = {}) {
+    public async newWindow(
+        url: string,
+        windowName: string,
+        windowFeatures: WindowFeaturesConfig = {},
+    ) {
         return this.client.newWindow(url, windowName, windowFeatures);
     }
 
@@ -1539,10 +1844,10 @@ export class WebApplication extends PluggableModule {
     }
 
     public async closeAllOtherTabs() {
-        let tabIds: any = await this.getTabIds();
-        let mainTabId = await this.getMainTabId();
+        const tabIds: any = await this.getTabIds();
+        const mainTabId = await this.getMainTabId();
 
-        for (let tabId of tabIds) {
+        for (const tabId of tabIds) {
             if (tabId !== mainTabId) {
                 await this.window(tabId);
                 await this.closeBrowserWindow(tabId);
@@ -1564,7 +1869,7 @@ export class WebApplication extends PluggableModule {
     public async switchToFirstSiblingTab() {
         const mainTabID = await this.getMainTabId();
         const tabIds: Array<number> = await this.getTabIds();
-        const siblingTabs = tabIds.filter(tabId => tabId !== mainTabID);
+        const siblingTabs = tabIds.filter((tabId) => tabId !== mainTabID);
 
         if (siblingTabs.length === 0) {
             return false;
@@ -1577,7 +1882,7 @@ export class WebApplication extends PluggableModule {
     public async switchToMainSiblingTab() {
         const mainTabID = await this.getMainTabId();
         const tabIds: any = await this.getTabIds();
-        const mainTab = tabIds.find(tabId => tabId === mainTabID);
+        const mainTab = tabIds.find((tabId) => tabId === mainTabID);
 
         if (mainTab) {
             await this.setActiveTab(mainTab);
@@ -1613,10 +1918,17 @@ export class WebApplication extends PluggableModule {
         return this.client.frameParent();
     }
 
-    private async getTextsInternal(xpath, trim, allowMultipleNodesInResult = false) {
+    private async getTextsInternal(
+        xpath,
+        trim,
+        allowMultipleNodesInResult = false,
+    ) {
         await this.devtoolHighlight(xpath, allowMultipleNodesInResult);
 
-        const normalizedXpath = this.normalizeSelector(xpath, allowMultipleNodesInResult);
+        const normalizedXpath = this.normalizeSelector(
+            xpath,
+            allowMultipleNodesInResult,
+        );
 
         const elements: any = await this.client.elements(normalizedXpath);
         const result: Array<string> = [];
@@ -1641,7 +1953,7 @@ export class WebApplication extends PluggableModule {
     public pause(timeout) {
         this.logger.verbose(`delay for ${timeout}ms`);
 
-        return new Promise(resolve => setTimeout(resolve, timeout));
+        return new Promise((resolve) => setTimeout(resolve, timeout));
     }
 
     private async registerAppInDevtool(): Promise<void> {
@@ -1650,20 +1962,27 @@ export class WebApplication extends PluggableModule {
                 WebApplicationDevtoolActions.registerComplete,
                 (message: IWebApplicationRegisterCompleteMessage) => {
                     if (message.id === this.applicationId) {
-                        if (message.error === null || message.error === undefined) {
+                        if (
+                            message.error === null ||
+                            message.error === undefined
+                        ) {
                             resolve();
                         } else {
                             reject(message.error);
                         }
                         removeListener();
                     }
-                });
+                },
+            );
 
             const payload: IWebApplicationRegisterMessage = {
                 id: this.applicationId,
             };
 
-            this.transport.broadcastUniversally(WebApplicationDevtoolActions.register, payload);
+            this.transport.broadcastUniversally(
+                WebApplicationDevtoolActions.register,
+                payload,
+            );
         });
     }
 
@@ -1674,20 +1993,27 @@ export class WebApplication extends PluggableModule {
                 // eslint-disable-next-line sonarjs/no-identical-functions
                 (message) => {
                     if (message.id === this.applicationId) {
-                        if (message.error === null || message.error === undefined) {
+                        if (
+                            message.error === null ||
+                            message.error === undefined
+                        ) {
                             resolve();
                         } else {
                             reject(message.error);
                         }
                         removeListener();
                     }
-                });
+                },
+            );
 
             const payload: IWebApplicationRegisterMessage = {
                 id: this.applicationId,
             };
 
-            this.transport.broadcastUniversally(WebApplicationDevtoolActions.unregister, payload);
+            this.transport.broadcastUniversally(
+                WebApplicationDevtoolActions.unregister,
+                payload,
+            );
         });
     }
 
@@ -1695,20 +2021,19 @@ export class WebApplication extends PluggableModule {
         if (this.config.devtool !== null && !this.isRegisteredInDevtool) {
             const id = this.applicationId;
 
-            this.logger.debug(`WebApplication ${id} devtool initial registration`);
+            this.logger.debug(
+                `WebApplication ${id} devtool initial registration`,
+            );
             await this.registerAppInDevtool();
 
-            const {
-                extensionId,
-                httpPort,
-                wsPort,
-                host,
-            } = this.config.devtool;
+            const {extensionId, httpPort, wsPort, host} = this.config.devtool;
             const url = `chrome-extension://${extensionId}/options.html?httpPort=${httpPort}&host=${host}&wsPort=${wsPort}&appId=${id}&page=handshake`;
 
             await this.client.url(url);
 
-            await this.client.executeAsync(function (done: WebApplicationDevtoolCallback) {
+            await this.client.executeAsync(function (
+                done: WebApplicationDevtoolCallback,
+            ) {
                 (window as any).resolveWebApp = done;
             });
 
@@ -1732,7 +2057,9 @@ export class WebApplication extends PluggableModule {
     }
 
     public async disableScreenshots() {
-        this.logger.debug('Screenshots were disabled. DO NOT FORGET to turn them on back!');
+        this.logger.debug(
+            'Screenshots were disabled. DO NOT FORGET to turn them on back!',
+        );
         this.screenshotsEnabledManually = false;
     }
 
@@ -1741,17 +2068,23 @@ export class WebApplication extends PluggableModule {
         this.screenshotsEnabledManually = true;
     }
 
-    public async makeScreenshot(force: boolean = false): Promise<string | null> {
-        if (this.config.screenshotsEnabled && (this.screenshotsEnabledManually || force)) {
+    public async makeScreenshot(force = false): Promise<string | null> {
+        if (
+            this.config.screenshotsEnabled &&
+            (this.screenshotsEnabledManually || force)
+        ) {
             const screenshot = await this.client.makeScreenshot();
-            const screenPath = path.join(this.config.screenshotPath, this.testUID);
+            const screenPath = path.join(
+                this.config.screenshotPath,
+                this.testUID,
+            );
 
-            const filePath = await this.fileWriter
-                .write(
-                    Buffer.from(screenshot.toString(), 'base64'),
-                    { path: screenPath, opts: { encoding: 'binary', ext: 'png' } });
+            const filePath = await this.fileWriter.write(
+                Buffer.from(screenshot.toString(), 'base64'),
+                {path: screenPath, opts: {encoding: 'binary', ext: 'png'}},
+            );
 
-            this.logger.file(filePath, { type: FSFileLogType.SCREENSHOT });
+            this.logger.file(filePath, {type: FSFileLogType.SCREENSHOT});
             return filePath;
         }
         return null;
@@ -1775,7 +2108,11 @@ export class WebApplication extends PluggableModule {
         this.isSessionStopped = true;
     }
 
-    public async getCssProperty(xpath, cssProperty: string, timeout: number = this.WAIT_TIMEOUT): Promise<any> {
+    public async getCssProperty(
+        xpath,
+        cssProperty: string,
+        timeout: number = this.WAIT_TIMEOUT,
+    ): Promise<any> {
         await this.waitForExist(xpath, timeout);
 
         xpath = this.normalizeSelector(xpath);
@@ -1791,12 +2128,20 @@ export class WebApplication extends PluggableModule {
         return await this.client.isExisting(xpath);
     }
 
-    public async waitForValue(xpath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean = false) {
+    public async waitForValue(
+        xpath,
+        timeout: number = this.WAIT_TIMEOUT,
+        reverse = false,
+    ) {
         xpath = this.normalizeSelector(xpath);
         return await this.client.waitForValue(xpath, timeout, reverse);
     }
 
-    public async waitForSelected(xpath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean = false) {
+    public async waitForSelected(
+        xpath,
+        timeout: number = this.WAIT_TIMEOUT,
+        reverse = false,
+    ) {
         xpath = this.normalizeSelector(xpath);
         return await this.client.waitForSelected(xpath, timeout, reverse);
     }
@@ -1804,13 +2149,23 @@ export class WebApplication extends PluggableModule {
     public async waitUntil(
         condition: () => boolean | Promise<boolean>,
         timeout: number = this.WAIT_TIMEOUT,
-        timeoutMsg: string = 'Wait by condition failed!',
-        interval: number = 500,
+        timeoutMsg = 'Wait by condition failed!',
+        interval = 500,
     ) {
-        return await this.client.waitUntil(condition, timeout, timeoutMsg, interval);
+        return await this.client.waitUntil(
+            condition,
+            timeout,
+            timeoutMsg,
+            interval,
+        );
     }
 
-    public async selectByAttribute(xpath, attribute: string, value: string, timeout: number = this.WAIT_TIMEOUT) {
+    public async selectByAttribute(
+        xpath,
+        attribute: string,
+        value: string,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
         const logXpath = this.formatXpath(xpath);
         const errorMessage = `Could not select by attribute "${attribute}" with value "${value}": ${logXpath}`;
 

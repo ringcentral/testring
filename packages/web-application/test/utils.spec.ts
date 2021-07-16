@@ -1,7 +1,7 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { getFormattedString } from '../src/utils';
+import {getFormattedString} from '../src/utils';
 
 describe('utils', () => {
     it('should return the "UNKNOWN_OBJECT" if all serialize methods are overloaded', () => {
@@ -17,11 +17,9 @@ describe('utils', () => {
         chai.expect(getFormattedString(undefined)).to.equal('undefined');
     });
 
-
     it('should return the "null" if null is passed', () => {
         chai.expect(getFormattedString(null)).to.equal('null');
     });
-
 
     it('should return the same string if Symbol is passed', () => {
         const symbol = Symbol('@symbol');
@@ -29,26 +27,21 @@ describe('utils', () => {
         chai.expect(getFormattedString(symbol)).to.equal('Symbol(@symbol)');
     });
 
-
     it('should return [object Object] if called from Object', () => {
         chai.expect(getFormattedString({})).to.equal('[object Object]');
     });
-
 
     it('should return empty string if called from empty Array', () => {
         chai.expect(getFormattedString([])).to.equal('');
     });
 
-
     it('should return concatenated string if called from Array', () => {
         chai.expect(getFormattedString([1, 2, 3])).to.equal('1,2,3');
     });
 
-
     it('should return toString method call result', () => {
         class Dummy {
-            constructor(private value: string) {
-            }
+            constructor(private value: string) {}
 
             toString() {
                 return this.value;
@@ -58,7 +51,6 @@ describe('utils', () => {
         chai.expect(getFormattedString(new Dummy('foo'))).to.equal('foo');
     });
 
-
     it('should return toString property call result', () => {
         const object = {
             toString: () => 'bar',
@@ -67,11 +59,9 @@ describe('utils', () => {
         chai.expect(getFormattedString(object)).to.equal('bar');
     });
 
-
     it('should return toFormattedString method call result', () => {
         class Dummy {
-            constructor(private value: string) {
-            }
+            constructor(private value: string) {}
 
             toFormattedString() {
                 return `formatted ${this.value}`;
@@ -82,9 +72,10 @@ describe('utils', () => {
             }
         }
 
-        chai.expect(getFormattedString(new Dummy('foo'))).to.equal('formatted foo');
+        chai.expect(getFormattedString(new Dummy('foo'))).to.equal(
+            'formatted foo',
+        );
     });
-
 
     it('should return toFormattedString property call result', () => {
         const object = {

@@ -1,4 +1,5 @@
-import { Express, Request, Response } from 'express-serve-static-core';
+// eslint-disable-next-line import/no-unresolved
+import type {Express, Request, Response} from 'express-serve-static-core';
 import {
     IDevtoolHttpRoute,
     IDevtoolStaticRoutes,
@@ -10,7 +11,7 @@ import {
 import * as express from 'express';
 
 export class DevtoolHttpServer implements IServer {
-    private server: Express;
+    private server: Express | null = null;
 
     private waitForStart: Promise<void> | void;
 
@@ -26,12 +27,13 @@ export class DevtoolHttpServer implements IServer {
 
     public async run() {
         this.server = express();
+        const srv = this.server as Express;
 
-        this.initRoutes();
-        this.initStaticRoutes();
+        this.initRoutes(srv);
+        this.initStaticRoutes(srv);
 
         this.waitForStart = new Promise((resolve) => {
-            this.server.listen(this.port, this.hostName, () => resolve());
+            srv.listen(this.port, this.hostName, () => resolve());
         });
 
         await this.waitForStart;
@@ -42,46 +44,57 @@ export class DevtoolHttpServer implements IServer {
 
         if (this.server) {
             const server = this.server;
-            delete this.server;
+            this.server = null;
 
             (server as any).close();
         }
     }
 
     public getUrl() {
-        return `http://${this.hostName}:${this.port}`;
+        const protocol = 'http';
+        return `${protocol}://${this.hostName}:${this.port}`;
     }
 
-    private initStaticRoutes() {
-        for (let key in this.staticRoutes) {
-            let route = this.staticRoutes[key];
+    private initStaticRoutes(server: Express) {
+        for (const key in this.staticRoutes) {
+            const route = this.staticRoutes[key];
 
-            this.server.use(route.rootPath, express.static(route.directory, { etag: false }));
+            server.use(
+                route.rootPath,
+                express.static(route.directory, {etag: false}),
+            );
         }
     }
 
-    private async routeHandler(req: Request, res: Response, handler: DevtoolHttpRouteHandler, options: any) {
+    private async routeHandler(
+        req: Request,
+        res: Response,
+        handler: DevtoolHttpRouteHandler,
+        options: any,
+    ) {
         try {
             const data = await this.contextResolver(req, res);
 
             return handler(req, res, data.context, data.key, options);
         } catch (e) {
-            res.status(500)
-                .send(`${e.message}\n${e.stack}`)
-                .end();
+            res.status(500).send(`${e.message}\n${e.stack}`).end();
         }
     }
 
-    private initRoutes() {
-        for (let route of this.routes) {
+    private initRoutes(server: Express) {
+        for (const route of this.routes) {
             switch (route.method) {
                 case 'get':
                 case 'post':
                 case 'delete':
                 case 'put':
-                    this.server[route.method](
-                        route.mask,
-                        (req, res) => this.routeHandler(req, res, route.handler, route.options),
+                    server[route.method](route.mask, (req, res) =>
+                        this.routeHandler(
+                            req,
+                            res,
+                            route.handler,
+                            route.options,
+                        ),
                     );
                     break;
                 default:

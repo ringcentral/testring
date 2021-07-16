@@ -5,11 +5,13 @@ const port = 8080;
 export class MockWebServer {
     private httpServerInstance: Http.Server;
 
-    start() {
-        this.httpServerInstance = MockWebServer.createExpressWebApplication().listen(port);
+    start(): void {
+        this.httpServerInstance = MockWebServer.createExpressWebApplication().listen(
+            port,
+        );
     }
 
-    stop() {
+    stop(): void {
         this.httpServerInstance.close();
     }
 

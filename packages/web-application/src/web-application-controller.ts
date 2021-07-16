@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 import {
     ITransport,
     IBrowserProxyController,
@@ -9,14 +9,19 @@ import {
 } from '@testring/types';
 
 export class WebApplicationController extends EventEmitter {
-
     private isKilled = false;
 
-    private onExecuteRequest = async (message: IWebApplicationExecuteMessage, source: string) => {
+    private onExecuteRequest = async (
+        message: IWebApplicationExecuteMessage,
+        source: string,
+    ) => {
         this.emit(WebApplicationControllerEventType.execute, message);
 
         try {
-            const response = await this.browserProxyController.execute(message.applicant, message.command);
+            const response = await this.browserProxyController.execute(
+                message.applicant,
+                message.command,
+            );
 
             if (this.isKilled) {
                 return;
@@ -36,10 +41,17 @@ export class WebApplicationController extends EventEmitter {
                     payload,
                 );
             } else {
-                await this.transport.broadcastLocal(WebApplicationMessageType.response, payload);
+                await this.transport.broadcastLocal(
+                    WebApplicationMessageType.response,
+                    payload,
+                );
             }
 
-            this.emit(WebApplicationControllerEventType.afterResponse, message, response);
+            this.emit(
+                WebApplicationControllerEventType.afterResponse,
+                message,
+                response,
+            );
         } catch (error) {
             if (this.isKilled) {
                 return;
@@ -57,7 +69,10 @@ export class WebApplicationController extends EventEmitter {
                     payload,
                 );
             } else {
-                await this.transport.broadcastLocal(WebApplicationMessageType.response, payload);
+                await this.transport.broadcastLocal(
+                    WebApplicationMessageType.response,
+                    payload,
+                );
             }
         }
     };
@@ -70,7 +85,10 @@ export class WebApplicationController extends EventEmitter {
     }
 
     public init() {
-        this.transport.on(WebApplicationMessageType.execute, this.onExecuteRequest);
+        this.transport.on(
+            WebApplicationMessageType.execute,
+            this.onExecuteRequest,
+        );
     }
 
     public kill() {

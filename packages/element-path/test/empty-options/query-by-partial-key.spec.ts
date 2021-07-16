@@ -1,42 +1,46 @@
-import { expect } from 'chai';
-import { createElementPath } from '../../src';
+import {expect} from 'chai';
+import {createElementPath} from '../../src';
 import {
     getDescriptor,
     getPrivateDescriptor,
-
     checkAccessMethods,
     checkPreventExtensions,
     checkProperty,
 } from '../utils';
 
-
-describe('empty options ElementPath root[\'*foo*\']', () => {
-    let root = createElementPath();
-    let childFoo = root['foo*bar'];
+describe("empty options ElementPath root['*foo*']", () => {
+    const root = createElementPath();
+    const childFoo = root['foo*bar'];
 
     describe('basic Object methods', () => {
         it('.toString()', () => {
-            expect(childFoo.toString()).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
-                '/descendant::*[substring(@data-test-automation-id, ' +
-                'string-length(@data-test-automation-id) - string-length(\'bar\') + 1) = \'bar\' ' +
-                'and starts-with(@data-test-automation-id, \'foo\') ' +
-                'and string-length(@data-test-automation-id) > 6])[1]');
+            expect(childFoo.toString()).to.be.equal(
+                "(//*[@data-test-automation-id='root']" +
+                    '/descendant::*[substring(@data-test-automation-id, ' +
+                    "string-length(@data-test-automation-id) - string-length('bar') + 1) = 'bar' " +
+                    "and starts-with(@data-test-automation-id, 'foo') " +
+                    'and string-length(@data-test-automation-id) > 6])[1]',
+            );
         });
 
         it('to string converting', () => {
-            expect(`${childFoo}`).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
-                '/descendant::*[substring(@data-test-automation-id, ' +
-                'string-length(@data-test-automation-id) - string-length(\'bar\') + 1) = \'bar\' ' +
-                'and starts-with(@data-test-automation-id, \'foo\') ' +
-                'and string-length(@data-test-automation-id) > 6])[1]');
+            expect(`${childFoo}`).to.be.equal(
+                "(//*[@data-test-automation-id='root']" +
+                    '/descendant::*[substring(@data-test-automation-id, ' +
+                    "string-length(@data-test-automation-id) - string-length('bar') + 1) = 'bar' " +
+                    "and starts-with(@data-test-automation-id, 'foo') " +
+                    'and string-length(@data-test-automation-id) > 6])[1]',
+            );
         });
 
         it('.toString(true)', () => {
-            expect(childFoo.toString(true)).to.be.equal('//*[@data-test-automation-id=\'root\']' +
-                '/descendant::*[substring(@data-test-automation-id, ' +
-                'string-length(@data-test-automation-id) - string-length(\'bar\') + 1) = \'bar\' ' +
-                'and starts-with(@data-test-automation-id, \'foo\') ' +
-                'and string-length(@data-test-automation-id) > 6]');
+            expect(childFoo.toString(true)).to.be.equal(
+                "//*[@data-test-automation-id='root']" +
+                    '/descendant::*[substring(@data-test-automation-id, ' +
+                    "string-length(@data-test-automation-id) - string-length('bar') + 1) = 'bar' " +
+                    "and starts-with(@data-test-automation-id, 'foo') " +
+                    'and string-length(@data-test-automation-id) > 6]',
+            );
         });
 
         checkAccessMethods(childFoo);
@@ -53,22 +57,20 @@ describe('empty options ElementPath root[\'*foo*\']', () => {
             key: '__path',
             valueDescriptor: getDescriptor([
                 {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    isRoot: true,
+                    name: 'root',
+                    xpath: "//*[@data-test-automation-id='root']",
                 },
                 {
-                    'isRoot': false,
-                    'query': {
-                        'parts': [
-                            'foo',
-                            'bar',
-                        ],
+                    isRoot: false,
+                    query: {
+                        parts: ['foo', 'bar'],
                     },
-                    'xpath': '/descendant::*[substring(@data-test-automation-id, ' +
-                    'string-length(@data-test-automation-id) - string-length(\'bar\') + 1) = \'bar\' ' +
-                    'and starts-with(@data-test-automation-id, \'foo\') ' +
-                    'and string-length(@data-test-automation-id) > 6]',
+                    xpath:
+                        '/descendant::*[substring(@data-test-automation-id, ' +
+                        "string-length(@data-test-automation-id) - string-length('bar') + 1) = 'bar' " +
+                        "and starts-with(@data-test-automation-id, 'foo') " +
+                        'and string-length(@data-test-automation-id) > 6]',
                 },
             ]),
         });
@@ -87,10 +89,7 @@ describe('empty options ElementPath root[\'*foo*\']', () => {
             object: childFoo,
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
-                'parts': [
-                    'foo',
-                    'bar',
-                ],
+                parts: ['foo', 'bar'],
             }),
         });
     });
@@ -100,9 +99,9 @@ describe('empty options ElementPath root[\'*foo*\']', () => {
             key: '__parentPath',
             valueDescriptor: getPrivateDescriptor([
                 {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    isRoot: true,
+                    name: 'root',
+                    xpath: "//*[@data-test-automation-id='root']",
                 },
             ]),
         });
@@ -110,10 +109,14 @@ describe('empty options ElementPath root[\'*foo*\']', () => {
 
     describe('.__getReversedChain() call', () => {
         it('with root', () => {
-            expect(childFoo.__getReversedChain()).to.be.equal('root["foo*bar"]');
+            expect(childFoo.__getReversedChain()).to.be.equal(
+                'root["foo*bar"]',
+            );
         });
         it('without root', () => {
-            expect(childFoo.__getReversedChain(false)).to.be.equal('["foo*bar"]');
+            expect(childFoo.__getReversedChain(false)).to.be.equal(
+                '["foo*bar"]',
+            );
         });
     });
 

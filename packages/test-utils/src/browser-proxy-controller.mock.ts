@@ -1,4 +1,4 @@
-import { IBrowserProxyController, IBrowserProxyCommand } from '@testring/types';
+import {IBrowserProxyController, IBrowserProxyCommand} from '@testring/types';
 
 export class BrowserProxyControllerMock implements IBrowserProxyController {
     private callStack: Array<IBrowserProxyCommand> = [];

@@ -1,5 +1,5 @@
-import { expect } from 'chai';
-import { createElementPath } from '../../src';
+import {expect} from 'chai';
+import {createElementPath} from '../../src';
 
 const {
     getDescriptor,
@@ -7,11 +7,10 @@ const {
     checkProperty,
 } = require('../utils');
 
-
 describe('flows option on deep child', () => {
     const foo = async () => 'test string foo';
     const bar = () => 'test string bar';
-    let root = createElementPath({
+    const root = createElementPath({
         flows: {
             deepChild: {
                 foo,
@@ -19,7 +18,8 @@ describe('flows option on deep child', () => {
             },
         },
     });
-    let deepChildFoo = root.foo.bar.baz[1].let[0].it[0].be[0].let[1].it[1].be[1].deepChild;
+    const deepChildFoo =
+        root.foo.bar.baz[1].let[0].it[0].be[0].let[1].it[1].be[1].deepChild;
 
     describe('.__flows property traps', () => {
         checkProperty({

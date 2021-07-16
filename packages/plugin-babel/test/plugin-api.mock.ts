@@ -11,16 +11,15 @@ class TestWorkerAPIMock {
 }
 
 export class PluginAPIMock {
-
     private lastTestWorker: TestWorkerAPIMock;
 
-    getTestWorker() {
+    getTestWorker(): TestWorkerAPIMock {
         this.lastTestWorker = new TestWorkerAPIMock();
 
         return this.lastTestWorker;
     }
 
-    $getLastTestWorker() {
+    $getLastTestWorker(): TestWorkerAPIMock {
         return this.lastTestWorker;
     }
 }

@@ -1,33 +1,37 @@
-import { expect } from 'chai';
-import { createElementPath } from '../../src';
+import {expect} from 'chai';
+import {createElementPath} from '../../src';
 import {
     getDescriptor,
     getPrivateDescriptor,
-
     checkAccessMethods,
     checkPreventExtensions,
     checkProperty,
 } from '../utils';
 
-
-describe('empty options ElementPath root[\'*\']', () => {
-    let root = createElementPath();
-    let childFoo = root['*'];
+describe("empty options ElementPath root['*']", () => {
+    const root = createElementPath();
+    const childFoo = root['*'];
 
     describe('basic Object methods', () => {
         it('.toString()', () => {
-            expect(childFoo.toString()).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
-                '/descendant::*[@data-test-automation-id])[1]');
+            expect(childFoo.toString()).to.be.equal(
+                "(//*[@data-test-automation-id='root']" +
+                    '/descendant::*[@data-test-automation-id])[1]',
+            );
         });
 
         it('to string converting', () => {
-            expect(`${childFoo}`).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
-                '/descendant::*[@data-test-automation-id])[1]');
+            expect(`${childFoo}`).to.be.equal(
+                "(//*[@data-test-automation-id='root']" +
+                    '/descendant::*[@data-test-automation-id])[1]',
+            );
         });
 
         it('.toString(true)', () => {
-            expect(childFoo.toString(true)).to.be.equal('//*[@data-test-automation-id=\'root\']' +
-                '/descendant::*[@data-test-automation-id]');
+            expect(childFoo.toString(true)).to.be.equal(
+                "//*[@data-test-automation-id='root']" +
+                    '/descendant::*[@data-test-automation-id]',
+            );
         });
 
         checkAccessMethods(childFoo);
@@ -44,16 +48,16 @@ describe('empty options ElementPath root[\'*\']', () => {
             key: '__path',
             valueDescriptor: getDescriptor([
                 {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    isRoot: true,
+                    name: 'root',
+                    xpath: "//*[@data-test-automation-id='root']",
                 },
                 {
-                    'isRoot': false,
-                    'query': {
-                        'anyKey': true,
+                    isRoot: false,
+                    query: {
+                        anyKey: true,
                     },
-                    'xpath': '/descendant::*[@data-test-automation-id]',
+                    xpath: '/descendant::*[@data-test-automation-id]',
                 },
             ]),
         });
@@ -72,7 +76,7 @@ describe('empty options ElementPath root[\'*\']', () => {
             object: childFoo,
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
-                'anyKey': true,
+                anyKey: true,
             }),
         });
     });
@@ -82,9 +86,9 @@ describe('empty options ElementPath root[\'*\']', () => {
             key: '__parentPath',
             valueDescriptor: getPrivateDescriptor([
                 {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    isRoot: true,
+                    name: 'root',
+                    xpath: "//*[@data-test-automation-id='root']",
                 },
             ]),
         });

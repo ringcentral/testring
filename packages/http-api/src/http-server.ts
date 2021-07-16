@@ -1,7 +1,7 @@
-import { IHttpRequest, IHttpResponse, IHttpServerController } from '@testring/types';
-import { PluggableModule } from '@testring/pluggable-module';
-import { LoggerClient, loggerClient } from '@testring/logger';
 import {
+    IHttpRequest,
+    IHttpResponse,
+    IHttpServerController,
     ITransport,
     IHttpRequestMessage,
     IHttpResponseMessage,
@@ -9,10 +9,14 @@ import {
     HttpMessageType,
     HttpServerPlugins,
 } from '@testring/types';
+import {PluggableModule} from '@testring/pluggable-module';
+import {LoggerClient, loggerClient} from '@testring/logger';
 
 type MakeRequest = (request: IHttpRequest) => Promise<IHttpResponse>;
 
-export class HttpServer extends PluggableModule implements IHttpServerController {
+export class HttpServer
+    extends PluggableModule
+    implements IHttpServerController {
     private unsubscribeTransport: Function;
 
     private logger: LoggerClient = loggerClient.withPrefix('[http-server]');
@@ -51,16 +55,20 @@ export class HttpServer extends PluggableModule implements IHttpServerController
             return;
         }
 
-        const send = async (data: IHttpRequestMessage, src: string) => {
+        const send = async (rData: IHttpRequestMessage, rSrc: string) => {
             let uid;
-            const request = data.request;
+            const request = rData.request;
 
             try {
-                uid = data.uid;
+                uid = rData.uid;
 
                 this.logger.verbose(`Sending http request to ${request.url}`);
 
-                const requestAfterHook = await this.callHook(HttpServerPlugins.beforeRequest, request, data);
+                const requestAfterHook = await this.callHook(
+                    HttpServerPlugins.beforeRequest,
+                    request,
+                    rData,
+                );
                 const response = await this.request(requestAfterHook);
 
                 if (response.statusCode >= 400) {
@@ -73,36 +81,63 @@ export class HttpServer extends PluggableModule implements IHttpServerController
 
                 this.logger.verbose(`Successful response form ${request.url}`);
 
-                const responseAfterHook = await this.callHook(HttpServerPlugins.beforeResponse, response,
-                    data, requestAfterHook);
+                const responseAfterHook = await this.callHook(
+                    HttpServerPlugins.beforeResponse,
+                    response,
+                    rData,
+                    requestAfterHook,
+                );
 
-                await this.sendResponse<IHttpResponseMessage>(src, HttpMessageType.response, {
-                    uid,
-                    response: responseAfterHook,
-                });
+                await this.sendResponse<IHttpResponseMessage>(
+                    rSrc,
+                    HttpMessageType.response,
+                    {
+                        uid,
+                        response: responseAfterHook,
+                    },
+                );
             } catch (error) {
                 if (this.isKilled) {
                     return;
                 }
 
-                const errorAfterHook = await this.callHook(HttpServerPlugins.beforeError, error, data, request);
+                const errorAfterHook = await this.callHook(
+                    HttpServerPlugins.beforeError,
+                    error,
+                    rData,
+                    request,
+                );
 
-                await this.sendResponse<IHttpResponseRejectMessage>(src, HttpMessageType.reject, {
-                    uid,
-                    error: errorAfterHook,
-                });
+                await this.sendResponse<IHttpResponseRejectMessage>(
+                    rSrc,
+                    HttpMessageType.reject,
+                    {
+                        uid,
+                        error: errorAfterHook,
+                    },
+                );
 
                 this.logger.debug(errorAfterHook);
             }
         };
 
-        setImmediate(() => send(data, src).catch(err => this.logger.error(err)));
+        setImmediate(() =>
+            send(data, src).catch((err) => this.logger.error(err)),
+        );
     }
 
-    private async sendResponse<T>(source: string | null, messageType: string, payload: T) {
+    private async sendResponse<T>(
+        source: string | null,
+        messageType: string,
+        payload: T,
+    ) {
         try {
             if (source) {
-                await this.transportInstance.send<T>(source, messageType, payload);
+                await this.transportInstance.send<T>(
+                    source,
+                    messageType,
+                    payload,
+                );
             } else {
                 this.transportInstance.broadcastLocal<T>(messageType, payload);
             }

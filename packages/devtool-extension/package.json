@@ -22,7 +22,7 @@
     "chrome-launcher": "0.10.5",
     "copy-webpack-plugin": "5.0.2",
     "ts-loader": "8.0.2",
-    "ts-node": "8.10.2",
+    "ts-node": "10.1.0",
     "webpack": "4.28.4",
     "webpack-cli": "3.2.1"
   }

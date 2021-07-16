@@ -7,7 +7,10 @@ export function isString(obj: any): boolean {
 }
 
 export function isInteger(obj: any): boolean {
-    return Number.isInteger(obj) || (isString(obj) && `${parseInt(obj, 10)}` === obj);
+    return (
+        Number.isInteger(obj) ||
+        (isString(obj) && `${parseInt(obj, 10)}` === obj)
+    );
 }
 
 export function isGenKeyType(key: any): boolean {
@@ -17,4 +20,3 @@ export function isGenKeyType(key: any): boolean {
 export function keysCount(obj: object): number {
     return Object.keys(obj).length;
 }
-

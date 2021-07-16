@@ -21,9 +21,9 @@ const pageTemplate = (
     </style>
     <script>
         window.rcRecorderConfig = {
-            appId: '${ webAppId }',
-            host: '${ host }',
-            wsPort: ${ wsPort },
+            appId: '${webAppId}',
+            host: '${host}',
+            wsPort: ${wsPort},
         };
     </script>
 </head>
@@ -35,15 +35,9 @@ const pageTemplate = (
     `;
 };
 
-// eslint-disable-next-line import/no-default-export
 export default function popupPage(req, res, store, webAppId) {
-    const { devtoolConfig } = store.getState();
-    const { host, wsPort } = devtoolConfig;
+    const {devtoolConfig} = store.getState();
+    const {host, wsPort} = devtoolConfig;
 
-    res.send(pageTemplate(
-        host,
-        wsPort,
-        webAppId,
-        '/static',
-    ));
+    res.send(pageTemplate(host, wsPort, webAppId, '/static'));
 }

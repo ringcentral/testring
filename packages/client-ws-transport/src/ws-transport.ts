@@ -1,3 +1,5 @@
+// TODO (flops) rewrite needed
+/* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types */
 import {
     ClientWsTransportEvents,
     IClientWsTransport,
@@ -5,9 +7,8 @@ import {
     DevtoolEvents,
 } from '@testring/types';
 
-import { EventEmitter } from 'events';
-import { Queue } from '@testring/utils';
-
+import {EventEmitter} from 'events';
+import {Queue} from '@testring/utils';
 
 interface IQueuedMessage {
     type: DevtoolEvents;
@@ -15,7 +16,9 @@ interface IQueuedMessage {
     resolve: () => any;
 }
 
-export class ClientWsTransport extends EventEmitter implements IClientWsTransport {
+export class ClientWsTransport
+    extends EventEmitter
+    implements IClientWsTransport {
     private url: string;
 
     constructor(
@@ -39,7 +42,7 @@ export class ClientWsTransport extends EventEmitter implements IClientWsTranspor
         const queuedMessage = this.messagesQueue.getFirstElement();
 
         if (queuedMessage && this.getConnectionStatus()) {
-            const { type, payload, resolve } = queuedMessage;
+            const {type, payload, resolve} = queuedMessage;
 
             try {
                 this.wsSend(type, payload);
@@ -58,15 +61,13 @@ export class ClientWsTransport extends EventEmitter implements IClientWsTranspor
     }
 
     private openHandler(): void {
-        this.emit(
-            ClientWsTransportEvents.OPEN,
-        );
+        this.emit(ClientWsTransportEvents.OPEN);
 
         this.resolveQueue();
     }
 
     private messageHandler(message: MessageEvent): void {
-        const { data } = message;
+        const {data} = message;
         let jsonData: any;
 
         if (typeof data === 'string') {
@@ -79,24 +80,15 @@ export class ClientWsTransport extends EventEmitter implements IClientWsTranspor
             jsonData = data;
         }
 
-
-        this.emit(
-            ClientWsTransportEvents.MESSAGE,
-            jsonData,
-        );
+        this.emit(ClientWsTransportEvents.MESSAGE, jsonData);
     }
 
     private closeHandler(): void {
-        this.emit(
-            ClientWsTransportEvents.CLOSE,
-        );
+        this.emit(ClientWsTransportEvents.CLOSE);
     }
 
     private errorHandler(e): void {
-        this.emit(
-            ClientWsTransportEvents.ERROR,
-            e,
-        );
+        this.emit(ClientWsTransportEvents.ERROR, e);
 
         if (this.shouldReconnect) {
             this.reconnect();
@@ -108,7 +100,7 @@ export class ClientWsTransport extends EventEmitter implements IClientWsTranspor
             throw new Error('WebSocket connection not OPEN');
         }
 
-        this.connection.send(JSON.stringify({ type, payload }));
+        this.connection.send(JSON.stringify({type, payload}));
     }
 
     public connect(url: string = this.url): void {
@@ -157,7 +149,7 @@ export class ClientWsTransport extends EventEmitter implements IClientWsTranspor
             this.on(ClientWsTransportEvents.MESSAGE, handler);
 
             this.send(DevtoolEvents.HANDSHAKE_REQUEST, {
-               appId,
+                appId,
             });
         });
     }
@@ -170,10 +162,10 @@ export class ClientWsTransport extends EventEmitter implements IClientWsTranspor
 
                     resolve();
                 } catch (e) {
-                    this.messagesQueue.push({ type, payload, resolve });
+                    this.messagesQueue.push({type, payload, resolve});
                 }
             } else {
-                this.messagesQueue.push({ type, payload, resolve });
+                this.messagesQueue.push({type, payload, resolve});
             }
         });
     }
