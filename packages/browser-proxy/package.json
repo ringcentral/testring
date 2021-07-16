@@ -16,7 +16,7 @@
     "@testring/transport": "0.5.37",
     "@testring/types": "0.5.37",
     "@testring/utils": "0.5.37",
-    "@types/yargs": "15.0.5",
+    "@types/yargs": "15.0.13",
     "yargs": "15.4.1"
   },
   "devDependencies": {

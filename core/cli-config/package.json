@@ -14,7 +14,7 @@
     "@testring/types": "0.5.37",
     "@testring/utils": "0.5.37",
     "@types/deepmerge": "2.2.0",
-    "@types/yargs": "15.0.5",
+    "@types/yargs": "15.0.13",
     "deepmerge": "4.2.2",
     "yargs": "15.4.1"
   }
