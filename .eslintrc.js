@@ -28,15 +28,17 @@ module.exports = {
     rules: {
         ...ringcentralPreset.rules,
 
-        'ringcentral/specified-comment-with-task-id': 'off', // disabled for no purpose
-
         '@typescript-eslint/no-explicit-any': 'off', // TODO remove `any` type definitions
         '@typescript-eslint/explicit-module-boundary-types': 'off', // TODO add return types for functions
+
+        'ringcentral/specified-comment-with-task-id': 'off', // disabled for no purpose
 
         'import/no-anonymous-default-export': 'off', // anonymous function is ok
         'import/no-default-export': 'off', // default export is ok when needed
 
         '@typescript-eslint/no-var-requires': 'off', // require is ok
         '@typescript-eslint/no-unused-expressions': 'off', // no-unused-expressions is same
+
+        '@typescript-eslint/no-unused-vars': 'off', // not working on CI
     },
 };
