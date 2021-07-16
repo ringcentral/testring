@@ -85,6 +85,7 @@
     "chai": "4.3.4",
     "coveralls": "3.1.1",
     "eslint": "7.30.0",
+    "eslint-config-ringcentral": "5.0.0",
     "eslint-config-ringcentral-typescript": "5.0.0",
     "glob": "7.1.7",
     "lerna": "4.0.0",

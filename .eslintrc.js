@@ -1,15 +1,14 @@
 const path = require('path');
 const ringcentralPreset = require('eslint-config-ringcentral-typescript');
 
-const rcConfigPath = require.resolve('eslint-config-ringcentral');
-const rcConfigReplacePath = path.resolve(
+const rcConfigOverridePath = path.resolve(
     __dirname,
     './utils/override-eslint-config-ringcentral',
 );
 
 ringcentralPreset.extends = ringcentralPreset.extends.map((item) => {
-    if (item === rcConfigPath) {
-        return rcConfigReplacePath;
+    if (item.includes('/eslint-config-ringcentral/')) {
+        return rcConfigOverridePath;
     }
     return item;
 });
