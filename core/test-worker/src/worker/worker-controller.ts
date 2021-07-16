@@ -11,18 +11,19 @@ import {
     TestStatus,
     TestEvents,
 } from '@testring/types';
-import { restructureError } from '@testring/utils';
+import {restructureError} from '@testring/utils';
 
-import { Sandbox } from '@testring/sandbox';
-import { testAPIController, TestAPIController } from '@testring/api';
-import { asyncBreakpoints, BreakStackError } from '@testring/async-breakpoints';
-import { loggerClient, LoggerClient } from '@testring/logger';
+import {Sandbox} from '@testring/sandbox';
+import {testAPIController, TestAPIController} from '@testring/api';
+import {asyncBreakpoints, BreakStackError} from '@testring/async-breakpoints';
+import {loggerClient, LoggerClient} from '@testring/logger';
 
 export class WorkerController {
+    private logger: LoggerClient = loggerClient.withPrefix(
+        '[worker-controller]',
+    );
 
-    private logger: LoggerClient = loggerClient.withPrefix('[worker-controller]');
-
-    private isDevtoolsInitialized: boolean = false;
+    private isDevtoolsInitialized = false;
 
     private executionState: ITestControllerExecutionState = {
         paused: false,
@@ -33,16 +34,21 @@ export class WorkerController {
     constructor(
         private transport: ITransport,
         private testAPI: TestAPIController,
-    ) {
-    }
+    ) {}
 
     public init() {
-        this.transport.on(TestWorkerAction.executeTest, async (message: ITestExecutionMessage) => {
-            await this.executeTest(message);
-        });
+        this.transport.on(
+            TestWorkerAction.executeTest,
+            async (message: ITestExecutionMessage) => {
+                await this.executeTest(message);
+            },
+        );
     }
 
-    private updateExecutionState(field: keyof ITestControllerExecutionState, state: boolean) {
+    private updateExecutionState(
+        field: keyof ITestControllerExecutionState,
+        state: boolean,
+    ) {
         if (this.executionState[field] !== state) {
             this.executionState[field] = state;
 
@@ -91,7 +97,6 @@ export class WorkerController {
         asyncBreakpoints.resolveAfterInstructionBreakpoint();
     }
 
-
     private async completeExecutionSuccessfully() {
         this.releasePauseMode();
 
@@ -102,10 +107,7 @@ export class WorkerController {
         }
         Sandbox.clearCache();
 
-        this.transport.broadcastUniversally(
-            TestWorkerAction.unregister,
-            {},
-        );
+        this.transport.broadcastUniversally(TestWorkerAction.unregister, {});
 
         this.transport.broadcastUniversally<ITestExecutionCompleteMessage>(
             TestWorkerAction.executionComplete,
@@ -181,8 +183,9 @@ export class WorkerController {
 
     private evaluateCode(message: ITestEvaluationMessage) {
         this.setPendingState(true);
-        Sandbox.evaluateScript(message.path, message.content)
-            .catch((err) => this.logger.error(err));
+        Sandbox.evaluateScript(message.path, message.content).catch((err) =>
+            this.logger.error(err),
+        );
         this.setPendingState(false);
     }
 
@@ -191,9 +194,12 @@ export class WorkerController {
             return;
         }
 
-        this.transport.on(TestWorkerAction.evaluateCode, async (message: ITestEvaluationMessage) => {
-            this.evaluateCode(message);
-        });
+        this.transport.on(
+            TestWorkerAction.evaluateCode,
+            async (message: ITestEvaluationMessage) => {
+                this.evaluateCode(message);
+            },
+        );
 
         this.transport.on(TestWorkerAction.releaseTest, async () => {
             this.releaseTestExecution();
@@ -218,7 +224,11 @@ export class WorkerController {
         // TODO (flops) pass message.parameters somewhere inside web application
         const testID = path.relative(process.cwd(), message.path);
 
-        const sandbox = new Sandbox(message.content, message.path, message.dependencies);
+        const sandbox = new Sandbox(
+            message.content,
+            message.path,
+            message.dependencies,
+        );
         const bus = this.testAPI.getBus();
 
         this.testAPI.setEnvironmentParameters(message.envParameters);
@@ -229,10 +239,14 @@ export class WorkerController {
         // In all other cases it's plane sync file execution
         let isAsync = false;
 
-        let finishCallback = () => {};
-        let failCallback = (error: Error) => {};
+        let finishCallback = () => {
+            /* empty */
+        };
+        let failCallback = (error: Error) => {
+            /* empty */
+        };
 
-        const startHandler = () => isAsync = true;
+        const startHandler = () => (isAsync = true);
         const finishHandler = () => finishCallback();
         const failHandler = (error) => failCallback(error);
 
@@ -270,5 +284,3 @@ export class WorkerController {
         removeListeners();
     }
 }
-
-

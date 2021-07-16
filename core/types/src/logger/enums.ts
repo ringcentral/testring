@@ -25,7 +25,7 @@ export const enum LogLevel {
     info = 'info',
     warning = 'warning',
     error = 'error',
-    silent = 'silent'
+    silent = 'silent',
 }
 
 export const enum LoggerMessageTypes {

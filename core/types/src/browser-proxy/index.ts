@@ -1,5 +1,5 @@
-import { IBrowserProxyCommand } from './structs';
-import { WindowFeaturesConfig } from '../web-application';
+import {IBrowserProxyCommand} from './structs';
+import {WindowFeaturesConfig} from '../web-application';
 
 export interface IBrowserProxyController {
     init(): Promise<void>;
@@ -30,15 +30,33 @@ export interface IBrowserProxyPlugin {
 
     url(applicant: string, val: string): Promise<any>;
 
-    newWindow(applicant: string, val: string, windowName: string, windowFeatures: WindowFeaturesConfig): Promise<any>;
+    newWindow(
+        applicant: string,
+        val: string,
+        windowName: string,
+        windowFeatures: WindowFeaturesConfig,
+    ): Promise<any>;
 
-    waitForExist(applicant: string, xpath: string, timeout: number): Promise<any>;
+    waitForExist(
+        applicant: string,
+        xpath: string,
+        timeout: number,
+    ): Promise<any>;
 
-    waitForVisible(applicant: string, xpath: string, timeout: number): Promise<any>;
+    waitForVisible(
+        applicant: string,
+        xpath: string,
+        timeout: number,
+    ): Promise<any>;
 
     isVisible(applicant: string, xpath: string): Promise<any>;
 
-    moveToObject(applicant: string, xpath: string, x: number, y: number): Promise<any>;
+    moveToObject(
+        applicant: string,
+        xpath: string,
+        x: number,
+        y: number,
+    ): Promise<any>;
 
     execute(applicant: string, fn: any, args: Array<any>): Promise<any>;
 
@@ -66,7 +84,11 @@ export interface IBrowserProxyPlugin {
 
     selectByValue(applicant: string, xpath: string, value: any): Promise<any>;
 
-    selectByVisibleText(applicant: string, xpath: string, str: string): Promise<any>;
+    selectByVisibleText(
+        applicant: string,
+        xpath: string,
+        str: string,
+    ): Promise<any>;
 
     getAttribute(applicant: string, xpath: string, attr: any): Promise<any>;
 
@@ -74,9 +96,18 @@ export interface IBrowserProxyPlugin {
 
     isEnabled(applicant: string, xpath: string): Promise<any>;
 
-    scroll(applicant: string, xpath: string, x: number, y: number): Promise<any>;
+    scroll(
+        applicant: string,
+        xpath: string,
+        x: number,
+        y: number,
+    ): Promise<any>;
 
-    scrollIntoView(applicant: string, xpath: string, scrollIntoViewOptions?: boolean): Promise<any>;
+    scrollIntoView(
+        applicant: string,
+        xpath: string,
+        scrollIntoViewOptions?: boolean,
+    ): Promise<any>;
 
     isAlertOpen(applicant: string): Promise<any>;
 
@@ -86,7 +117,11 @@ export interface IBrowserProxyPlugin {
 
     alertText(applicant: string): Promise<any>;
 
-    dragAndDrop(applicant: string, xpathSource: string, xpathDestination: string): Promise<any>;
+    dragAndDrop(
+        applicant: string,
+        xpathSource: string,
+        xpathDestination: string,
+    ): Promise<any>;
 
     setCookie(applicant: string, cookieName: any): Promise<any>;
 
@@ -122,23 +157,44 @@ export interface IBrowserProxyPlugin {
 
     uploadFile(applicant: string, filePath: string): Promise<string | void>;
 
-    getCssProperty(applicant: string, xpath: string, cssProperty: string): Promise<any>;
+    getCssProperty(
+        applicant: string,
+        xpath: string,
+        cssProperty: string,
+    ): Promise<any>;
 
     getSource(applicant: string): Promise<any>;
 
     isExisting(applicant: string, xpath: string): Promise<any>;
 
-    waitForValue(applicant: string, xpath: string, timeout: number, reverse: boolean): Promise<any>;
+    waitForValue(
+        applicant: string,
+        xpath: string,
+        timeout: number,
+        reverse: boolean,
+    ): Promise<any>;
 
-    waitForSelected(applicant: string, xpath: string, timeout: number, reverse: boolean): Promise<any>;
+    waitForSelected(
+        applicant: string,
+        xpath: string,
+        timeout: number,
+        reverse: boolean,
+    ): Promise<any>;
 
-    waitUntil(applicant: string,
-              condition: () => boolean | Promise<boolean>,
-              timeout?: number,
-              timeoutMsg?: string,
-              interval?: number): Promise<any>;
+    waitUntil(
+        applicant: string,
+        condition: () => boolean | Promise<boolean>,
+        timeout?: number,
+        timeoutMsg?: string,
+        interval?: number,
+    ): Promise<any>;
 
-    selectByAttribute(applicant: string, xpath: string, attribute: string, value: string): Promise<any>;
+    selectByAttribute(
+        applicant: string,
+        xpath: string,
+        attribute: string,
+        value: string,
+    ): Promise<any>;
 
     getGridNodeDetails(applicant: string): Promise<any>;
 

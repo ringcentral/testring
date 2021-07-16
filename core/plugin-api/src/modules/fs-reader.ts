@@ -1,5 +1,5 @@
-import { FSReaderPlugins } from '@testring/types';
-import { AbstractAPI } from './abstract';
+import {FSReaderPlugins} from '@testring/types';
+import {AbstractAPI} from './abstract';
 
 export class FSReaderAPI extends AbstractAPI {
     onBeforeResolve(callback) {

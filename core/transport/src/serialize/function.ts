@@ -1,4 +1,4 @@
-import { ITransportSerializedStruct } from '@testring/types';
+import {ITransportSerializedStruct} from '@testring/types';
 
 export interface ISerializedFunction extends ITransportSerializedStruct {
     $key: string;
@@ -27,18 +27,16 @@ function getBody(fn: string) {
 
         return normalizedBody;
     }
-        const inlineBody = fn.match(inlineBodyRegExp);
+    const inlineBody = fn.match(inlineBodyRegExp);
 
-        return inlineBody ? `return ${inlineBody[1]}` : '';
-
+    return inlineBody ? `return ${inlineBody[1]}` : '';
 }
-
 
 function getArguments(fn: string) {
     const argumentsRegExp = /^(function)?([^(]*\(([^)]*)\)|[A-z]+)/;
     const args = fn.match(argumentsRegExp);
 
-    let matchedArgs = args ? args[3] || args[2] : '';
+    const matchedArgs = args ? args[3] || args[2] : '';
 
     if (matchedArgs.includes('()')) {
         return [];
@@ -46,7 +44,6 @@ function getArguments(fn: string) {
 
     return matchedArgs.split(',').map(trimString);
 }
-
 
 export function serializeFunction(func: Function): ISerializedFunction {
     const content = func.toString();
@@ -60,6 +57,12 @@ export function serializeFunction(func: Function): ISerializedFunction {
     };
 }
 
-export function deserializeFunction(serializedFunction: ISerializedFunction): Function {
-    return new Function(...serializedFunction.arguments, serializedFunction.body);
+export function deserializeFunction(
+    serializedFunction: ISerializedFunction,
+): Function {
+    // eslint-disable-next-line no-new-func
+    return new Function(
+        ...serializedFunction.arguments,
+        serializedFunction.body,
+    );
 }

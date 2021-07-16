@@ -1,4 +1,3 @@
-
 export class HighlightElement {
     private htmlBlock: HTMLElement;
 

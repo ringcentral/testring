@@ -1,4 +1,4 @@
-import { IHttpRequest } from './structs';
+import {IHttpRequest} from './structs';
 
 export interface IHttpCookieJar {
     setCookie(cookie: any, url: string): void;

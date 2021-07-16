@@ -1,4 +1,4 @@
-import { BrowserProxyActions } from './enums';
+import {BrowserProxyActions} from './enums';
 
 export interface IBrowserProxyCommand {
     action: BrowserProxyActions;

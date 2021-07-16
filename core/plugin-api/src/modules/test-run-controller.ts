@@ -1,8 +1,7 @@
-import { TestRunControllerPlugins, IQueuedTest } from '@testring/types';
-import { AbstractAPI } from './abstract';
+import {TestRunControllerPlugins, IQueuedTest} from '@testring/types';
+import {AbstractAPI} from './abstract';
 
 export class TestRunControllerAPI extends AbstractAPI {
-
     beforeRun(handler: (queue: IQueuedTest[]) => Promise<IQueuedTest[]>) {
         this.registryWritePlugin(TestRunControllerPlugins.beforeRun, handler);
     }
@@ -12,7 +11,10 @@ export class TestRunControllerAPI extends AbstractAPI {
     }
 
     beforeTestRetry(handler: (params: IQueuedTest) => Promise<void>) {
-        this.registryWritePlugin(TestRunControllerPlugins.beforeTestRetry, handler);
+        this.registryWritePlugin(
+            TestRunControllerPlugins.beforeTestRetry,
+            handler,
+        );
     }
 
     afterTest(handler: (params: IQueuedTest) => Promise<void>) {
@@ -23,15 +25,30 @@ export class TestRunControllerAPI extends AbstractAPI {
         this.registryWritePlugin(TestRunControllerPlugins.afterRun, handler);
     }
 
-    shouldNotExecute(handler: (state: boolean, queue: IQueuedTest[]) => Promise<boolean>) {
-        this.registryWritePlugin(TestRunControllerPlugins.shouldNotExecute, handler);
+    shouldNotExecute(
+        handler: (state: boolean, queue: IQueuedTest[]) => Promise<boolean>,
+    ) {
+        this.registryWritePlugin(
+            TestRunControllerPlugins.shouldNotExecute,
+            handler,
+        );
     }
 
-    shouldNotStart(handler: (state: boolean, test: IQueuedTest) => Promise<boolean>) {
-        this.registryWritePlugin(TestRunControllerPlugins.shouldNotStart, handler);
+    shouldNotStart(
+        handler: (state: boolean, test: IQueuedTest) => Promise<boolean>,
+    ) {
+        this.registryWritePlugin(
+            TestRunControllerPlugins.shouldNotStart,
+            handler,
+        );
     }
 
-    shouldNotRetry(handler: (state: boolean, test: IQueuedTest) => Promise<boolean>) {
-        this.registryWritePlugin(TestRunControllerPlugins.shouldNotRetry, handler);
+    shouldNotRetry(
+        handler: (state: boolean, test: IQueuedTest) => Promise<boolean>,
+    ) {
+        this.registryWritePlugin(
+            TestRunControllerPlugins.shouldNotRetry,
+            handler,
+        );
     }
 }

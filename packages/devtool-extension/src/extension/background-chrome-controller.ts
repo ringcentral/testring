@@ -5,10 +5,10 @@ import {
     IExtensionApplicationConfig,
 } from '@testring/types';
 
-import { ClientWsTransport } from '@testring/client-ws-transport';
+import {ClientWsTransport} from '@testring/client-ws-transport';
 
-import { BackgroundChromeServer } from './chrome-transport/chrome-server';
-import { CSPController } from './csp-controller';
+import {BackgroundChromeServer} from './chrome-transport/chrome-server';
+import {CSPController} from './csp-controller';
 
 type resolveReadyCallback = (value?: any) => void;
 
@@ -34,14 +34,20 @@ export class BackgroundChromeController {
     }
 
     private registerInternalHandlers() {
-        const handler = async (message: IExtensionMessagingTransportMessage, conId: string) => {
+        const handler = async (
+            message: IExtensionMessagingTransportMessage,
+            conId: string,
+        ) => {
             try {
                 switch (message.type) {
                     case ExtensionMessagingTransportTypes.WAIT_FOR_READY:
                         await this.waitForReadyHandler(message.payload, conId);
                         break;
                     case ExtensionMessagingTransportTypes.SET_EXTENSION_OPTIONS:
-                        await this.setExtensionOptionsHandler(message.payload as IExtensionApplicationConfig, conId);
+                        await this.setExtensionOptionsHandler(
+                            message.payload as IExtensionApplicationConfig,
+                            conId,
+                        );
                         break;
                     default:
                         throw Error('Unknown message ' + message);
@@ -52,7 +58,10 @@ export class BackgroundChromeController {
             }
         };
 
-        this.backgroundServer.on(ExtensionMessagingTransportEvents.MESSAGE, handler);
+        this.backgroundServer.on(
+            ExtensionMessagingTransportEvents.MESSAGE,
+            handler,
+        );
     }
 
     public isReady(): Promise<void> {
@@ -75,7 +84,10 @@ export class BackgroundChromeController {
         await this.ws.handshake(serverConfig.appId);
     }
 
-    private async setExtensionOptionsHandler(configuration: IExtensionApplicationConfig, conId: string) {
+    private async setExtensionOptionsHandler(
+        configuration: IExtensionApplicationConfig,
+        conId: string,
+    ) {
         if (this.resolveReadyStateCallback) {
             this.serverConfig = configuration;
 

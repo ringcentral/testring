@@ -1,4 +1,4 @@
-import { ExtensionMessagingTransportTypes } from './enums';
+import {ExtensionMessagingTransportTypes} from './enums';
 
 export type ElementSummary = {
     tagName: string;
@@ -22,4 +22,3 @@ export interface IExtensionMessagingTransportMessage {
     type: ExtensionMessagingTransportTypes;
     payload: any;
 }
-

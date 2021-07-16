@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 import {
     IExtensionMessagingTransportMessage,
     ExtensionMessagingTransportEvents,
@@ -24,9 +24,11 @@ export class BackgroundChromeClient extends EventEmitter {
 
         const port = chrome.runtime.connect();
 
-        port.onMessage.addListener((message: IExtensionMessagingTransportMessage) => {
-            this.handleMessage(message);
-        });
+        port.onMessage.addListener(
+            (message: IExtensionMessagingTransportMessage) => {
+                this.handleMessage(message);
+            },
+        );
 
         port.onDisconnect.addListener(() => {
             this.handleDisconnect();
@@ -62,23 +64,28 @@ export class BackgroundChromeClient extends EventEmitter {
     }
 
     private handleMessage(message: IExtensionMessagingTransportMessage): void {
-        this.emit(
-            ExtensionMessagingTransportEvents.MESSAGE,
-            message,
-        );
+        this.emit(ExtensionMessagingTransportEvents.MESSAGE, message);
     }
 
     public setConfig(config: IExtensionApplicationConfig): void {
-        this.send(ExtensionMessagingTransportTypes.SET_EXTENSION_OPTIONS, config);
+        this.send(
+            ExtensionMessagingTransportTypes.SET_EXTENSION_OPTIONS,
+            config,
+        );
     }
 
     public async waitForReady(): Promise<void> {
         return new Promise<void>((resolve) => {
             const handler = (message: IExtensionMessagingTransportMessage) => {
-                if (message.type === ExtensionMessagingTransportTypes.IS_READY) {
+                if (
+                    message.type === ExtensionMessagingTransportTypes.IS_READY
+                ) {
                     this.serverConfig = message.payload;
 
-                    this.off(ExtensionMessagingTransportEvents.MESSAGE, handler);
+                    this.off(
+                        ExtensionMessagingTransportEvents.MESSAGE,
+                        handler,
+                    );
 
                     resolve();
                 }
@@ -86,13 +93,18 @@ export class BackgroundChromeClient extends EventEmitter {
 
             this.on(ExtensionMessagingTransportEvents.MESSAGE, handler);
 
-            this.send<null>(ExtensionMessagingTransportTypes.WAIT_FOR_READY, null);
+            this.send<null>(
+                ExtensionMessagingTransportTypes.WAIT_FOR_READY,
+                null,
+            );
         });
     }
 
     public getConfig(): IExtensionApplicationConfig {
         if (this.serverConfig === null) {
-            throw Error('Application is not ready, please use waitForReady method before call');
+            throw Error(
+                'Application is not ready, please use waitForReady method before call',
+            );
         }
 
         return this.serverConfig;

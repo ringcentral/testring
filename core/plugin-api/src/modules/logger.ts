@@ -1,8 +1,7 @@
-import { AbstractAPI } from './abstract';
-import { ILogEntity, ILogMeta, LoggerPlugins } from '@testring/types';
+import {AbstractAPI} from './abstract';
+import {ILogEntity, ILogMeta, LoggerPlugins} from '@testring/types';
 
 export class LoggerAPI extends AbstractAPI {
-
     beforeLog(handler: (logEntity: ILogEntity, meta: ILogMeta) => ILogEntity) {
         this.registryWritePlugin(LoggerPlugins.beforeLog, handler);
     }

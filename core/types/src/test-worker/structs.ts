@@ -1,8 +1,11 @@
-import { IFile } from '../fs-reader';
-import { TestStatus } from './enums';
-import { DependencyDict } from '../dependencies-builder';
+import {IFile} from '../fs-reader';
+import {TestStatus} from './enums';
+import {DependencyDict} from '../dependencies-builder';
 
-export type FileCompiler = (source: string, filename: string) => Promise<string>;
+export type FileCompiler = (
+    source: string,
+    filename: string,
+) => Promise<string>;
 
 export interface ITestExecutionMessage extends IFile {
     waitForRelease: boolean;
@@ -12,9 +15,7 @@ export interface ITestExecutionMessage extends IFile {
     envParameters: any;
 }
 
-export interface ITestEvaluationMessage extends IFile {
-
-}
+export type ITestEvaluationMessage = IFile;
 
 export interface ITestExecutionCompleteMessage {
     status: TestStatus;

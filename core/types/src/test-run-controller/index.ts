@@ -1,6 +1,6 @@
-import { LogLevel } from '../logger/enums';
-import { IFile } from '../fs-reader';
-import { IDevtoolRuntimeConfiguration } from '../devtool-backend';
+import {LogLevel} from '../logger/enums';
+import {IFile} from '../fs-reader';
+import {IDevtoolRuntimeConfiguration} from '../devtool-backend';
 
 export const enum TestRunControllerPlugins {
     beforeRun = 'beforeRun',

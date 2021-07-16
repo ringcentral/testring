@@ -1,9 +1,4 @@
-import {
-    LogTypes,
-    LogLevel,
-    LogQueueStatus,
-    LogStepTypes,
-} from './enums';
+import {LogTypes, LogLevel, LogQueueStatus, LogStepTypes} from './enums';
 
 export type LogEntityStepUidType = string | null;
 
@@ -59,7 +54,11 @@ export interface ILoggerClient<Transport, Prefix, Marker, Stack> {
     endStep(stepUid: string): void;
     endAllSteps(): void;
 
-    step(message: string, callback: () => Promise<any> | any, stepType?: LogStepTypes): Promise<any>;
+    step(
+        message: string,
+        callback: () => Promise<any> | any,
+        stepType?: LogStepTypes,
+    ): Promise<any>;
 
     stepLog(message: any, callback: () => Promise<any> | any): Promise<any>;
     stepInfo(message: any, callback: () => Promise<any> | any): Promise<any>;
@@ -71,5 +70,9 @@ export interface ILoggerClient<Transport, Prefix, Marker, Stack> {
     withPrefix(prefix: Prefix): ILoggerClient<Transport, Prefix, Marker, Stack>;
     withMarker(marker: Marker): ILoggerClient<Transport, Prefix, Marker, Stack>;
 
-    createNewLogger(prefix: Prefix, mark: Marker, stepStack: Stack): ILoggerClient<Transport, Prefix, Marker, Stack>;
+    createNewLogger(
+        prefix: Prefix,
+        mark: Marker,
+        stepStack: Stack,
+    ): ILoggerClient<Transport, Prefix, Marker, Stack>;
 }

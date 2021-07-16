@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as childProcess from 'child_process';
+import * as util from 'util';
 
 // TODO (flops) after migration on nodejs >= 11 use crx3-utils instead
 import {getPlatform} from 'chrome-launcher/dist/utils';
@@ -41,16 +42,8 @@ export class CRXPlugin {
         return this.resolvePath(this.options.filename + '.crx');
     }
 
-    private async writeFile(filepath, data) {
-        return new Promise<void>((resolve, reject) => {
-            fs.writeFile(filepath, data, (err) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve();
-                }
-            });
-        });
+    private writeFile(filepath, data) {
+        return util.promisify(fs.writeFile)(filepath, data);
     }
 
     private async generateExtension() {
@@ -101,16 +94,7 @@ export class CRXPlugin {
         });
 
         await this.writeFile(this.getExtensionPath(), output);
-
-        await new Promise<void>((resolve, reject) => {
-            fs.unlink(generatedFilepath, (err): void => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve();
-                }
-            });
-        });
+        return util.promisify(fs.unlink)(generatedFilepath);
     }
 
     public apply(compiler): void {

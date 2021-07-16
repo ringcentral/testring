@@ -1,36 +1,40 @@
-import { expect } from 'chai';
-import { createElementPath } from '../../src';
+import {expect} from 'chai';
+import {createElementPath} from '../../src';
 import {
     getDescriptor,
     getPrivateDescriptor,
-
     checkAccessMethods,
     checkPreventExtensions,
     checkProperty,
 } from '../utils';
 
-
-describe('empty options ElementPath root[\'foo*(barName)\']', () => {
-    let root = createElementPath();
-    let childFoo = root['foo*(barName)'];
+describe("empty options ElementPath root['foo*(barName)']", () => {
+    const root = createElementPath();
+    const childFoo = root['foo*(barName)'];
 
     describe('basic Object methods', () => {
         it('.toString()', () => {
-            expect(childFoo.toString()).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
-                '/descendant::*[starts-with(@data-test-automation-id, \'foo\') ' +
-                'and descendant::*[@data-test-automation-id=\'barName\']])[1]');
+            expect(childFoo.toString()).to.be.equal(
+                "(//*[@data-test-automation-id='root']" +
+                    "/descendant::*[starts-with(@data-test-automation-id, 'foo') " +
+                    "and descendant::*[@data-test-automation-id='barName']])[1]",
+            );
         });
 
         it('to string converting', () => {
-            expect(`${childFoo}`).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
-                '/descendant::*[starts-with(@data-test-automation-id, \'foo\') ' +
-                'and descendant::*[@data-test-automation-id=\'barName\']])[1]');
+            expect(`${childFoo}`).to.be.equal(
+                "(//*[@data-test-automation-id='root']" +
+                    "/descendant::*[starts-with(@data-test-automation-id, 'foo') " +
+                    "and descendant::*[@data-test-automation-id='barName']])[1]",
+            );
         });
 
         it('.toString(true)', () => {
-            expect(childFoo.toString(true)).to.be.equal('//*[@data-test-automation-id=\'root\']' +
-                '/descendant::*[starts-with(@data-test-automation-id, \'foo\') ' +
-                'and descendant::*[@data-test-automation-id=\'barName\']]');
+            expect(childFoo.toString(true)).to.be.equal(
+                "//*[@data-test-automation-id='root']" +
+                    "/descendant::*[starts-with(@data-test-automation-id, 'foo') " +
+                    "and descendant::*[@data-test-automation-id='barName']]",
+            );
         });
 
         checkAccessMethods(childFoo);
@@ -47,20 +51,21 @@ describe('empty options ElementPath root[\'foo*(barName)\']', () => {
             key: '__path',
             valueDescriptor: getDescriptor([
                 {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    isRoot: true,
+                    name: 'root',
+                    xpath: "//*[@data-test-automation-id='root']",
                 },
                 {
-                    'isRoot': false,
-                    'query': {
-                        'prefix': 'foo',
-                        'subQuery': {
-                            'exactKey': 'barName',
+                    isRoot: false,
+                    query: {
+                        prefix: 'foo',
+                        subQuery: {
+                            exactKey: 'barName',
                         },
                     },
-                    'xpath': '/descendant::*[starts-with(@data-test-automation-id, \'foo\') ' +
-                    'and descendant::*[@data-test-automation-id=\'barName\']]',
+                    xpath:
+                        "/descendant::*[starts-with(@data-test-automation-id, 'foo') " +
+                        "and descendant::*[@data-test-automation-id='barName']]",
                 },
             ]),
         });
@@ -79,9 +84,9 @@ describe('empty options ElementPath root[\'foo*(barName)\']', () => {
             object: childFoo,
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
-                'prefix': 'foo',
-                'subQuery': {
-                    'exactKey': 'barName',
+                prefix: 'foo',
+                subQuery: {
+                    exactKey: 'barName',
                 },
             }),
         });
@@ -92,9 +97,9 @@ describe('empty options ElementPath root[\'foo*(barName)\']', () => {
             key: '__parentPath',
             valueDescriptor: getPrivateDescriptor([
                 {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    isRoot: true,
+                    name: 'root',
+                    xpath: "//*[@data-test-automation-id='root']",
                 },
             ]),
         });
@@ -102,10 +107,14 @@ describe('empty options ElementPath root[\'foo*(barName)\']', () => {
 
     describe('.__getReversedChain() call', () => {
         it('with root', () => {
-            expect(childFoo.__getReversedChain()).to.be.equal('root["foo*(barName)"]');
+            expect(childFoo.__getReversedChain()).to.be.equal(
+                'root["foo*(barName)"]',
+            );
         });
         it('without root', () => {
-            expect(childFoo.__getReversedChain(false)).to.be.equal('["foo*(barName)"]');
+            expect(childFoo.__getReversedChain(false)).to.be.equal(
+                '["foo*(barName)"]',
+            );
         });
     });
 

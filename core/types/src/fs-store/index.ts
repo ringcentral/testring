@@ -1,4 +1,3 @@
-
 export const enum FSFileType {
     BINARY = 0,
     TEXT = 1,
@@ -29,7 +28,7 @@ export interface IFSStoreFile {
     write(Buffer): Promise<void>; // the same part but with promise wrapper
     append(Buffer): Promise<void>; // the same part but with promise wrapper
     isLocked(): boolean; // returns bool variable, true if nobody locks current file
-    unlink(): Promise<boolean>;// async remove method
+    unlink(): Promise<boolean>; // async remove method
     waitForUnlock(): Promise<void>; //
     transaction(cb: () => Promise<void>): Promise<void>;
 }
@@ -42,7 +41,7 @@ export interface IQueAcqResp {
     requestId: string;
 }
 
-export type IQueStateReq = IQueAcqReq
+export type IQueStateReq = IQueAcqReq;
 export interface IQueStateResp {
     requestId: string;
     state: Record<string, any>;
@@ -71,12 +70,6 @@ export enum fsReqType {
     'unlink',
     'release',
 }
-export interface IFSStoreReq {
-    requestId: string;
-    action: fsReqType;
-    fileName?: string;
-    meta: Record<string, any>;
-}
 
 export interface IFSStoreReq {
     requestId: string;
@@ -84,12 +77,14 @@ export interface IFSStoreReq {
     fileName?: string;
     meta: Record<string, any>;
 }
+
 export interface IFSStoreReqFixed {
     requestId: string;
     action: fsReqType;
     fileName: string;
     meta: Record<string, any>;
 }
+
 export interface IFSStoreResp {
     requestId: string;
     action: fsReqType;
@@ -97,21 +92,22 @@ export interface IFSStoreResp {
     status: string;
 }
 
-
 export type FSStoreOptions = {
     lock?: boolean;
-    file: string | {
-        fileName?: string;
-        savePath: string;
-        ext?: string;
-    };
+    file:
+        | string
+        | {
+              fileName?: string;
+              savePath: string;
+              ext?: string;
+          };
     fsStorePrefix?: string;
-}
+};
 
 export type FSActionOptions = {
     doUnlink?: boolean;
     waitForUnlink?: boolean;
-}
+};
 
 export interface IOnFileReleaseHookData {
     workerId: string;

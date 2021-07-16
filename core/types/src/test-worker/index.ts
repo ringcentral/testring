@@ -1,5 +1,5 @@
-import { IFile } from '../fs-reader';
-import { ScreenshotsConfig } from '../config';
+import {IFile} from '../fs-reader';
+import {ScreenshotsConfig} from '../config';
 
 export interface ITestWorkerInstance {
     getWorkerID(): string;

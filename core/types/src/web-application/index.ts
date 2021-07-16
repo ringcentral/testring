@@ -1,6 +1,6 @@
-import { IBrowserProxyPlugin } from '../browser-proxy';
-import { IBrowserProxyCommand } from '../browser-proxy/structs';
-import { IDevtoolRuntimeConfiguration } from '../devtool-backend';
+import {IBrowserProxyPlugin} from '../browser-proxy';
+import {IBrowserProxyCommand} from '../browser-proxy/structs';
+import {IDevtoolRuntimeConfiguration} from '../devtool-backend';
 
 export interface IWebApplicationRegisterMessage {
     id: string;
@@ -24,7 +24,7 @@ export interface IWebApplicationResponseMessage {
 }
 
 export type IWebApplicationClient = {
-    [K in keyof IBrowserProxyPlugin]: (...args: Array<any>) => Promise<any>
+    [K in keyof IBrowserProxyPlugin]: (...args: Array<any>) => Promise<any>;
 };
 
 export interface ICoverageConfig {
@@ -56,4 +56,3 @@ export interface IWindowFeatures {
 }
 
 export type WebApplicationDevtoolCallback = (err: null | Error) => void;
-

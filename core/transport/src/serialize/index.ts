@@ -1,18 +1,51 @@
-import { ITransportSerializedStruct, TransportSerializer, TransportDeserializer } from '@testring/types';
-import { ISerializedArray, serializeArray, deserializeArray, ARRAY_KEY } from './array';
-import { ISerializedError, serializeError, deserializeError, ERROR_KEY } from './error';
-import { ISerializedObject, serializeObject, deserializeObject, OBJECT_KEY } from './object';
-import { ISerializedBuffer, serializeBuffer, deserializeBuffer, BUFFER_KEY } from './buffer';
-import { ISerializedFunction, serializeFunction, deserializeFunction, FUNCTION_KEY } from './function';
-import { ISerializedDate, serializeDate, deserializeDate, DATE_KEY } from './date';
+import {
+    ITransportSerializedStruct,
+    TransportSerializer,
+    TransportDeserializer,
+} from '@testring/types';
+import {
+    ISerializedArray,
+    serializeArray,
+    deserializeArray,
+    ARRAY_KEY,
+} from './array';
+import {
+    ISerializedError,
+    serializeError,
+    deserializeError,
+    ERROR_KEY,
+} from './error';
+import {
+    ISerializedObject,
+    serializeObject,
+    deserializeObject,
+    OBJECT_KEY,
+} from './object';
+import {
+    ISerializedBuffer,
+    serializeBuffer,
+    deserializeBuffer,
+    BUFFER_KEY,
+} from './buffer';
+import {
+    ISerializedFunction,
+    serializeFunction,
+    deserializeFunction,
+    FUNCTION_KEY,
+} from './function';
+import {
+    ISerializedDate,
+    serializeDate,
+    deserializeDate,
+    DATE_KEY,
+} from './date';
 
-const isAcceptable = (struct: any) => (
+const isAcceptable = (struct: any) =>
     typeof struct === 'number' ||
     typeof struct === 'string' ||
     typeof struct === 'boolean' ||
     typeof struct === 'undefined' ||
-    struct === null
-);
+    struct === null;
 
 export const serialize: TransportSerializer = (rootStruct: any) => {
     const processedStructs: Set<any> = new Set();
@@ -56,7 +89,9 @@ export const serialize: TransportSerializer = (rootStruct: any) => {
     return innerSerialize(rootStruct);
 };
 
-export const deserialize: TransportDeserializer = (struct: ITransportSerializedStruct) => {
+export const deserialize: TransportDeserializer = (
+    struct: ITransportSerializedStruct,
+) => {
     if (isAcceptable(struct)) {
         return struct;
     }

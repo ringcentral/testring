@@ -1,3 +1,3 @@
 export const enum TransportInternalMessageType {
-    messageResponse = '_messageResponse_'
+    messageResponse = '_messageResponse_',
 }

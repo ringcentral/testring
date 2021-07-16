@@ -4,12 +4,12 @@
  * - read - can be performed by multiple agents at the same time (pool)
  * - write (append) - can be performed only by one agent at the time QUEUE is
  * - unlink (delete) - can be performed by one at a time, but action order can be ruled by FS
- * 
- * action flow - agents can request permissions for read write and delete(unlink) access 
- * 
+ *
+ * action flow - agents can request permissions for read write and delete(unlink) access
+ *
  */
-import { PluggableModule } from '@testring/pluggable-module';
-import { MultiLock, Queue } from '@testring/utils';
+import {PluggableModule} from '@testring/pluggable-module';
+import {MultiLock, Queue} from '@testring/utils';
 
 export const hooks = {
     ON_LOCK: 'onLockAcquire',
@@ -31,23 +31,26 @@ export enum actionState {
 export type actionObject = {
     dataId: string;
     status?: actionState;
-}
+};
 
-export type actionCB = (meta: actionObject, cleanCB?: () => void) => void
+export type actionCB = (meta: actionObject, cleanCB?: () => void) => void;
 
 export class FileActionHookService extends PluggableModule {
-
-    private access: Queue<[string, string, actionCB]> = new Queue<[string, string, actionCB]>();
-    private accessing: boolean = false;
+    private access: Queue<[string, string, actionCB]> = new Queue<
+        [string, string, actionCB]
+    >();
+    private accessing = false;
     private lockPool: MultiLock; // lock pool
-    private del: Queue<[string, string, actionCB]> = new Queue<[string, string, actionCB]>();
+    private del: Queue<[string, string, actionCB]> = new Queue<
+        [string, string, actionCB]
+    >();
 
     private state: actionState;
 
     /**
-     * 
+     *
      * @param dataId - a string dataId (fileName)
-     * 
+     *
      */
     constructor(private dataId: string) {
         super(Object.values(hooks));
@@ -60,25 +63,26 @@ export class FileActionHookService extends PluggableModule {
     }
 
     public getLockPoolSize() {
-        return { queue: this.lockPool.getSize() };
+        return {queue: this.lockPool.getSize()};
     }
 
     public getAccessQueueLength() {
-        return { active: this.accessing ? 1 : 0, queue: this.access.length };
+        return {active: this.accessing ? 1 : 0, queue: this.access.length};
     }
 
     public getUnlinkQueueLength() {
-        return { queue: this.del.length };
+        return {queue: this.del.length};
     }
 
     public lock(workerId: string, requestId: string, cb: actionCB): boolean {
         if (this.state === actionState.deleted) {
             return false;
         }
-        if (this.lockPool.acquire(workerId)) { // should always be true since Multilock is unlimited 
+        if (this.lockPool.acquire(workerId)) {
+            // should always be true since Multilock is unlimited
             this.state = actionState.locked;
-            this.callHook(hooks.ON_LOCK, { workerId, requestId });
-            cb({ dataId: this.dataId, status: this.state }, () => {
+            this.callHook(hooks.ON_LOCK, {workerId, requestId});
+            cb({dataId: this.dataId, status: this.state}, () => {
                 this.unlock(workerId, requestId);
             });
         }
@@ -88,7 +92,7 @@ export class FileActionHookService extends PluggableModule {
     public unlock(workerId: string, requestId: string) {
         // console.log('FAQ unlock', workerId, requestId, Date.now());
         if (this.lockPool.release(workerId)) {
-            this.callHook(hooks.ON_UNLOCK, { workerId, requestId });
+            this.callHook(hooks.ON_UNLOCK, {workerId, requestId});
         }
         return this.chkEmpty();
     }
@@ -99,19 +103,19 @@ export class FileActionHookService extends PluggableModule {
             this.callHook(hooks.ON_UNLOCK, {});
         } else {
             this.lockPool.clean(workerId);
-            this.callHook(hooks.ON_UNLOCK, { workerId });
+            this.callHook(hooks.ON_UNLOCK, {workerId});
         }
 
         return this.chkEmpty();
     }
 
     private chkEmpty() {
-
         if (
-            this.lockPool.getSize() === 0 // no locks are present
-            && this.access.length === 0 // access queue is empty
+            this.lockPool.getSize() === 0 && // no locks are present
+            this.access.length === 0 // access queue is empty
         ) {
-            if (!this.accessing) {  // no one currently accessing data
+            if (!this.accessing) {
+                // no one currently accessing data
                 this.state = actionState.free;
                 return this.tryDelete();
             }
@@ -133,11 +137,11 @@ export class FileActionHookService extends PluggableModule {
         if (item) {
             const [workerId, requestId, cb] = item;
             this.accessing = true;
-            this.callHook(hooks.ON_ACCESS, { workerId, requestId });
-            cb({ dataId: this.dataId }, () => {
+            this.callHook(hooks.ON_ACCESS, {workerId, requestId});
+            cb({dataId: this.dataId}, () => {
                 this.accessing = false;
                 this.tryAccess();
-                this.callHook(hooks.ON_ACCESS_RELEASE, { workerId, requestId });
+                this.callHook(hooks.ON_ACCESS_RELEASE, {workerId, requestId});
             });
         } else {
             this.chkEmpty();
@@ -145,7 +149,11 @@ export class FileActionHookService extends PluggableModule {
         return true;
     }
 
-    public hookAccess(workerId: string, requestId: string, cb: actionCB): boolean {
+    public hookAccess(
+        workerId: string,
+        requestId: string,
+        cb: actionCB,
+    ): boolean {
         if (this.state === actionState.deleted) {
             return false;
         }
@@ -157,7 +165,9 @@ export class FileActionHookService extends PluggableModule {
         if (this.state === actionState.deleted) {
             return false;
         }
-        this.access.remove(([wId, rId]) => wId !== workerId && rId !== requestId);
+        this.access.remove(
+            ([wId, rId]) => wId !== workerId && rId !== requestId,
+        );
         return this.tryAccess();
     }
 
@@ -167,7 +177,7 @@ export class FileActionHookService extends PluggableModule {
             this.callHook(hooks.ON_ACCESS_RELEASE, {});
         } else {
             this.access.remove(([itemWorkerId]) => itemWorkerId === workerId);
-            this.callHook(hooks.ON_ACCESS_RELEASE, { workerId });
+            this.callHook(hooks.ON_ACCESS_RELEASE, {workerId});
         }
     }
 
@@ -178,10 +188,10 @@ export class FileActionHookService extends PluggableModule {
         const delItem = this.del.shift();
         if (delItem) {
             const [workerId, requestId, cb] = delItem;
-            this.callHook(hooks.ON_UNLINK, { workerId, requestId });
-            cb({ dataId: this.dataId, status: this.state }, () => {
+            this.callHook(hooks.ON_UNLINK, {workerId, requestId});
+            cb({dataId: this.dataId, status: this.state}, () => {
                 this.state = actionState.deleted;
-                this.callHook(hooks.ON_UNLINK_RELEASE, { workerId, requestId });
+                this.callHook(hooks.ON_UNLINK_RELEASE, {workerId, requestId});
                 this.tryDelete();
             });
         }
@@ -204,7 +214,7 @@ export class FileActionHookService extends PluggableModule {
             this.callHook(hooks.ON_UNLINK_RELEASE, {});
         } else {
             this.del.remove(([itemWorkerId]) => itemWorkerId === workerId);
-            this.callHook(hooks.ON_UNLINK_RELEASE, { workerId });
+            this.callHook(hooks.ON_UNLINK_RELEASE, {workerId});
         }
     }
 }

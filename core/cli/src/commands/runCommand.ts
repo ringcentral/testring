@@ -1,19 +1,20 @@
-import { createHttpServer, HttpClient, HttpServer } from '@testring/http-api';
-import { LoggerServer, loggerClient } from '@testring/logger';
-import { TestRunController } from '@testring/test-run-controller';
-import { applyPlugins } from '@testring/plugin-api';
-import { FSReader } from '@testring/fs-reader';
-import { TestWorker } from '@testring/test-worker';
-import { WebApplicationController } from '@testring/web-application';
-import { browserProxyControllerFactory, BrowserProxyController } from '@testring/browser-proxy';
-import { ICLICommand, IConfig, ITransport } from '@testring/types';
-import { DevtoolServerController } from '@testring/devtool-backend';
+import {createHttpServer, HttpClient, HttpServer} from '@testring/http-api';
+import {LoggerServer, loggerClient} from '@testring/logger';
+import {TestRunController} from '@testring/test-run-controller';
+import {applyPlugins} from '@testring/plugin-api';
+import {FSReader} from '@testring/fs-reader';
+import {TestWorker} from '@testring/test-worker';
+import {WebApplicationController} from '@testring/web-application';
+import {
+    browserProxyControllerFactory,
+    BrowserProxyController,
+} from '@testring/browser-proxy';
+import {ICLICommand, IConfig, ITransport} from '@testring/types';
+import {DevtoolServerController} from '@testring/devtool-backend';
 
-import { FSStoreServer } from '@testring/fs-store';
-
+import {FSStoreServer} from '@testring/fs-store';
 
 class RunCommand implements ICLICommand {
-
     private logger = loggerClient;
 
     private fsWriterQueueServer;
@@ -26,7 +27,11 @@ class RunCommand implements ICLICommand {
 
     private fsStoreServer: FSStoreServer;
 
-    constructor(private config: IConfig, private transport: ITransport, private stdout: NodeJS.WritableStream) {
+    constructor(
+        private config: IConfig,
+        private transport: ITransport,
+        private stdout: NodeJS.WritableStream,
+    ) {
         this.fsStoreServer = new FSStoreServer(config.maxWriteThreadCount);
     }
 
@@ -40,7 +45,8 @@ class RunCommand implements ICLICommand {
         for (const key in obj) {
             if (Object.prototype.hasOwnProperty.call(obj, key)) {
                 if (key === 'plugins') {
-                    item = obj[key].toString()
+                    item = obj[key]
+                        .toString()
                         .replace(/\[object Object]/g, '')
                         .replace(/,,/g, ',');
                 } else {
@@ -55,7 +61,6 @@ class RunCommand implements ICLICommand {
     }
 
     async execute() {
-
         const devtoolEnabled = this.config.devtool;
 
         if (devtoolEnabled) {
@@ -69,34 +74,47 @@ class RunCommand implements ICLICommand {
         });
 
         this.httpServer = createHttpServer(this.transport);
-        this.browserProxyController = browserProxyControllerFactory(this.transport);
+        this.browserProxyController = browserProxyControllerFactory(
+            this.transport,
+        );
 
         this.testRunController = new TestRunController(
             this.config,
             testWorker,
-            this.devtoolServerController ? this.devtoolServerController.getRuntimeConfiguration() : null,
+            this.devtoolServerController
+                ? this.devtoolServerController.getRuntimeConfiguration()
+                : null,
         );
 
-        this.webApplicationController = new WebApplicationController(this.browserProxyController, this.transport);
+        this.webApplicationController = new WebApplicationController(
+            this.browserProxyController,
+            this.transport,
+        );
 
-        const loggerServer = new LoggerServer(this.config, this.transport, this.stdout);
+        const loggerServer = new LoggerServer(
+            this.config,
+            this.transport,
+            this.stdout,
+        );
         const fsReader = new FSReader();
         const httpClient = new HttpClient(this.transport, {
             httpThrottle: this.config.httpThrottle,
         });
 
-
-        applyPlugins({
-            logger: loggerServer,
-            fsReader,
-            fsStoreServer: this.fsStoreServer,
-            testWorker,
-            browserProxy: this.browserProxyController,
-            testRunController: this.testRunController,
-            httpClientInstance: httpClient,
-            httpServer: this.httpServer,
-            devtool: this.devtoolServerController,
-        }, this.config);
+        applyPlugins(
+            {
+                logger: loggerServer,
+                fsReader,
+                fsStoreServer: this.fsStoreServer,
+                testWorker,
+                browserProxy: this.browserProxyController,
+                testRunController: this.testRunController,
+                httpClientInstance: httpClient,
+                httpServer: this.httpServer,
+                devtool: this.devtoolServerController,
+            },
+            this.config,
+        );
 
         this.logger.info('User config:\n', this.formatJSON(this.config));
 
@@ -121,7 +139,9 @@ class RunCommand implements ICLICommand {
                 this.logger.error(error);
             });
 
-            throw `Failed ${testRunResult.length}/${tests.length} tests.`;
+            throw new Error(
+                `Failed ${testRunResult.length}/${tests.length} tests.`,
+            );
         } else {
             this.logger.info(`Tests done: ${tests.length}/${tests.length}.`);
         }
@@ -130,7 +150,9 @@ class RunCommand implements ICLICommand {
     async initDevtoolServer() {
         this.logger.info('Recorder Server is enabled');
 
-        const devtoolServerController = new DevtoolServerController(this.transport);
+        const devtoolServerController = new DevtoolServerController(
+            this.transport,
+        );
         await devtoolServerController.init();
 
         return devtoolServerController;
@@ -143,20 +165,20 @@ class RunCommand implements ICLICommand {
         const webApplicationController = this.webApplicationController;
         const devtoolServer = this.devtoolServerController;
 
-        this.httpServer = (null as any);
-        this.testRunController = (null as any);
-        this.browserProxyController = (null as any);
-        this.webApplicationController = (null as any);
-        this.devtoolServerController = (null as any);
+        this.httpServer = null as any;
+        this.testRunController = null as any;
+        this.browserProxyController = null as any;
+        this.webApplicationController = null as any;
+        this.devtoolServerController = null as any;
 
         this.fsWriterQueueServer && this.fsWriterQueueServer.cleanUpTransport();
-        this.fsWriterQueueServer = (null as any);
+        this.fsWriterQueueServer = null as any;
 
         httpServer && httpServer.kill();
         webApplicationController && webApplicationController.kill();
-        testRunController && await testRunController.kill();
-        browserProxyController && await browserProxyController.kill();
-        devtoolServer && await devtoolServer.kill();
+        testRunController && (await testRunController.kill());
+        browserProxyController && (await browserProxyController.kill());
+        devtoolServer && (await devtoolServer.kill());
     }
 }
 
@@ -167,4 +189,3 @@ export function runTests(config, transport, stdout) {
 
     return new RunCommand(config, transport, stdout);
 }
-

@@ -1,6 +1,6 @@
 export const enum FSReaderPlugins {
     beforeResolve = 'beforeResolve',
-    afterResolve = 'afterResolve'
+    afterResolve = 'afterResolve',
 }
 
 export interface IFile {

@@ -1,4 +1,5 @@
-import { Express, Request, Response } from 'express-serve-static-core';
+// eslint-disable-next-line import/no-unresolved
+import type {Express, Request, Response} from 'express-serve-static-core';
 import {
     IDevtoolHttpRoute,
     IDevtoolStaticRoutes,
@@ -55,35 +56,45 @@ export class DevtoolHttpServer implements IServer {
     }
 
     private initStaticRoutes(server: Express) {
-        for (let key in this.staticRoutes) {
-            let route = this.staticRoutes[key];
+        for (const key in this.staticRoutes) {
+            const route = this.staticRoutes[key];
 
-            server.use(route.rootPath, express.static(route.directory, { etag: false }));
+            server.use(
+                route.rootPath,
+                express.static(route.directory, {etag: false}),
+            );
         }
     }
 
-    private async routeHandler(req: Request, res: Response, handler: DevtoolHttpRouteHandler, options: any) {
+    private async routeHandler(
+        req: Request,
+        res: Response,
+        handler: DevtoolHttpRouteHandler,
+        options: any,
+    ) {
         try {
             const data = await this.contextResolver(req, res);
 
             return handler(req, res, data.context, data.key, options);
         } catch (e) {
-            res.status(500)
-                .send(`${e.message}\n${e.stack}`)
-                .end();
+            res.status(500).send(`${e.message}\n${e.stack}`).end();
         }
     }
 
     private initRoutes(server: Express) {
-        for (let route of this.routes) {
+        for (const route of this.routes) {
             switch (route.method) {
                 case 'get':
                 case 'post':
                 case 'delete':
                 case 'put':
-                    server[route.method](
-                        route.mask,
-                        (req, res) => this.routeHandler(req, res, route.handler, route.options),
+                    server[route.method](route.mask, (req, res) =>
+                        this.routeHandler(
+                            req,
+                            res,
+                            route.handler,
+                            route.options,
+                        ),
                     );
                     break;
                 default:

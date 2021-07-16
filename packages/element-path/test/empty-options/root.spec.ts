@@ -1,30 +1,33 @@
-import { expect } from 'chai';
-import { createElementPath } from '../../src';
+import {expect} from 'chai';
+import {createElementPath} from '../../src';
 import {
     getDescriptor,
     getPrivateDescriptor,
-
     checkAccessMethods,
     checkPreventExtensions,
     checkProperty,
 } from '../utils';
 
-
 describe('empty options ElementPath root', () => {
-    let empty = createElementPath();
-
+    const empty = createElementPath();
 
     describe('basic Object methods', () => {
         it('.toString()', () => {
-            expect(empty.toString()).to.be.equal('(//*[@data-test-automation-id=\'root\'])[1]');
+            expect(empty.toString()).to.be.equal(
+                "(//*[@data-test-automation-id='root'])[1]",
+            );
         });
 
         it('to string converting', () => {
-            expect(`${empty}`).to.be.equal('(//*[@data-test-automation-id=\'root\'])[1]');
+            expect(`${empty}`).to.be.equal(
+                "(//*[@data-test-automation-id='root'])[1]",
+            );
         });
 
         it('.toString(true)', () => {
-            expect(empty.toString(true)).to.be.equal('//*[@data-test-automation-id=\'root\']');
+            expect(empty.toString(true)).to.be.equal(
+                "//*[@data-test-automation-id='root']",
+            );
         });
 
         checkAccessMethods(empty);
@@ -41,9 +44,9 @@ describe('empty options ElementPath root', () => {
             key: '__path',
             valueDescriptor: getDescriptor([
                 {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    isRoot: true,
+                    name: 'root',
+                    xpath: "//*[@data-test-automation-id='root']",
                 },
             ]),
         });

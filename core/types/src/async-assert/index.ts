@@ -1,5 +1,3 @@
-
-
 export interface IAssertionSuccessMeta {
     isSoft: boolean;
     successMessage?: string;

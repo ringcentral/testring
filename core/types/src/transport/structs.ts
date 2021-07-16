@@ -1,4 +1,7 @@
-export type TransportMessageHandler<T = any> = (payload: T, source?: string) => void;
+export type TransportMessageHandler<T = any> = (
+    payload: T,
+    source?: string,
+) => void;
 
 export type TransportSerializer = (v: any) => ITransportSerializedStruct;
 
@@ -19,5 +22,4 @@ export interface ITransportDirectMessage extends ITransportMessage {
     uid: string;
 }
 
-export interface ITransportBroadcastMessage extends ITransportMessage {
-}
+export type ITransportBroadcastMessage = ITransportMessage;

@@ -1,5 +1,5 @@
-import { EventEmitter } from 'events';
-import { TransportMessageHandler } from './structs';
+import {EventEmitter} from 'events';
+import {TransportMessageHandler} from './structs';
 
 type RemoveHandlerFunction = () => void;
 
@@ -8,10 +8,16 @@ export interface IWorkerEmitter extends EventEmitter {
     kill(signal?: NodeJS.Signals): void;
 
     addListener(event: string, listener: (...args: any[]) => void): this;
-    addListener(event: 'close', listener: (code: number, signal: string) => void): this;
+    addListener(
+        event: 'close',
+        listener: (code: number, signal: string) => void,
+    ): this;
     addListener(event: 'disconnect', listener: () => void): this;
     addListener(event: 'error', listener: (err: Error) => void): this;
-    addListener(event: 'exit', listener: (code: number, signal: string) => void): this;
+    addListener(
+        event: 'exit',
+        listener: (code: number, signal: string) => void,
+    ): this;
 
     emit(event: string | symbol, ...args: any[]): boolean;
     emit(event: 'close', code: number, signal: string): boolean;
@@ -26,30 +32,50 @@ export interface IWorkerEmitter extends EventEmitter {
     on(event: 'exit', listener: (code: number, signal: string) => void): this;
 
     once(event: string, listener: (...args: any[]) => void): this;
-    once(event: 'close', listener: (code: number, signal: string) => void): this;
+    once(
+        event: 'close',
+        listener: (code: number, signal: string) => void,
+    ): this;
     once(event: 'disconnect', listener: () => void): this;
     once(event: 'error', listener: (err: Error) => void): this;
     once(event: 'exit', listener: (code: number, signal: string) => void): this;
 
     prependListener(event: string, listener: (...args: any[]) => void): this;
-    prependListener(event: 'close', listener: (code: number, signal: string) => void): this;
+    prependListener(
+        event: 'close',
+        listener: (code: number, signal: string) => void,
+    ): this;
     prependListener(event: 'disconnect', listener: () => void): this;
     prependListener(event: 'error', listener: (err: Error) => void): this;
-    prependListener(event: 'exit', listener: (code: number, signal: string) => void): this;
+    prependListener(
+        event: 'exit',
+        listener: (code: number, signal: string) => void,
+    ): this;
 
-    prependOnceListener(event: string, listener: (...args: any[]) => void): this;
-    prependOnceListener(event: 'close', listener: (code: number, signal: string) => void): this;
+    prependOnceListener(
+        event: string,
+        listener: (...args: any[]) => void,
+    ): this;
+    prependOnceListener(
+        event: 'close',
+        listener: (code: number, signal: string) => void,
+    ): this;
     prependOnceListener(event: 'disconnect', listener: () => void): this;
     prependOnceListener(event: 'error', listener: (err: Error) => void): this;
-    prependOnceListener(event: 'exit', listener: (code: number, signal: string) => void): this;
+    prependOnceListener(
+        event: 'exit',
+        listener: (code: number, signal: string) => void,
+    ): this;
 }
 
-
 export interface ITransport {
-
     getProcessesList(): Array<string>;
 
-    send<T = any>(processID: string, messageType: string, payload: T): Promise<void>;
+    send<T = any>(
+        processID: string,
+        messageType: string,
+        payload: T,
+    ): Promise<void>;
 
     broadcast<T = any>(messageType: string, payload: T): void;
 
@@ -61,13 +87,19 @@ export interface ITransport {
 
     registerChild(processID: string, child: IWorkerEmitter): void;
 
-    on<T = any>(messageType: string, callback: TransportMessageHandler<T>): RemoveHandlerFunction;
+    on<T = any>(
+        messageType: string,
+        callback: TransportMessageHandler<T>,
+    ): RemoveHandlerFunction;
 
-    once<T = any>(messageType: string, callback: TransportMessageHandler<T>): RemoveHandlerFunction;
+    once<T = any>(
+        messageType: string,
+        callback: TransportMessageHandler<T>,
+    ): RemoveHandlerFunction;
 
     onceFrom<T = any>(
         processID: string,
         messageType: string,
-        callback: TransportMessageHandler<T>
+        callback: TransportMessageHandler<T>,
     ): RemoveHandlerFunction;
 }

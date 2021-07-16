@@ -2,10 +2,10 @@ import {
     IWebApplicationRegisterCompleteMessage,
     IWebApplicationRegisterMessage,
 } from '../web-application';
-import { ITestControllerExecutionState } from '../test-worker/structs';
-import { TestWorkerAction } from '../test-worker/enums';
+import {ITestControllerExecutionState} from '../test-worker/structs';
+import {TestWorkerAction} from '../test-worker/enums';
 
-import { DevtoolEvents } from '../devtool-extension/enums';
+import {DevtoolEvents} from '../devtool-extension/enums';
 
 interface IDevtoolRoute {
     method: string;
@@ -30,7 +30,10 @@ export type DevtoolHttpRouteHandler = (
     options?: any,
 ) => Promise<void> | void;
 
-export type DevtoolHttpContextResolver = (req: any, res: any) => Promise<{
+export type DevtoolHttpContextResolver = (
+    req: any,
+    res: any,
+) => Promise<{
     context: object;
     key: string;
 }>;
@@ -87,19 +90,23 @@ export interface IDevtoolProxyMessage extends IDevtoolProxyCleanedMessage {
     messageType: string;
 }
 
-export interface IDevtoolWorkerRegisterMessage extends IDevtoolProxyCleanedMessage {
+export interface IDevtoolWorkerRegisterMessage
+    extends IDevtoolProxyCleanedMessage {
     messageData: ITestControllerExecutionState;
 }
 
-export interface IDevtoolWorkerUpdateStateMessage extends IDevtoolProxyCleanedMessage {
+export interface IDevtoolWorkerUpdateStateMessage
+    extends IDevtoolProxyCleanedMessage {
     messageData: ITestControllerExecutionState;
 }
 
-export interface IDevtoolWebAppRegisterMessage extends IDevtoolProxyCleanedMessage {
+export interface IDevtoolWebAppRegisterMessage
+    extends IDevtoolProxyCleanedMessage {
     messageData: IWebApplicationRegisterMessage;
 }
 
-export interface IDevtoolWebAppRegisterCompleteMessage extends IDevtoolProxyCleanedMessage {
+export interface IDevtoolWebAppRegisterCompleteMessage
+    extends IDevtoolProxyCleanedMessage {
     messageData: IWebApplicationRegisterCompleteMessage;
 }
 
@@ -128,7 +135,6 @@ export interface IDevtoolWSGetStoreStateMessage {
     payload: void;
 }
 
-
 export interface IDevtoolWSUpdateStoreStateMessage {
     type: DevtoolEvents.STORE_STATE;
     // @TODO (flops) put here store state
@@ -142,10 +148,9 @@ export interface IDevtoolWSCallWorkerAction {
     };
 }
 
-export type IDevtoolWSMessage = IDevtoolWSHandshakeResponseMessage
+export type IDevtoolWSMessage =
+    | IDevtoolWSHandshakeResponseMessage
     | IDevtoolWSHandshakeRequestMessage
     | IDevtoolWSGetStoreStateMessage
     | IDevtoolWSUpdateStoreStateMessage
     | IDevtoolWSCallWorkerAction;
-
-

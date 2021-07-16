@@ -2,7 +2,6 @@ import * as path from 'path';
 import {SeleniumPluginConfig} from './types';
 import {PluginAPI} from '@testring/plugin-api';
 
-// eslint-disable-next-line import/no-default-export
 export default function seleniumPlugin(
     pluginAPI: PluginAPI,
     userConfig: SeleniumPluginConfig,

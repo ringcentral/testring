@@ -1,4 +1,4 @@
-import { IConfig } from '../config';
+import {IConfig} from '../config';
 
 export interface ICLICommand {
     execute(): Promise<void>;
@@ -6,4 +6,7 @@ export interface ICLICommand {
     shutdown(): Promise<void>;
 }
 
-export type CLICommandRunner = (config: IConfig, stdout: NodeJS.WritableStream) => ICLICommand;
+export type CLICommandRunner = (
+    config: IConfig,
+    stdout: NodeJS.WritableStream,
+) => ICLICommand;

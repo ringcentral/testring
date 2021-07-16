@@ -6,8 +6,8 @@ import {
     IBrowserProxyPlugin,
     ITransport,
 } from '@testring/types';
-import { requirePlugin } from '@testring/utils';
-import { loggerClient } from '@testring/logger';
+import {requirePlugin} from '@testring/utils';
+import {loggerClient} from '@testring/logger';
 
 function resolvePlugin(pluginPath: string): IBrowserProxyPlugin {
     const resolvedPlugin = requirePlugin(pluginPath);
@@ -57,21 +57,19 @@ export class BrowserProxy {
     }
 
     private registerCommandListener() {
-        this.transportInstance.on(
-            BrowserProxyMessageTypes.execute,
-            (message) => this.onMessage(message),
+        this.transportInstance.on(BrowserProxyMessageTypes.execute, (message) =>
+            this.onMessage(message),
         );
     }
 
     private sendEmptyResponse(uid: string) {
-        this.transportInstance.broadcast(
-            BrowserProxyMessageTypes.response,
-            { uid },
-        );
+        this.transportInstance.broadcast(BrowserProxyMessageTypes.response, {
+            uid,
+        });
     }
 
     private async onMessage(message: IBrowserProxyMessage) {
-        const { uid, applicant, command } = message;
+        const {uid, applicant, command} = message;
 
         try {
             if (this.killed) {
@@ -86,16 +84,18 @@ export class BrowserProxy {
                 ) {
                     this.sendEmptyResponse(uid);
                     return;
-                } 
-                    throw new ReferenceError('Cannot find browser proxy plugin!');
-                
+                }
+                throw new ReferenceError('Cannot find browser proxy plugin!');
             }
 
             if (command.action === BrowserProxyActions.kill) {
                 this.killed = true;
             }
 
-            const response = await this.plugin[command.action](applicant, ...command.args);
+            const response = await this.plugin[command.action](
+                applicant,
+                ...command.args,
+            );
 
             this.transportInstance.broadcast<IBrowserProxyCommandResponse>(
                 BrowserProxyMessageTypes.response,

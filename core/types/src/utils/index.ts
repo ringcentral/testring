@@ -10,7 +10,6 @@ export interface IStack<T> {
     length: number;
 }
 
-
 export interface IQueue<T> {
     push(...elements: Array<T>): void;
 

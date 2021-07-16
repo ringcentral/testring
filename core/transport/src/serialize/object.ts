@@ -1,4 +1,8 @@
-import { ITransportSerializedStruct, TransportSerializer, TransportDeserializer } from '@testring/types';
+import {
+    ITransportSerializedStruct,
+    TransportSerializer,
+    TransportDeserializer,
+} from '@testring/types';
 
 export interface ISerializedObject extends ITransportSerializedStruct {
     $key: string;
@@ -7,10 +11,13 @@ export interface ISerializedObject extends ITransportSerializedStruct {
 
 export const OBJECT_KEY = 'Object';
 
-export function serializeObject(object: object, serialize: TransportSerializer): ISerializedObject {
+export function serializeObject(
+    object: object,
+    serialize: TransportSerializer,
+): ISerializedObject {
     const dictionary = {};
 
-    for (let key in object) {
+    for (const key in object) {
         if (key in object) {
             dictionary[key] = serialize(object[key]);
         }
@@ -29,7 +36,7 @@ export function deserializeObject(
     const dictionary = serializedObject.dictionary;
     const object = {};
 
-    for (let key in dictionary) {
+    for (const key in dictionary) {
         if (!Object.prototype.hasOwnProperty.call(dictionary, key)) {
             continue;
         }

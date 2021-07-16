@@ -1,8 +1,7 @@
-import { BrowserProxyPlugins } from '@testring/types';
-import { AbstractAPI } from './abstract';
+import {BrowserProxyPlugins} from '@testring/types';
+import {AbstractAPI} from './abstract';
 
 export class BrowserProxyAPI extends AbstractAPI {
-
     private static currentPlugin: string;
 
     proxyPlugin(pluginPath: string, config: object) {

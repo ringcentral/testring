@@ -1,9 +1,8 @@
-import { expect } from 'chai';
-import { createElementPath } from '../../src';
-
+import {expect} from 'chai';
+import {createElementPath} from '../../src';
 
 describe('enabled strictMode', () => {
-    let empty = createElementPath();
+    const empty = createElementPath();
 
     describe('xpath getter', () => {
         it('call', () => {

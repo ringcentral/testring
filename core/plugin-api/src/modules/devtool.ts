@@ -1,5 +1,5 @@
-import { AbstractAPI } from './abstract';
-import { DevtoolPluginHooks, IDevtoolServerConfig } from '@testring/types';
+import {AbstractAPI} from './abstract';
+import {DevtoolPluginHooks, IDevtoolServerConfig} from '@testring/types';
 
 export class DevtoolAPI extends AbstractAPI {
     beforeStart(handler: (IRecorderServerConfig) => IDevtoolServerConfig) {
@@ -18,4 +18,3 @@ export class DevtoolAPI extends AbstractAPI {
         this.registryWritePlugin(DevtoolPluginHooks.afterStop, handler);
     }
 }
-
