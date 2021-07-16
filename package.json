@@ -35,7 +35,6 @@
     "build:ci": "npm run build:clear && npm run test:ci",
     "publish:version": "lerna version --exact",
     "publish:ci": "node ./utils/publish.js",
-    "storybook": "lerna run --stream --scope @testring/ui-kit storybook",
     "check-deps": "npm run check-deps:precommit && npm run check-deps:root && npm run check-deps:packages",
     "check-deps:precommit": "lerna exec -- node ../../utils/check-packages-versions",
     "check-deps:root": "ncu --deep --color",
