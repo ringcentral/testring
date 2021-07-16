@@ -2,44 +2,51 @@
 
 import * as chai from 'chai';
 
-import { loggerClient } from '@testring/logger';
+import {loggerClient} from '@testring/logger';
 
-import { FSStoreServer, fsStoreServerHooks } from '../src/fs-store-server';
-import { FSStoreFile } from '../src/fs-store-file';
+import {FSStoreServer, fsStoreServerHooks} from '../src/fs-store-server';
+import {FSStoreFile} from '../src/fs-store-file';
 
-import {
-    fsReqType,
-} from '@testring/types';
+import {fsReqType} from '@testring/types';
 
 const prefix = 'fsf-test';
 const log = loggerClient.withPrefix(prefix);
 const FSS = new FSStoreServer(10, prefix);
 
-
 describe('fs-store-file', () => {
     it('store object should lock access & unlink data', async () => {
-
         const fileName = '/tmp/tmp.tmp';
         const file = new FSStoreFile({
             file: fileName,
             fsStorePrefix: prefix,
         });
 
-
-        const state = { lock: 0, access: 0, unlink: 0 };
+        const state = {lock: 0, access: 0, unlink: 0};
         const onRelease = FSS.getHook(fsStoreServerHooks.ON_RELEASE);
-        chai.expect(onRelease).not.to.be.an('undefined', 'Hook ON_RELEASE in undefined');
+        chai.expect(onRelease).not.to.be.an(
+            'undefined',
+            'Hook ON_RELEASE in undefined',
+        );
 
-        onRelease && onRelease.readHook('testRelease', ({ fileName, action }) => {
-            log.debug({ fileName, action }, 'on release hook');
-            switch (action) {
-                case fsReqType.lock: state.lock -= 1; break;
-                case fsReqType.access: state.access -= 1; break;
-                case fsReqType.unlink: state.unlink -= 1; break;
-            }
-            chai.expect(fileName).to.be.a('string');
-            log.debug({ fileName, state }, 'release hook done');
-        });
+        onRelease &&
+            onRelease.readHook('testRelease', (readOptions) => {
+                const {action} = readOptions;
+                const hookfileName = readOptions.fileName;
+                log.debug({fileName: hookfileName, action}, 'on release hook');
+                switch (action) {
+                    case fsReqType.lock:
+                        state.lock -= 1;
+                        break;
+                    case fsReqType.access:
+                        state.access -= 1;
+                        break;
+                    case fsReqType.unlink:
+                        state.unlink -= 1;
+                        break;
+                }
+                chai.expect(hookfileName).to.be.a('string');
+                log.debug({fileName: hookfileName, state}, 'release hook done');
+            });
 
         try {
             await file.lock();
@@ -60,27 +67,23 @@ describe('fs-store-file', () => {
 
             await file.unlink();
             state.unlink += 1;
-
         } catch (e) {
             log.error(e, 'ERROR during file write test');
             throw e;
         }
 
-        chai.expect(state).to.be.deep.equal({ lock: 0, access: 0, unlink: 0 });
+        chai.expect(state).to.be.deep.equal({lock: 0, access: 0, unlink: 0});
 
         return Promise.resolve();
     });
     it('store object should transactional lock access & unlink data', async () => {
-
         const fileName = '/tmp/tmp_01.tmp';
         const file = new FSStoreFile({
             file: fileName,
             fsStorePrefix: prefix,
         });
 
-
         try {
-
             await file.lock();
 
             await Promise.all([
@@ -89,14 +92,18 @@ describe('fs-store-file', () => {
                     await file.append(Buffer.from(' more data'));
 
                     const content = await file.read();
-                    chai.expect(content.toString()).to.be.equal('data more data');
+                    chai.expect(content.toString()).to.be.equal(
+                        'data more data',
+                    );
                 }),
                 file.transaction(async () => {
                     await file.write(Buffer.from('data02'));
                     await file.append(Buffer.from(' more data02'));
 
                     const content = await file.read();
-                    chai.expect(content.toString()).to.be.equal('data02 more data02');
+                    chai.expect(content.toString()).to.be.equal(
+                        'data02 more data02',
+                    );
                 }),
             ]);
 

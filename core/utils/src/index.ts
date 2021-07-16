@@ -5,28 +5,18 @@ export {
     getAvailableFollowingPort,
 } from './find-available-ports';
 
-export {
-    requirePackage,
-    resolvePackage,
-} from './package-require';
+export {requirePackage, resolvePackage} from './package-require';
 
-export { requirePlugin } from './plugin-require';
+export {requirePlugin} from './plugin-require';
 
-export { Queue } from './queue';
-export { Stack } from './stack';
-export { MultiLock } from './multi-lock';
+export {Queue} from './queue';
+export {Stack} from './stack';
+export {MultiLock} from './multi-lock';
 
-export { generateUniqId } from './generate-uniq-id';
+export {generateUniqId} from './generate-uniq-id';
 
-export {
-    getMemoryReport,
-    getHeapReport,
-} from './memory-usage';
+export {getMemoryReport, getHeapReport} from './memory-usage';
 
-export {
-    throttle,
-} from './throttle';
+export {throttle} from './throttle';
 
-export {
-    restructureError,
-} from './restructure-error';
+export {restructureError} from './restructure-error';

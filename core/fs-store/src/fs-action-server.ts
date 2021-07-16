@@ -1,22 +1,22 @@
 /**
  * Que server - used to keep track of permissions for use of limited resources like FS write threads.
- * resources are labeled as strings and permissions are requested and released by special requests via transport! 
+ * resources are labeled as strings and permissions are requested and released by special requests via transport!
  */
-import { IQueAcqReq, IQueAcqResp, IQueStateReq, IQueStateResp, ITransport } from '@testring/types';
-import { transport } from '@testring/transport';
-import { loggerClient } from '@testring/logger';
-import { PluggableModule } from '@testring/pluggable-module';
+import {
+    IQueAcqReq,
+    IQueAcqResp,
+    IQueStateReq,
+    IQueStateResp,
+    ITransport,
+} from '@testring/types';
+import {transport} from '@testring/transport';
+import {loggerClient} from '@testring/logger';
+import {PluggableModule} from '@testring/pluggable-module';
 
-import { LockPool, LockPoolHooks } from './utils';
-
-import { FS_CONSTANTS } from './utils';
+import {LockPool, LockPoolHooks, FS_CONSTANTS} from './utils';
 
 const log = loggerClient.withPrefix('fas');
-const {
-    DW_ID,
-    FS_DEFAULT_QUEUE_PREFIX,
-} = FS_CONSTANTS;
-
+const {DW_ID, FS_DEFAULT_QUEUE_PREFIX} = FS_CONSTANTS;
 
 enum serverState {
     'new',
@@ -28,10 +28,9 @@ const hooks = {
     ON_RELEASE: 'onRelease',
 };
 
-export { hooks as fsActionServerHooks };
+export {hooks as fsActionServerHooks};
 
 export class FSActionServer extends PluggableModule {
-
     private reqName: string;
     private resName: string;
     private releaseName: string;
@@ -55,10 +54,11 @@ export class FSActionServer extends PluggableModule {
 
     private transport: ITransport;
 
-    constructor(maxWriteThreadCount: number = 10,
+    constructor(
+        maxWriteThreadCount = 10,
         msgNamePrefix: string = FS_DEFAULT_QUEUE_PREFIX,
-        tr: ITransport = transport) {
-
+        tr: ITransport = transport,
+    ) {
         super(Object.values(hooks));
 
         this.transport = tr;
@@ -73,7 +73,7 @@ export class FSActionServer extends PluggableModule {
         this.cleanName = msgNamePrefix + FS_CONSTANTS.FAS_CLEAN_POSTFIX;
 
         this.queue = new LockPool(maxWriteThreadCount);
-        this.initEnsured = new Promise(resolve => {
+        this.initEnsured = new Promise((resolve) => {
             this.initialize = resolve;
         });
         this.init();
@@ -91,65 +91,76 @@ export class FSActionServer extends PluggableModule {
     private async init(): Promise<void> {
         // ensure init once
         if (this.initState !== serverState.new) {
-            throw new Error('Cannot reinitialize component (queue server is singleton)');
+            throw new Error(
+                'Cannot reinitialize component (queue server is singleton)',
+            );
         }
         this.initState = serverState.initStarted;
 
         const acqHook = this.queue.getHook(LockPoolHooks.ON_ACQUIRE);
         if (acqHook) {
-            acqHook.readHook('queServerAcc', async ({ workerId, requestId }) => {
-                log.debug({ workerId, requestId }, 'inAcquire hook');
-                this.send<IQueAcqResp>(workerId, this.resName, { requestId });
+            acqHook.readHook('queServerAcc', async ({workerId, requestId}) => {
+                log.debug({workerId, requestId}, 'inAcquire hook');
+                this.send<IQueAcqResp>(workerId, this.resName, {requestId});
             });
         }
         const releaseHook = this.queue.getHook(LockPoolHooks.ON_RELEASE);
         if (releaseHook) {
-            releaseHook.readHook('queServerRel', async ({ workerId, requestId }) => {
-                log.debug({ workerId, requestId }, 'inRelease hook');
-                this.send<IQueAcqResp>(workerId, this.resName, { requestId });
-            });
+            releaseHook.readHook(
+                'queServerRel',
+                async ({workerId, requestId}) => {
+                    log.debug({workerId, requestId}, 'inRelease hook');
+                    this.send<IQueAcqResp>(workerId, this.resName, {requestId});
+                },
+            );
         }
 
-        this.unHookStateTransport = this
-            .transport.on<IQueStateReq>(this.stateReq, async ({ requestId }, workerId = '*') => {
-                this.send<IQueStateResp>(workerId, this.stateResp, { requestId, state: this.getState() });
-            });
+        this.unHookStateTransport = this.transport.on<IQueStateReq>(
+            this.stateReq,
+            async ({requestId}, workerId = '*') => {
+                this.send<IQueStateResp>(workerId, this.stateResp, {
+                    requestId,
+                    state: this.getState(),
+                });
+            },
+        );
 
-        this.unHookReqTransport = this
-            .transport.on<IQueAcqReq>(this.reqName, async ({ requestId }, workerId = '*') => {
+        this.unHookReqTransport = this.transport.on<IQueAcqReq>(
+            this.reqName,
+            async ({requestId}, workerId = '*') => {
                 await this.initEnsured;
-                log.debug({ workerId, requestId }, 'request action');
+                log.debug({workerId, requestId}, 'request action');
                 this.queue.acquire(workerId, requestId);
-            });
+            },
+        );
 
-        this.unHookReleaseTransport = this
-            .transport.on<IQueAcqReq>(this.releaseName, ({ requestId }, workerId = '*') => {
-                log.debug({ workerId, requestId }, 'release action');
-                this.callHook(hooks.ON_RELEASE, { workerId, requestId });
+        this.unHookReleaseTransport = this.transport.on<IQueAcqReq>(
+            this.releaseName,
+            ({requestId}, workerId = '*') => {
+                log.debug({workerId, requestId}, 'release action');
+                this.callHook(hooks.ON_RELEASE, {workerId, requestId});
                 this.queue.release(workerId, requestId);
-            });
+            },
+        );
 
-        this.unHookCleanWorkerTransport = this
-            .transport.on<{}>(this.cleanName, (msgData, workerId = '*') => {
-                log.debug({ workerId }, 'clean worker actions');
+        this.unHookCleanWorkerTransport = this.transport.on<{}>(
+            this.cleanName,
+            (msgData, workerId = '*') => {
+                log.debug({workerId}, 'clean worker actions');
                 this.queue.clean(workerId);
-            });
+            },
+        );
 
         this.initialize(true);
         this.initState = serverState.initialized;
     }
 
     private send<T>(workerId: string | undefined, msgId: string, data: T) {
-        log.debug({ workerId, msgId, data }, 'on send');
+        log.debug({workerId, msgId, data}, 'on send');
         if (!workerId || workerId === DW_ID) {
-            this.transport.broadcastUniversally<T>(
-                msgId,
-                data);
+            this.transport.broadcastUniversally<T>(msgId, data);
         } else {
-            this.transport.send<T>(
-                workerId,
-                msgId,
-                data);
+            this.transport.send<T>(workerId, msgId, data);
         }
     }
 
@@ -165,7 +176,7 @@ export class FSActionServer extends PluggableModule {
             const [wId, rId] = fName.split('-', 3);
             return workerId === wId && (!requestId || requestId === rId);
         });
-        delKeys.forEach(fName => {
+        delKeys.forEach((fName) => {
             delete this.IDs[fName];
         });
     }

@@ -1,8 +1,7 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { createAssertion } from '..';
-
+import {createAssertion} from '..';
 
 describe('assertion functional', () => {
     it('should pass with equal params', async () => {
@@ -18,7 +17,7 @@ describe('assertion functional', () => {
     });
 
     it('should pass with equal params (soft assertion)', async () => {
-        const assert = createAssertion({ isSoft: true });
+        const assert = createAssertion({isSoft: true});
 
         try {
             await assert.equal(1, 1);
@@ -29,7 +28,7 @@ describe('assertion functional', () => {
     });
 
     it('should throw error with not equal params', async () => {
-        const assert = createAssertion({ isSoft: false });
+        const assert = createAssertion({isSoft: false});
 
         try {
             await assert.equal(1, 2);
@@ -40,7 +39,7 @@ describe('assertion functional', () => {
     });
 
     it('should pass with not equal params and add errors to._errorMessages (soft assertion)', async () => {
-        const assert = createAssertion({ isSoft: true });
+        const assert = createAssertion({isSoft: true});
 
         try {
             await assert.equal(1, 2);
@@ -103,19 +102,25 @@ describe('assertion functional', () => {
 
         try {
             await assert.equal(1, 2);
-        } catch (ignore) { /* ignore */ }
+        } catch (ignore) {
+            /* ignore */
+        }
     });
 
     it('should call onError assertion callback without changed error object', async () => {
         const assert = createAssertion({
-            onError: (meta) => { },
+            onError: (meta) => {
+                /* empty */
+            },
         });
 
         try {
             await assert.equal(1, 2);
         } catch (error) {
             chai.expect(error).to.be.an.instanceof(Error);
-            chai.expect(error.message).to.be.eq('[assert] equal(act = 1, exp = 2)');
+            chai.expect(error.message).to.be.eq(
+                '[assert] equal(act = 1, exp = 2)',
+            );
         }
     });
 

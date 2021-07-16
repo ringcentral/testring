@@ -1,22 +1,25 @@
 /* eslint no-unused-expressions: 0 */
 
-
 /// <reference types="mocha" />
 
 import * as path from 'path';
 import * as chai from 'chai';
-import { FSReader } from '../src/fs-reader';
+import {FSReader} from '../src/fs-reader';
 
 const glob = path.resolve(__dirname, './fixtures/testfiles/**/**/*.test.js');
-const falseGlob = path.resolve(__dirname, './fixtures/testfiles/**/**/*.spec.ts');
+const falseGlob = path.resolve(
+    __dirname,
+    './fixtures/testfiles/**/**/*.spec.ts',
+);
 
 describe('TestsFinder', () => {
     it('should throw error if no path passed', (callback) => {
         const fsReader = new FSReader();
 
-        fsReader.find(undefined as any)
+        fsReader
+            .find(undefined as any)
             .then(() => {
-                callback('it didn\'t throw');
+                callback("it didn't throw");
             })
             .catch(() => {
                 callback();
@@ -26,9 +29,10 @@ describe('TestsFinder', () => {
     it('should throw error if no files to passed glob', (callback) => {
         const fsReader = new FSReader();
 
-        fsReader.find(falseGlob)
+        fsReader
+            .find(falseGlob)
             .then(() => {
-                callback('it didn\'t throw');
+                callback("it didn't throw");
             })
             .catch(() => {
                 callback();

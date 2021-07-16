@@ -2,12 +2,11 @@
 
 import * as chai from 'chai';
 
-import { FSActionServer } from '../src/fs-action-server';
-import { TransportMock } from '@testring/test-utils';
+import {FSActionServer} from '../src/fs-action-server';
+import {TransportMock} from '@testring/test-utils';
 
-import { IQueStateReq, IQueStateResp } from '@testring/types';
-import { FS_CONSTANTS } from '../src/utils';
-
+import {IQueStateReq, IQueStateResp} from '@testring/types';
+import {FS_CONSTANTS} from '../src/utils';
 
 const msgNamePrefix = 'fs-action';
 const stateReq = msgNamePrefix + FS_CONSTANTS.FAS_REQ_ST_POSTFIX;
@@ -24,16 +23,14 @@ describe('fs-action-server', () => {
 
         const localRequestID = 'test';
 
-
-        transport.on<IQueStateResp>(stateResp, ({ requestId, state }) => {
+        transport.on<IQueStateResp>(stateResp, ({requestId, state}) => {
             chai.expect(requestId).to.be.equal(localRequestID);
             chai.expect(state).to.be.an('object');
             done();
         });
 
-
-        transport.broadcastUniversally<IQueStateReq>(stateReq, { requestId: localRequestID });
-
+        transport.broadcastUniversally<IQueStateReq>(stateReq, {
+            requestId: localRequestID,
+        });
     });
-
 });

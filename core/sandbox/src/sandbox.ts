@@ -1,11 +1,10 @@
 import * as vm from 'vm';
 import * as path from 'path';
-import { DependencyDict } from '@testring/types';
-import { requirePackage } from '@testring/utils';
-import { Script } from './script';
+import {DependencyDict} from '@testring/types';
+import {requirePackage} from '@testring/utils';
+import {Script} from './script';
 
 class Sandbox {
-
     private context: any;
 
     // Special flag for cyclic dependencies,
@@ -16,7 +15,11 @@ class Sandbox {
 
     public exports = {};
 
-    constructor(private source: string, private filename: string, private dependencies: DependencyDict) {
+    constructor(
+        private source: string,
+        private filename: string,
+        private dependencies: DependencyDict,
+    ) {
         this.context = this.createContext(this.filename, this.dependencies);
         Sandbox.modulesCache.set(filename, this);
     }
@@ -61,14 +64,16 @@ class Sandbox {
         Sandbox.modulesCache.clear();
     }
 
-
     // TODO (flops) remove async
-    public static async evaluateScript(filename: string, code: string): Promise<Sandbox> {
+    public static async evaluateScript(
+        filename: string,
+        code: string,
+    ): Promise<Sandbox> {
         if (!Sandbox.modulesCache.has(filename)) {
             throw new Error(`Sandbox ${filename} is not created`);
         }
 
-        const sandbox = <Sandbox>Sandbox.modulesCache.get(filename);
+        const sandbox = Sandbox.modulesCache.get(filename) as Sandbox;
         const context = vm.createContext(sandbox.getContext());
         const script = new Script(code, filename);
 
@@ -88,20 +93,23 @@ class Sandbox {
     private require(requestPath) {
         const dependencies = this.dependencies[this.filename];
 
-        if (
-            dependencies &&
-            dependencies[requestPath]
-        ) {
-            const { content, path } = dependencies[requestPath];
+        if (dependencies && dependencies[requestPath]) {
+            const dependency = dependencies[requestPath];
+            const depPath = dependency.path;
+            const depContent = dependency.content;
 
             let dependencySandbox;
 
-            if (Sandbox.modulesCache.has(path)) {
-                dependencySandbox = Sandbox.modulesCache.get(path);
+            if (Sandbox.modulesCache.has(depPath)) {
+                dependencySandbox = Sandbox.modulesCache.get(depPath);
             } else {
-                dependencySandbox = new Sandbox(content, path, this.dependencies);
+                dependencySandbox = new Sandbox(
+                    depContent,
+                    depPath,
+                    this.dependencies,
+                );
 
-                Sandbox.modulesCache.set(path, dependencySandbox);
+                Sandbox.modulesCache.set(depPath, dependencySandbox);
             }
 
             return dependencySandbox.execute();
@@ -119,11 +127,11 @@ class Sandbox {
         const setter = (target: any, key: string, value: any): any => {
             switch (key) {
                 case 'exports': {
-                    return this.exports = value;
+                    return (this.exports = value);
                 }
 
                 default: {
-                    return target[key] = value;
+                    return (target[key] = value);
                 }
             }
         };
@@ -177,7 +185,7 @@ class Sandbox {
             set: setter,
 
             has: (target: any, key: string): boolean => {
-                return (key in target) || (key in global);
+                return key in target || key in global;
             },
         });
 
@@ -185,4 +193,4 @@ class Sandbox {
     }
 }
 
-export { Sandbox };
+export {Sandbox};

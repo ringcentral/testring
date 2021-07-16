@@ -1,10 +1,10 @@
 import * as path from 'path';
-import { loggerClient } from '@testring/logger';
-import { FSReader } from '@testring/fs-reader';
-import { FSStoreClient } from '@testring/fs-store';
-import { fork } from '@testring/child-process';
-import { generateUniqId } from '@testring/utils';
-import { TestWorkerLocal } from './test-worker-local';
+import {loggerClient} from '@testring/logger';
+import {FSReader} from '@testring/fs-reader';
+import {FSStoreClient} from '@testring/fs-store';
+import {fork} from '@testring/child-process';
+import {generateUniqId} from '@testring/utils';
+import {TestWorkerLocal} from './test-worker-local';
 import {
     buildDependencyDictionary,
     mergeDependencyDictionaries,
@@ -22,9 +22,7 @@ import {
     IWorkerEmitter,
 } from '@testring/types';
 
-const WORKER_ROOT = require.resolve(
-    path.resolve(__dirname, 'worker'),
-);
+const WORKER_ROOT = require.resolve(path.resolve(__dirname, 'worker'));
 
 const WORKER_DEFAULT_CONFIG: ITestWorkerConfig = {
     screenshots: 'disable',
@@ -32,10 +30,10 @@ const WORKER_DEFAULT_CONFIG: ITestWorkerConfig = {
     localWorker: false,
 };
 
-const delay = (timeout: number) => new Promise<void>(resolve => setTimeout(resolve, timeout));
+const delay = (timeout: number) =>
+    new Promise<void>((resolve) => setTimeout(resolve, timeout));
 
 export class TestWorkerInstance implements ITestWorkerInstance {
-
     private config: ITestWorkerConfig;
 
     private fsReader = new FSReader();
@@ -63,14 +61,15 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         if (this.abortTestExecution !== null) {
             this.abortTestExecution(
-                new Error(`[${this.getWorkerID()}] unexpected worker shutdown. Exit Code: ${exitCode}`),
+                new Error(
+                    `[${this.getWorkerID()}] unexpected worker shutdown. Exit Code: ${exitCode}`,
+                ),
             );
 
             this.successTestExecution = null;
             this.abortTestExecution = null;
         }
     };
-
 
     private workerErrorHandler = (error) => {
         this.fsWriterClient.releaseAllWorkerActions();
@@ -85,27 +84,34 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     constructor(
         private transport: ITransport,
         private compile: FileCompiler,
-        private beforeCompile: (paths: Array<string>, filePath: string, fileContent: string) => Promise<Array<string>>,
+        private beforeCompile: (
+            paths: Array<string>,
+            filePath: string,
+            fileContent: string,
+        ) => Promise<Array<string>>,
         workerConfig: Partial<ITestWorkerConfig> = {},
     ) {
         this.config = this.createConfig(workerConfig);
         this.fsWriterClient = new FSStoreClient();
     }
 
-    private createConfig(workerConfig: Partial<ITestWorkerConfig>): ITestWorkerConfig {
+    private createConfig(
+        workerConfig: Partial<ITestWorkerConfig>,
+    ): ITestWorkerConfig {
         return {
             ...WORKER_DEFAULT_CONFIG,
             ...workerConfig,
         };
     }
 
-    public async execute(file: IFile, parameters: any, envParameters: any): Promise<void> {
+    public async execute(
+        file: IFile,
+        parameters: any,
+        envParameters: any,
+    ): Promise<void> {
         return new Promise((resolve, reject) => {
-            this.makeExecutionRequest(
-                file,
-                parameters,
-                envParameters,
-                (err) => err ? reject(err) : resolve(),
+            this.makeExecutionRequest(file, parameters, envParameters, (err) =>
+                err ? reject(err) : resolve(),
             ).catch(reject);
         });
     }
@@ -128,7 +134,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         } else if (this.worker !== null) {
             this.clearWorkerHandlers();
 
-            let waitForKill = new Promise<void>((resolve) => {
+            const waitForKill = new Promise<void>((resolve) => {
                 if (this.worker !== null) {
                     this.worker.once('exit', () => {
                         resolve();
@@ -159,25 +165,43 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         parameters: any,
         envParameters: any,
     ) {
-        const additionalFiles = await this.beforeCompile([], file.path, file.content);
+        const additionalFiles = await this.beforeCompile(
+            [],
+            file.path,
+            file.content,
+        );
 
         // Calling external hooks to compile source
-        const compiledSource = await this.compileSource(file.content, file.path);
+        const compiledSource = await this.compileSource(
+            file.content,
+            file.path,
+        );
 
         const compiledFile = {
             path: file.path,
             content: compiledSource,
         };
 
-        let dependencies = await buildDependencyDictionary(compiledFile, this.readDependency.bind(this));
+        let dependencies = await buildDependencyDictionary(
+            compiledFile,
+            this.readDependency.bind(this),
+        );
 
         for (let i = 0, len = additionalFiles.length; i < len; i++) {
-            const file = await this.fsReader.readFile(additionalFiles[i]);
+            const additionalFile = await this.fsReader.readFile(
+                additionalFiles[i],
+            );
 
-            if (file) {
-                const additionalDependencies = await buildDependencyDictionary(file, this.readDependency.bind(this));
+            if (additionalFile) {
+                const additionalDependencies = await buildDependencyDictionary(
+                    additionalFile,
+                    this.readDependency.bind(this),
+                );
 
-                dependencies = await mergeDependencyDictionaries(dependencies, additionalDependencies);
+                dependencies = await mergeDependencyDictionaries(
+                    dependencies,
+                    additionalDependencies,
+                );
             }
         }
 
@@ -202,7 +226,11 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         let payload;
         try {
-            payload = await this.getExecutionPayload(file, parameters, envParameters);
+            payload = await this.getExecutionPayload(
+                file,
+                parameters,
+                envParameters,
+            );
         } catch (err) {
             callback(err);
             return;
@@ -250,13 +278,20 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         };
 
         if (this.config.localWorker) {
-            await worker.send({ type: TestWorkerAction.executeTest, payload });
+            await worker.send({type: TestWorkerAction.executeTest, payload});
         } else {
-            await this.transport.send<ITestExecutionMessage>(this.getWorkerID(), TestWorkerAction.executeTest, payload);
+            await this.transport.send<ITestExecutionMessage>(
+                this.getWorkerID(),
+                TestWorkerAction.executeTest,
+                payload,
+            );
         }
     }
 
-    private async compileSource(source: string, filename: string): Promise<string> {
+    private async compileSource(
+        source: string,
+        filename: string,
+    ): Promise<string> {
         const cachedSource = this.compileCache.get(source);
 
         if (cachedSource) {
@@ -282,13 +317,12 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         if (this.queuedWorker) {
             return this.queuedWorker;
         } else if (this.config.localWorker) {
-            this.queuedWorker = this.createLocalWorker()
-                .then((worker) => {
-                    this.worker = worker;
-                    this.queuedWorker = null;
+            this.queuedWorker = this.createLocalWorker().then((worker) => {
+                this.worker = worker;
+                this.queuedWorker = null;
 
-                    return worker;
-                });
+                return worker;
+            });
 
             return this.queuedWorker;
         } else if (this.worker === null) {
@@ -320,18 +354,28 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
         if (worker.stdout) {
             worker.stdout.on('data', (data) => {
-                this.logger.log(`[${this.getWorkerID()}] [logged] ${data.toString().trim()}`);
+                this.logger.log(
+                    `[${this.getWorkerID()}] [logged] ${data
+                        .toString()
+                        .trim()}`,
+                );
             });
         } else {
-            this.logger.warn(`[${this.getWorkerID()}] The STDOUT of worker ${this.getWorkerID()} is null`);
+            this.logger.warn(
+                `[${this.getWorkerID()}] The STDOUT of worker ${this.getWorkerID()} is null`,
+            );
         }
 
         if (worker.stderr) {
             worker.stderr.on('data', (data) => {
-                this.logger.error(`[${this.getWorkerID()}] [error] ${data.toString().trim()}`);
+                this.logger.error(
+                    `[${this.getWorkerID()}] [error] ${data.toString().trim()}`,
+                );
             });
         } else {
-            this.logger.warn(`[${this.getWorkerID()}] The STDERR of worker ${this.getWorkerID()} is null`);
+            this.logger.warn(
+                `[${this.getWorkerID()}] The STDERR of worker ${this.getWorkerID()} is null`,
+            );
         }
 
         worker.on('error', this.workerErrorHandler);

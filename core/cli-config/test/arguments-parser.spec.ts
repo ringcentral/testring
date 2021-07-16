@@ -1,7 +1,7 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { getArguments } from '../src/arguments-parser';
+import {getArguments} from '../src/arguments-parser';
 
 describe('argument parser', () => {
     it('should correctly work without argv', () => {

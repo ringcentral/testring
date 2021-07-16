@@ -22,7 +22,6 @@ export * from './browser-proxy/structs';
 export * from './browser-proxy/enums';
 export * from './browser-proxy';
 
-
 export * from './test-worker/structs';
 export * from './test-worker/enums';
 export * from './test-worker';

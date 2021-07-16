@@ -1,8 +1,8 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { fileReaderFactory, fileResolverFactory } from '@testring/test-utils';
-import { buildDependencyDictionary } from '../src';
+import {fileReaderFactory, fileResolverFactory} from '@testring/test-utils';
+import {buildDependencyDictionary} from '../src';
 
 const fixtureReader = fileReaderFactory(__dirname, './fixtures');
 const fixtureResolver = fileResolverFactory(__dirname, './fixtures');
@@ -17,7 +17,9 @@ describe('buildDependencyDictionary', () => {
             path: indexPath,
         };
 
-        const dictionary = await buildDependencyDictionary(file, (filePath) => fixtureReader(filePath));
+        const dictionary = await buildDependencyDictionary(file, (filePath) =>
+            fixtureReader(filePath),
+        );
 
         chai.expect(dictionary).to.have.all.keys(
             fixtureResolver('index.js'),

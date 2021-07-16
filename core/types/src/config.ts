@@ -1,5 +1,5 @@
-import { PluginConfig } from './plugin';
-import { LogLevel } from './logger/enums';
+import {PluginConfig} from './plugin';
+import {LogLevel} from './logger/enums';
 
 export type ScreenshotsConfig = 'disable' | 'enable' | 'afterError';
 

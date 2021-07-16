@@ -1,11 +1,11 @@
 import * as yargs from 'yargs';
-import { IConfig } from '@testring/types';
+import {IConfig} from '@testring/types';
 
 const RESTRICTED_FIELDS = ['_', '$0', 'version', 'help'];
 
 const firstLetterToUpperCase = (matches): string => matches[1].toUpperCase();
-const toCamelCase = (string: string): string => string.replace(/(-\w)/g, firstLetterToUpperCase);
-
+const toCamelCase = (string: string): string =>
+    string.replace(/(-\w)/g, firstLetterToUpperCase);
 
 function normalizeArg(arg: any): any {
     switch (typeof arg) {
@@ -13,22 +13,20 @@ function normalizeArg(arg: any): any {
             if (!Array.isArray(arg) && arg !== null) {
                 // eslint-disable-next-line no-use-before-define
                 return normalize(arg, false);
-            } 
-                return arg;
-            
+            }
+            return arg;
 
         default:
             return arg;
     }
 }
 
-
 function normalize(args: yargs.Arguments, isRoot: boolean): Partial<IConfig> {
     const normalizedArgs = {};
 
     let arg;
 
-    for (let key in args) {
+    for (const key in args) {
         // Removing unused fields from yargs
         if (RESTRICTED_FIELDS.includes(key)) {
             continue;
@@ -55,7 +53,6 @@ function normalize(args: yargs.Arguments, isRoot: boolean): Partial<IConfig> {
 
     return normalizedArgs;
 }
-
 
 export function getArguments(argv: Array<string>): Partial<IConfig> | null {
     if (!argv) {

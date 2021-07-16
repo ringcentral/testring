@@ -3,7 +3,7 @@
 import * as path from 'path';
 import * as chai from 'chai';
 import * as typesModuleImport from '@testring/types';
-import { requirePlugin } from '../src/plugin-require';
+import {requirePlugin} from '../src/plugin-require';
 
 describe('requirePlugin', () => {
     it('should resolve npm modules', () => {

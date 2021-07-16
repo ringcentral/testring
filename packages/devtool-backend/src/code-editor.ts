@@ -1,1 +1,1 @@
-export { getCursor } from './get-cursor';
+export {getCursor} from './get-cursor';

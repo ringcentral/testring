@@ -1,14 +1,14 @@
 import * as path from 'path';
 import * as process from 'process';
-import { getAvailablePort } from '@testring/utils';
-import { IChildProcessForkOptions, IChildProcessFork } from '@testring/types';
-import { resolveBinary } from './resolve-binary';
-import { spawn } from './spawn';
+import {getAvailablePort} from '@testring/utils';
+import {IChildProcessForkOptions, IChildProcessFork} from '@testring/types';
+import {resolveBinary} from './resolve-binary';
+import {spawn} from './spawn';
 
 function getNumberRange(start: number, end: number): Array<number> {
     const length = start - end;
 
-    return Array.from({ length }, (x, i) => i + start);
+    return Array.from({length}, (x, i) => i + start);
 }
 
 const PREFERRED_DEBUG_PORTS: Array<number> = [
@@ -27,7 +27,6 @@ const DEFAULT_FORK_OPTIONS: IChildProcessForkOptions = {
     debugPortRange: PREFERRED_DEBUG_PORTS,
 };
 
-
 function getAdditionalParameters(filePath: string): Array<string> {
     const extension = path.extname(filePath);
 
@@ -39,9 +38,9 @@ function getAdditionalParameters(filePath: string): Array<string> {
             return REQUIRE_TS_NODE;
 
         case '':
-            return require.extensions['.ts'] ?
-                REQUIRE_TS_NODE :
-                EMPTY_PARAMETERS;
+            return require.extensions['.ts']
+                ? REQUIRE_TS_NODE
+                : EMPTY_PARAMETERS;
 
         default:
             return EMPTY_PARAMETERS;
@@ -59,17 +58,18 @@ function getExecutor(filePath: string): string {
             return resolveBinary('ts-node');
 
         case '':
-            return require.extensions['.ts'] ?
-                resolveBinary('ts-node') :
-                process.execPath;
+            return require.extensions['.ts']
+                ? resolveBinary('ts-node')
+                : process.execPath;
 
         default:
-            return  process.execPath;
+            return process.execPath;
     }
 }
 
-
-const getForkOptions = (options: Partial<IChildProcessForkOptions>): IChildProcessForkOptions => ({
+const getForkOptions = (
+    options: Partial<IChildProcessForkOptions>,
+): IChildProcessForkOptions => ({
     ...DEFAULT_FORK_OPTIONS,
     ...options,
 });
@@ -82,7 +82,7 @@ export async function fork(
     const mergedOptions = getForkOptions(options);
     const childArg = `--testring-parent-pid=${process.pid}`;
 
-    let processArgs: Array<string> = [];
+    const processArgs: Array<string> = [];
     let debugPort: number | null = null;
 
     if (mergedOptions.debug) {
@@ -93,19 +93,23 @@ export async function fork(
 
     let childProcess;
     if (IS_WIN) {
-        childProcess = spawn(
-            'node',
-            [...processArgs, ...getAdditionalParameters(filePath), filePath, childArg, ...args],
-        );
+        childProcess = spawn('node', [
+            ...processArgs,
+            ...getAdditionalParameters(filePath),
+            filePath,
+            childArg,
+            ...args,
+        ]);
     } else {
-        childProcess = spawn(
-            getExecutor(filePath),
-            [...processArgs, filePath, childArg, ...args],
-        );
+        childProcess = spawn(getExecutor(filePath), [
+            ...processArgs,
+            filePath,
+            childArg,
+            ...args,
+        ]);
     }
 
     childProcess.debugPort = debugPort;
 
     return childProcess;
 }
-

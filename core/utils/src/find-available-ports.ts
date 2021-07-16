@@ -1,9 +1,12 @@
 import * as net from 'net';
 
-export function isAvailablePort(currentPort: number, host: string): Promise<boolean> {
+export function isAvailablePort(
+    currentPort: number,
+    host: string,
+): Promise<boolean> {
     return new Promise((resolve) => {
         const server = net.createServer();
-        server.listen(currentPort, host,() => {
+        server.listen(currentPort, host, () => {
             server.once('close', () => {
                 resolve(true);
             });
@@ -18,9 +21,13 @@ export function isAvailablePort(currentPort: number, host: string): Promise<bool
 export function getRandomPort(host: string): Promise<number> {
     return new Promise((resolve, reject) => {
         const server = net.createServer();
-        server.listen(0, host,() => {
-            // @ts-ignore
-            const port = server.address().port;
+        server.listen(0, host, () => {
+            const address = server.address();
+            let port = 0;
+
+            if (address && typeof address === 'object') {
+                port = address?.port;
+            }
 
             server.once('close', () => {
                 resolve(port);
@@ -35,10 +42,10 @@ export function getRandomPort(host: string): Promise<number> {
 
 export async function getAvailablePort(
     ports: Array<number> = [],
-    host: string = 'localhost',
+    host = 'localhost',
 ): Promise<number> {
     for (let i = 0, len = ports.length; i < len; i++) {
-        let port = ports[i];
+        const port = ports[i];
 
         if (await isAvailablePort(port, host)) {
             return port;
@@ -48,15 +55,14 @@ export async function getAvailablePort(
     return await getRandomPort(host);
 }
 
-
 export async function getAvailableFollowingPort(
     start: number,
-    host: string = 'localhost',
+    host = 'localhost',
     skipPorts: Array<number> = [],
 ): Promise<number> {
-    if (!skipPorts.includes(start) && await isAvailablePort(start, host)) {
+    if (!skipPorts.includes(start) && (await isAvailablePort(start, host))) {
         return start;
     }
 
-    return getAvailableFollowingPort(start+1, host, skipPorts);
+    return getAvailableFollowingPort(start + 1, host, skipPorts);
 }

@@ -2,11 +2,11 @@
 /* eslint sonarjs/no-identical-functions: 0 */
 
 import * as chai from 'chai';
-import { ITransportMessage } from '@testring/types';
-import { ChildProcessMock } from './child-process.mock';
-import { RootProcessMock } from './root-process.mock';
-import { serialize } from '../src/serialize';
-import { Transport } from '../src/transport';
+import {ITransportMessage} from '@testring/types';
+import {ChildProcessMock} from './child-process.mock';
+import {RootProcessMock} from './root-process.mock';
+import {serialize} from '../src/serialize';
+import {Transport} from '../src/transport';
 
 describe('Transport', () => {
     context('child process message sending', () => {
@@ -24,9 +24,12 @@ describe('Transport', () => {
         it('should correctly fail if there is no such process', (callback) => {
             const transport = new Transport();
 
-            transport.send('unexpectedName', MESSAGE_TYPE, [])
+            transport
+                .send('unexpectedName', MESSAGE_TYPE, [])
                 .then(() => {
-                    callback('Message was sended to nonexistent process somehow');
+                    callback(
+                        'Message was sended to nonexistent process somehow',
+                    );
                 })
                 .catch((exception) => {
                     chai.expect(exception).to.be.an.instanceof(ReferenceError);
@@ -42,7 +45,8 @@ describe('Transport', () => {
             const transport = new Transport();
 
             transport.registerChild('test', childProcessMock as any);
-            transport.send('unexpectedName', MESSAGE_TYPE, [])
+            transport
+                .send('unexpectedName', MESSAGE_TYPE, [])
                 .then(() => {
                     callback('Message was sended to failed process somehow');
                 })
@@ -64,7 +68,9 @@ describe('Transport', () => {
             transport.broadcast('message', payload);
 
             chai.expect(rootProcessMock.$callCount()).to.be.equal(1);
-            chai.expect(rootProcessMock.$lastCall().payload).to.be.deep.equal(serialize(payload));
+            chai.expect(rootProcessMock.$lastCall().payload).to.be.deep.equal(
+                serialize(payload),
+            );
         });
     });
 

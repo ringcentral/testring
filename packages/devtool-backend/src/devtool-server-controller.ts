@@ -14,17 +14,17 @@ import {
 
 import * as path from 'path';
 
-import { fork } from '@testring/child-process';
-import { generateUniqId } from '@testring/utils';
-import { PluggableModule } from '@testring/pluggable-module';
-import { loggerClient } from '@testring/logger';
-import { defaultDevtoolConfig } from './default-devtool-config';
+import {fork} from '@testring/child-process';
+import {generateUniqId} from '@testring/utils';
+import {PluggableModule} from '@testring/pluggable-module';
+import {loggerClient} from '@testring/logger';
+import {defaultDevtoolConfig} from './default-devtool-config';
 
-import { extensionId } from '@testring/devtool-extension';
+import {extensionId} from '@testring/devtool-extension';
 
-
-export class DevtoolServerController extends PluggableModule implements IDevtoolServerController {
-
+export class DevtoolServerController
+    extends PluggableModule
+    implements IDevtoolServerController {
     private workerID: string;
 
     private worker: IChildProcessFork;
@@ -50,11 +50,7 @@ export class DevtoolServerController extends PluggableModule implements IDevtool
         if (this.config === undefined) {
             throw Error('Configuration is not initialized yet');
         } else {
-            const {
-                httpPort,
-                wsPort,
-                host,
-            } = this.config;
+            const {httpPort, wsPort, host} = this.config;
 
             return {
                 extensionId,
@@ -83,7 +79,9 @@ export class DevtoolServerController extends PluggableModule implements IDevtool
                 this.logger.log(`[logged] ${data.toString().trim()}`);
             });
         } else {
-            this.logger.warn(`[logged] The STDOUT of worker ${this.getWorkerID()} is null`);
+            this.logger.warn(
+                `[logged] The STDOUT of worker ${this.getWorkerID()} is null`,
+            );
         }
 
         if (this.worker.stderr) {
@@ -91,7 +89,9 @@ export class DevtoolServerController extends PluggableModule implements IDevtool
                 this.logger.warn(`[logged] ${data.toString().trim()}`);
             });
         } else {
-            this.logger.warn(`[logged] The STDERR of worker ${this.getWorkerID()} is null`);
+            this.logger.warn(
+                `[logged] The STDERR of worker ${this.getWorkerID()} is null`,
+            );
         }
 
         this.transport.registerChild(workerID, this.worker);
@@ -104,21 +104,35 @@ export class DevtoolServerController extends PluggableModule implements IDevtool
     }
 
     private addToServerProxyHandler(messageType) {
-        const toServerHandler = (messageData, processID: string | null = null) => {
-            this.transport.send<IDevtoolProxyMessage>(this.getWorkerID(), DevtoolProxyMessages.TO_WORKER, {
-                source: processID,
-                messageType,
-                messageData,
-            });
+        const toServerHandler = (
+            messageData,
+            processID: string | null = null,
+        ) => {
+            this.transport.send<IDevtoolProxyMessage>(
+                this.getWorkerID(),
+                DevtoolProxyMessages.TO_WORKER,
+                {
+                    source: processID,
+                    messageType,
+                    messageData,
+                },
+            );
         };
         this.transport.on(messageType, toServerHandler);
     }
 
     private handleProxiedMessage(message: IDevtoolProxyMessage) {
         if (message.source) {
-            this.transport.send(message.source as string, message.messageType, message.messageData);
+            this.transport.send(
+                message.source as string,
+                message.messageType,
+                message.messageData,
+            );
         } else {
-            this.transport.broadcastLocal(message.messageType, message.messageData);
+            this.transport.broadcastLocal(
+                message.messageType,
+                message.messageData,
+            );
         }
     }
 
@@ -130,20 +144,29 @@ export class DevtoolServerController extends PluggableModule implements IDevtool
 
             WebApplicationDevtoolActions.register,
             WebApplicationDevtoolActions.unregister,
-
         ].forEach((event) => this.addToServerProxyHandler(event));
 
-        this.transport.on<IDevtoolProxyMessage>(DevtoolProxyMessages.FROM_WORKER, (payload) => {
-            this.handleProxiedMessage(payload);
-        });
+        this.transport.on<IDevtoolProxyMessage>(
+            DevtoolProxyMessages.FROM_WORKER,
+            (payload) => {
+                this.handleProxiedMessage(payload);
+            },
+        );
     }
 
     public async init() {
-        this.config = await this.callHook<IDevtoolServerConfig>(DevtoolPluginHooks.beforeStart, this.getConfig());
+        this.config = await this.callHook<IDevtoolServerConfig>(
+            DevtoolPluginHooks.beforeStart,
+            this.getConfig(),
+        );
 
         await this.startServer();
 
-        this.transport.send(this.getWorkerID(), DevtoolWorkerMessages.START_SERVER, this.config);
+        this.transport.send(
+            this.getWorkerID(),
+            DevtoolWorkerMessages.START_SERVER,
+            this.config,
+        );
 
         let caughtError = null;
         let pending = true;
@@ -152,7 +175,10 @@ export class DevtoolServerController extends PluggableModule implements IDevtool
             pending = false;
         };
 
-        this.transport.once(DevtoolWorkerMessages.START_SERVER_COMPLETE, (error) => handler(error));
+        this.transport.once(
+            DevtoolWorkerMessages.START_SERVER_COMPLETE,
+            (error) => handler(error),
+        );
 
         await new Promise<void>((resolve, reject) => {
             if (pending) {

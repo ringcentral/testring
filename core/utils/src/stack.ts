@@ -1,4 +1,4 @@
-import { IStack } from '@testring/types';
+import {IStack} from '@testring/types';
 
 export class Stack<T> implements IStack<T> {
     private array: Array<T>;
@@ -23,7 +23,7 @@ export class Stack<T> implements IStack<T> {
         this.array.length = 0;
     }
 
-    public getLastElement(offset: number = 0): T | null {
+    public getLastElement(offset = 0): T | null {
         const elementIndex = this.array.length - 1 - offset;
 
         if (elementIndex < 0) {

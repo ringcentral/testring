@@ -22,7 +22,12 @@ export interface PromisedAssert {
      * @param operator   Comparison operator, if not strict equality.
      * @remarks Node.js assert module-compatible.
      */
-    fail<T>(actual: T, expected: T, message?: string, operator?: string): Promise<never>;
+    fail<T>(
+        actual: T,
+        expected: T,
+        message?: string,
+        operator?: string,
+    ): Promise<never>;
 
     /**
      * Asserts that object is truthy.
@@ -137,7 +142,11 @@ export interface PromisedAssert {
      * @param valueToBeAbove   Minimum Potential expected value.
      * @param message   Message to display on error.
      */
-    isAbove(valueToCheck: number, valueToBeAbove: number, message?: string): Promise<void>;
+    isAbove(
+        valueToCheck: number,
+        valueToBeAbove: number,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts valueToCheck is greater than or equal to (>=) valueToBeAtLeast.
@@ -146,7 +155,11 @@ export interface PromisedAssert {
      * @param valueToBeAtLeast   Minimum Potential expected value.
      * @param message   Message to display on error.
      */
-    isAtLeast(valueToCheck: number, valueToBeAtLeast: number, message?: string): Promise<void>;
+    isAtLeast(
+        valueToCheck: number,
+        valueToBeAtLeast: number,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts valueToCheck is strictly less than (<) valueToBeBelow.
@@ -155,7 +168,11 @@ export interface PromisedAssert {
      * @param valueToBeBelow   Minimum Potential expected value.
      * @param message   Message to display on error.
      */
-    isBelow(valueToCheck: number, valueToBeBelow: number, message?: string): Promise<void>;
+    isBelow(
+        valueToCheck: number,
+        valueToBeBelow: number,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts valueToCheck is less than or equal to (<=) valueToBeAtMost.
@@ -164,7 +181,11 @@ export interface PromisedAssert {
      * @param valueToBeAtMost   Minimum Potential expected value.
      * @param message   Message to display on error.
      */
-    isAtMost(valueToCheck: number, valueToBeAtMost: number, message?: string): Promise<void>;
+    isAtMost(
+        valueToCheck: number,
+        valueToBeAtMost: number,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that value is true.
@@ -413,7 +434,11 @@ export interface PromisedAssert {
      * @param constructor   Potential expected contructor of value.
      * @param message   Message to display on error.
      */
-    instanceOf<T>(value: T, constructor: Function, message?: string): Promise<void>;
+    instanceOf<T>(
+        value: T,
+        constructor: Function,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that value is not an instance of constructor.
@@ -442,7 +467,11 @@ export interface PromisedAssert {
      * @param needle   Potential value contained in haystack.
      * @param message   Message to display on error.
      */
-    include<T>(haystack: ReadonlyArray<T> | ReadonlySet<T> | ReadonlyMap<any, T>, needle: T, message?: string): Promise<void>;
+    include<T>(
+        haystack: ReadonlyArray<T> | ReadonlySet<T> | ReadonlyMap<any, T>,
+        needle: T,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that haystack includes needle.
@@ -452,7 +481,11 @@ export interface PromisedAssert {
      * @param needle   Potential value contained in haystack.
      * @param message   Message to display on error.
      */
-    include<T extends object>(haystack: WeakSet<T>, needle: T, message?: string): Promise<void>;
+    include<T extends object>(
+        haystack: WeakSet<T>,
+        needle: T,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that haystack includes needle.
@@ -462,7 +495,11 @@ export interface PromisedAssert {
      * @param needle   Potential subset of the haystack's properties.
      * @param message   Message to display on error.
      */
-    include<T>(haystack: T, needle: Partial<T>, message?: string): Promise<void>;
+    include<T>(
+        haystack: T,
+        needle: Partial<T>,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that haystack does not includes needle.
@@ -471,7 +508,11 @@ export interface PromisedAssert {
      * @param needle   Potential substring of haystack.
      * @param message   Message to display on error.
      */
-    notInclude(haystack: string, needle: string, message?: string): Promise<void>;
+    notInclude(
+        haystack: string,
+        needle: string,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that haystack does not includes needle.
@@ -481,7 +522,11 @@ export interface PromisedAssert {
      * @param needle   Potential value contained in haystack.
      * @param message   Message to display on error.
      */
-    notInclude<T>(haystack: ReadonlyArray<T> | ReadonlySet<T> | ReadonlyMap<any, T>, needle: T, message?: string): Promise<void>;
+    notInclude<T>(
+        haystack: ReadonlyArray<T> | ReadonlySet<T> | ReadonlyMap<any, T>,
+        needle: T,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that haystack does not includes needle.
@@ -491,7 +536,11 @@ export interface PromisedAssert {
      * @param needle   Potential value contained in haystack.
      * @param message   Message to display on error.
      */
-    notInclude<T extends object>(haystack: WeakSet<T>, needle: T, message?: string): Promise<void>;
+    notInclude<T extends object>(
+        haystack: WeakSet<T>,
+        needle: T,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that haystack does not includes needle.
@@ -501,7 +550,11 @@ export interface PromisedAssert {
      * @param needle   Potential subset of the haystack's properties.
      * @param message   Message to display on error.
      */
-    notInclude<T>(haystack: T, needle: Partial<T>, message?: string): Promise<void>;
+    notInclude<T>(
+        haystack: T,
+        needle: Partial<T>,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that haystack includes needle. Deep equality is used.
@@ -512,7 +565,11 @@ export interface PromisedAssert {
      *
      * @deprecated Does not have any effect on string. Use {@link Assert#include} instead.
      */
-    deepInclude(haystack: string, needle: string, message?: string): Promise<void>;
+    deepInclude(
+        haystack: string,
+        needle: string,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that haystack includes needle. Deep equality is used.
@@ -522,7 +579,11 @@ export interface PromisedAssert {
      * @param needle   Potential value contained in haystack.
      * @param message   Message to display on error.
      */
-    deepInclude<T>(haystack: ReadonlyArray<T> | ReadonlySet<T> | ReadonlyMap<any, T>, needle: T, message?: string): Promise<void>;
+    deepInclude<T>(
+        haystack: ReadonlyArray<T> | ReadonlySet<T> | ReadonlyMap<any, T>,
+        needle: T,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that haystack does not includes needle.
@@ -532,7 +593,11 @@ export interface PromisedAssert {
      * @param needle   Potential subset of the haystack's properties.
      * @param message   Message to display on error.
      */
-    deepInclude<T>(haystack: T, needle: T extends WeakSet<any> ? never : Partial<T>, message?: string): Promise<void>;
+    deepInclude<T>(
+        haystack: T,
+        needle: T extends WeakSet<any> ? never : Partial<T>,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that haystack does not includes needle. Deep equality is used.
@@ -543,7 +608,11 @@ export interface PromisedAssert {
      *
      * @deprecated Does not have any effect on string. Use {@link Assert#notInclude} instead.
      */
-    notDeepInclude(haystack: string, needle: string, message?: string): Promise<void>;
+    notDeepInclude(
+        haystack: string,
+        needle: string,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that haystack does not includes needle. Deep equality is used.
@@ -553,7 +622,11 @@ export interface PromisedAssert {
      * @param needle   Potential value contained in haystack.
      * @param message   Message to display on error.
      */
-    notDeepInclude<T>(haystack: ReadonlyArray<T> | ReadonlySet<T> | ReadonlyMap<any, T>, needle: T, message?: string): Promise<void>;
+    notDeepInclude<T>(
+        haystack: ReadonlyArray<T> | ReadonlySet<T> | ReadonlyMap<any, T>,
+        needle: T,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that haystack does not includes needle. Deep equality is used.
@@ -563,7 +636,11 @@ export interface PromisedAssert {
      * @param needle   Potential subset of the haystack's properties.
      * @param message   Message to display on error.
      */
-    notDeepInclude<T>(haystack: T, needle: T extends WeakSet<any> ? never : Partial<T>, message?: string): Promise<void>;
+    notDeepInclude<T>(
+        haystack: T,
+        needle: T extends WeakSet<any> ? never : Partial<T>,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that ‘haystack’ includes ‘needle’. Can be used to assert the inclusion of a subset of properties in an object.
@@ -593,7 +670,11 @@ export interface PromisedAssert {
      * @param needle
      * @param message   Message to display on error.
      */
-    notNestedInclude(haystack: any, needle: any, message?: string): Promise<void>;
+    notNestedInclude(
+        haystack: any,
+        needle: any,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that ‘haystack’ includes ‘needle’. Can be used to assert the inclusion of a subset of properties in an object while checking for deep equality
@@ -608,7 +689,11 @@ export interface PromisedAssert {
      * @param needle
      * @param message   Message to display on error.
      */
-    deepNestedInclude(haystack: any, needle: any, message?: string): Promise<void>;
+    deepNestedInclude(
+        haystack: any,
+        needle: any,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that ‘haystack’ does not include ‘needle’. Can be used to assert the absence of a subset of properties in an object while checking for deep equality.
@@ -623,7 +708,11 @@ export interface PromisedAssert {
      * @param needle
      * @param message   Message to display on error.
      */
-    notDeepNestedInclude(haystack: any, needle: any, message?: string): Promise<void>;
+    notDeepNestedInclude(
+        haystack: any,
+        needle: any,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that ‘haystack’ includes ‘needle’. Can be used to assert the inclusion of a subset of properties in an object while ignoring inherited properties.
@@ -659,7 +748,11 @@ export interface PromisedAssert {
      * @param needle
      * @param message   Message to display on error.
      */
-    notDeepOwnInclude(haystack: any, needle: any, message?: string): Promise<void>;
+    notDeepOwnInclude(
+        haystack: any,
+        needle: any,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that value matches the regular expression regexp.
@@ -687,7 +780,11 @@ export interface PromisedAssert {
      * @param property   Potential contained property of object.
      * @param message   Message to display on error.
      */
-    property<T>(object: T, property: string /* keyof T */, message?: string): Promise<void>;
+    property<T>(
+        object: T,
+        property: string /* keyof T */,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that object has a property named by property.
@@ -697,7 +794,11 @@ export interface PromisedAssert {
      * @param property   Potential contained property of object.
      * @param message   Message to display on error.
      */
-    notProperty<T>(object: T, property: string /* keyof T */, message?: string): Promise<void>;
+    notProperty<T>(
+        object: T,
+        property: string /* keyof T */,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that object has a property named by property, which can be a string
@@ -708,7 +809,11 @@ export interface PromisedAssert {
      * @param property   Potential contained property of object.
      * @param message   Message to display on error.
      */
-    deepProperty<T>(object: T, property: string, message?: string): Promise<void>;
+    deepProperty<T>(
+        object: T,
+        property: string,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that object does not have a property named by property, which can be a
@@ -719,7 +824,11 @@ export interface PromisedAssert {
      * @param property   Potential contained property of object.
      * @param message   Message to display on error.
      */
-    notDeepProperty<T>(object: T, property: string, message?: string): Promise<void>;
+    notDeepProperty<T>(
+        object: T,
+        property: string,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that object has a property named by property with value given by value.
@@ -731,7 +840,12 @@ export interface PromisedAssert {
      * @param value   Potential expected property value.
      * @param message   Message to display on error.
      */
-    propertyVal<T, V>(object: T, property: string /* keyof T */, value: V, message?: string): Promise<void>;
+    propertyVal<T, V>(
+        object: T,
+        property: string /* keyof T */,
+        value: V,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that object has a property named by property with value given by value.
@@ -743,7 +857,12 @@ export interface PromisedAssert {
      * @param value   Potential expected property value.
      * @param message   Message to display on error.
      */
-    notPropertyVal<T, V>(object: T, property: string /* keyof T */, value: V, message?: string): Promise<void>;
+    notPropertyVal<T, V>(
+        object: T,
+        property: string /* keyof T */,
+        value: V,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that object has a property named by property, which can be a string
@@ -756,7 +875,12 @@ export interface PromisedAssert {
      * @param value   Potential expected property value.
      * @param message   Message to display on error.
      */
-    deepPropertyVal<T, V>(object: T, property: string, value: V, message?: string): Promise<void>;
+    deepPropertyVal<T, V>(
+        object: T,
+        property: string,
+        value: V,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that object does not have a property named by property, which can be a
@@ -769,7 +893,12 @@ export interface PromisedAssert {
      * @param value   Potential expected property value.
      * @param message   Message to display on error.
      */
-    notDeepPropertyVal<T, V>(object: T, property: string, value: V, message?: string): Promise<void>;
+    notDeepPropertyVal<T, V>(
+        object: T,
+        property: string,
+        value: V,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that object has a length property with the expected value.
@@ -779,7 +908,11 @@ export interface PromisedAssert {
      * @param length   Potential expected length of object.
      * @param message   Message to display on error.
      */
-    lengthOf<T extends { readonly length?: number }>(object: T, length: number, message?: string): Promise<void>;
+    lengthOf<T extends {readonly length?: number}>(
+        object: T,
+        length: number,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that fn will throw an error.
@@ -805,7 +938,11 @@ export interface PromisedAssert {
      * @param constructor   Potential expected error constructor.
      * @param message   Message to display on error.
      */
-    throw(fn: () => void, constructor: ErrorConstructor, message?: string): Promise<void>;
+    throw(
+        fn: () => void,
+        constructor: ErrorConstructor,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that function will throw an error that is an instance of constructor
@@ -815,7 +952,11 @@ export interface PromisedAssert {
      * @param constructor   Potential expected error constructor.
      * @param message   Message to display on error.
      */
-    throw(fn: () => void, constructor: ErrorConstructor, regExp: RegExp): Promise<void>;
+    throw(
+        fn: () => void,
+        constructor: ErrorConstructor,
+        regExp: RegExp,
+    ): Promise<void>;
 
     /**
      * Asserts that fn will throw an error.
@@ -832,7 +973,11 @@ export interface PromisedAssert {
      * @param errType  Potential expected message match or error constructor.
      * @param message   Message to display on error.
      */
-    throws(fn: () => void, errType: RegExp | ErrorConstructor, message?: string): Promise<void>;
+    throws(
+        fn: () => void,
+        errType: RegExp | ErrorConstructor,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that function will throw an error that is an instance of constructor
@@ -842,7 +987,11 @@ export interface PromisedAssert {
      * @param constructor   Potential expected error constructor.
      * @param message   Message to display on error.
      */
-    throws(fn: () => void, constructor: ErrorConstructor, regExp: RegExp): Promise<void>;
+    throws(
+        fn: () => void,
+        constructor: ErrorConstructor,
+        regExp: RegExp,
+    ): Promise<void>;
 
     /**
      * Asserts that fn will throw an error.
@@ -868,7 +1017,11 @@ export interface PromisedAssert {
      * @param constructor   Potential expected error constructor.
      * @param message   Message to display on error.
      */
-    Throw(fn: () => void, constructor: ErrorConstructor, message?: string): Promise<void>;
+    Throw(
+        fn: () => void,
+        constructor: ErrorConstructor,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that function will throw an error that is an instance of constructor
@@ -878,7 +1031,11 @@ export interface PromisedAssert {
      * @param constructor   Potential expected error constructor.
      * @param message   Message to display on error.
      */
-    Throw(fn: () => void, constructor: ErrorConstructor, regExp: RegExp): Promise<void>;
+    Throw(
+        fn: () => void,
+        constructor: ErrorConstructor,
+        regExp: RegExp,
+    ): Promise<void>;
 
     /**
      * Asserts that fn will not throw an error.
@@ -904,7 +1061,11 @@ export interface PromisedAssert {
      * @param constructor   Potential expected error constructor.
      * @param message   Message to display on error.
      */
-    doesNotThrow(fn: () => void, constructor: ErrorConstructor, message?: string): Promise<void>;
+    doesNotThrow(
+        fn: () => void,
+        constructor: ErrorConstructor,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that function will throw an error that is an instance of constructor
@@ -914,7 +1075,11 @@ export interface PromisedAssert {
      * @param constructor   Potential expected error constructor.
      * @param message   Message to display on error.
      */
-    doesNotThrow(fn: () => void, constructor: ErrorConstructor, regExp: RegExp): Promise<void>;
+    doesNotThrow(
+        fn: () => void,
+        constructor: ErrorConstructor,
+        regExp: RegExp,
+    ): Promise<void>;
 
     /**
      * Compares two values using operator.
@@ -924,7 +1089,12 @@ export interface PromisedAssert {
      * @param val2   Right value during comparison.
      * @param message   Message to display on error.
      */
-    operator(val1: string, operator: string, val2: string, message?: string): Promise<void>;
+    operator(
+        val1: string,
+        operator: string,
+        val2: string,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that the target is equal to expected, to within a +/- delta range.
@@ -934,7 +1104,12 @@ export interface PromisedAssert {
      * @param delta   Maximum differenced between values.
      * @param message   Message to display on error.
      */
-    closeTo(actual: number, expected: number, delta: number, message?: string): Promise<void>;
+    closeTo(
+        actual: number,
+        expected: number,
+        delta: number,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that the target is equal to expected, to within a +/- delta range.
@@ -944,7 +1119,12 @@ export interface PromisedAssert {
      * @param delta   Maximum differenced between values.
      * @param message   Message to display on error.
      */
-    approximately(act: number, exp: number, delta: number, message?: string): Promise<void>;
+    approximately(
+        act: number,
+        exp: number,
+        delta: number,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that set1 and set2 have the same members. Order is not take into account.
@@ -976,7 +1156,11 @@ export interface PromisedAssert {
      * @param set2   Potential expected set of values.
      * @param message   Message to display on error.
      */
-    sameOrderedMembers<T>(set1: T[], set2: T[], message?: string): Promise<void>;
+    sameOrderedMembers<T>(
+        set1: T[],
+        set2: T[],
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that set1 and set2 don’t have the same members in the same order.
@@ -987,7 +1171,11 @@ export interface PromisedAssert {
      * @param set2   Potential expected set of values.
      * @param message   Message to display on error.
      */
-    notSameOrderedMembers<T>(set1: T[], set2: T[], message?: string): Promise<void>;
+    notSameOrderedMembers<T>(
+        set1: T[],
+        set2: T[],
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that set1 and set2 have the same members in the same order.
@@ -998,7 +1186,11 @@ export interface PromisedAssert {
      * @param set2   Potential expected set of values.
      * @param message   Message to display on error.
      */
-    sameDeepOrderedMembers<T>(set1: T[], set2: T[], message?: string): Promise<void>;
+    sameDeepOrderedMembers<T>(
+        set1: T[],
+        set2: T[],
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that set1 and set2 don’t have the same members in the same order.
@@ -1009,7 +1201,11 @@ export interface PromisedAssert {
      * @param set2   Potential expected set of values.
      * @param message   Message to display on error.
      */
-    notSameDeepOrderedMembers<T>(set1: T[], set2: T[], message?: string): Promise<void>;
+    notSameDeepOrderedMembers<T>(
+        set1: T[],
+        set2: T[],
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that subset is included in superset in the same order beginning with the first element in superset.
@@ -1020,7 +1216,11 @@ export interface PromisedAssert {
      * @param subset   Potential contained set of values.
      * @param message   Message to display on error.
      */
-    includeOrderedMembers<T>(superset: T[], subset: T[], message?: string): Promise<void>;
+    includeOrderedMembers<T>(
+        superset: T[],
+        subset: T[],
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that subset isn’t included in superset in the same order beginning with the first element in superset.
@@ -1031,7 +1231,11 @@ export interface PromisedAssert {
      * @param subset   Potential contained set of values.
      * @param message   Message to display on error.
      */
-    notIncludeOrderedMembers<T>(superset: T[], subset: T[], message?: string): Promise<void>;
+    notIncludeOrderedMembers<T>(
+        superset: T[],
+        subset: T[],
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that subset is included in superset in the same order beginning with the first element in superset.
@@ -1042,7 +1246,11 @@ export interface PromisedAssert {
      * @param subset   Potential contained set of values.
      * @param message   Message to display on error.
      */
-    includeDeepOrderedMembers<T>(superset: T[], subset: T[], message?: string): Promise<void>;
+    includeDeepOrderedMembers<T>(
+        superset: T[],
+        subset: T[],
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that subset isn’t included in superset in the same order beginning with the first element in superset.
@@ -1053,7 +1261,11 @@ export interface PromisedAssert {
      * @param subset   Potential contained set of values.
      * @param message   Message to display on error.
      */
-    notIncludeDeepOrderedMembers<T>(superset: T[], subset: T[], message?: string): Promise<void>;
+    notIncludeDeepOrderedMembers<T>(
+        superset: T[],
+        subset: T[],
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that subset is included in superset. Order is not take into account.
@@ -1063,7 +1275,11 @@ export interface PromisedAssert {
      * @param subset   Potential contained set of values.
      * @param message   Message to display on error.
      */
-    includeMembers<T>(superset: T[], subset: T[], message?: string): Promise<void>;
+    includeMembers<T>(
+        superset: T[],
+        subset: T[],
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that subset is included in superset using deep equality checking.
@@ -1074,7 +1290,11 @@ export interface PromisedAssert {
      * @param subset   Potential contained set of values.
      * @param message   Message to display on error.
      */
-    includeDeepMembers<T>(superset: T[], subset: T[], message?: string): Promise<void>;
+    includeDeepMembers<T>(
+        superset: T[],
+        subset: T[],
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that non-object, non-array value inList appears in the flat array list.
@@ -1095,7 +1315,12 @@ export interface PromisedAssert {
      * @param property   Property of object expected to be modified.
      * @param message   Message to display on error.
      */
-    changes<T>(modifier: Function, object: T, property: string /* keyof T */, message?: string): Promise<void>;
+    changes<T>(
+        modifier: Function,
+        object: T,
+        property: string /* keyof T */,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that a function does not change the value of a property.
@@ -1106,7 +1331,12 @@ export interface PromisedAssert {
      * @param property   Property of object expected not to be modified.
      * @param message   Message to display on error.
      */
-    doesNotChange<T>(modifier: Function, object: T, property: string /* keyof T */, message?: string): Promise<void>;
+    doesNotChange<T>(
+        modifier: Function,
+        object: T,
+        property: string /* keyof T */,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that a function increases an object property.
@@ -1117,7 +1347,12 @@ export interface PromisedAssert {
      * @param property   Property of object expected to be increased.
      * @param message   Message to display on error.
      */
-    increases<T>(modifier: Function, object: T, property: string /* keyof T */, message?: string): Promise<void>;
+    increases<T>(
+        modifier: Function,
+        object: T,
+        property: string /* keyof T */,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that a function does not increase an object property.
@@ -1128,7 +1363,12 @@ export interface PromisedAssert {
      * @param property   Property of object expected not to be increased.
      * @param message   Message to display on error.
      */
-    doesNotIncrease<T>(modifier: Function, object: T, property: string /* keyof T */, message?: string): Promise<void>;
+    doesNotIncrease<T>(
+        modifier: Function,
+        object: T,
+        property: string /* keyof T */,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that a function decreases an object property.
@@ -1139,7 +1379,12 @@ export interface PromisedAssert {
      * @param property   Property of object expected to be decreased.
      * @param message   Message to display on error.
      */
-    decreases<T>(modifier: Function, object: T, property: string /* keyof T */, message?: string): Promise<void>;
+    decreases<T>(
+        modifier: Function,
+        object: T,
+        property: string /* keyof T */,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that a function does not decrease an object property.
@@ -1150,7 +1395,12 @@ export interface PromisedAssert {
      * @param property   Property of object expected not to be decreased.
      * @param message   Message to display on error.
      */
-    doesNotDecrease<T>(modifier: Function, object: T, property: string /* keyof T */, message?: string): Promise<void>;
+    doesNotDecrease<T>(
+        modifier: Function,
+        object: T,
+        property: string /* keyof T */,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts if value is not a false value, and throws if it is a true value.
@@ -1310,7 +1560,11 @@ export interface PromisedAssert {
      * @param keys   Keys to check
      * @param message    Message to display on error.
      */
-    hasAnyKeys<T>(object: T, keys: Array<Object | string> | { [key: string]: any }, message?: string): Promise<void>;
+    hasAnyKeys<T>(
+        object: T,
+        keys: Array<Object | string> | {[key: string]: any},
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that `object` has all and only all of the `keys` provided.
@@ -1322,7 +1576,11 @@ export interface PromisedAssert {
      * @param keys   Keys to check
      * @param message    Message to display on error.
      */
-    hasAllKeys<T>(object: T, keys: Array<Object | string> | { [key: string]: any }, message?: string): Promise<void>;
+    hasAllKeys<T>(
+        object: T,
+        keys: Array<Object | string> | {[key: string]: any},
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that `object` has all of the `keys` provided but may have more keys not listed.
@@ -1334,7 +1592,11 @@ export interface PromisedAssert {
      * @param keys   Keys to check
      * @param message    Message to display on error.
      */
-    containsAllKeys<T>(object: T, keys: Array<Object | string> | { [key: string]: any }, message?: string): Promise<void>;
+    containsAllKeys<T>(
+        object: T,
+        keys: Array<Object | string> | {[key: string]: any},
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that `object` has none of the `keys` provided.
@@ -1346,7 +1608,11 @@ export interface PromisedAssert {
      * @param keys   Keys to check
      * @param message    Message to display on error.
      */
-    doesNotHaveAnyKeys<T>(object: T, keys: Array<Object | string> | { [key: string]: any }, message?: string): Promise<void>;
+    doesNotHaveAnyKeys<T>(
+        object: T,
+        keys: Array<Object | string> | {[key: string]: any},
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that `object` does not have at least one of the `keys` provided.
@@ -1358,7 +1624,11 @@ export interface PromisedAssert {
      * @param keys   Keys to check
      * @param message    Message to display on error.
      */
-    doesNotHaveAllKeys<T>(object: T, keys: Array<Object | string> | { [key: string]: any }, message?: string): Promise<void>;
+    doesNotHaveAllKeys<T>(
+        object: T,
+        keys: Array<Object | string> | {[key: string]: any},
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that `object` has at least one of the `keys` provided.
@@ -1372,7 +1642,11 @@ export interface PromisedAssert {
      * @param keys   Keys to check
      * @param message    Message to display on error.
      */
-    hasAnyDeepKeys<T>(object: T, keys: Array<Object | string> | { [key: string]: any }, message?: string): Promise<void>;
+    hasAnyDeepKeys<T>(
+        object: T,
+        keys: Array<Object | string> | {[key: string]: any},
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that `object` has all and only all of the `keys` provided.
@@ -1386,7 +1660,11 @@ export interface PromisedAssert {
      * @param keys   Keys to check
      * @param message    Message to display on error.
      */
-    hasAllDeepKeys<T>(object: T, keys: Array<Object | string> | { [key: string]: any }, message?: string): Promise<void>;
+    hasAllDeepKeys<T>(
+        object: T,
+        keys: Array<Object | string> | {[key: string]: any},
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that `object` contains all of the `keys` provided.
@@ -1400,7 +1678,11 @@ export interface PromisedAssert {
      * @param keys   Keys to check
      * @param message    Message to display on error.
      */
-    containsAllDeepKeys<T>(object: T, keys: Array<Object | string> | { [key: string]: any }, message?: string): Promise<void>;
+    containsAllDeepKeys<T>(
+        object: T,
+        keys: Array<Object | string> | {[key: string]: any},
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that `object` contains all of the `keys` provided.
@@ -1414,7 +1696,11 @@ export interface PromisedAssert {
      * @param keys   Keys to check
      * @param message    Message to display on error.
      */
-    doesNotHaveAnyDeepKeys<T>(object: T, keys: Array<Object | string> | { [key: string]: any }, message?: string): Promise<void>;
+    doesNotHaveAnyDeepKeys<T>(
+        object: T,
+        keys: Array<Object | string> | {[key: string]: any},
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that `object` contains all of the `keys` provided.
@@ -1428,7 +1714,11 @@ export interface PromisedAssert {
      * @param keys   Keys to check
      * @param message    Message to display on error.
      */
-    doesNotHaveAllDeepKeys<T>(object: T, keys: Array<Object | string> | { [key: string]: any }, message?: string): Promise<void>;
+    doesNotHaveAllDeepKeys<T>(
+        object: T,
+        keys: Array<Object | string> | {[key: string]: any},
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that object has a direct or inherited property named by property,
@@ -1439,7 +1729,11 @@ export interface PromisedAssert {
      * @param property    Property to test.
      * @param message    Message to display on error.
      */
-    nestedProperty<T>(object: T, property: string, message?: string): Promise<void>;
+    nestedProperty<T>(
+        object: T,
+        property: string,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that object does not have a property named by property,
@@ -1451,7 +1745,11 @@ export interface PromisedAssert {
      * @param property    Property to test.
      * @param message    Message to display on error.
      */
-    notNestedProperty<T>(object: T, property: string, message?: string): Promise<void>;
+    notNestedProperty<T>(
+        object: T,
+        property: string,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that object has a property named by property with value given by value.
@@ -1463,7 +1761,12 @@ export interface PromisedAssert {
      * @param value    Value to test.
      * @param message    Message to display on error.
      */
-    nestedPropertyVal<T>(object: T, property: string, value: any, message?: string): Promise<void>;
+    nestedPropertyVal<T>(
+        object: T,
+        property: string,
+        value: any,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that object does not have a property named by property with value given by value.
@@ -1475,7 +1778,12 @@ export interface PromisedAssert {
      * @param value    Value to test.
      * @param message    Message to display on error.
      */
-    notNestedPropertyVal<T>(object: T, property: string, value: any, message?: string): Promise<void>;
+    notNestedPropertyVal<T>(
+        object: T,
+        property: string,
+        value: any,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that object has a property named by property with a value given by value.
@@ -1487,7 +1795,12 @@ export interface PromisedAssert {
      * @param value    Value to test.
      * @param message    Message to display on error.
      */
-    deepNestedPropertyVal<T>(object: T, property: string, value: any, message?: string): Promise<void>;
+    deepNestedPropertyVal<T>(
+        object: T,
+        property: string,
+        value: any,
+        message?: string,
+    ): Promise<void>;
 
     /**
      * Asserts that object does not have a property named by property with value given by value.
@@ -1499,5 +1812,10 @@ export interface PromisedAssert {
      * @param value    Value to test.
      * @param message    Message to display on error.
      */
-    notDeepNestedPropertyVal<T>(object: T, property: string, value: any, message?: string): Promise<void>;
+    notDeepNestedPropertyVal<T>(
+        object: T,
+        property: string,
+        value: any,
+        message?: string,
+    ): Promise<void>;
 }

@@ -1,6 +1,6 @@
 import * as deepmerge from 'deepmerge';
 
-const emptyTarget = value => Array.isArray(value) ? [] : {};
+const emptyTarget = (value) => (Array.isArray(value) ? [] : {});
 const clone = (value, options) => deepmerge(emptyTarget(value), value, options);
 
 function mergePlugins(target: Array<any>, source: Array<any>, options) {
@@ -33,16 +33,15 @@ function mergePlugins(target: Array<any>, source: Array<any>, options) {
     return Object.keys(plugins).map((pluginName) => {
         if (plugins[pluginName]) {
             return [pluginName, plugins[pluginName]];
-        } 
-            return pluginName;
-        
+        }
+        return pluginName;
     });
 }
 
 function deepMergePlugins(pluginsList: any[], options) {
     let plugins: any[] = [];
 
-    for (let additionalPlugin of pluginsList) {
+    for (const additionalPlugin of pluginsList) {
         plugins = mergePlugins(plugins, additionalPlugin, options);
     }
 
@@ -53,7 +52,10 @@ export function mergeConfigs<T>(defaults: T, ...extensions: Partial<T>[]): T {
     const list = [defaults, ...extensions];
     const options = {};
 
-    const plugins = deepMergePlugins((list as any[]).map((obj) => obj && obj.plugins ? obj.plugins : []), options);
+    const plugins = deepMergePlugins(
+        (list as any[]).map((obj) => (obj && obj.plugins ? obj.plugins : [])),
+        options,
+    );
     const source = deepmerge.all<T>(list, options);
 
     if (plugins.length > 0) {

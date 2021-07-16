@@ -1,6 +1,6 @@
-import { parse } from 'babylon';
-import { CallExpression, Identifier } from 'babel-types';
-import traverse, { NodePath } from 'babel-traverse';
+import type {CallExpression, Identifier} from 'babel-types';
+import {parse} from 'babylon';
+import traverse, {NodePath} from 'babel-traverse';
 import {
     IFile,
     IDependencyDictionary,
@@ -9,7 +9,7 @@ import {
     DependencyDict,
     DependencyFileReader,
 } from '@testring/types';
-import { resolveAbsolutePath } from './absolute-path-resolver';
+import {resolveAbsolutePath} from './absolute-path-resolver';
 
 function getDependencies(absolutePath: string, content: string): Array<string> {
     const requests: Array<string> = [];
@@ -17,16 +17,12 @@ function getDependencies(absolutePath: string, content: string): Array<string> {
     const sourceAST = parse(content, {
         sourceType: 'module',
         sourceFilename: content,
-        plugins: [
-            'estree',
-        ],
+        plugins: ['estree'],
     });
 
     traverse(sourceAST, {
-
-        // require('something');
         CallExpression(path: NodePath<CallExpression>) {
-            const callee: NodePath<Identifier> = path.get('callee') as any;
+            const callee = path.get('callee') as NodePath<Identifier>;
 
             if (callee.node.name !== 'require') {
                 return;
@@ -34,17 +30,16 @@ function getDependencies(absolutePath: string, content: string): Array<string> {
 
             const args = path.get('arguments');
             const firstArgument = args[0];
-            const dependencyPath: NodePath<string> = firstArgument.get('value') as any;
+            const dependencyPath: NodePath<string> = firstArgument.get(
+                'value',
+            ) as never;
 
-            requests.push(
-                dependencyPath.node,
-            );
+            requests.push(dependencyPath.node);
         },
     });
 
     return requests;
 }
-
 
 function createTreeNode(
     path: string,
@@ -58,8 +53,10 @@ function createTreeNode(
     };
 }
 
-
-function createDictionaryNode(path: string, content: string): IDependencyDictionaryNode {
+function createDictionaryNode(
+    path: string,
+    content: string,
+): IDependencyDictionaryNode {
     return {
         content,
         path,
@@ -85,7 +82,10 @@ async function buildNodes(
     for (let index = 0; index < dependencies.length; index++) {
         dependency = dependencies[index];
 
-        const dependencyAbsolutePath = resolveAbsolutePath(dependency, parentPath);
+        const dependencyAbsolutePath = resolveAbsolutePath(
+            dependency,
+            parentPath,
+        );
 
         // Ignoring node modules
         if (require.resolve.paths(dependencyAbsolutePath) === null) {
@@ -110,41 +110,22 @@ async function buildNodes(
 
         const fileContent = await readFile(dependencyAbsolutePath);
 
-        node = createTreeNode(
-            dependencyAbsolutePath,
-            fileContent,
-            null,
-        );
+        node = createTreeNode(dependencyAbsolutePath, fileContent, null);
 
         // Putting nodes to cache BEFORE resolving it's dependencies, fixes circular dependencies case
         nodesCache[dependencyAbsolutePath] = node;
         resultNodes[dependency] = node;
 
-        node.nodes = await buildNodes(dependencyAbsolutePath, fileContent, nodesCache, readFile);
+        node.nodes = await buildNodes(
+            dependencyAbsolutePath,
+            fileContent,
+            nodesCache,
+            readFile,
+        );
     }
 
     return resultNodes;
 }
-
-export async function buildDependencyGraph(
-    file: IFile,
-    readFile: DependencyFileReader,
-): Promise<IDependencyTreeNode> {
-    const tree: IDependencyTreeNode = createTreeNode(
-        file.path,
-        file.content,
-        null,
-    );
-
-    const nodesCache = {
-        [file.path]: tree,
-    };
-
-    tree.nodes = await buildNodes(file.path, file.content, nodesCache, readFile);
-
-    return tree;
-}
-
 
 function getNodeDependencies(node: IDependencyTreeNode) {
     const nodes = {};
@@ -153,7 +134,7 @@ function getNodeDependencies(node: IDependencyTreeNode) {
         return nodes;
     }
 
-    for (let request in node.nodes) {
+    for (const request in node.nodes) {
         nodes[request] = createDictionaryNode(
             node.nodes[request].path,
             node.nodes[request].content,
@@ -163,7 +144,10 @@ function getNodeDependencies(node: IDependencyTreeNode) {
     return nodes;
 }
 
-export async function buildDependencyDictionary(file: IFile, readFile: DependencyFileReader) {
+export async function buildDependencyDictionary(
+    file: IFile,
+    readFile: DependencyFileReader,
+): Promise<DependencyDict> {
     const dictionary: DependencyDict = {};
 
     const tree: IDependencyTreeNode = createTreeNode(
@@ -176,15 +160,19 @@ export async function buildDependencyDictionary(file: IFile, readFile: Dependenc
         [file.path]: tree,
     };
 
-    tree.nodes = await buildNodes(file.path, file.content, nodesCache, readFile);
+    tree.nodes = await buildNodes(
+        file.path,
+        file.content,
+        nodesCache,
+        readFile,
+    );
 
-    for (let key in nodesCache) {
+    for (const key in nodesCache) {
         dictionary[key] = getNodeDependencies(nodesCache[key]);
     }
 
     return dictionary;
 }
-
 
 export async function mergeDependencyDictionaries(
     dict1: DependencyDict,

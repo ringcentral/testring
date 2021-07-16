@@ -1,4 +1,4 @@
-import { ITestWorker, ITestWorkerInstance } from '@testring/types';
+import {ITestWorker, ITestWorkerInstance} from '@testring/types';
 
 const ERROR_INSTANCE = {
     test: 'file.js',
@@ -8,7 +8,6 @@ const ERROR_INSTANCE = {
 type executionCallback = () => Promise<void> | void;
 
 class TestWorkerMockInstance implements ITestWorkerInstance {
-
     private timeout: ReturnType<typeof setTimeout> | null = null;
     private callback: executionCallback | null = null;
 
@@ -16,8 +15,7 @@ class TestWorkerMockInstance implements ITestWorkerInstance {
     private killCalls = 0;
     private workerID = 'worker/test';
 
-    constructor(private shouldFail: boolean, private executionDelay: number) {
-    }
+    constructor(private shouldFail: boolean, private executionDelay: number) {}
 
     getWorkerID() {
         return this.workerID;
@@ -30,11 +28,13 @@ class TestWorkerMockInstance implements ITestWorkerInstance {
             if (this.executionDelay > 0) {
                 return new Promise<void>((resolve, reject) => {
                     this.callback = () => resolve();
-                    this.timeout = setTimeout(() => reject(this.$getErrorInstance()), this.executionDelay);
+                    this.timeout = setTimeout(
+                        () => reject(this.$getErrorInstance()),
+                        this.executionDelay,
+                    );
                 });
-            } 
-                return Promise.reject(this.$getErrorInstance());
-            
+            }
+            return Promise.reject(this.$getErrorInstance());
         }
 
         if (this.executionDelay > 0) {
@@ -42,9 +42,8 @@ class TestWorkerMockInstance implements ITestWorkerInstance {
                 this.callback = () => resolve();
                 this.timeout = setTimeout(resolve, this.executionDelay);
             });
-        } 
-            return Promise.resolve();
-        
+        }
+        return Promise.resolve();
     }
 
     async kill() {
@@ -76,14 +75,18 @@ class TestWorkerMockInstance implements ITestWorkerInstance {
 }
 
 export class TestWorkerMock implements ITestWorker {
-
     private spawnedInstances: Array<TestWorkerMockInstance> = [];
 
-    constructor(private shouldFail: boolean = false, private executionDelay: number = 0) {
-    }
+    constructor(
+        private shouldFail: boolean = false,
+        private executionDelay: number = 0,
+    ) {}
 
     spawn() {
-        const instance = new TestWorkerMockInstance(this.shouldFail, this.executionDelay);
+        const instance = new TestWorkerMockInstance(
+            this.shouldFail,
+            this.executionDelay,
+        );
 
         this.spawnedInstances.push(instance);
 

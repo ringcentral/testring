@@ -1,3 +1,3 @@
-import { ClientWsTransport } from './ws-transport';
+import {ClientWsTransport} from './ws-transport';
 
-export { ClientWsTransport };
+export {ClientWsTransport};

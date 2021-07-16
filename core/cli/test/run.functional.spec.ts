@@ -1,14 +1,15 @@
 /// <reference types="mocha" />
 
 import * as path from 'path';
-import { Writable } from 'stream';
-import { getConfig } from '@testring/cli-config';
-import { Transport } from '@testring/transport';
-import { runTests } from '../src/commands/runCommand';
+import {Writable} from 'stream';
+import {getConfig} from '@testring/cli-config';
+import {Transport} from '@testring/transport';
+import {runTests} from '../src/commands/runCommand';
 
 const fixturesPath = path.resolve(__dirname, './fixtures');
 const stdout = new Writable({
     write: () => {
+        /* empty */
     },
 });
 
@@ -55,7 +56,7 @@ describe('testring CLI', () => {
         const transport = new Transport();
 
         try {
-            runTests({} as any, transport, stdout);
+            runTests({}, transport, stdout);
             callback('Tests finished somehow');
         } catch {
             callback();

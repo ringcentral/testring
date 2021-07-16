@@ -10,19 +10,25 @@ const requireById = (id) => {
     return module.require(`${id}`);
 };
 
-const requireResolveById = (id, options?: { paths?: string[]; }) => {
+const requireResolveById = (id, options?: {paths?: string[]}) => {
     return (module.require as NodeRequire).resolve(id, options);
 };
 
-export function resolvePackage(modulePath: string, parentModule?: string): string {
+export function resolvePackage(
+    modulePath: string,
+    parentModule?: string,
+): string {
     if (isWebpack()) {
-        throw Error('Can\'t use dynamic imports with webpack.');
+        throw Error("Can't use dynamic imports with webpack.");
     }
 
     try {
         if (typeof parentModule === 'string') {
             const parentModuleDir = path.dirname(parentModule);
-            const relativeModulePath = path.resolve(parentModuleDir, modulePath);
+            const relativeModulePath = path.resolve(
+                parentModuleDir,
+                modulePath,
+            );
 
             try {
                 return requireResolveById(relativeModulePath);
@@ -41,7 +47,7 @@ export function resolvePackage(modulePath: string, parentModule?: string): strin
 
 export function requirePackage(modulePath: string, parentModule?: string): any {
     if (isWebpack()) {
-        throw Error('Can\'t use dynamic imports with webpack.');
+        throw Error("Can't use dynamic imports with webpack.");
     }
 
     const fileName = resolvePackage(modulePath, parentModule);
@@ -49,7 +55,9 @@ export function requirePackage(modulePath: string, parentModule?: string): any {
     try {
         return requireById(fileName);
     } catch (exception) {
-        const error = new ReferenceError(`Error, while requiring '${modulePath}': ${exception.message}`);
+        const error = new ReferenceError(
+            `Error, while requiring '${modulePath}': ${exception.message}`,
+        );
 
         error.stack = exception.stack;
 

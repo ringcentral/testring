@@ -1,24 +1,29 @@
 /**
- * An abstraction class to hide transport implementation 
+ * An abstraction class to hide transport implementation
  */
 
-import { generateUniqId } from '@testring/utils';
-import { loggerClient } from '@testring/logger';
-import { transport } from '@testring/transport';
+import {generateUniqId} from '@testring/utils';
+import {loggerClient} from '@testring/logger';
+import {transport} from '@testring/transport';
 
-import { IQueAcqReq, IQueAcqResp, IQueStateReq, IQueStateResp, ITransport } from '@testring/types';
+import {
+    IQueAcqReq,
+    IQueAcqResp,
+    IQueStateReq,
+    IQueStateResp,
+    ITransport,
+} from '@testring/types';
 
-import { FS_CONSTANTS } from './utils';
+import {FS_CONSTANTS} from './utils';
 
 const log = loggerClient.withPrefix('fac');
 
 type requestsTableItem = {
-    cb?: ((rId: string, state?: Record<string, any>) => void);
-}
+    cb?: (rId: string, state?: Record<string, any>) => void;
+};
 type requestsTable = Record<string, requestsTableItem>;
 
 export class FSActionClient {
-
     private reqName: string;
     private resName: string;
     private releaseReqName: string;
@@ -32,8 +37,10 @@ export class FSActionClient {
 
     private transport: ITransport;
 
-    constructor(private msgNamePrefix: string = FS_CONSTANTS.FS_DEFAULT_QUEUE_PREFIX, tr: ITransport = transport) {
-
+    constructor(
+        private msgNamePrefix: string = FS_CONSTANTS.FS_DEFAULT_QUEUE_PREFIX,
+        tr: ITransport = transport,
+    ) {
         this.transport = tr;
         this.stateReq = msgNamePrefix + FS_CONSTANTS.FAS_REQ_ST_POSTFIX;
         this.stateResp = msgNamePrefix + FS_CONSTANTS.FAS_RESP_ST_POSTFIX;
@@ -41,7 +48,8 @@ export class FSActionClient {
         this.reqName = msgNamePrefix + FS_CONSTANTS.FAS_REQ_POSTFIX;
         this.resName = msgNamePrefix + FS_CONSTANTS.FAS_RESP_POSTFIX;
         this.releaseReqName = msgNamePrefix + FS_CONSTANTS.FAS_RELEASE_POSTFIX;
-        this.releaseRespName = msgNamePrefix + FS_CONSTANTS.FAS_RELEASE_RESP_POSTFIX;
+        this.releaseRespName =
+            msgNamePrefix + FS_CONSTANTS.FAS_RELEASE_RESP_POSTFIX;
         this.cleanReqName = msgNamePrefix + FS_CONSTANTS.FAS_CLEAN_POSTFIX;
 
         this.init();
@@ -50,43 +58,44 @@ export class FSActionClient {
     getPrefix = () => this.msgNamePrefix;
 
     private init() {
-
-        // hook on response - get request Object according to requestID & call CB 
-        this.transport.on<IQueStateResp>(this.stateResp, ({ requestId, state }) => {
-            const reqObj = this.requestInWork[requestId];
-            if (reqObj) {
-                delete this.requestInWork[requestId];
-                if (reqObj.cb && typeof reqObj.cb === 'function') {
-                    reqObj.cb && reqObj.cb(requestId, state);
+        // hook on response - get request Object according to requestID & call CB
+        this.transport.on<IQueStateResp>(
+            this.stateResp,
+            ({requestId, state}) => {
+                const reqObj = this.requestInWork[requestId];
+                if (reqObj) {
+                    delete this.requestInWork[requestId];
+                    if (reqObj.cb && typeof reqObj.cb === 'function') {
+                        reqObj.cb && reqObj.cb(requestId, state);
+                    }
+                } else {
+                    log.warn({rId: requestId}, 'NO object for requestId');
                 }
-            } else {
-                log.warn({ rId: requestId }, 'NO object for requestId');
-            }
-        });
+            },
+        );
 
-        this.transport.on<IQueAcqResp>(this.resName, ({ requestId }) => {
+        this.transport.on<IQueAcqResp>(this.resName, ({requestId}) => {
             const reqObj = this.requestInWork[requestId];
             if (reqObj) {
-                if (reqObj.cb && typeof reqObj.cb === 'function') {
-                    reqObj.cb(requestId);
-                }
-            } else {
-                log.warn({ rId: requestId }, 'NO object for requestId');
-            }
-        });
-
-        this.transport.on<IQueAcqResp>(this.releaseRespName, ({ requestId }) => {
-            const reqObj = this.requestInWork[requestId];
-            if (reqObj) {
-                delete this.requestInWork[requestId];
                 if (reqObj.cb && typeof reqObj.cb === 'function') {
                     reqObj.cb(requestId);
                 }
             } else {
-                log.warn({ rId: requestId }, 'NO object for requestId');
+                log.warn({rId: requestId}, 'NO object for requestId');
             }
         });
 
+        this.transport.on<IQueAcqResp>(this.releaseRespName, ({requestId}) => {
+            const reqObj = this.requestInWork[requestId];
+            if (reqObj) {
+                delete this.requestInWork[requestId];
+                if (reqObj.cb && typeof reqObj.cb === 'function') {
+                    reqObj.cb(requestId);
+                }
+            } else {
+                log.warn({rId: requestId}, 'NO object for requestId');
+            }
+        });
     }
 
     private ensureRequestId(requestId: string | null | undefined) {
@@ -103,9 +112,8 @@ export class FSActionClient {
         return requestId;
     }
 
-
     /**
-     * acquire/request permission for action - give CB 
+     * acquire/request permission for action - give CB
      * @param reqName - request Name - type of request to server
      * @param requestId - requestId
      * @param cb - CB to call with resulting data
@@ -114,40 +122,41 @@ export class FSActionClient {
     private getServerData(
         reqName: string,
         requestId: string | null,
-        cb: (rId: string, state?: Record<string, any>) => void): string {
-
+        cb: (rId: string, state?: Record<string, any>) => void,
+    ): string {
         requestId = this.ensureRequestId(requestId);
-        this.requestInWork[requestId] = { cb };
-        this.transport.broadcastUniversally<IQueStateReq>(reqName, { requestId });
+        this.requestInWork[requestId] = {cb};
+        this.transport.broadcastUniversally<IQueStateReq>(reqName, {requestId});
         return requestId;
     }
 
-
     /**
-     * acquire/request permission for action - give CB 
+     * acquire/request permission for action - give CB
      * @param rId - requestId
      * @param cb - CB to call with resulting data
      * @returns
      */
-    public getState(rId: string | null, cb: (rId: string, state: Record<string, any>) => void): string {
+    public getState(
+        rId: string | null,
+        cb: (rId: string, state: Record<string, any>) => void,
+    ): string {
         return this.getServerData(this.stateReq, rId, cb);
     }
 
     /**
-     * acquire/request permission for action - give CB 
+     * acquire/request permission for action - give CB
      * @param rId - requestId
      * @param cb - CB to call as permission was acquired
      * @returns
      */
     public getThread(rId: string | null, cb: (dId: string) => void): string {
         return this.getServerData(this.reqName, rId, cb);
-
     }
 
     public release(requestId: string, cb?: () => void) {
         const curReqData = this.requestInWork[requestId];
         if (!curReqData) {
-            log.error({ rId: requestId }, 'NO request data for release');
+            log.error({rId: requestId}, 'NO request data for release');
             return false;
         }
         const reqData: requestsTableItem = {};
@@ -156,13 +165,11 @@ export class FSActionClient {
         }
         this.requestInWork[requestId] = reqData;
 
-        log.debug({ requestId, reqData }, 'on release');
+        log.debug({requestId, reqData}, 'on release');
 
-        this.transport.broadcastUniversally<IQueAcqReq>(
-            this.releaseReqName,
-            {
-                requestId,
-            });
+        this.transport.broadcastUniversally<IQueAcqReq>(this.releaseReqName, {
+            requestId,
+        });
         return true;
     }
 
@@ -170,8 +177,7 @@ export class FSActionClient {
         this.transport.broadcastUniversally(this.cleanReqName, {});
     }
 
-
-    public promisedThread(limit: number = 0): Promise<string> {
+    public promisedThread(limit = 0): Promise<string> {
         return new Promise((res, rej) => {
             let to: NodeJS.Timeout | number;
             let rId = '';
@@ -181,11 +187,11 @@ export class FSActionClient {
                     this.release(rId);
                 }, limit);
             }
-            rId = this.getThread(null, (rId: string) => {
+            rId = this.getThread(null, (threadRId: string) => {
                 if (to) {
                     clearTimeout(to as NodeJS.Timeout);
                 }
-                res(rId);
+                res(threadRId);
             });
         });
     }

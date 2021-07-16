@@ -1,10 +1,10 @@
 import * as process from 'process';
 import * as yargs from 'yargs';
-import { loggerClient, LoggerServer } from '@testring/logger';
-import { getConfig } from '@testring/cli-config';
-import { transport } from '@testring/transport';
-import { ICLICommand, IConfig } from '@testring/types';
-import { runTests } from './commands/runCommand';
+import {loggerClient, LoggerServer} from '@testring/logger';
+import {getConfig} from '@testring/cli-config';
+import {transport} from '@testring/transport';
+import {ICLICommand, IConfig} from '@testring/types';
+import {runTests} from './commands/runCommand';
 
 const pkg = require('../package.json');
 
@@ -19,7 +19,6 @@ yargs.version(`testring version: ${pkg.version}`);
 yargs.command('run', 'To run tests');
 
 yargs.help();
-
 
 createField('bail', {
     describe: 'Shut down app after test fail',
@@ -52,7 +51,8 @@ createField('tests', {
 });
 
 createField('plugins', {
-    describe: 'Set of plugins (list). API: --plugins=plugin1 --plugins=plugin2 ...',
+    describe:
+        'Set of plugins (list). API: --plugins=plugin1 --plugins=plugin2 ...',
     type: 'array',
 });
 
@@ -74,7 +74,7 @@ createField('devtool', {
 // CLI entry point, it makes all initialization job and
 // handles all errors, that was not cached inside command
 
-export const runCLI = async (argv: Array<string>) => {
+export const runCLI = async (argv: Array<string>): Promise<unknown> => {
     const args = yargs.parse(argv);
     const command = args._[2];
 
@@ -135,5 +135,4 @@ export const runCLI = async (argv: Array<string>) => {
             process.exit(1);
         }, 500);
     });
-
 };

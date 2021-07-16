@@ -1,12 +1,11 @@
 /* eslint no-unused-expressions: 0 */
 
-
 /// <reference types="mocha" />
 
 import * as path from 'path';
 import * as chai from 'chai';
 
-import { resolveFiles } from '../src/file-resolver';
+import {resolveFiles} from '../src/file-resolver';
 
 const testPaths = [
     path.resolve(__dirname, './fixtures/testfiles/foo.test.js'),
@@ -24,7 +23,7 @@ describe('resolve tests', () => {
     it('should throw error if no argument passed', (callback) => {
         resolveFiles(undefined as any)
             .then(() => {
-                callback('resolveTests did\'t throw');
+                callback("resolveTests did't throw");
             })
             .catch(() => {
                 callback();
@@ -35,7 +34,7 @@ describe('resolve tests', () => {
     it('should throw error if empty array passed', (callback) => {
         resolveFiles([])
             .then(() => {
-                callback('resolveTests did\'t throw');
+                callback("resolveTests did't throw");
             })
             .catch(() => {
                 callback();
@@ -46,26 +45,30 @@ describe('resolve tests', () => {
     it('should resolve array of objects that contain ', async () => {
         const res = await resolveFiles(testPaths);
 
-        res.forEach(file => {
+        res.forEach((file) => {
             chai.expect(file).to.have.all.keys('path', 'content');
         });
     });
 
     it('should resolve array of same length for array of valid files', async () => {
-        chai.expect(await resolveFiles(testPaths)).to.be.an('array').of.length(testPaths.length);
+        chai.expect(await resolveFiles(testPaths))
+            .to.be.an('array')
+            .of.length(testPaths.length);
     });
 
     it('should resolve only existing files', async () => {
         const files = [...testPaths, ...falsePaths];
         const resolvedTests = await resolveFiles(files);
 
-        chai.expect(resolvedTests).to.be.an('array').of.length(testPaths.length);
+        chai.expect(resolvedTests)
+            .to.be.an('array')
+            .of.length(testPaths.length);
     });
 
     it('should throw error if none of files passed to it was read', (callback) => {
         resolveFiles(falsePaths)
             .then(() => {
-                callback('resolveTests did\'t throw');
+                callback("resolveTests did't throw");
             })
             .catch(() => {
                 callback();

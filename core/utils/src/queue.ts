@@ -1,4 +1,4 @@
-import { IQueue } from '@testring/types';
+import {IQueue} from '@testring/types';
 
 export class Queue<T> implements IQueue<T> {
     private array: Array<T>;
@@ -30,11 +30,11 @@ export class Queue<T> implements IQueue<T> {
      */
     public remove(fn: <T>(T, number?) => boolean): number {
         const len = this.array.length;
-        this.array = this.array.filter((item, index)=>!fn(item, index));
+        this.array = this.array.filter((item, index) => !fn(item, index));
         return len - this.array.length;
     }
 
-    public getFirstElement(offset: number = 0): T | null {
+    public getFirstElement(offset = 0): T | null {
         const elementIndex = offset;
 
         if (elementIndex >= this.array.length) {
@@ -43,7 +43,6 @@ export class Queue<T> implements IQueue<T> {
 
         return this.array[elementIndex];
     }
-
 
     public get length(): number {
         return this.array.length;

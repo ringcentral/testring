@@ -2,7 +2,7 @@
 /* eslint sonarjs/no-identical-functions: 0 */
 import * as chai from 'chai';
 
-import { AsyncBreakpoints, BreakStackError } from '../src';
+import {AsyncBreakpoints, BreakStackError} from '../src';
 
 describe('Async Breakpoints', () => {
     it('No breakpoints set', async () => {
@@ -27,18 +27,21 @@ describe('Async Breakpoints', () => {
 
         asyncBreakpoint.addBeforeInstructionBreakpoint();
 
-        chai.expect(asyncBreakpoint.isBeforeInstructionBreakpointActive()).to.be.equal(true);
+        chai.expect(
+            asyncBreakpoint.isBeforeInstructionBreakpointActive(),
+        ).to.be.equal(true);
         asyncBreakpoint.resolveBeforeInstructionBreakpoint();
-        chai.expect(asyncBreakpoint.isBeforeInstructionBreakpointActive()).to.be.equal(false);
+        chai.expect(
+            asyncBreakpoint.isBeforeInstructionBreakpointActive(),
+        ).to.be.equal(false);
     });
-
 
     it('Before break call', (done) => {
         const asyncBreakpoint = new AsyncBreakpoints();
 
         asyncBreakpoint.addBeforeInstructionBreakpoint();
 
-        asyncBreakpoint.waitBeforeInstructionBreakpoint().catch(err => {
+        asyncBreakpoint.waitBeforeInstructionBreakpoint().catch((err) => {
             try {
                 chai.expect(err).to.be.instanceOf(BreakStackError);
                 done();
@@ -65,9 +68,13 @@ describe('Async Breakpoints', () => {
 
         asyncBreakpoint.addAfterInstructionBreakpoint();
 
-        chai.expect(asyncBreakpoint.isAfterInstructionBreakpointActive()).to.be.equal(true);
+        chai.expect(
+            asyncBreakpoint.isAfterInstructionBreakpointActive(),
+        ).to.be.equal(true);
         asyncBreakpoint.resolveAfterInstructionBreakpoint();
-        chai.expect(asyncBreakpoint.isAfterInstructionBreakpointActive()).to.be.equal(false);
+        chai.expect(
+            asyncBreakpoint.isAfterInstructionBreakpointActive(),
+        ).to.be.equal(false);
     });
 
     it('After break call', (done) => {
@@ -75,7 +82,7 @@ describe('Async Breakpoints', () => {
 
         asyncBreakpoint.addAfterInstructionBreakpoint();
 
-        asyncBreakpoint.waitAfterInstructionBreakpoint().catch(err => {
+        asyncBreakpoint.waitAfterInstructionBreakpoint().catch((err) => {
             try {
                 chai.expect(err).to.be.instanceOf(BreakStackError);
                 done();
@@ -95,7 +102,9 @@ describe('Async Breakpoints', () => {
         Promise.all([
             asyncBreakpoint.waitBeforeInstructionBreakpoint(),
             asyncBreakpoint.waitBeforeInstructionBreakpoint(),
-        ]).then(() => done()).catch(() => done('Not finished'));
+        ])
+            .then(() => done())
+            .catch(() => done('Not finished'));
 
         asyncBreakpoint.resolveBeforeInstructionBreakpoint();
         asyncBreakpoint.resolveAfterInstructionBreakpoint();
@@ -109,7 +118,7 @@ describe('Async Breakpoints', () => {
         Promise.all([
             asyncBreakpoint.waitAfterInstructionBreakpoint(),
             asyncBreakpoint.waitAfterInstructionBreakpoint(),
-        ]).catch(err => {
+        ]).catch((err) => {
             try {
                 chai.expect(err).to.be.instanceOf(BreakStackError);
                 done();
@@ -130,7 +139,9 @@ describe('Async Breakpoints', () => {
         Promise.all([
             asyncBreakpoint.waitBeforeInstructionBreakpoint(),
             asyncBreakpoint.waitAfterInstructionBreakpoint(),
-        ]).then(() => done()).catch(() => done('Not finished'));
+        ])
+            .then(() => done())
+            .catch(() => done('Not finished'));
 
         asyncBreakpoint.resolveBeforeInstructionBreakpoint();
         asyncBreakpoint.resolveAfterInstructionBreakpoint();
@@ -145,7 +156,7 @@ describe('Async Breakpoints', () => {
         Promise.all([
             asyncBreakpoint.waitBeforeInstructionBreakpoint(),
             asyncBreakpoint.waitAfterInstructionBreakpoint(),
-        ]).catch(err => {
+        ]).catch((err) => {
             try {
                 chai.expect(err).to.be.instanceOf(BreakStackError);
                 done();

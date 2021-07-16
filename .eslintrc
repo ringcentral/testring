@@ -10,26 +10,9 @@
     }
   },
   "rules": {
-    "no-use-before-define": [2, {
-      "functions": true,
-      "classes": true,
-      "variables": true
-    }],
-    "func-style": [2, "declaration", {
-      "allowArrowFunctions": true
-    }],
-    "space-before-function-paren": [2, {
-      "anonymous": "always",
-      "named": "never",
-      "asyncArrow": "always"
-    }],
-    "space-before-blocks": [2, "always"],
-    "comma-dangle": [2, "always-multiline"],
-    "object-curly-spacing": [2, "always"],
-    "no-unused-vars": 0,
-    "no-undef": 0,
-    "no-void": 2,
-    "no-multiple-empty-lines": 2,
-    "quotes": [2, "single"]
+    "@typescript-eslint/no-explicit-any": 0,
+    "@typescript-eslint/explicit-module-boundary-types": 0,
+    "@typescript-eslint/no-var-requires": 0,
+    "@typescript-eslint/no-unused-expressions": 0
   }
 }

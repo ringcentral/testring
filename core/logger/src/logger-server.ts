@@ -1,5 +1,5 @@
-import { PluggableModule } from '@testring/pluggable-module';
-import { Queue } from '@testring/utils';
+import {PluggableModule} from '@testring/pluggable-module';
+import {Queue} from '@testring/utils';
 import {
     IConfigLogger,
     ILogEntity,
@@ -10,7 +10,7 @@ import {
     LoggerPlugins,
     LogQueueStatus,
 } from '@testring/types';
-import { formatLog } from './format-log';
+import {formatLog} from './format-log';
 
 export enum LogLevelNumeric {
     verbose,
@@ -18,11 +18,10 @@ export enum LogLevelNumeric {
     info,
     warning,
     error,
-    silent
+    silent,
 }
 
 export class LoggerServer extends PluggableModule implements ILoggerServer {
-
     private queue: Queue<ILogQueue> = new Queue();
 
     private status: LogQueueStatus = LogQueueStatus.EMPTY;
@@ -44,12 +43,17 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
     }
 
     private registerTransportListeners(): void {
-        this.transportInstance.on(LoggerMessageTypes.REPORT, (entry: ILogEntity, processID?: string) => {
-            this.log(entry, processID);
-        });
+        this.transportInstance.on(
+            LoggerMessageTypes.REPORT,
+            (entry: ILogEntity, processID?: string) => {
+                this.log(entry, processID);
+            },
+        );
     }
 
-    private async runQueue(retry: number = this.numberOfRetries): Promise<void> {
+    private async runQueue(
+        retry: number = this.numberOfRetries,
+    ): Promise<void> {
         const queueItem = this.queue.shift();
 
         if (queueItem === undefined) {
@@ -57,13 +61,17 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
             return;
         }
 
-        const { logEntity, meta } = queueItem;
+        const {logEntity, meta} = queueItem;
 
         this.status = LogQueueStatus.RUNNING;
 
         try {
-            const entryAfterPlugin = await this.callHook(LoggerPlugins.beforeLog, logEntity, meta);
-            
+            const entryAfterPlugin = await this.callHook(
+                LoggerPlugins.beforeLog,
+                logEntity,
+                meta,
+            );
+
             if (!entryAfterPlugin.muteStdout) {
                 const formattedMessage = formatLog(logEntity, meta.processID);
                 this.stdout.write(`${formattedMessage}\n`);
@@ -76,7 +84,7 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
             await this.callHook(LoggerPlugins.onError, error, meta);
 
             if (retry > 0) {
-                this.queue.push({ logEntity, meta });
+                this.queue.push({logEntity, meta});
                 this.runQueue(retry - 1);
             } else if (this.shouldSkip) {
                 this.runQueue();
@@ -93,12 +101,15 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
         }
 
         // filtering by log level
-        if (LogLevelNumeric[logEntity.logLevel] < LogLevelNumeric[this.config.logLevel]) {
+        if (
+            LogLevelNumeric[logEntity.logLevel] <
+            LogLevelNumeric[this.config.logLevel]
+        ) {
             return;
         }
 
         const shouldRun = this.status !== LogQueueStatus.RUNNING;
-        const meta = processID ? { processID } : {};
+        const meta = processID ? {processID} : {};
 
         this.queue.push({
             logEntity,

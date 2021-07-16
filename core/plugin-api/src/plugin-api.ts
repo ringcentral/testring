@@ -1,22 +1,21 @@
-import { IPluginModules } from '@testring/types';
-import { BrowserProxyAPI } from './modules/browser-proxy';
-import { FSReaderAPI } from './modules/fs-reader';
-import { LoggerAPI } from './modules/logger';
-import { TestWorkerAPI } from './modules/test-worker';
-import { TestRunControllerAPI } from './modules/test-run-controller';
-import { DevtoolAPI } from './modules/devtool';
-import { HttpServerAPI } from './modules/http-server';
-import { FSStoreServerAPI } from './modules/fs-store-server';
+import {IHttpClient, IPluginModules} from '@testring/types';
+import {BrowserProxyAPI} from './modules/browser-proxy';
+import {FSReaderAPI} from './modules/fs-reader';
+import {LoggerAPI} from './modules/logger';
+import {TestWorkerAPI} from './modules/test-worker';
+import {TestRunControllerAPI} from './modules/test-run-controller';
+import {DevtoolAPI} from './modules/devtool';
+import {HttpServerAPI} from './modules/http-server';
+import {FSStoreServerAPI} from './modules/fs-store-server';
 
 export class PluginAPI {
-    constructor(private pluginName: string, private modules: IPluginModules) {
-    }
+    constructor(private pluginName: string, private modules: IPluginModules) {}
 
-    getLogger() {
+    getLogger(): LoggerAPI {
         return new LoggerAPI(this.pluginName, this.modules.logger);
     }
 
-    getFSReader() {
+    getFSReader(): FSReaderAPI | null {
         if (this.modules.fsReader) {
             return new FSReaderAPI(this.pluginName, this.modules.fsReader);
         }
@@ -24,31 +23,37 @@ export class PluginAPI {
         return null;
     }
 
-    getTestWorker() {
+    getTestWorker(): TestWorkerAPI {
         return new TestWorkerAPI(this.pluginName, this.modules.testWorker);
     }
 
-    getTestRunController() {
-        return new TestRunControllerAPI(this.pluginName, this.modules.testRunController);
+    getTestRunController(): TestRunControllerAPI {
+        return new TestRunControllerAPI(
+            this.pluginName,
+            this.modules.testRunController,
+        );
     }
 
-    getBrowserProxy() {
+    getBrowserProxy(): BrowserProxyAPI {
         return new BrowserProxyAPI(this.pluginName, this.modules.browserProxy);
     }
-    
-    getHttpServer() {
+
+    getHttpServer(): HttpServerAPI {
         return new HttpServerAPI(this.pluginName, this.modules.httpServer);
     }
 
-    getHttpClient() {
+    getHttpClient(): IHttpClient {
         return this.modules.httpClientInstance;
     }
 
-    getDevtool() {
+    getDevtool(): DevtoolAPI {
         return new DevtoolAPI(this.pluginName, this.modules.devtool);
     }
-    
-    getFSQueueServer() {
-        return new FSStoreServerAPI(this.pluginName, this.modules.fsStoreServer);
+
+    getFSQueueServer(): FSStoreServerAPI {
+        return new FSStoreServerAPI(
+            this.pluginName,
+            this.modules.fsStoreServer,
+        );
     }
 }

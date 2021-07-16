@@ -2,9 +2,9 @@
 
 import * as chai from 'chai';
 import * as sinon from 'sinon';
-import { IHttpRequestMessage, HttpMessageType } from '@testring/types';
-import { TransportMock } from '@testring/test-utils';
-import { HttpClient } from '../src/http-client';
+import {IHttpRequestMessage, HttpMessageType} from '@testring/types';
+import {TransportMock} from '@testring/test-utils';
+import {HttpClient} from '../src/http-client';
 
 type resolveFn = (value?: void | PromiseLike<void>) => void;
 
@@ -14,21 +14,27 @@ const DEFAULT_RESPONSE = {
 };
 
 const imitateServer = (transport: TransportMock, response) => {
-    transport.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
-        transport.send(src, HttpMessageType.response, {
-            uid: data.uid,
-            response,
-        });
-    });
+    transport.on(
+        HttpMessageType.send,
+        (data: IHttpRequestMessage, src: string) => {
+            transport.send(src, HttpMessageType.response, {
+                uid: data.uid,
+                response,
+            });
+        },
+    );
 };
 
 const imitateFailedServer = (transport: TransportMock, error: Error) => {
-    transport.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
-        transport.send(src, HttpMessageType.reject, {
-            uid: data.uid,
-            error,
-        });
-    });
+    transport.on(
+        HttpMessageType.send,
+        (data: IHttpRequestMessage, src: string) => {
+            transport.send(src, HttpMessageType.reject, {
+                uid: data.uid,
+                error,
+            });
+        },
+    );
 };
 
 describe('HttpClient', () => {
@@ -36,7 +42,8 @@ describe('HttpClient', () => {
         const transport = new TransportMock();
         const httpClient = new HttpClient(transport);
 
-        httpClient.post(null as any)
+        httpClient
+            .post(null as any)
             .then(() => {
                 callback('Request resolved');
             })
@@ -53,7 +60,7 @@ describe('HttpClient', () => {
 
         imitateServer(transport, DEFAULT_RESPONSE);
 
-        const result = await httpClient.get({ url: DEFAULT_URL });
+        const result = await httpClient.get({url: DEFAULT_URL});
 
         chai.expect(result).equal(DEFAULT_RESPONSE.body);
     });
@@ -64,7 +71,7 @@ describe('HttpClient', () => {
 
         imitateServer(transport, DEFAULT_RESPONSE);
 
-        const result = await httpClient.post({ url: DEFAULT_URL });
+        const result = await httpClient.post({url: DEFAULT_URL});
 
         chai.expect(result).equal(DEFAULT_RESPONSE.body);
     });
@@ -75,7 +82,7 @@ describe('HttpClient', () => {
 
         imitateServer(transport, DEFAULT_RESPONSE);
 
-        const result = await httpClient.put({ url: DEFAULT_URL });
+        const result = await httpClient.put({url: DEFAULT_URL});
 
         chai.expect(result).equal(DEFAULT_RESPONSE.body);
     });
@@ -86,7 +93,7 @@ describe('HttpClient', () => {
 
         imitateServer(transport, DEFAULT_RESPONSE);
 
-        const result = await httpClient.delete({ url: DEFAULT_URL });
+        const result = await httpClient.delete({url: DEFAULT_URL});
 
         chai.expect(result).equal(DEFAULT_RESPONSE.body);
     });
@@ -98,7 +105,7 @@ describe('HttpClient', () => {
         imitateFailedServer(transport, new Error('test'));
 
         try {
-            await httpClient.post({ url: DEFAULT_URL });
+            await httpClient.post({url: DEFAULT_URL});
         } catch (error) {
             chai.expect(error).instanceof(Error);
         }
@@ -109,13 +116,17 @@ describe('HttpClient', () => {
         const httpClient = new HttpClient(transport);
 
         //imitate a server
-        transport.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
-            transport.send(src, HttpMessageType.response, {});
-        });
+        transport.on(
+            HttpMessageType.send,
+            (data: IHttpRequestMessage, src: string) => {
+                transport.send(src, HttpMessageType.response, {});
+            },
+        );
 
-        httpClient.post({
-            url: DEFAULT_URL,
-        })
+        httpClient
+            .post({
+                url: DEFAULT_URL,
+            })
             .then(() => {
                 callback('Request resolved somehow');
             })
@@ -128,33 +139,35 @@ describe('HttpClient', () => {
 
     it('should return queue requests responses in proper order', async () => {
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, { httpThrottle: 100 });
+        const httpClient = new HttpClient(transport, {httpThrottle: 100});
 
         const responses = [1, 2, 3];
 
         // imitate server
-        transport.on(HttpMessageType.send, (data: IHttpRequestMessage, src: string) => {
-            transport.send(src, HttpMessageType.response, {
-                uid: data.uid,
-                response: {
-                    body: responses[data.request.body.requestId],
-                },
-            });
-        });
+        transport.on(
+            HttpMessageType.send,
+            (data: IHttpRequestMessage, src: string) => {
+                transport.send(src, HttpMessageType.response, {
+                    uid: data.uid,
+                    response: {
+                        body: responses[data.request.body.requestId],
+                    },
+                });
+            },
+        );
 
         const results: Array<any> = [];
 
         const runRequest = async (requestId: number) => {
-            const result = await httpClient.get({ url: DEFAULT_URL, body: { requestId } });
+            const result = await httpClient.get({
+                url: DEFAULT_URL,
+                body: {requestId},
+            });
             results.push(result);
         };
 
         // run all requests at the same time
-        await Promise.all([
-            runRequest(0),
-            runRequest(1),
-            runRequest(2),
-        ]);
+        await Promise.all([runRequest(0), runRequest(1), runRequest(2)]);
 
         chai.expect(results).to.deep.equal(responses);
     });
@@ -165,21 +178,26 @@ describe('HttpClient', () => {
         let finishedRequests = 0;
 
         const transport = new TransportMock();
-        const httpClient = new HttpClient(transport, { httpThrottle });
+        const httpClient = new HttpClient(transport, {httpThrottle});
 
-        const stub = sinon.stub(httpClient, 'throttleDelay').callsFake(function fakeThrottle() {
-            return new Promise<void>(resolve => queue.push(resolve));
-        });
-
-        transport.on(HttpMessageType.send, async (data: IHttpRequestMessage, src: string) => {
-            transport.send(src, HttpMessageType.response, {
-                uid: data.uid,
-                response: DEFAULT_RESPONSE,
+        const stub = sinon
+            .stub(httpClient, 'throttleDelay')
+            .callsFake(function fakeThrottle() {
+                return new Promise<void>((resolve) => queue.push(resolve));
             });
-        });
+
+        transport.on(
+            HttpMessageType.send,
+            async (data: IHttpRequestMessage, src: string) => {
+                transport.send(src, HttpMessageType.response, {
+                    uid: data.uid,
+                    response: DEFAULT_RESPONSE,
+                });
+            },
+        );
 
         const runRequest = async () => {
-            await httpClient.get({ url: DEFAULT_URL });
+            await httpClient.get({url: DEFAULT_URL});
             finishedRequests++;
         };
 

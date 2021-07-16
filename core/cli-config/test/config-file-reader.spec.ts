@@ -3,10 +3,9 @@
 
 import * as path from 'path';
 import * as chai from 'chai';
-import { getFileConfig } from '../src/config-file-reader';
+import {getFileConfig} from '../src/config-file-reader';
 
 describe('config-file-reader', () => {
-
     it('should load config as promise from .js', async () => {
         const filePath = path.join(__dirname, './fixtures/testringrc.js');
         const config = await getFileConfig(filePath, {} as any);
@@ -39,7 +38,6 @@ describe('config-file-reader', () => {
                 chai.expect(exception).to.be.an.instanceof(Error);
                 callback();
             });
-
     });
 
     it('should find config', async () => {
@@ -52,7 +50,10 @@ describe('config-file-reader', () => {
     });
 
     it('should return null if there is no such config', async () => {
-        const filePath = path.join(__dirname, './fixtures/nonexistent-config.json');
+        const filePath = path.join(
+            __dirname,
+            './fixtures/nonexistent-config.json',
+        );
         const config = await getFileConfig(filePath, {} as any);
 
         // eslint-disable-next-line

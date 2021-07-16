@@ -1,14 +1,15 @@
-import { EventEmitter } from 'events';
-import { ITransportDirectMessage, TransportInternalMessageType } from '@testring/types';
+import {EventEmitter} from 'events';
+import {
+    ITransportDirectMessage,
+    TransportInternalMessageType,
+} from '@testring/types';
 
 class ChildProcessMock extends EventEmitter {
-
     constructor(private shouldFail: boolean = false) {
         super();
     }
 
     send(message: ITransportDirectMessage, callback) {
-
         if (this.shouldFail) {
             callback(new Error('Some error happened'));
             return false;
@@ -28,4 +29,4 @@ class ChildProcessMock extends EventEmitter {
     }
 }
 
-export { ChildProcessMock };
+export {ChildProcessMock};

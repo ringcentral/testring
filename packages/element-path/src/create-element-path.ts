@@ -1,8 +1,5 @@
-import { proxify } from './proxify';
-import {
-    ElementPath,
-    FlowsObject,
-} from './element-path';
+import {proxify} from './proxify';
+import {ElementPath, FlowsObject} from './element-path';
 
 export type createElementPathOptions = {
     flows?: FlowsObject;
@@ -10,12 +7,9 @@ export type createElementPathOptions = {
 };
 
 export function createElementPath(options: createElementPathOptions = {}) {
-    const {
-        strictMode,
-        flows,
-    } = options;
+    const {strictMode, flows} = options;
 
-    let obj = new ElementPath({ flows });
+    const obj = new ElementPath({flows});
 
     return proxify(obj, strictMode);
 }

@@ -1,9 +1,9 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { Transport } from '@testring/transport';
-import { ScreenshotsConfig, TestWorkerPlugin } from '@testring/types';
-import { TestWorker } from '../src/test-worker';
+import {Transport} from '@testring/transport';
+import {ScreenshotsConfig, TestWorkerPlugin} from '@testring/types';
+import {TestWorker} from '../src/test-worker';
 
 describe('TestWorkerInstance', () => {
     const defaultSyncTestContent = 'process.cwd();';
@@ -46,7 +46,8 @@ describe('TestWorkerInstance', () => {
             const testWorker = new TestWorker(transport, defaultConfig);
             const instance = testWorker.spawn();
 
-            instance.execute(file, {}, null)
+            instance
+                .execute(file, {}, null)
                 .then(() => {
                     callback('Test was completed somehow');
                 })
@@ -91,18 +92,18 @@ describe('TestWorkerInstance', () => {
             const hook = testWorker.getHook(TestWorkerPlugin.compile);
 
             if (hook) {
-                hook.writeHook('testPlugin', (source, file) => {
+                hook.writeHook('testPlugin', (source, writeFile) => {
                     chai.expect(source).to.be.equal(defaultSyncTestContent);
-                    chai.expect(file).to.be.equal(defaultFilename);
+                    chai.expect(writeFile).to.be.equal(defaultFilename);
                     callback();
 
                     return Promise.resolve(source);
                 });
             }
 
-            instance.execute(file, {}, null)
-                .catch(() => {
-                });
+            instance.execute(file, {}, null).catch(() => {
+                /* empty */
+            });
 
             instance.kill();
         });
@@ -127,7 +128,8 @@ describe('TestWorkerInstance', () => {
                 });
             }
 
-            instance.execute(file, {}, null)
+            instance
+                .execute(file, {}, null)
                 .then(() => {
                     callback('Test was compiled somehow');
                 })

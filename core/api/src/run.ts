@@ -1,8 +1,8 @@
-import { loggerClient } from '@testring/logger';
-import { restructureError } from '@testring/utils';
+import {loggerClient} from '@testring/logger';
+import {restructureError} from '@testring/utils';
 
-import { TestContext } from './test-context';
-import { testAPIController } from './test-api-controller';
+import {TestContext} from './test-context';
+import {testAPIController} from './test-api-controller';
 
 type TestFunction = (api: TestContext) => void | Promise<any>;
 
@@ -10,11 +10,9 @@ export function beforeRun(callback) {
     testAPIController.registerBeforeRunCallback(callback);
 }
 
-
 export function afterRun(callback) {
     testAPIController.registerAfterRunCallback(callback);
 }
-
 
 export async function run(...tests: Array<TestFunction>) {
     const testID = testAPIController.getTestID();
@@ -40,7 +38,7 @@ export async function run(...tests: Array<TestFunction>) {
 
         loggerClient.startStep(testID);
 
-        for (let test of tests) {
+        for (const test of tests) {
             await test.call(api, api);
         }
 

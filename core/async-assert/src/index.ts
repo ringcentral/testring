@@ -1,6 +1,6 @@
 import * as chai from 'chai';
-import { IAssertionOptions } from '@testring/types';
-import { PromisedAssert } from './promisedAssert';
+import {IAssertionOptions} from '@testring/types';
+import {PromisedAssert} from './promisedAssert';
 
 const errorMessagesField = '_errorMessages';
 type AssertionAPI = typeof chai['assert'] & {
@@ -21,13 +21,18 @@ export function createAssertion(options: IAssertionOptions = {}) {
         const typeOfAssert = isSoft ? 'softAssert' : 'assert';
 
         const originalMethod = chai.assert[fieldName];
-        const methodAsString = target[fieldName].toString().replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg, '');
+        const methodAsString = target[fieldName]
+            .toString()
+            .replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/))/gm, '');
         const stringStart = methodAsString.indexOf('(') + 1;
         const stringEnd = methodAsString.indexOf(')');
-        const methodArgs = methodAsString.slice(stringStart, stringEnd).match(/([^\s,]+)/g) || [];
+        const methodArgs =
+            methodAsString.slice(stringStart, stringEnd).match(/([^\s,]+)/g) ||
+            [];
 
         return async (...args) => {
-            const successMessage = originalMethod.length === args.length ? args.pop() : '';
+            const successMessage =
+                originalMethod.length === args.length ? args.pop() : '';
             const assertArguments: Array<any> = [];
 
             let assertMessage = `[${typeOfAssert}] ${fieldName}`;
@@ -37,9 +42,10 @@ export function createAssertion(options: IAssertionOptions = {}) {
                     break;
                 }
 
-                const argsString = typeof args[index] !== 'undefined' ?
-                    JSON.stringify(args[index]) :
-                    'undefined';
+                const argsString =
+                    typeof args[index] !== 'undefined'
+                        ? JSON.stringify(args[index])
+                        : 'undefined';
 
                 assertArguments.push(methodArgs[index] + ' = ' + argsString);
             }
@@ -58,12 +64,11 @@ export function createAssertion(options: IAssertionOptions = {}) {
                         originalMethod: fieldName,
                     });
                 }
-
             } catch (error) {
                 const errorMessage = error.message;
                 let handleError: void | Error;
 
-                error.message = (successMessage || assertMessage || errorMessage);
+                error.message = successMessage || assertMessage || errorMessage;
 
                 if (options.onError) {
                     handleError = await options.onError({
@@ -82,7 +87,9 @@ export function createAssertion(options: IAssertionOptions = {}) {
                 }
 
                 if (isSoft) {
-                    target[errorMessagesField].push((handleError as Error).message);
+                    target[errorMessagesField].push(
+                        (handleError as Error).message,
+                    );
                 } else {
                     throw handleError;
                 }

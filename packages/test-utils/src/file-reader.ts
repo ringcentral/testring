@@ -10,13 +10,17 @@ export const fileReaderFactory = (...root: Array<string>) => {
 
     return (source: string): Promise<string> => {
         return new Promise((resolve, reject) => {
-            fs.readFile(resolver(source), 'utf8', (err: Error, file: string) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(file);
-                }
-            });
+            fs.readFile(
+                resolver(source),
+                'utf8',
+                (err: Error, file: string) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(file);
+                    }
+                },
+            );
         });
     };
 };

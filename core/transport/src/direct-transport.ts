@@ -5,12 +5,10 @@ import {
     ITransportDirectMessage,
     ITransportMessage,
 } from '@testring/types';
-import { generateUniqId } from '@testring/utils';
-import { serialize, deserialize } from './serialize';
-
+import {generateUniqId} from '@testring/utils';
+import {serialize, deserialize} from './serialize';
 
 class DirectTransport {
-
     private static createMessageUID(processID: string) {
         return `${processID}|${generateUniqId()}`;
     }
@@ -23,8 +21,7 @@ class DirectTransport {
 
     private responseHandlers: Map<string, Function> = new Map();
 
-    constructor(private triggerListeners: TransportMessageHandler) {
-    }
+    constructor(private triggerListeners: TransportMessageHandler) {}
 
     public getProcessesList(): Array<string> {
         return Array.from(this.childRegistry.keys());
@@ -64,7 +61,6 @@ class DirectTransport {
                 }
             });
         });
-
     }
 
     public registerChild(processID: string, child: IWorkerEmitter) {
@@ -77,7 +73,9 @@ class DirectTransport {
         this.childRegistry.set(processID, child);
 
         child.on('exit', () => this.handleChildClose(processID));
-        child.on('message', (message) => this.handleChildMessage(message, processID));
+        child.on('message', (message) =>
+            this.handleChildMessage(message, processID),
+        );
     }
 
     private handleChildClose(processID) {
@@ -95,7 +93,10 @@ class DirectTransport {
         }
     }
 
-    private handleChildMessage(message: ITransportDirectMessage, processID: string) {
+    private handleChildMessage(
+        message: ITransportDirectMessage,
+        processID: string,
+    ) {
         // incorrect message filtering
         if (!message || typeof message.type !== 'string') {
             return;
@@ -130,4 +131,4 @@ class DirectTransport {
     }
 }
 
-export { DirectTransport };
+export {DirectTransport};

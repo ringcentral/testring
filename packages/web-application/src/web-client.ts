@@ -7,14 +7,15 @@ import {
     WebApplicationMessageType,
     WindowFeaturesConfig,
 } from '@testring/types';
-import { generateUniqId } from '@testring/utils';
+import {generateUniqId} from '@testring/utils';
 
 export class WebClient implements IWebApplicationClient {
+    constructor(private applicant: string, private transport: ITransport) {}
 
-    constructor(private applicant: string, private transport: ITransport) {
-    }
-
-    private makeRequest(action: BrowserProxyActions, args: Array<any> = []): Promise<any> {
+    private makeRequest(
+        action: BrowserProxyActions,
+        args: Array<any> = [],
+    ): Promise<any> {
         const error = new Error();
         const transport = this.transport;
 
@@ -46,7 +47,10 @@ export class WebClient implements IWebApplicationClient {
                 },
             );
 
-            transport.broadcastUniversally(WebApplicationMessageType.execute, request);
+            transport.broadcastUniversally(
+                WebApplicationMessageType.execute,
+                request,
+            );
         });
     }
 
@@ -74,16 +78,30 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.url, [val]);
     }
 
-    public newWindow(url: string, windowName: string, windowFeatures: WindowFeaturesConfig) {
-        return this.makeRequest(BrowserProxyActions.newWindow, [url, windowName, windowFeatures]);
+    public newWindow(
+        url: string,
+        windowName: string,
+        windowFeatures: WindowFeaturesConfig,
+    ) {
+        return this.makeRequest(BrowserProxyActions.newWindow, [
+            url,
+            windowName,
+            windowFeatures,
+        ]);
     }
 
     public waitForExist(xpath, timeout) {
-        return this.makeRequest(BrowserProxyActions.waitForExist, [xpath, timeout]);
+        return this.makeRequest(BrowserProxyActions.waitForExist, [
+            xpath,
+            timeout,
+        ]);
     }
 
     public waitForVisible(xpath, timeout) {
-        return this.makeRequest(BrowserProxyActions.waitForVisible, [xpath, timeout]);
+        return this.makeRequest(BrowserProxyActions.waitForVisible, [
+            xpath,
+            timeout,
+        ]);
     }
 
     public isVisible(xpath) {
@@ -91,7 +109,11 @@ export class WebClient implements IWebApplicationClient {
     }
 
     public moveToObject(xpath, x, y) {
-        return this.makeRequest(BrowserProxyActions.moveToObject, [xpath, x, y]);
+        return this.makeRequest(BrowserProxyActions.moveToObject, [
+            xpath,
+            x,
+            y,
+        ]);
     }
 
     public execute(fn, ...args) {
@@ -103,7 +125,10 @@ export class WebClient implements IWebApplicationClient {
     }
 
     public timeoutsAsyncScript(timeout, fn) {
-        return this.makeRequest(BrowserProxyActions.timeoutsAsyncScript, [timeout, fn]);
+        return this.makeRequest(BrowserProxyActions.timeoutsAsyncScript, [
+            timeout,
+            fn,
+        ]);
     }
 
     public getTitle() {
@@ -135,23 +160,38 @@ export class WebClient implements IWebApplicationClient {
     }
 
     public keysOnElement(xpath, value) {
-        return this.makeRequest(BrowserProxyActions.keysOnElement, [xpath, value]);
+        return this.makeRequest(BrowserProxyActions.keysOnElement, [
+            xpath,
+            value,
+        ]);
     }
 
     public selectByIndex(xpath, value) {
-        return this.makeRequest(BrowserProxyActions.selectByIndex, [xpath, value]);
+        return this.makeRequest(BrowserProxyActions.selectByIndex, [
+            xpath,
+            value,
+        ]);
     }
 
     public selectByValue(xpath, value) {
-        return this.makeRequest(BrowserProxyActions.selectByValue, [xpath, value]);
+        return this.makeRequest(BrowserProxyActions.selectByValue, [
+            xpath,
+            value,
+        ]);
     }
 
     public selectByVisibleText(xpath, str) {
-        return this.makeRequest(BrowserProxyActions.selectByVisibleText, [xpath, str]);
+        return this.makeRequest(BrowserProxyActions.selectByVisibleText, [
+            xpath,
+            str,
+        ]);
     }
 
     public getAttribute(xpath, attr) {
-        return this.makeRequest(BrowserProxyActions.getAttribute, [xpath, attr]);
+        return this.makeRequest(BrowserProxyActions.getAttribute, [
+            xpath,
+            attr,
+        ]);
     }
 
     public windowHandleMaximize() {
@@ -167,7 +207,10 @@ export class WebClient implements IWebApplicationClient {
     }
 
     public scrollIntoView(xpath, scrollIntoViewOptions?: boolean) {
-        return this.makeRequest(BrowserProxyActions.scrollIntoView, [xpath, scrollIntoViewOptions]);
+        return this.makeRequest(BrowserProxyActions.scrollIntoView, [
+            xpath,
+            scrollIntoViewOptions,
+        ]);
     }
 
     public isAlertOpen() {
@@ -187,7 +230,10 @@ export class WebClient implements IWebApplicationClient {
     }
 
     public dragAndDrop(xpathSource, xpathDestination) {
-        return this.makeRequest(BrowserProxyActions.dragAndDrop, [xpathSource, xpathDestination]);
+        return this.makeRequest(BrowserProxyActions.dragAndDrop, [
+            xpathSource,
+            xpathDestination,
+        ]);
     }
 
     public frame(name) {
@@ -267,7 +313,10 @@ export class WebClient implements IWebApplicationClient {
     }
 
     public getCssProperty(xpath, cssProperty) {
-        return this.makeRequest(BrowserProxyActions.getCssProperty, [xpath, cssProperty]);
+        return this.makeRequest(BrowserProxyActions.getCssProperty, [
+            xpath,
+            cssProperty,
+        ]);
     }
 
     public getSource() {
@@ -279,19 +328,36 @@ export class WebClient implements IWebApplicationClient {
     }
 
     public waitForValue(xpath, timeout, reverse) {
-        return this.makeRequest(BrowserProxyActions.waitForValue, [xpath, timeout, reverse]);
+        return this.makeRequest(BrowserProxyActions.waitForValue, [
+            xpath,
+            timeout,
+            reverse,
+        ]);
     }
 
     public waitForSelected(xpath, timeout, reverse) {
-        return this.makeRequest(BrowserProxyActions.waitForSelected, [xpath, timeout, reverse]);
+        return this.makeRequest(BrowserProxyActions.waitForSelected, [
+            xpath,
+            timeout,
+            reverse,
+        ]);
     }
 
     public waitUntil(condition, timeout, timeoutMsg, interval) {
-        return this.makeRequest(BrowserProxyActions.waitUntil, [condition, timeout, timeoutMsg, interval]);
+        return this.makeRequest(BrowserProxyActions.waitUntil, [
+            condition,
+            timeout,
+            timeoutMsg,
+            interval,
+        ]);
     }
 
     public selectByAttribute(xpath, attribute, value) {
-        return this.makeRequest(BrowserProxyActions.selectByAttribute, [xpath, attribute, value]);
+        return this.makeRequest(BrowserProxyActions.selectByAttribute, [
+            xpath,
+            attribute,
+            value,
+        ]);
     }
 
     public getGridNodeDetails() {

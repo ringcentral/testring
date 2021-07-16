@@ -1,1 +1,1 @@
-export { TestRunController } from './test-run-controller';
+export {TestRunController} from './test-run-controller';

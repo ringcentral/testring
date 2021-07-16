@@ -1,12 +1,13 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { serialize, deserialize } from '../src/serialize';
+import {serialize, deserialize} from '../src/serialize';
 
 describe('serialize', () => {
     it('should serialize array without data loss', () => {
         const data = [
-            0, 1,
+            0,
+            1,
             'string',
             null,
             undefined,
@@ -22,8 +23,14 @@ describe('serialize', () => {
     });
 
     it('should serialize error', () => {
-        const errorTypes = ['EvalError', 'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError'];
-
+        const errorTypes = [
+            'EvalError',
+            'RangeError',
+            'ReferenceError',
+            'SyntaxError',
+            'TypeError',
+            'URIError',
+        ];
 
         for (const errorType of errorTypes) {
             const error = new global[errorType]('test');
@@ -38,8 +45,7 @@ describe('serialize', () => {
     });
 
     it('should serialize custom error', () => {
-        class CustomError extends Error {
-        }
+        class CustomError extends Error {}
 
         const error = new CustomError('test');
 
@@ -82,7 +88,7 @@ describe('serialize', () => {
     });
 
     it('should serialize arrow function without body', () => {
-        const arrowFunction = a => a + 2;
+        const arrowFunction = (a) => a + 2;
 
         const serializedFunction = serialize(arrowFunction);
         const deserializedFunction = deserialize(serializedFunction);

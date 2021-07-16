@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { IFile } from '@testring/types';
+import {IFile} from '@testring/types';
 
 const ERR_NO_FILES = new Error('No test files found');
 
@@ -32,7 +32,9 @@ export async function resolveFiles(files: Array<string>): Promise<IFile[]> {
         throw ERR_NO_FILES;
     }
 
-    const readFilePromises = files.map(file => readFile(file).catch(() => null));
+    const readFilePromises = files.map((file) =>
+        readFile(file).catch(() => null),
+    );
     const filesContent = await Promise.all(readFilePromises);
     const compacted = filesContent.filter(isNotEmpty);
 

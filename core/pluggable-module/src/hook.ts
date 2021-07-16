@@ -4,7 +4,9 @@ export class Hook {
     private readHooks: Map<string, Function> = new Map();
 
     private generateError(pluginName: string, error: Error) {
-        const generatedError = new Error(`Plugin ${pluginName} failed: ${error.message}`);
+        const generatedError = new Error(
+            `Plugin ${pluginName} failed: ${error.message}`,
+        );
 
         generatedError.stack = error.stack;
 
@@ -20,7 +22,7 @@ export class Hook {
     }
 
     public async callHooks(...data: Array<any>) {
-        const { writeHooks, readHooks } = this;
+        const {writeHooks, readHooks} = this;
 
         let dataArguments = data;
 

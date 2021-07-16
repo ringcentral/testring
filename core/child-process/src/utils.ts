@@ -1,7 +1,9 @@
-import { argv as processArgv } from 'process';
+import {argv as processArgv} from 'process';
 
 function checkArguments(argv: string[]) {
-    return argv.findIndex(item => item.startsWith('--testring-parent-pid=')) > -1;
+    return (
+        argv.findIndex((item) => item.startsWith('--testring-parent-pid=')) > -1
+    );
 }
 
 const IS_PARENT_ARGV_PASSED = checkArguments(processArgv);

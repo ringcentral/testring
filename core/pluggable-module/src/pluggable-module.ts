@@ -1,10 +1,9 @@
-import { IPluggableModule } from '@testring/types';
-import { Hook } from './hook';
+import {IPluggableModule} from '@testring/types';
+import {Hook} from './hook';
 
 type HookDescriptor = string;
 
 export class PluggableModule implements IPluggableModule<Hook> {
-
     private pluginHooks: Map<string, Hook> = new Map();
 
     constructor(hooks: Array<HookDescriptor> = []) {

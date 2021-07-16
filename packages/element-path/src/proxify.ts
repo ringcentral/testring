@@ -1,19 +1,19 @@
-import {
-    hasOwn,
-    isGenKeyType,
-} from './utils';
-import { ElementPath } from './element-path';
+/* eslint-disable prefer-spread,prefer-rest-params */
+import {hasOwn, isGenKeyType} from './utils';
+import {ElementPath} from './element-path';
 
 type KeyType = string | number | symbol;
 
-type PropertyDescriptor = {
-    enumerable?: boolean;
-    writable?: boolean;
-    configurable?: boolean;
-    value?: any;
-    getter?: () => any;
-    setter?: () => any;
-} | undefined;
+type PropertyDescriptor =
+    | {
+          enumerable?: boolean;
+          writable?: boolean;
+          configurable?: boolean;
+          value?: any;
+          getter?: () => any;
+          setter?: () => any;
+      }
+    | undefined;
 
 type XpathLocatorProxified = {
     id: string;
@@ -22,9 +22,15 @@ type XpathLocatorProxified = {
 };
 
 const PROXY_OWN_PROPS = ['__flows', '__path'];
-const PROXY_PROPS = ['__path', '__parentPath', '__flows', '__searchOptions', '__proxy'];
+const PROXY_PROPS = [
+    '__path',
+    '__parentPath',
+    '__flows',
+    '__searchOptions',
+    '__proxy',
+];
 
-export function proxify(instance: ElementPath, strictMode: boolean = true) {
+export function proxify(instance: ElementPath, strictMode = true) {
     const revocable = Proxy.revocable<any>(instance, {
         /* eslint-disable no-use-before-define */
         get: getTrap,
@@ -47,30 +53,39 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
     const proxy = revocable.proxy;
 
     function isPrivateProperty(key: KeyType): boolean {
-        return typeof key === 'string' && key.indexOf('__') === 0 && !PROXY_OWN_PROPS.includes(key);
+        return (
+            typeof key === 'string' &&
+            key.indexOf('__') === 0 &&
+            !PROXY_OWN_PROPS.includes(key)
+        );
     }
 
     function getReflectedProperty(key, ctx = instance) {
-        let item = Reflect.get(instance, key);
+        const item = Reflect.get(instance, key);
 
         if (typeof item === 'function') {
             return new Proxy(item, {
                 apply: (target, thisArg, argumentsList) => {
                     if (thisArg === proxy) {
-                        return Reflect.get(ctx, key).apply(instance, argumentsList);
+                        return Reflect.get(ctx, key).apply(
+                            instance,
+                            argumentsList,
+                        );
                     } else if (
-                        thisArg instanceof instance.constructor
-                        && typeof (thisArg as any).__getInstance === 'function'
+                        thisArg instanceof instance.constructor &&
+                        typeof (thisArg as any).__getInstance === 'function'
                     ) {
-                        return Reflect.get(ctx, key).apply((thisArg as any).__getInstance(), argumentsList);
+                        return Reflect.get(ctx, key).apply(
+                            (thisArg as any).__getInstance(),
+                            argumentsList,
+                        );
                     }
 
                     return Reflect.get(ctx, key).apply(thisArg, argumentsList);
                 },
             });
         }
-            return Reflect.get(instance, key);
-
+        return Reflect.get(instance, key);
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -79,8 +94,14 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
             throw new TypeError('Key can not me empty');
         }
 
-        if (typeof key === 'string' && PROXY_PROPS.includes(key) && instance.hasFlow(key)) {
-            throw new TypeError(`flow function and property ${key} are conflicts`);
+        if (
+            typeof key === 'string' &&
+            PROXY_PROPS.includes(key) &&
+            instance.hasFlow(key)
+        ) {
+            throw new TypeError(
+                `flow function and property ${key} are conflicts`,
+            );
         }
 
         if (hasOwn(instance, key) && typeof key !== 'symbol') {
@@ -112,8 +133,7 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
                 if (this === proxy) {
                     return instance;
                 }
-                    return this;
-
+                return this;
             };
         }
 
@@ -122,8 +142,7 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
                 if (this === proxy) {
                     return instance.getElementType.apply(instance, arguments);
                 }
-                    return instance.getElementType.apply(this, arguments);
-
+                return instance.getElementType.apply(this, arguments);
             };
         }
 
@@ -132,53 +151,79 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
                 if (this === proxy) {
                     return instance.getReversedChain.apply(instance, arguments);
                 }
-                    return instance.getReversedChain.apply(this, arguments);
-
+                return instance.getReversedChain.apply(this, arguments);
             };
         }
 
         if (key === '__findChildren') {
             return function __findChildren() {
                 if (this === proxy) {
-                    return proxify(instance.generateChildElementPathByOptions.apply(instance, arguments), strictMode);
+                    return proxify(
+                        instance.generateChildElementPathByOptions.apply(
+                            instance,
+                            arguments,
+                        ),
+                        strictMode,
+                    );
                 }
-                    return proxify(instance.generateChildElementPathByOptions.apply(this, arguments), strictMode);
-
+                return proxify(
+                    instance.generateChildElementPathByOptions.apply(
+                        this,
+                        arguments,
+                    ),
+                    strictMode,
+                );
             };
         }
 
-        if (strictMode && (key === 'xpathByElement' || key === 'xpath' || key === 'xpathByLocator')) {
+        if (
+            strictMode &&
+            (key === 'xpathByElement' ||
+                key === 'xpath' ||
+                key === 'xpathByLocator')
+        ) {
             throw Error('Can not use xpath query in strict mode');
         }
 
         if (key === 'xpathByLocator') {
             return (element: XpathLocatorProxified) => {
                 if (typeof element.locator !== 'string') {
-                    throw Error('Invalid options, "locator" string is required');
+                    throw Error(
+                        'Invalid options, "locator" string is required',
+                    );
                 }
 
-                return proxify(instance.generateChildByLocator({
-                    xpath: element.locator,
-                    id: element.id,
-                    parent: element.parent,
-                }), strictMode);
+                return proxify(
+                    instance.generateChildByLocator({
+                        xpath: element.locator,
+                        id: element.id,
+                        parent: element.parent,
+                    }),
+                    strictMode,
+                );
             };
         }
 
         // TODO (flops) @deprecated
         if (key === 'xpathByElement') {
             return (element: XpathLocatorProxified) => {
-                return proxify(instance.generateChildByLocator({
-                    id: element.id,
-                    xpath: element.locator,
-                    parent: element.parent,
-                }), strictMode);
+                return proxify(
+                    instance.generateChildByLocator({
+                        id: element.id,
+                        xpath: element.locator,
+                        parent: element.parent,
+                    }),
+                    strictMode,
+                );
             };
         }
 
         if (key === 'xpath') {
             return (id: string, xpath: string) => {
-                return proxify(instance.generateChildByXpath({ id, xpath }), strictMode);
+                return proxify(
+                    instance.generateChildByXpath({id, xpath}),
+                    strictMode,
+                );
             };
         }
 
@@ -215,12 +260,19 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
         return PROXY_OWN_PROPS.concat(Object.keys(instance.getFlows() || {}));
     }
 
-    function defineOwnPropertyTrap(target: ElementPath, key: KeyType, descriptor: PropertyDescriptor): boolean {
+    function defineOwnPropertyTrap(
+        target: ElementPath,
+        key: KeyType,
+        descriptor: PropertyDescriptor,
+    ): boolean {
         return false;
     }
 
-    function getOwnPropertyDescriptorTrap(target: ElementPath, key: KeyType): PropertyDescriptor {
-        let defaultDescriptor = {
+    function getOwnPropertyDescriptorTrap(
+        target: ElementPath,
+        key: KeyType,
+    ): PropertyDescriptor {
+        const defaultDescriptor = {
             enumerable: false,
             writable: false,
             configurable: true,
@@ -253,11 +305,9 @@ export function proxify(instance: ElementPath, strictMode: boolean = true) {
         return Reflect.getPrototypeOf(instance);
     }
 
-
     function setPrototypeOfTrap(target: ElementPath, proto: object): any {
         throw new TypeError('Immutable object');
     }
-
 
     function isExtensibleTrap(target: ElementPath): boolean {
         return false;

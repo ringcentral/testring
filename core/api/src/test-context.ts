@@ -1,14 +1,13 @@
-import { ITestQueuedTestRunData } from '@testring/types';
-import { loggerClient } from '@testring/logger';
-import { HttpClient } from '@testring/http-api';
-import { transport } from '@testring/transport';
-import { WebApplication } from '@testring/web-application';
-import { testAPIController } from './test-api-controller';
+import {ITestQueuedTestRunData} from '@testring/types';
+import {loggerClient} from '@testring/logger';
+import {HttpClient} from '@testring/http-api';
+import {transport} from '@testring/transport';
+import {WebApplication} from '@testring/web-application';
+import {testAPIController} from './test-api-controller';
 
 const LOG_PREFIX = '[logged inside test]';
 
 export class TestContext {
-
     private lastLoggedBusinessMessage: string | null = null;
 
     private customApplications: Set<WebApplication> = new Set();
@@ -24,7 +23,11 @@ export class TestContext {
     public get application(): WebApplication {
         const runData = this.getRunData();
 
-        let value = new WebApplication(testAPIController.getTestID(), transport, runData);
+        const value = new WebApplication(
+            testAPIController.getTestID(),
+            transport,
+            runData,
+        );
 
         Object.defineProperty(this, 'application', {
             value,
@@ -76,9 +79,15 @@ export class TestContext {
         return testAPIController.getEnvironmentParameters();
     }
 
-    public initCustomApplication<T extends WebApplication>(Ctr: { new(...args: Array<any>): T; }) {
+    public initCustomApplication<T extends WebApplication>(Ctr: {
+        new (...args: Array<any>): T;
+    }) {
         const runData = this.getRunData();
-        const customApplication = new Ctr(testAPIController.getTestID(), transport, runData);
+        const customApplication = new Ctr(
+            testAPIController.getTestID(),
+            transport,
+            runData,
+        );
 
         this.customApplications.add(customApplication);
 
@@ -90,26 +99,27 @@ export class TestContext {
     }
 
     public end(): Promise<any> {
-        const requests = this.application.isStopped() ? [] : [
-            this.application.end(),
-        ];
+        const requests = this.application.isStopped()
+            ? []
+            : [this.application.end()];
 
         for (const customApplication of this.customApplications) {
             if (!customApplication.isStopped()) {
-                requests.push(
-                    customApplication.end(),
-                );
+                requests.push(customApplication.end());
             }
         }
 
-        return Promise.all(requests)
-            .catch((error) => {
-                this.logError(error);
-            });
+        return Promise.all(requests).catch((error) => {
+            this.logError(error);
+        });
     }
 
     public cloneInstance<O>(obj: O): TestContext & O {
-        const copy: this & O = Object.assign(Object.create(Object.getPrototypeOf(this)), this, obj);
+        const copy: this & O = Object.assign(
+            Object.create(Object.getPrototypeOf(this)),
+            this,
+            obj,
+        );
         Object.assign(copy.constructor, this.constructor);
 
         return copy;

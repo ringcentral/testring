@@ -2,7 +2,7 @@
 
 import * as path from 'path';
 import * as chai from 'chai';
-import { fork } from '../src/fork';
+import {fork} from '../src/fork';
 
 const fixtures = path.resolve(__dirname, './fixtures');
 
@@ -13,7 +13,9 @@ describe('fork', () => {
                 if (signal) {
                     callback(signal);
                 } else {
-                    chai.expect(ps['spawnfile'].endsWith('node')).to.equal(true);
+                    chai.expect(ps['spawnfile'].endsWith('node')).to.equal(
+                        true,
+                    );
 
                     callback();
                 }

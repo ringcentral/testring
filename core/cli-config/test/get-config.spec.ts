@@ -3,11 +3,14 @@
 import * as chai from 'chai';
 import * as path from 'path';
 
-import { getConfig, defaultConfiguration } from '../src';
+import {getConfig, defaultConfiguration} from '../src';
 
 const fileConfigPath = path.resolve(__dirname, './fixtures/fileConfig.json');
 const envConfigPath = path.resolve(__dirname, './fixtures/envConfig.json');
-const envConfigWithExtendPath = path.resolve(__dirname, './fixtures/envConfig_extend.json');
+const envConfigWithExtendPath = path.resolve(
+    __dirname,
+    './fixtures/envConfig_extend.json',
+);
 
 const fileConfig = require('./fixtures/fileConfig.json');
 const envConfig = require('./fixtures/envConfig.json');
@@ -20,11 +23,12 @@ describe('Get config', () => {
     });
 
     it('should override default config fields with file config', async () => {
-        const config = await getConfig([
-            `--config=${fileConfigPath}`,
-        ]);
+        const config = await getConfig([`--config=${fileConfigPath}`]);
 
-        chai.expect(config).to.have.property('workerLimit', fileConfig.workerLimit);
+        chai.expect(config).to.have.property(
+            'workerLimit',
+            fileConfig.workerLimit,
+        );
     });
 
     it('should override default and file config fields with file config', async () => {
@@ -33,15 +37,19 @@ describe('Get config', () => {
             `--env-config=${envConfigPath}`,
         ]);
 
-        chai.expect(config).to.have.property('workerLimit', fileConfig.workerLimit);
+        chai.expect(config).to.have.property(
+            'workerLimit',
+            fileConfig.workerLimit,
+        );
     });
 
     it('should override config fields with env config', async () => {
-        const config = await getConfig([
-            `--env-config=${envConfigPath}`,
-        ]);
+        const config = await getConfig([`--env-config=${envConfigPath}`]);
 
-        chai.expect(config).to.have.property('workerLimit', envConfig.workerLimit);
+        chai.expect(config).to.have.property(
+            'workerLimit',
+            envConfig.workerLimit,
+        );
     });
 
     it('should override file config fields with arguments', async () => {
@@ -72,7 +80,10 @@ describe('Get config', () => {
             `--env-config=${envConfigWithExtendPath}`,
         ]);
 
-        chai.expect(config).to.have.property('workerLimit', envConfig.workerLimit);
+        chai.expect(config).to.have.property(
+            'workerLimit',
+            envConfig.workerLimit,
+        );
     });
 
     // eslint-disable-next-line sonarjs/no-identical-functions
@@ -82,7 +93,10 @@ describe('Get config', () => {
             `--env-config=${envConfigPath}`,
         ]);
 
-        chai.expect(config).to.have.property('workerLimit', fileConfig.workerLimit);
+        chai.expect(config).to.have.property(
+            'workerLimit',
+            fileConfig.workerLimit,
+        );
     });
 
     it('should override file config fields with @extend and arguments', async () => {

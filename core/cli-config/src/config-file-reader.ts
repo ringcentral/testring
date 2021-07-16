@@ -1,19 +1,19 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
-import { loggerClient } from '@testring/logger';
-import { requirePackage } from '@testring/utils';
-import { IConfig } from '@testring/types';
-import ProcessEnv = NodeJS.ProcessEnv;
+import {loggerClient} from '@testring/logger';
+import {requirePackage} from '@testring/utils';
+import {IConfig} from '@testring/types';
 
-import { mergeConfigs } from './merge-configs';
+import {mergeConfigs} from './merge-configs';
+import ProcessEnv = NodeJS.ProcessEnv;
 
 function findFile(configPath: string) {
     const filePath = path.resolve(configPath);
     const configExists = fs.existsSync(filePath);
 
     if (configExists) {
-        return fs.readFileSync(filePath, { encoding: 'utf8' });
+        return fs.readFileSync(filePath, {encoding: 'utf8'});
     }
 
     return null;
@@ -32,8 +32,7 @@ async function readJSConfig(
             // TODO (flops) write tests for env passing
             return await configFile(config, processEnv);
         }
-            return configFile;
-
+        return configFile;
     } catch (exception) {
         const error = new SyntaxError(`
             Config file ${configPath} can't be parsed.
@@ -63,12 +62,10 @@ async function readJSONConfig(configPath: string): Promise<IConfig | null> {
     }
 }
 
-
 async function readConfig(
     configPath: string | void,
     config: IConfig,
 ): Promise<IConfig | null> {
-
     if (!configPath) {
         return null;
     }
@@ -93,23 +90,32 @@ async function readConfig(
             throw new Error(`${extension} is not supported`);
     }
 
-    if (configData && Object.prototype.hasOwnProperty.call(configData, '@extend')) {
-        const extendConfigPath = path.resolve(path.dirname(configPath), configData['@extend']);
-        const extendConfig = await readConfig(extendConfigPath, config) as Partial<IConfig>;
+    if (
+        configData &&
+        Object.prototype.hasOwnProperty.call(configData, '@extend')
+    ) {
+        const extendConfigPath = path.resolve(
+            path.dirname(configPath),
+            configData['@extend'],
+        );
+        const extendConfig = (await readConfig(
+            extendConfigPath,
+            config,
+        )) as Partial<IConfig>;
 
         if (extendConfig === null) {
             throw Error(`Config ${extendConfigPath} not found`);
         }
 
-        configData = mergeConfigs(
-            extendConfig,
-            configData,
-        );
+        configData = mergeConfigs(extendConfig, configData);
     }
 
     return configData;
 }
 
-export async function getFileConfig(configPath: string | void, userConfig: IConfig) {
+export async function getFileConfig(
+    configPath: string | void,
+    userConfig: IConfig,
+) {
     return await readConfig(configPath, userConfig);
 }

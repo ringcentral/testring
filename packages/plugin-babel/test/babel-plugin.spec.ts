@@ -1,8 +1,8 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { default as babelPlugin } from '../src';
-import { PluginAPIMock } from './plugin-api.mock';
+import {default as babelPlugin} from '../src';
+import {PluginAPIMock} from './plugin-api.mock';
 
 const DEFAULT_FILENAME = 'filename.js';
 const DEFAULT_INPUT = `
@@ -28,10 +28,13 @@ describe('babelPlugin', () => {
     it('should not convert code, if there is no config', async () => {
         const pluginAPIMock = new PluginAPIMock();
 
-        babelPlugin(pluginAPIMock as any, null);
+        babelPlugin(pluginAPIMock as never, null);
 
         const testWorkerMock = pluginAPIMock.$getLastTestWorker();
-        const result = await testWorkerMock.$compile(DEFAULT_INPUT, DEFAULT_FILENAME);
+        const result = await testWorkerMock.$compile(
+            DEFAULT_INPUT,
+            DEFAULT_FILENAME,
+        );
 
         chai.expect(result).to.be.equal(TRANSFORMED_INPUT);
     });
@@ -39,11 +42,13 @@ describe('babelPlugin', () => {
     it('should convert code with given preset', async () => {
         const pluginAPIMock = new PluginAPIMock();
 
-        babelPlugin(pluginAPIMock as any, {
-        });
+        babelPlugin(pluginAPIMock as never, {});
 
         const testWorkerMock = pluginAPIMock.$getLastTestWorker();
-        const result = await testWorkerMock.$compile(DEFAULT_INPUT, DEFAULT_FILENAME);
+        const result = await testWorkerMock.$compile(
+            DEFAULT_INPUT,
+            DEFAULT_FILENAME,
+        );
 
         chai.expect(result).to.be.equal(TRANSFORMED_INPUT);
     });
@@ -51,11 +56,13 @@ describe('babelPlugin', () => {
     it('import convert check', async () => {
         const pluginAPIMock = new PluginAPIMock();
 
-        babelPlugin(pluginAPIMock as any, {
-        });
+        babelPlugin(pluginAPIMock as never, {});
 
         const testWorkerMock = pluginAPIMock.$getLastTestWorker();
-        const result = await testWorkerMock.$compile(REQUIRE_CODE, DEFAULT_FILENAME);
+        const result = await testWorkerMock.$compile(
+            REQUIRE_CODE,
+            DEFAULT_FILENAME,
+        );
 
         chai.expect(result).to.be.equal(REQUIRE_OUTPUT);
     });

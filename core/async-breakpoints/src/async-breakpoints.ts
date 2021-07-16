@@ -1,6 +1,6 @@
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 
-import { BreakStackError } from './break-stack-error';
+import {BreakStackError} from './break-stack-error';
 
 type HasBreakpointCallback = (state: boolean) => Promise<void> | void;
 
@@ -16,10 +16,6 @@ export enum BreakpointEvents {
 
 export class AsyncBreakpoints extends EventEmitter {
     private breakpoints: Map<BreakpointsTypes, Promise<void>> = new Map();
-
-    constructor() {
-        super();
-    }
 
     private addBreakpoint(type: BreakpointsTypes): Promise<void> {
         if (this.breakpoints.has(type)) {
@@ -43,8 +39,14 @@ export class AsyncBreakpoints extends EventEmitter {
             };
 
             const unsubscribe = () => {
-                this.removeListener(BreakpointEvents.resolverEvent, releaseHandler);
-                this.removeListener(BreakpointEvents.breakStackEvent, breakStackHandler);
+                this.removeListener(
+                    BreakpointEvents.resolverEvent,
+                    releaseHandler,
+                );
+                this.removeListener(
+                    BreakpointEvents.breakStackEvent,
+                    breakStackHandler,
+                );
             };
 
             this.on(BreakpointEvents.resolverEvent, releaseHandler);
@@ -76,11 +78,9 @@ export class AsyncBreakpoints extends EventEmitter {
             await hasBreakpointCallback(true);
             return this.breakpoints.get(type) as Promise<void>;
         }
-            await hasBreakpointCallback(false);
-            return Promise.resolve();
-
+        await hasBreakpointCallback(false);
+        return Promise.resolve();
     }
-
 
     public addBeforeInstructionBreakpoint(): void {
         this.addBreakpoint(BreakpointsTypes.beforeInstruction);
@@ -102,7 +102,6 @@ export class AsyncBreakpoints extends EventEmitter {
     public isBeforeInstructionBreakpointActive(): boolean {
         return this.breakpoints.has(BreakpointsTypes.beforeInstruction);
     }
-
 
     public addAfterInstructionBreakpoint(): void {
         this.addBreakpoint(BreakpointsTypes.afterInstruction);

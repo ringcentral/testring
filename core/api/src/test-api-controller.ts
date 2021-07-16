@@ -1,17 +1,15 @@
-import { TestEvents } from '@testring/types';
+import {TestEvents} from '@testring/types';
 
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 
-import { asyncBreakpoints } from '@testring/async-breakpoints';
-
+import {asyncBreakpoints} from '@testring/async-breakpoints';
 
 type BeforeRunCallback = () => any;
 type AfterRunCallback = () => any;
 
-
 export class BusEmitter extends EventEmitter {
     private async addDelayToStack(): Promise<void> {
-        new Promise(resolve => setImmediate(resolve));
+        new Promise((resolve) => setImmediate(resolve));
     }
 
     public async startedTest(): Promise<void> {
@@ -30,11 +28,10 @@ export class BusEmitter extends EventEmitter {
     }
 }
 
-
 export class TestAPIController {
     private bus = new BusEmitter();
 
-    private testID: string = '';
+    private testID = '';
 
     private testParameters: object = {};
 
@@ -79,7 +76,7 @@ export class TestAPIController {
     public async flushBeforeRunCallbacks() {
         await asyncBreakpoints.waitBeforeInstructionBreakpoint();
 
-        for (let callback of this.beforeRunCallbacks) {
+        for (const callback of this.beforeRunCallbacks) {
             await callback();
         }
 
@@ -95,7 +92,7 @@ export class TestAPIController {
     public async flushAfterRunCallbacks() {
         await asyncBreakpoints.waitBeforeInstructionBreakpoint();
 
-        for (let callback of this.afterRunCallbacks) {
+        for (const callback of this.afterRunCallbacks) {
             await callback();
         }
 

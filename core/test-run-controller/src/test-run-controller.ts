@@ -10,18 +10,20 @@ import {
     ITestWorkerInstance,
     TestRunControllerPlugins,
 } from '@testring/types';
-import { loggerClient } from '@testring/logger';
-import { PluggableModule } from '@testring/pluggable-module';
-import { Queue } from '@testring/utils';
+import {loggerClient} from '@testring/logger';
+import {PluggableModule} from '@testring/pluggable-module';
+import {Queue} from '@testring/utils';
 
 type TestQueue = Queue<IQueuedTest>;
 
-const delay = (milliseconds: number) => new Promise((resolve) => {
-    setTimeout(resolve, milliseconds);
-});
+const delay = (milliseconds: number) =>
+    new Promise((resolve) => {
+        setTimeout(resolve, milliseconds);
+    });
 
-export class TestRunController extends PluggableModule implements ITestRunController {
-
+export class TestRunController
+    extends PluggableModule
+    implements ITestRunController {
     private workers: Array<ITestWorkerInstance> = [];
 
     private errors: Array<Error> = [];
@@ -61,9 +63,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     }
 
     public async kill(): Promise<void> {
-        await Promise.all(
-            this.workers.map((worker) => worker.kill()),
-        );
+        await Promise.all(this.workers.map((worker) => worker.kill()));
 
         this.workers.length = 0;
 
@@ -73,7 +73,11 @@ export class TestRunController extends PluggableModule implements ITestRunContro
     }
 
     private async executeQueue(testQueue: TestQueue): Promise<Error[] | null> {
-        const shouldNotExecute = await this.callHook(TestRunControllerPlugins.shouldNotExecute, false, testQueue);
+        const shouldNotExecute = await this.callHook(
+            TestRunControllerPlugins.shouldNotExecute,
+            false,
+            testQueue,
+        );
 
         if (!!shouldNotExecute) {
             this.logger.info('The run queue execution was stopped.');
@@ -85,12 +89,20 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
             if (configWorkerLimit === 'local') {
                 await this.runLocalWorker(testQueue);
-            } else if (typeof configWorkerLimit === 'number' && configWorkerLimit > 0) {
-                const workerLimit = configWorkerLimit < testQueue.length ? configWorkerLimit : testQueue.length;
+            } else if (
+                typeof configWorkerLimit === 'number' &&
+                configWorkerLimit > 0
+            ) {
+                const workerLimit =
+                    configWorkerLimit < testQueue.length
+                        ? configWorkerLimit
+                        : testQueue.length;
 
                 await this.runChildWorkers(testQueue, workerLimit);
             } else {
-                throw new Error(`Invalid workerLimit argument value ${configWorkerLimit}`);
+                throw new Error(
+                    `Invalid workerLimit argument value ${configWorkerLimit}`,
+                );
             }
 
             await this.callHook(TestRunControllerPlugins.afterRun, null);
@@ -98,7 +110,6 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             await this.callHook(TestRunControllerPlugins.afterRun, error);
             this.errors.push(error);
         }
-
 
         if (this.errors.length > 0) {
             return this.errors;
@@ -122,7 +133,10 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         }
     }
 
-    private async runChildWorkers(testQueue: TestQueue, workerLimit: number): Promise<void> {
+    private async runChildWorkers(
+        testQueue: TestQueue,
+        workerLimit: number,
+    ): Promise<void> {
         this.logger.debug(`Run controller: ${workerLimit} worker(s) created.`);
 
         this.workers = this.createWorkers(workerLimit);
@@ -151,7 +165,9 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         return workers;
     }
 
-    private getWorkerMeta(worker: ITestWorkerInstance): ITestWorkerCallbackMeta {
+    private getWorkerMeta(
+        worker: ITestWorkerInstance,
+    ): ITestWorkerCallbackMeta {
         return {
             processID: worker.getWorkerID(),
             isLocal: this.config.workerLimit === 'local',
@@ -172,7 +188,7 @@ export class TestRunController extends PluggableModule implements ITestRunContro
 
     private getQueueItemWithRunData(queueItem): IQueuedTest {
         let screenshotsEnabled = false;
-        let isRetryRun = queueItem.retryCount > 0;
+        const isRetryRun = queueItem.retryCount > 0;
         const {
             debug,
             httpThrottle,
@@ -218,9 +234,16 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             testQueue[index] = this.prepareTest(testFiles[index]);
         }
 
-        const modifierQueue = await this.callHook(TestRunControllerPlugins.beforeRun, testQueue);
+        const modifierQueue = await this.callHook(
+            TestRunControllerPlugins.beforeRun,
+            testQueue,
+        );
 
-        return new Queue((modifierQueue || []).map(item => this.getQueueItemWithRunData(item)));
+        return new Queue(
+            (modifierQueue || []).map((item) =>
+                this.getQueueItemWithRunData(item),
+            ),
+        );
     }
 
     private async onTestFailed(
@@ -230,7 +253,12 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         queue: TestQueue,
     ): Promise<void> {
         if (this.config.bail) {
-            await this.callHook(TestRunControllerPlugins.afterTest, queueItem, error, this.getWorkerMeta(worker));
+            await this.callHook(
+                TestRunControllerPlugins.afterTest,
+                queueItem,
+                error,
+                this.getWorkerMeta(worker),
+            );
             throw error;
         }
 
@@ -247,22 +275,35 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         ) {
             await delay(this.config.retryDelay || 0);
 
-            let copyQueueItem = this.getQueueItemWithRunData({
+            const copyQueueItem = this.getQueueItemWithRunData({
                 ...queueItem,
                 retryCount: queueItem.retryCount + 1,
             });
 
             queue.push(copyQueueItem);
 
-            await this.callHook(TestRunControllerPlugins.beforeTestRetry, queueItem, error, this.getWorkerMeta(worker));
+            await this.callHook(
+                TestRunControllerPlugins.beforeTestRetry,
+                queueItem,
+                error,
+                this.getWorkerMeta(worker),
+            );
         } else {
             this.errors.push(error);
 
-            await this.callHook(TestRunControllerPlugins.afterTest, queueItem, error, this.getWorkerMeta(worker));
+            await this.callHook(
+                TestRunControllerPlugins.afterTest,
+                queueItem,
+                error,
+                this.getWorkerMeta(worker),
+            );
         }
     }
 
-    private async executeWorker(worker: ITestWorkerInstance, queue: TestQueue): Promise<void> {
+    private async executeWorker(
+        worker: ITestWorkerInstance,
+        queue: TestQueue,
+    ): Promise<void> {
         const queuedTest = queue.shift();
 
         if (!queuedTest) {
@@ -273,7 +314,8 @@ export class TestRunController extends PluggableModule implements ITestRunContro
         let isRejectedByTimeout = false;
 
         try {
-            const timeout = queuedTest.parameters.testTimeout || this.config.testTimeout;
+            const timeout =
+                queuedTest.parameters.testTimeout || this.config.testTimeout;
 
             const shouldNotStart = await this.callHook(
                 TestRunControllerPlugins.shouldNotStart,
@@ -286,7 +328,11 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                 return;
             }
 
-            await this.callHook(TestRunControllerPlugins.beforeTest, queuedTest, this.getWorkerMeta(worker));
+            await this.callHook(
+                TestRunControllerPlugins.beforeTest,
+                queuedTest,
+                this.getWorkerMeta(worker),
+            );
 
             const raceQueue = [
                 worker.execute(
@@ -301,7 +347,9 @@ export class TestRunController extends PluggableModule implements ITestRunContro
                     new Promise((resolve, reject) => {
                         timer = setTimeout(() => {
                             isRejectedByTimeout = true;
-                            reject(new Error(`Test timeout exceeded ${timeout}ms`));
+                            reject(
+                                new Error(`Test timeout exceeded ${timeout}ms`),
+                            );
                         }, timeout);
                     }),
                 );
@@ -312,7 +360,12 @@ export class TestRunController extends PluggableModule implements ITestRunContro
             // noinspection JSUnusedAssignment
             clearTimeout(timer);
 
-            await this.callHook(TestRunControllerPlugins.afterTest, queuedTest, null, this.getWorkerMeta(worker));
+            await this.callHook(
+                TestRunControllerPlugins.afterTest,
+                queuedTest,
+                null,
+                this.getWorkerMeta(worker),
+            );
         } catch (error) {
             if (isRejectedByTimeout) {
                 await worker.kill('SIGABRT');

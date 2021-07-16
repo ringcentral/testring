@@ -1,16 +1,13 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { PluggableModule } from '../src/pluggable-module';
+import {PluggableModule} from '../src/pluggable-module';
 
 class TestModule extends PluggableModule {
-
     static hookName = 'testHook';
 
     constructor() {
-        super([
-            TestModule.hookName,
-        ]);
+        super([TestModule.hookName]);
     }
 
     call(...args) {
@@ -35,7 +32,7 @@ describe('PluggableModule', () => {
     });
 
     it('should handle async hooks', async () => {
-        const testData = { main: 1 };
+        const testData = {main: 1};
         const testModule = new TestModule();
         const hook = testModule.getHook(TestModule.hookName);
 
@@ -57,11 +54,11 @@ describe('PluggableModule', () => {
     });
 
     it('should process multiple arguments', async () => {
-        const testData = { main: 1 };
-        const testDataExtra = { mainExtra: 2 };
-        const additional = { additional: 1 };
+        const testData = {main: 1};
+        const testDataExtra = {mainExtra: 2};
+        const additional = {additional: 1};
 
-        const expectedResult= {
+        const expectedResult = {
             main: 1,
             mainExtra: 2,
             additional: 1,

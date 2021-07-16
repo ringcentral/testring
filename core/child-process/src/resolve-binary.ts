@@ -24,23 +24,25 @@ function windowsQuotes(str) {
     return '"' + str + '"';
 }
 
-function escapify(str) {
+function escapify(str: string) {
     if (IS_WIN) {
         return path.normalize(str).split(/\\/).map(windowsQuotes).join('\\\\');
     } else if (/[^-_.~/\w]/.test(str)) {
-        return '\'' + str.replace(/'/g, '\'"\'"\'') + '\'';
-    } 
-        return str;
-    
+        return "'" + str.replace(/'/g, "'\"'\"'") + "'";
+    }
+    return str;
 }
 
-export function resolveBinary(name: string) {
+export function resolveBinary(name: string): string {
     const modulePath = require.resolve(name);
     const nodeModules = findNodeModulesDir(modulePath);
-    const binaryPath = path.join(nodeModules, '.bin', name) + (IS_WIN ? '.cmd' : '');
+    const binaryPath =
+        path.join(nodeModules, '.bin', name) + (IS_WIN ? '.cmd' : '');
 
     if (!fs.existsSync(binaryPath)) {
-        throw new ReferenceError(`Package ${name} is existing, but it doesn't have bin`);
+        throw new ReferenceError(
+            `Package ${name} is existing, but it doesn't have bin`,
+        );
     }
 
     return escapify(binaryPath);

@@ -4,7 +4,7 @@ import {
     ITransportBroadcastMessage,
     ITransportDirectMessage,
 } from '@testring/types';
-import { deserialize, serialize } from './serialize';
+import {deserialize, serialize} from './serialize';
 
 class BroadcastTransport {
     constructor(
@@ -32,7 +32,9 @@ class BroadcastTransport {
     }
 
     private registerRootProcess() {
-        this.rootProcess.on('message', (message) => this.handleRootProcessMessage(message as any));
+        this.rootProcess.on('message', (message) =>
+            this.handleRootProcessMessage(message as any),
+        );
     }
 
     private handleRootProcessMessage(message: ITransportDirectMessage) {
@@ -65,4 +67,4 @@ class BroadcastTransport {
     }
 }
 
-export { BroadcastTransport };
+export {BroadcastTransport};

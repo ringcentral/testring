@@ -1,7 +1,7 @@
 import * as process from 'process';
-import { Transport } from './transport';
-import { serialize, deserialize } from './serialize';
+import {Transport} from './transport';
+import {serialize, deserialize} from './serialize';
 
 const transport = new Transport(process);
 
-export { Transport, transport, serialize, deserialize };
+export {Transport, transport, serialize, deserialize};

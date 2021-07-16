@@ -1,11 +1,16 @@
 /// <reference types="mocha" />
 
-import { fork } from '@testring/child-process';
+import {fork} from '@testring/child-process';
 import * as process from 'process';
 import * as path from 'path';
 import * as chai from 'chai';
-import { CHILD_PROCESS_NAME, REQUEST_NAME, RESPONSE_NAME, PAYLOAD } from './fixtures/constants';
-import { Transport } from '../src/transport';
+import {
+    CHILD_PROCESS_NAME,
+    REQUEST_NAME,
+    RESPONSE_NAME,
+    PAYLOAD,
+} from './fixtures/constants';
+import {Transport} from '../src/transport';
 
 describe('Transport functional test', () => {
     it('should create connection between child and parent process', (callback) => {
@@ -20,7 +25,6 @@ describe('Transport functional test', () => {
             } else {
                 callback(new Error('No STDERR'));
             }
-
 
             transport.registerChild(CHILD_PROCESS_NAME, childProcess);
 
@@ -39,12 +43,13 @@ describe('Transport functional test', () => {
                 });
             });
 
-            transport.send(CHILD_PROCESS_NAME, REQUEST_NAME, null)
+            transport
+                .send(CHILD_PROCESS_NAME, REQUEST_NAME, null)
                 .catch((error) => callback(error));
         });
     });
 
-    it('should wipe out children from registry, when it\'s closed', (callback) => {
+    it("should wipe out children from registry, when it's closed", (callback) => {
         const childEntryPath = path.resolve(__dirname, './fixtures/child.ts');
 
         fork(childEntryPath).then((childProcess) => {

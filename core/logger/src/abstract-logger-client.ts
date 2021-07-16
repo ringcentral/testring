@@ -1,5 +1,5 @@
-import { Stack, generateUniqId } from '@testring/utils';
-import { transport } from '@testring/transport';
+import {Stack, generateUniqId} from '@testring/utils';
+import {transport} from '@testring/transport';
 import {
     ILogEntity,
     ILoggerClient,
@@ -12,13 +12,17 @@ import {
     LogEntityMarkerType,
 } from '@testring/types';
 
-
 type stepEntity = {
     stepID: string;
     message: string;
 };
 type LoggerStack = Stack<stepEntity>;
-type AbstractLoggerType = ILoggerClient<ITransport, LogEntityPrefixType, LogEntityMarkerType, LoggerStack>;
+type AbstractLoggerType = ILoggerClient<
+    ITransport,
+    LogEntityPrefixType,
+    LogEntityMarkerType,
+    LoggerStack
+>;
 
 export abstract class AbstractLoggerClient implements AbstractLoggerType {
     constructor(
@@ -26,8 +30,7 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
         protected prefix: LogEntityPrefixType = null,
         protected marker: LogEntityMarkerType = null,
         protected stepStack: LoggerStack = new Stack(),
-    ) {
-    }
+    ) {}
 
     protected abstract broadcast(messageType: string, payload: any): void;
 
@@ -102,10 +105,7 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
     ): ILogEntity {
         const logEntry = this.buildEntry(type, content, logLevel, stepType);
 
-        this.broadcast(
-            LoggerMessageTypes.REPORT,
-            logEntry,
-        );
+        this.broadcast(LoggerMessageTypes.REPORT, logEntry);
 
         return logEntry;
     }
@@ -151,12 +151,7 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
 
         this.pushStackStep(step);
 
-        this.createLog(
-            LogTypes.step,
-            LogLevel.info,
-            [message],
-            stepType,
-        );
+        this.createLog(LogTypes.step, LogLevel.info, [message], stepType);
     }
 
     public startStepLog(message: any): void {
@@ -211,7 +206,11 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
         }
     }
 
-    public async step(message: any, callback: () => any, stepType?: LogStepTypes): Promise<void> {
+    public async step(
+        message: any,
+        callback: () => any,
+        stepType?: LogStepTypes,
+    ): Promise<void> {
         this.startStep(message, stepType);
 
         let caughtError;
@@ -254,19 +253,11 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
     }
 
     public withPrefix(prefix: LogEntityPrefixType) {
-        return this.createNewLogger(
-            prefix,
-            this.marker,
-            this.stepStack,
-        );
+        return this.createNewLogger(prefix, this.marker, this.stepStack);
     }
 
     public withMarker(marker: LogEntityMarkerType) {
-        return this.createNewLogger(
-            this.prefix,
-            marker,
-            this.stepStack,
-        );
+        return this.createNewLogger(this.prefix, marker, this.stepStack);
     }
 
     public createNewLogger(
@@ -274,6 +265,11 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
         marker: LogEntityMarkerType = this.marker,
         stepStack: LoggerStack = this.stepStack,
     ) {
-        return new (this.constructor as any)(this.transportInstance, prefix, marker, stepStack) as this;
+        return new (this.constructor as any)(
+            this.transportInstance,
+            prefix,
+            marker,
+            stepStack,
+        ) as this;
     }
 }

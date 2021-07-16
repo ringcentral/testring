@@ -1,1 +1,1 @@
-export { FSReader } from './fs-reader';
+export {FSReader} from './fs-reader';

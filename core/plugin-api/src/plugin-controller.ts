@@ -1,13 +1,11 @@
-import { ConfigPluginDescriptor, IConfig, IPluginModules } from '@testring/types';
-import { requirePlugin } from '@testring/utils';
-import { PluginAPI } from './plugin-api';
+import {ConfigPluginDescriptor, IConfig, IPluginModules} from '@testring/types';
+import {requirePlugin} from '@testring/utils';
+import {PluginAPI} from './plugin-api';
 
 export class PluginController {
+    constructor(private modulesList: IPluginModules) {}
 
-    constructor(private modulesList: IPluginModules) {
-    }
-
-    public initialize(plugins: IConfig['plugins']) {
+    public initialize(plugins: IConfig['plugins']): void {
         if (!plugins || !Array.isArray(plugins)) {
             return;
         }
@@ -28,16 +26,22 @@ export class PluginController {
             pluginName = plugin[0];
             pluginConfig = plugin[1] || {};
         } else {
-            throw new SyntaxError(`Invalid plugin. Index: ${index}, got ${JSON.stringify(plugin)}`);
+            throw new SyntaxError(
+                `Invalid plugin. Index: ${index}, got ${JSON.stringify(
+                    plugin,
+                )}`,
+            );
         }
 
         const importedPlugin = requirePlugin(pluginName);
 
         if (typeof importedPlugin !== 'function') {
-            throw new SyntaxError([
-                `Plugin ${pluginName} has incorrect format, it should be function!`,
-                'Please, follow plugin handbook in testring docs to get more info about API.',
-            ].join('\n'));
+            throw new SyntaxError(
+                [
+                    `Plugin ${pluginName} has incorrect format, it should be function!`,
+                    'Please, follow plugin handbook in testring docs to get more info about API.',
+                ].join('\n'),
+            );
         }
 
         const apiInstance = new PluginAPI(pluginName, this.modulesList);

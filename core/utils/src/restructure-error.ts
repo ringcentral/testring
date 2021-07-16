@@ -3,7 +3,7 @@ export function restructureError(error) {
         return error;
     }
 
-    let tmpError = new Error(error?.message || error || 'unknown error');
+    const tmpError = new Error(error?.message || error || 'unknown error');
     if (error?.stack) {
         tmpError.stack = error.stack;
     }

@@ -1,4 +1,4 @@
-import { TestWorkerInstance } from './test-worker-instance';
-import { TestWorker } from './test-worker';
+import {TestWorkerInstance} from './test-worker-instance';
+import {TestWorker} from './test-worker';
 
-export { TestWorker, TestWorkerInstance };
+export {TestWorker, TestWorkerInstance};

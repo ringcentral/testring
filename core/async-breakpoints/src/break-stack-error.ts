@@ -1,4 +1,3 @@
-
 export class BreakStackError extends Error {
     constructor(message) {
         super(message);

@@ -1,7 +1,7 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { resolveBinary } from '../src/resolve-binary';
+import {resolveBinary} from '../src/resolve-binary';
 
 describe('resolveBinary', () => {
     it('should resolve binary correctly', () => {
@@ -22,7 +22,7 @@ describe('resolveBinary', () => {
         }
     });
 
-    it('should throw, if package exists, but doesn\'t have bin', (callback) => {
+    it("should throw, if package exists, but doesn't have bin", (callback) => {
         try {
             const invalidResult = resolveBinary('chai');
 

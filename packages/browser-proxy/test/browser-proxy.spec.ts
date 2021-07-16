@@ -9,9 +9,8 @@ import {
     IBrowserProxyCommandResponse,
     IBrowserProxyCommand,
 } from '@testring/types';
-import { TransportMock } from '@testring/test-utils';
-import { BrowserProxy } from '../src/browser-proxy/browser-proxy';
-
+import {TransportMock} from '@testring/test-utils';
+import {BrowserProxy} from '../src/browser-proxy/browser-proxy';
 
 const asyncPluginPath = path.resolve(__dirname, './fixtures/async-plugin.ts');
 const pluginPath = path.resolve(__dirname, './fixtures/sync-plugin.ts');
@@ -28,21 +27,21 @@ describe('Browser proxy', () => {
 
         new BrowserProxy(transport, pluginPath, pluginConfig);
 
-        transport.on<IBrowserProxyCommandResponse>(BrowserProxyMessageTypes.response, (response) => {
-            chai.expect(response.uid).to.be.equal(uid);
-            chai.expect(response.error).to.be.equal(null);
+        transport.on<IBrowserProxyCommandResponse>(
+            BrowserProxyMessageTypes.response,
+            (response) => {
+                chai.expect(response.uid).to.be.equal(uid);
+                chai.expect(response.error).to.be.equal(null);
 
-            callback();
-        });
-
-        transport.emit(
-            BrowserProxyMessageTypes.execute,
-            {
-                uid,
-                applicant: 'test',
-                command: commandMock,
+                callback();
             },
         );
+
+        transport.emit(BrowserProxyMessageTypes.execute, {
+            uid,
+            applicant: 'test',
+            command: commandMock,
+        });
     });
 
     it('should work with async hooks', (callback) => {
@@ -50,20 +49,20 @@ describe('Browser proxy', () => {
         const transport = new TransportMock();
         new BrowserProxy(transport, asyncPluginPath, pluginConfig);
 
-        transport.on<IBrowserProxyCommandResponse>(BrowserProxyMessageTypes.response, (response) => {
-            chai.expect(response.uid).to.be.equal(uid);
-            chai.expect(response.error).to.be.equal(null);
+        transport.on<IBrowserProxyCommandResponse>(
+            BrowserProxyMessageTypes.response,
+            (response) => {
+                chai.expect(response.uid).to.be.equal(uid);
+                chai.expect(response.error).to.be.equal(null);
 
-            callback();
-        });
-
-        transport.emit(
-            BrowserProxyMessageTypes.execute,
-            {
-                uid,
-                command: commandMock,
+                callback();
             },
         );
+
+        transport.emit(BrowserProxyMessageTypes.execute, {
+            uid,
+            command: commandMock,
+        });
     });
 
     it('should broadcast response with exception if onAction hook fails', (callback) => {
@@ -81,15 +80,12 @@ describe('Browser proxy', () => {
             },
         );
 
-        transport.emit(
-            BrowserProxyMessageTypes.execute,
-            {
-                uid,
-                command: {
-                    action: 'barrelRoll' as BrowserProxyActions,
-                    arguments: ['foo', 'bar'],
-                },
+        transport.emit(BrowserProxyMessageTypes.execute, {
+            uid,
+            command: {
+                action: 'barrelRoll' as BrowserProxyActions,
+                arguments: ['foo', 'bar'],
             },
-        );
+        });
     });
 });

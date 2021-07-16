@@ -1,13 +1,11 @@
 import * as process from 'process';
 import * as util from 'util';
-import { default as chalk } from 'chalk';
-import {
-    ILogEntity,
-    LogLevel,
-    LogTypes,
-} from '@testring/types';
+import {default as chalk} from 'chalk';
+import {ILogEntity, LogLevel, LogTypes} from '@testring/types';
 
-const HAS_EMOJI_SUPPORT: boolean = !!(process.stdout.isTTY && process.platform === 'darwin');
+const HAS_EMOJI_SUPPORT = !!(
+    process.stdout.isTTY && process.platform === 'darwin'
+);
 
 const textTemplate = (logLevel: LogLevel) => logLevel.padEnd(9);
 
@@ -61,18 +59,21 @@ function formatLogLevel(logLevel: LogLevel, emojiSupport: boolean): string {
 
 const formatTime = (time: Date) => chalk.grey(`${time.toLocaleTimeString()}`);
 
-const formatProcessID = (processID?: string) => typeof processID === 'string' ? processID.padEnd(10) : 'main';
+const formatProcessID = (processID?: string) =>
+    typeof processID === 'string' ? processID.padEnd(10) : 'main';
 
 export function formatLog(
     logEntity: ILogEntity,
     processID?: string,
     emojiSupport: boolean = HAS_EMOJI_SUPPORT,
 ): string {
-    const formattedPrefix = (
+    const formattedPrefix =
         // eslint-disable-next-line max-len
-        `${formatTime(logEntity.time)} | ${formatLogLevel(logEntity.logLevel, emojiSupport)} | ${formatProcessID(processID)} |`
-    );
-    let prefixes = logEntity.prefix ? [logEntity.prefix] : [];
+        `${formatTime(logEntity.time)} | ${formatLogLevel(
+            logEntity.logLevel,
+            emojiSupport,
+        )} | ${formatProcessID(processID)} |`;
+    const prefixes = logEntity.prefix ? [logEntity.prefix] : [];
 
     switch (logEntity.type) {
         case LogTypes.screenshot: {
@@ -80,17 +81,26 @@ export function formatLog(
             prefixes.push('[screenshot]');
 
             return util.format(
-                formattedPrefix, ...prefixes,
+                formattedPrefix,
+                ...prefixes,
                 `Filename: ${filename};`,
             );
         }
 
         case LogTypes.step: {
             prefixes.push('[step]');
-            return util.format(formattedPrefix, ...prefixes, ...logEntity.content);
+            return util.format(
+                formattedPrefix,
+                ...prefixes,
+                ...logEntity.content,
+            );
         }
 
         default:
-            return util.format(formattedPrefix, ...prefixes, ...logEntity.content);
+            return util.format(
+                formattedPrefix,
+                ...prefixes,
+                ...logEntity.content,
+            );
     }
 }

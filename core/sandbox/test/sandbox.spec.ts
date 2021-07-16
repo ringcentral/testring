@@ -1,11 +1,15 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import { fileReaderFactory, fileResolverFactory } from '@testring/test-utils';
-import { Sandbox } from '../src/sandbox';
+import {fileReaderFactory, fileResolverFactory} from '@testring/test-utils';
+import {Sandbox} from '../src/sandbox';
 
 const fixturesFileReader = fileReaderFactory(__dirname, 'fixtures', 'sandbox');
-const fixturesFileResolver = fileResolverFactory(__dirname, 'fixtures', 'sandbox');
+const fixturesFileResolver = fileResolverFactory(
+    __dirname,
+    'fixtures',
+    'sandbox',
+);
 
 const createExportFromGlobal = (key) => {
     return `module.exports = global["${key}"];`;
@@ -38,7 +42,7 @@ describe('Sandbox', () => {
             }
         });
 
-        it('should throw SyntaxError, when can\'t compile code', async () => {
+        it("should throw SyntaxError, when can't compile code", async () => {
             const source = await fixturesFileReader('es6-export.js');
             const sandbox = new Sandbox(source, 'es6-export.js', {});
 
@@ -120,7 +124,11 @@ describe('Sandbox', () => {
 
         it('should read global variables from current process context', () => {
             const key = '__$test-machine_sandbox_test_dependency$__';
-            const sandbox = new Sandbox(createExportFromGlobal(key), 'global.js', {});
+            const sandbox = new Sandbox(
+                createExportFromGlobal(key),
+                'global.js',
+                {},
+            );
 
             global[key] = {};
 
@@ -140,7 +148,6 @@ describe('Sandbox', () => {
             const sandbox = new Sandbox(source, 'external-dependency.js', {});
 
             chai.expect(sandbox.execute()).to.be.equal(true);
-
         });
 
         it('should import native module', async () => {
@@ -150,7 +157,7 @@ describe('Sandbox', () => {
             chai.expect(sandbox.execute()).to.be.equal(true);
         });
 
-        it('should throw ReferenceError, when can\'t resolve dependency', async () => {
+        it("should throw ReferenceError, when can't resolve dependency", async () => {
             const source = await fixturesFileReader('invalid-dependency.js');
             const sandbox = new Sandbox(source, 'invalid-dependency.js', {});
 
@@ -267,8 +274,14 @@ describe('Sandbox', () => {
         });
 
         it('should correctly provide commonjs module.exports object', async () => {
-            const source = await fixturesFileReader('commonjs-module-exports.js');
-            const sandbox = new Sandbox(source, 'commonjs-module-exports.js', {});
+            const source = await fixturesFileReader(
+                'commonjs-module-exports.js',
+            );
+            const sandbox = new Sandbox(
+                source,
+                'commonjs-module-exports.js',
+                {},
+            );
 
             chai.expect(sandbox.execute().equals).to.be.equal(true);
         });

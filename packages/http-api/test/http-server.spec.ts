@@ -2,9 +2,15 @@
 /* eslint sonarjs/no-identical-functions: 0 */
 
 import * as chai from 'chai';
-import { HttpMessageType, HttpServerPlugins, IHttpRequest, IHttpRequestMessage, IHttpResponse } from '@testring/types';
-import { TransportMock } from '@testring/test-utils';
-import { HttpServer } from '../src/http-server';
+import {
+    HttpMessageType,
+    HttpServerPlugins,
+    IHttpRequest,
+    IHttpRequestMessage,
+    IHttpResponse,
+} from '@testring/types';
+import {TransportMock} from '@testring/test-utils';
+import {HttpServer} from '../src/http-server';
 
 // TODO (flops) add tests for cookies
 
@@ -91,7 +97,10 @@ describe('HttpServer', () => {
 
             transport.on(HttpMessageType.response, (response) => {
                 try {
-                    chai.expect(response.status < 400, 'Response error').to.equal(true);
+                    chai.expect(
+                        response.status < 400,
+                        'Response error',
+                    ).to.equal(true);
                 } catch (err) {
                     callback(err);
                 }
@@ -126,8 +135,11 @@ describe('HttpServer', () => {
             const transport = new TransportMock();
             const httpServer = new HttpServer(transport, requestHandler);
 
-            const testWriteHook = (request: IHttpRequest, data: IHttpRequestMessage): IHttpRequest => {
-                const result = { ...request };
+            const testWriteHook = (
+                request: IHttpRequest,
+                data: IHttpRequestMessage,
+            ): IHttpRequest => {
+                const result = {...request};
                 result.body = mockBody;
 
                 return result;
@@ -171,9 +183,9 @@ describe('HttpServer', () => {
                 body: 'test',
                 url: 'test',
             };
-            const mockRequestData = { uid: 'test', request: mockRequest };
+            const mockRequestData = {uid: 'test', request: mockRequest};
 
-            const mockHeaders = { 'mocked': true };
+            const mockHeaders = {mocked: true};
             const requestHandler = () => Promise.resolve(responseMock);
             const transport = new TransportMock();
             const httpServer = new HttpServer(transport, requestHandler);
@@ -205,7 +217,9 @@ describe('HttpServer', () => {
                 httpServer.kill();
 
                 try {
-                    chai.expect(response.response.headers).to.deep.equal(mockHeaders);
+                    chai.expect(response.response.headers).to.deep.equal(
+                        mockHeaders,
+                    );
                     done();
                 } catch (e) {
                     done(e);
@@ -221,7 +235,7 @@ describe('HttpServer', () => {
             const httpServer = new HttpServer(transport, requestHandler);
             const mockErrorMessage = 'mock message';
             const mockRequest = {};
-            const mockRequestData = { uid: 'test', request: mockRequest };
+            const mockRequestData = {uid: 'test', request: mockRequest};
 
             transport.on(HttpMessageType.reject, (error) => {
                 httpServer.kill();
