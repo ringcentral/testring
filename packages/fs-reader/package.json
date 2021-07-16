@@ -13,6 +13,6 @@
     "@testring/logger": "0.5.37",
     "@testring/pluggable-module": "0.5.37",
     "@testring/types": "0.5.37",
-    "glob": "7.1.6"
+    "glob": "7.1.7"
   }
 }
