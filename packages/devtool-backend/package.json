@@ -24,7 +24,7 @@
     "babel-traverse": "6.26.0",
     "babel-types": "6.26.0",
     "express": "4.17.1",
-    "redux": "4.0.5",
+    "redux": "4.1.0",
     "ws": "7.3.1"
   },
   "devDependencies": {
