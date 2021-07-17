@@ -30,7 +30,7 @@
   "devDependencies": {
     "@testring/test-utils": "0.5.37",
     "@types/babel-traverse": "6.25.5",
-    "@types/express-serve-static-core": "4.17.9",
+    "@types/express-serve-static-core": "4.17.21",
     "@types/node": "14.6.0",
     "@types/ws": "7.2.6",
     "request": "2.88.2",
