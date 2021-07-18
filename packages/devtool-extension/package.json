@@ -17,7 +17,7 @@
     "@testring/client-ws-transport": "0.5.37",
     "@testring/types": "0.5.37",
     "@testring/utils": "0.5.37",
-    "@types/chrome": "0.0.69",
+    "@types/chrome": "0.0.145",
     "@types/webpack": "4.4.22",
     "chrome-launcher": "0.10.5",
     "copy-webpack-plugin": "5.0.2",
