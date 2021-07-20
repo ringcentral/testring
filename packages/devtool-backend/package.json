@@ -24,15 +24,15 @@
     "babel-traverse": "6.26.0",
     "babel-types": "6.26.0",
     "express": "4.17.1",
-    "redux": "4.0.5",
+    "redux": "4.1.0",
     "ws": "7.5.0"
   },
   "devDependencies": {
     "@testring/test-utils": "0.5.37",
     "@types/babel-traverse": "6.25.5",
-    "@types/express-serve-static-core": "4.17.9",
+    "@types/express-serve-static-core": "4.17.21",
     "@types/node": "14.6.0",
-    "@types/ws": "7.2.6",
+    "@types/ws": "7.4.5",
     "request": "2.88.2",
     "request-promise": "4.2.6",
     "ts-node": "10.1.0"
