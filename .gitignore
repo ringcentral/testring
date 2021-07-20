@@ -12,6 +12,5 @@ node_modules
 coverage
 
 lerna-debug.log
-package-lock.json
 
 .DS_Store

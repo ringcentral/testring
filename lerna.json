@@ -8,11 +8,6 @@
     "exec": {
       "stream": true
     },
-    "bootstrap": {
-      "npmClientArgs": [
-        "--no-package-lock"
-      ]
-    },
     "publish": {
       "forcePublish": "*",
       "allowBranch": "master"

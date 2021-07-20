@@ -12,7 +12,9 @@ if (!token) {
 }
 
 async function task(pkg) {
-    process.stdout.write(`Publishing package: ${pkg.name}...\n  path: ${pkg.location}\n`);
+    process.stdout.write(
+        `Publishing package: ${pkg.name}...\n  path: ${pkg.location}\n`,
+    );
     let published = false;
     try {
         await npmPublish({
