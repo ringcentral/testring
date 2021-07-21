@@ -11,15 +11,24 @@ module.exports = async (config) => {
         testTimeout: devtool ? 0 : config.testTimeout,
         tests: 'test/selenium/test/*.spec.js',
         plugins: [
-            ['selenium-driver', {
-                clientTimeout: devtool ? 0 : config.testTimeout,
-                recorderExtension: devtool,
-                capabilities: devtool ? {} : {
-                    'goog:chromeOptions': {
-                        args: ['--headless', '--disable-gpu', '--no-sandbox'],
-                    },
+            [
+                'selenium-driver',
+                {
+                    clientTimeout: devtool ? 0 : config.testTimeout,
+                    recorderExtension: devtool,
+                    capabilities: devtool
+                        ? {}
+                        : {
+                              'goog:chromeOptions': {
+                                  args: [
+                                      '--headless',
+                                      '--disable-gpu',
+                                      '--no-sandbox',
+                                  ],
+                              },
+                          },
                 },
-            }],
+            ],
             ['babel'],
         ],
     };
