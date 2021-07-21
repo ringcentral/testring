@@ -1,14 +1,41 @@
 {
   "compilerOptions": {
-    "noEmitOnError": true
+    "target": "es2015",
+    "module": "commonjs",
+    "allowJs": false,
+    "noEmitOnError": true,
+    "moduleResolution": "node",
+    "noFallthroughCasesInSwitch": true,
+    "allowSyntheticDefaultImports": true,
+    "preserveConstEnums": true,
+    "declaration": false,
+    "outDir": "dist",
+    "sourceMap": false,
+    "lib": [
+      "es5",
+      "es2015",
+      "es2016",
+      "es2017",
+      "dom"
+    ],
+    "typeRoots": [
+      "./node_modules/@types",
+      "../../node_modules/@types"
+    ],
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "removeComments": false
   },
-  "extends": "../../tsconfig.json",
   "include": [
     "*.ts",
     "src/**/*.ts",
     "src/**/*.json",
     "node_modules/@testring/types/src/index.ts",
     "node_modules/@testring/client-ws-transport/src/index.ts"
+  ],
+  "exclude": [
+    "./node_modules",
+    "../../node_modules"
   ],
   "files": [
     "../../core/types/src/index.ts",

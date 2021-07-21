@@ -1,9 +1,31 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "allowJs": false,
+    "moduleResolution": "node",
+    "noFallthroughCasesInSwitch": true,
+    "allowSyntheticDefaultImports": true,
+    "preserveConstEnums": true,
+    "noEmitOnError": true,
+    "declaration": false,
+    "outDir": "dist",
+    "sourceMap": false,
+    "lib": [
+      "es5",
+      "es2015",
+      "es2016",
+      "es2017",
+      "dom"
+    ],
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "removeComments": false,
     "esModuleInterop": true,
     "jsx": "react",
     "typeRoots": [
+      "./node_modules/@types",
+      "../../node_modules/@types",
       "./types"
     ]
   },
@@ -12,5 +34,9 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.json"
+  ],
+  "exclude": [
+    "./node_modules",
+    "../../node_modules"
   ]
 }
