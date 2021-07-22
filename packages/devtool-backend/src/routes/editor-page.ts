@@ -1,8 +1,4 @@
-const pageTemplate = (
-    host: string,
-    wsPort: number,
-    staticHost: string,
-) => {
+const pageTemplate = (host: string, wsPort: number, staticHost: string) => {
     return `
 <!doctype html>
 <html lang="en">
@@ -20,8 +16,8 @@ const pageTemplate = (
     </style>
     <script>
         window.rcRecorderConfig = {
-            host: '${ host }',
-            wsport: ${ wsPort },
+            host: '${host}',
+            wsport: ${wsPort},
         };
     </script>
 </head>
@@ -33,14 +29,9 @@ const pageTemplate = (
     `;
 };
 
-// eslint-disable-next-line import/no-default-export
 export default function editorPage(req, res, store) {
-    const { devtoolConfig } = store.getState();
-    const { host, wsPort } = devtoolConfig;
+    const {devtoolConfig} = store.getState();
+    const {host, wsPort} = devtoolConfig;
 
-    res.send(pageTemplate(
-        host,
-        wsPort,
-        '/static',
-    ));
+    res.send(pageTemplate(host, wsPort, '/static'));
 }

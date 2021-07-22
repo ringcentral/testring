@@ -1,4 +1,4 @@
-import { IExtensionNetworkConfig } from '@testring/types';
+import {IExtensionNetworkConfig} from '@testring/types';
 
 // @see base code https://transitory.technology/browser-extensions-and-csp-headers
 export class CSPController {
@@ -8,10 +8,10 @@ export class CSPController {
         chrome.webRequest.onHeadersReceived.addListener(
             (details) => this.modifyCspHeaders(details),
             {
-                urls : [ 'http://*/*', 'https://*/*' ],
-                types: [ 'main_frame' ],
+                urls: ['http://*/*', 'https://*/*'],
+                types: ['main_frame'],
             },
-            [ 'blocking', 'responseHeaders' ],
+            ['blocking', 'responseHeaders'],
         );
     }
 
@@ -20,10 +20,7 @@ export class CSPController {
     }
 
     // @see https://developer.mozilla.org/en-US/docs/Web/Security/CSP
-    private cspHeaders = [
-        'content-security-policy',
-        'x-webkit-csp',
-    ];
+    private cspHeaders = ['content-security-policy', 'x-webkit-csp'];
 
     // @see https://developer.mozilla.org/en-US/docs/Web/Security/CSP/CSP_policy_directives
     private cspSources = [
@@ -66,9 +63,7 @@ export class CSPController {
                 responseHeader.value = csp;
             });
 
-            return { responseHeaders: details.responseHeaders };
+            return {responseHeaders: details.responseHeaders};
         }
     }
 }
-
-

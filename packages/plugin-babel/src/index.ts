@@ -1,21 +1,34 @@
 import * as path from 'path';
-import { PluginAPI } from '@testring/plugin-api';
-import * as babelCore from 'babel-core';
+import {PluginAPI} from '@testring/plugin-api';
+import * as babelCore from '@babel/core';
 
-// eslint-disable-next-line import/no-default-export
-export default (pluginAPI: PluginAPI, config: babelCore.TransformOptions | null) => {
+export const babelPlugins = [
+    [
+        require('@babel/plugin-transform-modules-commonjs'),
+        {
+            strictMode: false,
+        },
+    ],
+];
+const babelPlugin = (
+    pluginAPI: PluginAPI,
+    config: babelCore.TransformOptions | null = {},
+): void => {
     const testWorker = pluginAPI.getTestWorker();
 
     testWorker.compile(async (code: string, filename: string) => {
         const opts = {
+            sourceFileName: path.relative(process.cwd(), filename),
             sourceMaps: false,
             sourceRoot: process.cwd(),
-            sourceFileName: path.relative(process.cwd(), filename),
             ...config,
+            plugins: [...babelPlugins, ...(config?.plugins || [])],
             filename,
         };
-        const result = babelCore.transform(code, opts);
+        const result = await babelCore.transformAsync(code, opts);
 
-        return result.code || '';
+        return result?.code || '';
     });
 };
+
+export default babelPlugin;

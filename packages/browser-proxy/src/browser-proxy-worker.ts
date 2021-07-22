@@ -1,4 +1,4 @@
-import { ChildProcess } from 'child_process';
+import {ChildProcess} from 'child_process';
 
 import {
     BrowserProxyActions,
@@ -10,13 +10,16 @@ import {
     IBrowserProxyWorkerConfig,
     ITransport,
 } from '@testring/types';
-import { generateUniqId } from '@testring/utils';
-import { loggerClient } from '@testring/logger';
+import {generateUniqId} from '@testring/utils';
+import {loggerClient} from '@testring/logger';
 
 export class BrowserProxyWorker implements IBrowserProxyWorker {
     private pendingCommandsQueue: Set<IBrowserProxyPendingCommand> = new Set();
 
-    private pendingCommandsPool: Map<string, IBrowserProxyPendingCommand> = new Map();
+    private pendingCommandsPool: Map<
+        string,
+        IBrowserProxyPendingCommand
+    > = new Map();
 
     private spawnPromise: Promise<void> | null = null;
 
@@ -28,7 +31,10 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
 
     constructor(
         private transport: ITransport,
-        private workerCreator: (onActionPluginPath: string, config: any) => ChildProcess | Promise<ChildProcess>,
+        private workerCreator: (
+            onActionPluginPath: string,
+            config: any,
+        ) => ChildProcess | Promise<ChildProcess>,
         private spawnConfig: IBrowserProxyWorkerConfig,
     ) {
         this.registerResponseListener();
@@ -44,22 +50,27 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
             },
         );
 
-        this.transport.on(BrowserProxyMessageTypes.exception, (error, source) => {
-            if (this.workerID === source) {
-                this.kill().catch((err) => this.logger.error(err));
+        this.transport.on(
+            BrowserProxyMessageTypes.exception,
+            (error, source) => {
+                if (this.workerID === source) {
+                    this.kill().catch((err) => this.logger.error(err));
 
-                throw error;
-            }
-        });
+                    throw error;
+                }
+            },
+        );
     }
 
-    private onCommandResponse(commandResponse: IBrowserProxyCommandResponse): void {
-        const { uid, response, error } = commandResponse;
+    private onCommandResponse(
+        commandResponse: IBrowserProxyCommandResponse,
+    ): void {
+        const {uid, response, error} = commandResponse;
 
         const item = this.pendingCommandsPool.get(uid);
 
         if (item) {
-            const { resolve, reject } = item;
+            const {resolve, reject} = item;
 
             this.pendingCommandsPool.delete(uid);
 
@@ -68,11 +79,12 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
             }
 
             return resolve(response);
-        } 
-            this.logger.error(`Browser Proxy controller: cannot find command with uid ${uid}`);
+        }
+        this.logger.error(
+            `Browser Proxy controller: cannot find command with uid ${uid}`,
+        );
 
-            throw new ReferenceError(`Cannot find command with uid ${uid}`);
-        
+        throw new ReferenceError(`Cannot find command with uid ${uid}`);
     }
 
     private onProxyConnect(): void {
@@ -81,7 +93,9 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
     }
 
     private onProxyDisconnect(): void {
-        this.pendingCommandsPool.forEach((item) => this.pendingCommandsQueue.add(item));
+        this.pendingCommandsPool.forEach((item) =>
+            this.pendingCommandsQueue.add(item),
+        );
         this.pendingCommandsPool.clear();
     }
 
@@ -95,10 +109,11 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
 
         this.logger.debug(
             'Browser Proxy controller: miss connection with child process',
-            'code', code,
-            'error', error,
+            'code',
+            code,
+            'error',
+            error,
         );
-
 
         this.onProxyDisconnect();
         this.spawn().catch((err) => {
@@ -107,31 +122,28 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
     };
 
     private async send(item: IBrowserProxyPendingCommand) {
-        const { command, applicant, uid } = item;
+        const {command, applicant, uid} = item;
 
         this.pendingCommandsPool.set(uid, item);
 
-        this.transport.send(
-            this.workerID as string,
-            BrowserProxyMessageTypes.execute,
-            {
+        this.transport
+            .send(this.workerID as string, BrowserProxyMessageTypes.execute, {
                 uid,
                 command,
                 applicant,
-            },
-        ).catch((err) => {
-            this.logger.error(err);
-        });
+            })
+            .catch((err) => {
+                this.logger.error(err);
+            });
     }
 
     public async spawn(): Promise<void> {
-        const {
-            plugin,
-            config,
-        } = this.spawnConfig;
+        const {plugin, config} = this.spawnConfig;
 
         let spawnResolver;
-        this.spawnPromise = new Promise<void>((resolve) => spawnResolver = resolve);
+        this.spawnPromise = new Promise<void>(
+            (resolve) => (spawnResolver = resolve),
+        );
 
         this.worker = await this.workerCreator(plugin, config);
         this.workerID = `proxy-${this.worker.pid}`;
@@ -143,7 +155,9 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
                 this.logger.log(`[logged] ${message.toString()}`);
             });
         } else {
-            this.logger.warn(`[logged] The STDOUT of worker ${this.workerID} is null`);
+            this.logger.warn(
+                `[logged] The STDOUT of worker ${this.workerID} is null`,
+            );
         }
 
         if (this.worker.stderr) {
@@ -151,20 +165,27 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
                 this.logger.warn(`[logged] ${message.toString()}`);
             });
         } else {
-            this.logger.warn(`[logged] The STDERR of worker ${this.workerID} is null`);
+            this.logger.warn(
+                `[logged] The STDERR of worker ${this.workerID} is null`,
+            );
         }
 
         this.transport.registerChild(this.workerID, this.worker);
 
         this.onProxyConnect();
 
-        this.logger.debug(`Browser Proxy controller: register child process [id = ${this.workerID}]`);
+        this.logger.debug(
+            `Browser Proxy controller: register child process [id = ${this.workerID}]`,
+        );
 
         this.spawnPromise = null;
         spawnResolver && spawnResolver();
     }
 
-    public async execute(applicant: string, command: IBrowserProxyCommand): Promise<any> {
+    public async execute(
+        applicant: string,
+        command: IBrowserProxyCommand,
+    ): Promise<any> {
         if (this.worker === null) {
             await this.spawn();
         }

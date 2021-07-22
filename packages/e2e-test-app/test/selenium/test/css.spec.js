@@ -10,10 +10,10 @@ run(async (api) => {
     await api.application.assert.equal(bgColorFromStyle, 'rgba(255,0,0,1)'); // necessary what css-property have 'red' value in html
 
     const isCSSClassExistsFalse = await api.application.isCSSClassExists(
-        api.application.root.withStyle, 'customDivClass'
+        api.application.root.withStyle, 'customDivClass',
     );
     const isCSSClassExistsTrue = await api.application.isCSSClassExists(
-        api.application.root.withClass, 'customDivClass'
+        api.application.root.withClass, 'customDivClass',
     );
 
     await api.application.assert.equal(isCSSClassExistsFalse, false);

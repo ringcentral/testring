@@ -5,7 +5,25 @@ run(async (api) => {
 
     await api.application.moveToObject(api.application.root.item_10);
 
-    const scrollTop = await api.application.getAttribute(api.application.root.container, 'scrollTop');
+    function getScrollTop(selector) {
+        function getElementByXPath(xpath) {
+            const element = document.evaluate(
+                xpath,
+                document,
+                null,
+                XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null,
+            );
+
+            if (element.snapshotLength > 0) {
+                return element.snapshotItem(0);
+            }
+
+            return null;
+        }
+
+        return getElementByXPath(selector).scrollTop;
+    }
+    const scrollTop = await api.application.execute(getScrollTop, api.application.root.container.toString());
     const mouseOverResult10 = await api.application.getText(api.application.root.mouseOverResult);
 
     await api.application.assert.isAtLeast(+scrollTop, 140);

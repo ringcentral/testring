@@ -1,0 +1,22 @@
+{
+  "name": "@testring/utils",
+  "version": "0.5.37",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "dependencies": {
+    "@testring/types": "0.5.37",
+    "@types/bytes": "3.1.1",
+    "@types/nanoid": "2.1.0",
+    "@types/node": "14.6.0",
+    "@types/resolve": "1.20.1",
+    "bytes": "3.1.0",
+    "nanoid": "3.1.23",
+    "resolve": "1.20.0"
+  }
+}

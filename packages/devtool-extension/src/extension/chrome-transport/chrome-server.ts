@@ -3,8 +3,8 @@ import {
     IExtensionMessagingTransportMessage,
 } from '@testring/types';
 
-import { EventEmitter } from 'events';
-import { generateUniqId } from '@testring/utils';
+import {EventEmitter} from 'events';
+import {generateUniqId} from '@testring/utils';
 import Port = chrome.runtime.Port;
 
 export class BackgroundChromeServer extends EventEmitter {
@@ -25,9 +25,11 @@ export class BackgroundChromeServer extends EventEmitter {
     private registerConnection(port) {
         const conId = generateUniqId();
 
-        port.onMessage.addListener((message: IExtensionMessagingTransportMessage) => {
-            this.handleMessage(message, conId);
-        });
+        port.onMessage.addListener(
+            (message: IExtensionMessagingTransportMessage) => {
+                this.handleMessage(message, conId);
+            },
+        );
 
         port.onDisconnect.addListener(() => {
             this.unregisterConnection(conId);
@@ -35,30 +37,26 @@ export class BackgroundChromeServer extends EventEmitter {
 
         this.connections.set(conId, port);
 
-        this.emit(
-            ExtensionMessagingTransportEvents.CONNECT,
-            conId,
-        );
+        this.emit(ExtensionMessagingTransportEvents.CONNECT, conId);
     }
 
     private unregisterConnection(conId: string): void {
         this.connections.delete(conId);
 
-        this.emit(
-            ExtensionMessagingTransportEvents.DISCONNECT,
-            conId,
-        );
+        this.emit(ExtensionMessagingTransportEvents.DISCONNECT, conId);
     }
 
-    private handleMessage(message: IExtensionMessagingTransportMessage, conId: string) {
-        this.emit(
-            ExtensionMessagingTransportEvents.MESSAGE,
-            message,
-            conId,
-        );
+    private handleMessage(
+        message: IExtensionMessagingTransportMessage,
+        conId: string,
+    ) {
+        this.emit(ExtensionMessagingTransportEvents.MESSAGE, message, conId);
     }
 
-    public send(conId: string, message: IExtensionMessagingTransportMessage): void {
+    public send(
+        conId: string,
+        message: IExtensionMessagingTransportMessage,
+    ): void {
         const port = this.connections.get(conId);
 
         if (port) {
@@ -69,7 +67,7 @@ export class BackgroundChromeServer extends EventEmitter {
     }
 
     public broadcast(message: IExtensionMessagingTransportMessage) {
-        for (let [conId] of this.connections) {
+        for (const [conId] of this.connections) {
             this.send(conId, message);
         }
     }

@@ -1,23 +1,25 @@
-import { expect } from 'chai';
-import { createElementPath } from '../../src';
+import {expect} from 'chai';
+import {createElementPath} from '../../src';
 
 describe('flows option function context behavior', () => {
     function getContext() {
         return this;
     }
 
-    let root = createElementPath({
+    const root = createElementPath({
         flows: {
             foo: {
                 getContext,
             },
         },
     });
-    let childFoo = root.foo;
+    const childFoo = root.foo;
 
     it('Call chidlFoo.getContext()', () => {
         expect(childFoo.getContext()).to.be.equal(childFoo.__proxy);
-        expect(childFoo.getContext().__getInstance()).to.be.equal(childFoo.__getInstance());
+        expect(childFoo.getContext().__getInstance()).to.be.equal(
+            childFoo.__getInstance(),
+        );
     });
 
     it('Call childFoo.getContext.apply(obj)', () => {
@@ -26,7 +28,8 @@ describe('flows option function context behavior', () => {
     });
 
     it('Call getContext()', () => {
-        const { getContext } = childFoo;
+        // eslint-disable-next-line @typescript-eslint/no-shadow
+        const {getContext} = childFoo;
         expect(getContext()).to.be.equal(undefined);
     });
 });

@@ -1,53 +1,66 @@
-import { expect } from 'chai';
-import { createElementPath } from '../../src';
+import {expect} from 'chai';
+import {createElementPath} from '../../src';
 
 import {
     getDescriptor,
     getPrivateDescriptor,
-
     checkAccessMethods,
     checkPreventExtensions,
     checkProperty,
 } from '../utils';
 
-
 describe('.xpathByLocator() with parent', () => {
-    let root = createElementPath({
+    const root = createElementPath({
         strictMode: false,
     });
-    let xpathSelectorCall = root.xpathByLocator({
-        locator: '//*[@class=\'selected\']',
+    const xpathSelectorCall = root.xpathByLocator({
+        locator: "//*[@class='selected']",
         id: 'selected',
         parent: 'foo.bar',
     });
 
     describe('arguments validation', () => {
         it('call without xpath', () => {
-            const error = () => root.xpathByLocator({ parent: 'foo.bar' });
-            expect(error).to.throw('Invalid options, "locator" string is required');
+            const error = () => root.xpathByLocator({parent: 'foo.bar'});
+            expect(error).to.throw(
+                'Invalid options, "locator" string is required',
+            );
         });
 
         it('call with empty string parent', () => {
             const child = root.xpathByLocator({
                 id: 'selected',
-                locator: '//*[@class=\'selected\']',
+                locator: "//*[@class='selected']",
                 parent: '',
             });
-            expect(child.toString()).to.be.equal('(//*[@data-test-automation-id=\'root\']//*[@class=\'selected\'])[1]');
+            expect(child.toString()).to.be.equal(
+                "(//*[@data-test-automation-id='root']//*[@class='selected'])[1]",
+            );
         });
 
         it('call without id', () => {
-            const child = root.xpathByLocator({ locator: '//*[@class=\'selected\']', parent: 'foo.bar' });
+            const child = root.xpathByLocator({
+                locator: "//*[@class='selected']",
+                parent: 'foo.bar',
+            });
             expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
 
         it('call with empty string id', () => {
-            const child = root.xpathByLocator({ id: '', locator: '//*[@class=\'selected\']', parent: 'foo.bar' });
+            const child = root.xpathByLocator({
+                id: '',
+                locator: "//*[@class='selected']",
+                parent: 'foo.bar',
+            });
             expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
 
         it('call with not string', () => {
-            const child = root.xpathByLocator({ id: 0, locator: '//*[@class=\'selected\']', parent: 'foo.bar' });
+            const child = root.xpathByLocator({
+                id: 0,
+                locator: "//*[@class='selected']",
+                parent: 'foo.bar',
+            });
             expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
     });
@@ -55,20 +68,22 @@ describe('.xpathByLocator() with parent', () => {
     describe('basic Object methods', () => {
         it('.toString()', () => {
             expect(xpathSelectorCall.toString()).to.be.equal(
-                '(//*[@data-test-automation-id=\'root\']//*[@data-test-automation-id=\'foo\']' +
-                '//*[@data-test-automation-id=\'bar\']//*[@class=\'selected\'])[1]');
+                "(//*[@data-test-automation-id='root']//*[@data-test-automation-id='foo']" +
+                    "//*[@data-test-automation-id='bar']//*[@class='selected'])[1]",
+            );
         });
 
         it('to string converting', () => {
             expect(`${xpathSelectorCall}`).to.be.equal(
-                '(//*[@data-test-automation-id=\'root\']//*[@data-test-automation-id=\'foo\']' +
-                '//*[@data-test-automation-id=\'bar\']//*[@class=\'selected\'])[1]');
+                "(//*[@data-test-automation-id='root']//*[@data-test-automation-id='foo']" +
+                    "//*[@data-test-automation-id='bar']//*[@class='selected'])[1]",
+            );
         });
 
         it('.toString(true)', () => {
             expect(xpathSelectorCall.toString(true)).to.be.equal(
-                '//*[@data-test-automation-id=\'root\']//*[@data-test-automation-id=\'foo\']' +
-                '//*[@data-test-automation-id=\'bar\']//*[@class=\'selected\']',
+                "//*[@data-test-automation-id='root']//*[@data-test-automation-id='foo']" +
+                    "//*[@data-test-automation-id='bar']//*[@class='selected']",
             );
         });
 
@@ -86,31 +101,31 @@ describe('.xpathByLocator() with parent', () => {
             key: '__path',
             valueDescriptor: getDescriptor([
                 {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    isRoot: true,
+                    name: 'root',
+                    xpath: "//*[@data-test-automation-id='root']",
                 },
                 {
-                    'isRoot': false,
-                    'query': {
-                        'exactKey': 'foo',
+                    isRoot: false,
+                    query: {
+                        exactKey: 'foo',
                     },
-                    'xpath': '//*[@data-test-automation-id=\'foo\']',
+                    xpath: "//*[@data-test-automation-id='foo']",
                 },
                 {
-                    'isRoot': false,
-                    'query': {
-                        'exactKey': 'bar',
+                    isRoot: false,
+                    query: {
+                        exactKey: 'bar',
                     },
-                    'xpath': '//*[@data-test-automation-id=\'bar\']',
+                    xpath: "//*[@data-test-automation-id='bar']",
                 },
                 {
-                    'isRoot': false,
-                    'query': {
-                        'id': 'selected',
-                        'xpath': '//*[@class=\'selected\']',
+                    isRoot: false,
+                    query: {
+                        id: 'selected',
+                        xpath: "//*[@class='selected']",
                     },
-                    'xpath': '//*[@class=\'selected\']',
+                    xpath: "//*[@class='selected']",
                 },
             ]),
         });
@@ -129,8 +144,8 @@ describe('.xpathByLocator() with parent', () => {
             object: xpathSelectorCall,
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
-                'id': 'selected',
-                'xpath': '//*[@class=\'selected\']',
+                id: 'selected',
+                xpath: "//*[@class='selected']",
             }),
         });
     });
@@ -140,23 +155,23 @@ describe('.xpathByLocator() with parent', () => {
             key: '__parentPath',
             valueDescriptor: getPrivateDescriptor([
                 {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    isRoot: true,
+                    name: 'root',
+                    xpath: "//*[@data-test-automation-id='root']",
                 },
                 {
-                    'isRoot': false,
-                    'query': {
-                        'exactKey': 'foo',
+                    isRoot: false,
+                    query: {
+                        exactKey: 'foo',
                     },
-                    'xpath': '//*[@data-test-automation-id=\'foo\']',
+                    xpath: "//*[@data-test-automation-id='foo']",
                 },
                 {
-                    'isRoot': false,
-                    'query': {
-                        'exactKey': 'bar',
+                    isRoot: false,
+                    query: {
+                        exactKey: 'bar',
                     },
-                    'xpath': '//*[@data-test-automation-id=\'bar\']',
+                    xpath: "//*[@data-test-automation-id='bar']",
                 },
             ]),
         });

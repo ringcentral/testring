@@ -1,12 +1,11 @@
 class SyncPlugin {
     click(applicant, argument) {
-        return  argument;
+        return argument;
     }
 
     kill() {
-
+        /* empty */
     }
 }
 
-// eslint-disable-next-line import/no-default-export
 export default (config) => new SyncPlugin();

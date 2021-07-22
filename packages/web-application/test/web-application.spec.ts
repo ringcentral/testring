@@ -2,9 +2,9 @@
 
 import * as chai from 'chai';
 
-import { TransportMock } from '@testring/test-utils';
-import { generateUniqId } from '@testring/utils';
-import { WebApplication } from '../src/web-application';
+import {TransportMock} from '@testring/test-utils';
+import {generateUniqId} from '@testring/utils';
+import {WebApplication} from '../src/web-application';
 
 // TODO (flops) add more tests
 describe('WebApplication functional', () => {
@@ -14,11 +14,10 @@ describe('WebApplication functional', () => {
 
         const webApplication = new WebApplication(workerId, transport);
 
-        let link = webApplication.extendInstance({
-           testProperty: 123,
+        const link = webApplication.extendInstance({
+            testProperty: 123,
         });
 
         chai.expect(link.testProperty).to.be.equal(123);
-
     });
 });

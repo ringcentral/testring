@@ -1,6 +1,6 @@
 {
   "name": "@testring/plugin-selenium-driver",
-  "version": "0.5.32",
+  "version": "0.5.37",
   "main": "./dist/index.js",
   "typings": "./src/index.ts",
   "repository": {
@@ -10,11 +10,11 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/child-process": "0.5.32",
-    "@testring/devtool-extension": "0.5.32",
-    "@testring/logger": "0.5.32",
-    "@testring/plugin-api": "0.5.32",
-    "@testring/types": "0.5.32",
+    "@testring/child-process": "0.5.37",
+    "@testring/devtool-extension": "0.5.37",
+    "@testring/logger": "0.5.37",
+    "@testring/plugin-api": "0.5.37",
+    "@testring/types": "0.5.37",
     "@types/deepmerge": "2.2.0",
     "@types/node": "14.6.0",
     "@types/puppeteer-core": "2.0.0",

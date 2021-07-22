@@ -1,5 +1,5 @@
-import { expect } from 'chai';
-import { createElementPath } from '../../src';
+import {expect} from 'chai';
+import {createElementPath} from '../../src';
 
 const {
     getDescriptor,
@@ -10,32 +10,37 @@ const {
     checkProperty,
 } = require('../utils');
 
-
 describe('flows option default behavior', () => {
     const runFlow = async () => 'test string';
-    let root = createElementPath({
+    const root = createElementPath({
         flows: {
             foo: {
                 runFlow,
             },
         },
     });
-    let childFoo = root.foo;
+    const childFoo = root.foo;
 
     describe('basic Object methods', () => {
         it('.toString()', () => {
-            expect(childFoo.toString()).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
-                '//*[@data-test-automation-id=\'foo\'])[1]');
+            expect(childFoo.toString()).to.be.equal(
+                "(//*[@data-test-automation-id='root']" +
+                    "//*[@data-test-automation-id='foo'])[1]",
+            );
         });
 
         it('to string converting', () => {
-            expect(`${childFoo}`).to.be.equal('(//*[@data-test-automation-id=\'root\']' +
-                '//*[@data-test-automation-id=\'foo\'])[1]');
+            expect(`${childFoo}`).to.be.equal(
+                "(//*[@data-test-automation-id='root']" +
+                    "//*[@data-test-automation-id='foo'])[1]",
+            );
         });
 
         it('.toString(true)', () => {
-            expect(childFoo.toString(true)).to.be.equal('//*[@data-test-automation-id=\'root\']' +
-                '//*[@data-test-automation-id=\'foo\']');
+            expect(childFoo.toString(true)).to.be.equal(
+                "//*[@data-test-automation-id='root']" +
+                    "//*[@data-test-automation-id='foo']",
+            );
         });
 
         checkAccessMethods(childFoo, {
@@ -54,16 +59,16 @@ describe('flows option default behavior', () => {
             key: '__path',
             valueDescriptor: getDescriptor([
                 {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    isRoot: true,
+                    name: 'root',
+                    xpath: "//*[@data-test-automation-id='root']",
                 },
                 {
-                    'isRoot': false,
-                    'query': {
-                        'exactKey': 'foo',
+                    isRoot: false,
+                    query: {
+                        exactKey: 'foo',
                     },
-                    'xpath': '//*[@data-test-automation-id=\'foo\']',
+                    xpath: "//*[@data-test-automation-id='foo']",
                 },
             ]),
         });
@@ -84,7 +89,7 @@ describe('flows option default behavior', () => {
             object: childFoo,
             key: '__searchOptions',
             valueDescriptor: getPrivateDescriptor({
-                'exactKey': 'foo',
+                exactKey: 'foo',
             }),
         });
     });
@@ -94,9 +99,9 @@ describe('flows option default behavior', () => {
             key: '__parentPath',
             valueDescriptor: getPrivateDescriptor([
                 {
-                    'isRoot': true,
-                    'name': 'root',
-                    'xpath': '//*[@data-test-automation-id=\'root\']',
+                    isRoot: true,
+                    name: 'root',
+                    xpath: "//*[@data-test-automation-id='root']",
                 },
             ]),
         });

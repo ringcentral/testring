@@ -3,10 +3,10 @@
 
 import * as path from 'path';
 import * as chai from 'chai';
-import { Transport } from '@testring/transport';
-import { fork } from '@testring/child-process';
-import { BrowserProxyActions, BrowserProxyPlugins } from '@testring/types';
-import { BrowserProxyController } from '../src/browser-proxy-controller';
+import {Transport} from '@testring/transport';
+import {fork} from '@testring/child-process';
+import {BrowserProxyActions, BrowserProxyPlugins} from '@testring/types';
+import {BrowserProxyController} from '../src/browser-proxy-controller';
 
 const workerPath = path.resolve(__dirname, './fixtures/worker.ts');
 const syncPlugin = path.resolve(__dirname, './fixtures/sync-plugin.ts');
@@ -15,13 +15,16 @@ const asyncPlugin = path.resolve(__dirname, './fixtures/async-plugin.ts');
 describe('Browser proxy controller functional test', () => {
     it('should pass path to onAction plugin to workerCreator', (callback) => {
         const transport = new Transport();
-        const controller = new BrowserProxyController(transport, (onActionPath) => {
-            chai.expect(onActionPath).to.be.equal(onActionPath);
+        const controller = new BrowserProxyController(
+            transport,
+            (onActionPath) => {
+                chai.expect(onActionPath).to.be.equal(onActionPath);
 
-            callback();
+                callback();
 
-            return fork(workerPath);
-        });
+                return fork(workerPath);
+            },
+        );
 
         const onAction = controller.getHook(BrowserProxyPlugins.getPlugin);
 
@@ -34,16 +37,20 @@ describe('Browser proxy controller functional test', () => {
             });
         }
 
-        controller.init().then(() => {
-            return controller.execute('test', {
-                action: BrowserProxyActions.click,
-                args: [],
+        controller
+            .init()
+            .then(() => {
+                return controller.execute('test', {
+                    action: BrowserProxyActions.click,
+                    args: [],
+                });
+            })
+            .then(() => {
+                controller.kill();
+            })
+            .catch(() => {
+                controller.kill();
             });
-        }).then(() => {
-            controller.kill();
-        }).catch(() => {
-            controller.kill();
-        });
     });
 
     it('should be able to use child process passed as function as proxy', async () => {
@@ -80,12 +87,14 @@ describe('Browser proxy controller functional test', () => {
             ]);
         });
 
-        controller.init()
+        controller
+            .init()
             .then(() => {
-                controller.execute('test', {
-                    action: BrowserProxyActions.click,
-                    args: [],
-                })
+                controller
+                    .execute('test', {
+                        action: BrowserProxyActions.click,
+                        args: [],
+                    })
                     .then(() => {
                         controller.kill();
 
@@ -109,12 +118,14 @@ describe('Browser proxy controller functional test', () => {
             ]);
         });
 
-        controller.init()
+        controller
+            .init()
             .then(() => {
-                controller.execute('test', {
-                    action: 'barrelRoll' as BrowserProxyActions,
-                    args: [],
-                })
+                controller
+                    .execute('test', {
+                        action: 'barrelRoll' as BrowserProxyActions,
+                        args: [],
+                    })
                     .then(() => {
                         callback(new Error('passed somehow'));
                     })
@@ -129,14 +140,17 @@ describe('Browser proxy controller functional test', () => {
 
     it('should be able to run multiple workers', async () => {
         const transport = new Transport();
-        const controller = new BrowserProxyController(transport, (onActionPluginPath, config) => {
-            return fork(workerPath, [
-                '--name',
-                onActionPluginPath,
-                '--config',
-                JSON.stringify(config),
-            ]);
-        });
+        const controller = new BrowserProxyController(
+            transport,
+            (onActionPluginPath, config) => {
+                return fork(workerPath, [
+                    '--name',
+                    onActionPluginPath,
+                    '--config',
+                    JSON.stringify(config),
+                ]);
+            },
+        );
         const hooks = controller.getHook(BrowserProxyPlugins.getPlugin);
 
         if (hooks) {
@@ -160,19 +174,21 @@ describe('Browser proxy controller functional test', () => {
 
         const testResult2 = await controller.execute('test2', {
             action: BrowserProxyActions.click,
-            args: [{
-                'key': 'value',
-            }],
+            args: [
+                {
+                    key: 'value',
+                },
+            ],
         });
         chai.expect(testResult2).to.be.deep.equal({
-            'key': 'value',
+            key: 'value',
         });
 
         const testResult3 = await controller.execute('test3', {
             action: BrowserProxyActions.click,
-            args: [[1,2,3]],
+            args: [[1, 2, 3]],
         });
-        chai.expect(testResult3).to.be.deep.equal([1,2,3]);
+        chai.expect(testResult3).to.be.deep.equal([1, 2, 3]);
 
         chai.expect((controller as any).workersPool.size).to.be.equal(2);
 
@@ -181,14 +197,17 @@ describe('Browser proxy controller functional test', () => {
 
     it('should be able to run multiple workers in parallel', async () => {
         const transport = new Transport();
-        const controller = new BrowserProxyController(transport, (onActionPluginPath, config) => {
-            return fork(workerPath, [
-                '--name',
-                onActionPluginPath,
-                '--config',
-                JSON.stringify(config),
-            ]);
-        });
+        const controller = new BrowserProxyController(
+            transport,
+            (onActionPluginPath, config) => {
+                return fork(workerPath, [
+                    '--name',
+                    onActionPluginPath,
+                    '--config',
+                    JSON.stringify(config),
+                ]);
+            },
+        );
         const hooks = controller.getHook(BrowserProxyPlugins.getPlugin);
 
         if (hooks) {
@@ -204,29 +223,31 @@ describe('Browser proxy controller functional test', () => {
 
         await controller.init();
 
-        let results = await Promise.all([
+        const results = await Promise.all([
             await controller.execute('test1', {
                 action: BrowserProxyActions.click,
                 args: ['testResult'],
             }),
             await controller.execute('test2', {
                 action: BrowserProxyActions.click,
-                args: [{
-                    'key': 'value',
-                }],
+                args: [
+                    {
+                        key: 'value',
+                    },
+                ],
             }),
             await controller.execute('test3', {
                 action: BrowserProxyActions.click,
-                args: [[1,2,3]],
+                args: [[1, 2, 3]],
             }),
         ]);
 
         chai.expect(results).to.be.deep.equal([
-           'testResult',
+            'testResult',
             {
-                'key': 'value',
+                key: 'value',
             },
-            [1,2,3],
+            [1, 2, 3],
         ]);
 
         chai.expect((controller as any).workersPool.size).to.be.equal(2);

@@ -1,6 +1,3 @@
-import {
-    OptionsChromeController,
-    IOptionsWindow,
-} from './extension/options-chrome-controller';
+import {OptionsChromeController} from './extension/options-chrome-controller';
 
-new OptionsChromeController(<IOptionsWindow>(window as any));
+new OptionsChromeController(window as any);

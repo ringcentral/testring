@@ -1,9 +1,9 @@
-import { expect } from 'chai';
-import { createElementPath } from '../../src';
+import {expect} from 'chai';
+import {createElementPath} from '../../src';
 
 describe('base methods', () => {
     describe('creation', () => {
-        let dummy = createElementPath();
+        const dummy = createElementPath();
 
         it('checking proxy object', () => {
             expect(dummy.__proxy).to.be.equal(dummy);
@@ -16,32 +16,32 @@ describe('base methods', () => {
 
     describe('set', () => {
         it('set property', () => {
-            let dummy = createElementPath();
+            const dummy = createElementPath();
 
-            let setter = () => dummy.test = 123;
+            const setter = () => (dummy.test = 123);
             expect(setter).to.throw(TypeError, 'Immutable object');
         });
 
         it('set own property', () => {
-            let dummy = createElementPath();
+            const dummy = createElementPath();
 
-            let setter = () => dummy.__path = 123;
+            const setter = () => (dummy.__path = 123);
             expect(setter).to.throw(TypeError, 'Immutable object');
         });
     });
 
     describe('delete', () => {
         it('delete property', () => {
-            let dummy = createElementPath();
+            const dummy = createElementPath();
 
-            let setter = () => delete dummy.test;
+            const setter = () => delete dummy.test;
             expect(setter).to.throw(TypeError, 'Immutable object');
         });
 
         it('set own property', () => {
-            let dummy = createElementPath();
+            const dummy = createElementPath();
 
-            let setter = () => delete dummy.__path;
+            const setter = () => delete dummy.__path;
             expect(setter).to.throw(TypeError, 'Immutable object');
         });
     });

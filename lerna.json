@@ -1,21 +1,17 @@
 {
   "independent": false,
   "packages": [
-    "packages/*"
+    "packages/*",
+    "core/*"
   ],
   "command": {
     "exec": {
       "stream": true
-    },
-    "bootstrap": {
-      "npmClientArgs": [
-        "--no-package-lock"
-      ]
     },
     "publish": {
       "forcePublish": "*",
       "allowBranch": "master"
     }
   },
-  "version": "0.5.32"
+  "version": "0.5.37"
 }

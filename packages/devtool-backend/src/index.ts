@@ -1,3 +1,3 @@
-import { DevtoolServerController } from './devtool-server-controller';
+import {DevtoolServerController} from './devtool-server-controller';
 
-export { DevtoolServerController };
+export {DevtoolServerController};

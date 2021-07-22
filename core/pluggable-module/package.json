@@ -1,0 +1,15 @@
+{
+  "name": "@testring/pluggable-module",
+  "version": "0.5.37",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "dependencies": {
+    "@testring/types": "0.5.37"
+  }
+}

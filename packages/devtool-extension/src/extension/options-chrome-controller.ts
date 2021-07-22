@@ -2,7 +2,7 @@ import {
     IExtensionApplicationConfig,
     WebApplicationDevtoolCallback,
 } from '@testring/types';
-import { BackgroundChromeClient } from './chrome-transport/chrome-client';
+import {BackgroundChromeClient} from './chrome-transport/chrome-client';
 
 export interface IOptionsWindow extends Window {
     resolveWebApp: WebApplicationDevtoolCallback | undefined;
@@ -14,7 +14,7 @@ export class OptionsChromeController {
     }
 
     private initListeners() {
-        this.window.document.addEventListener('DOMContentLoaded',  () => {
+        this.window.document.addEventListener('DOMContentLoaded', () => {
             this.renderPages();
         });
     }
@@ -60,7 +60,6 @@ ${error.stack}
         `);
     }
 
-
     private handshakePageTemplate(data: IExtensionApplicationConfig) {
         return `
             <h1>Setting devtool options</h1>
@@ -86,19 +85,29 @@ ${error.stack}
         `;
     }
 
-    private getHandshakeConfig(searchParams: URLSearchParams): IExtensionApplicationConfig {
+    private getHandshakeConfig(
+        searchParams: URLSearchParams,
+    ): IExtensionApplicationConfig {
         const config: Partial<IExtensionApplicationConfig> = {};
 
-        for (let key of ['httpPort', 'wsPort', 'appId', 'host']) {
+        for (const key of ['httpPort', 'wsPort', 'appId', 'host']) {
             if (searchParams.has(key)) {
                 const value = searchParams.get(key);
-                const parsedValue = ['httpPort', 'wsPort'].includes(key) ? Number(value) : value;
+                const parsedValue = ['httpPort', 'wsPort'].includes(key)
+                    ? Number(value)
+                    : value;
 
                 if (parsedValue === null) {
                     throw Error(`Field ${key} is required`);
-                } else if (typeof parsedValue === 'string' && parsedValue === '') {
+                } else if (
+                    typeof parsedValue === 'string' &&
+                    parsedValue === ''
+                ) {
                     throw Error(`Field ${key} can not be empty`);
-                } else if (typeof parsedValue === 'number' && isNaN(parsedValue)) {
+                } else if (
+                    typeof parsedValue === 'number' &&
+                    isNaN(parsedValue)
+                ) {
                     throw Error(`Field ${key} should be a number`);
                 }
 
@@ -122,9 +131,9 @@ ${error.stack}
         let callback: WebApplicationDevtoolCallback | null = null;
         let checkCount = 0;
 
-        while (callback === null && checkCount < 10)  {
+        while (callback === null && checkCount < 10) {
             // Waiting for selenium to add resolve callback in window
-            await new Promise(resolve => setTimeout(resolve, 300));
+            await new Promise((resolve) => setTimeout(resolve, 300));
 
             if (typeof this.window.resolveWebApp === 'function') {
                 callback = this.window.resolveWebApp;
@@ -145,7 +154,7 @@ ${error.stack}
 
         try {
             const searchParams = this.getSearchParams();
-            const config  = this.getHandshakeConfig(searchParams);
+            const config = this.getHandshakeConfig(searchParams);
 
             this.redrawDocument(this.handshakePageTemplate(config));
 
@@ -158,7 +167,9 @@ ${error.stack}
             this.handleErrorPage(requestError);
             try {
                 await this.responseHandshake(requestError);
-            } catch (e) { /* ignore */ }
+            } catch (e) {
+                /* ignore */
+            }
         } else {
             await this.responseHandshake();
         }

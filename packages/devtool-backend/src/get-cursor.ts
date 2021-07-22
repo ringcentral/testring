@@ -2,7 +2,6 @@ import * as babylon from 'babylon';
 import traverse from 'babel-traverse';
 import * as t from 'babel-types';
 
-
 interface CursorPosition {
     line: number;
     column: number;
@@ -19,24 +18,25 @@ interface NodeLocation {
     };
 }
 
-function isCursorHere(nodeLocation: NodeLocation, cursorLocation: CursorPosition) {
-
-    const isThatLine = (
+function isCursorHere(
+    nodeLocation: NodeLocation,
+    cursorLocation: CursorPosition,
+) {
+    const isThatLine =
         nodeLocation.start.line <= cursorLocation.line &&
-        nodeLocation.end.line >= cursorLocation.line
-    );
+        nodeLocation.end.line >= cursorLocation.line;
 
-
-    const isThatColumn = (
+    const isThatColumn =
         nodeLocation.start.column <= cursorLocation.column &&
-        nodeLocation.end.column >= cursorLocation.column
-    );
+        nodeLocation.end.column >= cursorLocation.column;
 
     return isThatLine && isThatColumn;
 }
 
-export function getCursor(code: string, currentPosition: CursorPosition): CursorPosition | null {
-
+export function getCursor(
+    code: string,
+    currentPosition: CursorPosition,
+): CursorPosition | null {
     const ast = babylon.parse(code);
     let wasCursorFound: any;
 
@@ -50,14 +50,18 @@ export function getCursor(code: string, currentPosition: CursorPosition): Cursor
 
     if (wasCursorFound) {
         if (t.isArrowFunctionExpression(wasCursorFound.node)) {
-            const arrowExpression = wasCursorFound.findParent((parentPath) => t.isExpressionStatement(parentPath.node));
+            const arrowExpression = wasCursorFound.findParent((parentPath) =>
+                t.isExpressionStatement(parentPath.node),
+            );
 
             return arrowExpression.node.loc.end;
         }
 
-        const externalNode = wasCursorFound.findParent((parentPath) => (
-            t.isBlockStatement(parentPath.parent) || t.isProgram(parentPath.parent)
-        ));
+        const externalNode = wasCursorFound.findParent(
+            (parentPath) =>
+                t.isBlockStatement(parentPath.parent) ||
+                t.isProgram(parentPath.parent),
+        );
 
         return externalNode.node.loc.end;
     }

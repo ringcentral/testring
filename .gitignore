@@ -1,6 +1,9 @@
 packages/**/dist
 packages/**/node_modules
 
+core/**/dist
+core/**/node_modules
+
 _tmp/
 
 .idea
@@ -9,6 +12,5 @@ node_modules
 coverage
 
 lerna-debug.log
-package-lock.json
 
 .DS_Store

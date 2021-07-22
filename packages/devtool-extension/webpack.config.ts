@@ -3,22 +3,21 @@ import * as path from 'path';
 import * as webpack from 'webpack';
 import * as CopyWebpackPlugin from 'copy-webpack-plugin';
 
-import { CRXPlugin } from './crx-plugin';
+import {CRXPlugin} from './crx-plugin';
 
-
-const absolutePath = (filepath) => path.join(__dirname, filepath);
+const getAbsolutePath = (filepath): string => path.join(__dirname, filepath);
 
 const packageJson = require('./package.json');
 const manifestKeyJson = require('./extension/manifest-key.json');
+
 const appVersion = packageJson.version;
 
 const staticRelativeDir = 'static/';
-const outputDir = absolutePath('dist');
+const outputDir = getAbsolutePath('dist');
 
 const manifestRelativePath = path.join(staticRelativeDir, 'manifest.json');
 
-
-const staticFilesTransform = (content, absolutePath) => {
+const staticFilesTransform = (content: string, absolutePath: string) => {
     const relativePath = path.relative(__dirname, absolutePath);
 
     if (relativePath === manifestRelativePath) {
@@ -34,7 +33,6 @@ const staticFilesTransform = (content, absolutePath) => {
 
     return content;
 };
-
 
 const config: webpack.Configuration = {
     mode: 'development',
@@ -52,7 +50,7 @@ const config: webpack.Configuration = {
     },
 
     resolve: {
-        extensions: [ '.tsx', '.ts', '.js' ],
+        extensions: ['.tsx', '.ts', '.js'],
     },
 
     module: {
@@ -87,15 +85,18 @@ const config: webpack.Configuration = {
                 transform: staticFilesTransform,
             },
         ]),
-        (process.argv.indexOf('--enable-crx') > -1) ? new CRXPlugin({
-            directory: outputDir,
-            keyPath: absolutePath('extension/testring-dev.pem'),
-            filename: 'testring-dev',
-            outputDirectory: absolutePath('extension'),
-            rootPath: __dirname,
-        }) : () => {},
+        process.argv.indexOf('--enable-crx') > -1
+            ? new CRXPlugin({
+                  directory: outputDir,
+                  keyPath: getAbsolutePath('extension/testring-dev.pem'),
+                  filename: 'testring-dev',
+                  outputDirectory: getAbsolutePath('extension'),
+                  rootPath: __dirname,
+              })
+            : () => {
+                  /* empty */
+              },
     ],
 };
 
-// eslint-disable-next-line import/no-default-export
 export default config;

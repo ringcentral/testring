@@ -1,8 +1,8 @@
-import { IHttpRequest, IHttpResponse } from '@testring/types';
-import { Response, jar } from 'request';
+import {IHttpRequest, IHttpResponse} from '@testring/types';
+import {Response, jar} from 'request';
 import * as requestPromise from 'request-promise-native';
 
-const toString = c => c.toString();
+const toString = (c) => c.toString();
 
 function createCookieStore(cookies: Array<string> | void, url: string) {
     const cookieJar = jar();
@@ -32,7 +32,9 @@ const mapResponse = (response: Response, cookies) => ({
     cookies,
 });
 
-export async function requestFunction(request: IHttpRequest): Promise<IHttpResponse> {
+export async function requestFunction(
+    request: IHttpRequest,
+): Promise<IHttpResponse> {
     const cookieJar = createCookieStore(request.cookies, request.url);
 
     const rawRequest: any = {
@@ -48,7 +50,10 @@ export async function requestFunction(request: IHttpRequest): Promise<IHttpRespo
         resolveWithFullResponse: true,
     };
 
-    const normalizedRequest = Object.keys(rawRequest).reduce(filterRequestField(rawRequest), {});
+    const normalizedRequest = Object.keys(rawRequest).reduce(
+        filterRequestField(rawRequest),
+        {},
+    );
     const response = await requestPromise(normalizedRequest);
     const cookies = cookieJar.getCookies(request.url).map(toString);
 

@@ -13,7 +13,7 @@ const config: webpack.Configuration = {
         filename: '[name].bundle.js',
     },
     resolve: {
-        extensions: [ '.tsx', '.ts', '.js', '.css' ],
+        extensions: ['.tsx', '.ts', '.js', '.css'],
     },
     plugins: [
         new MonacoWebpackPlugin({
