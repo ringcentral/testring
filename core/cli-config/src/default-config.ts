@@ -6,7 +6,6 @@ export const defaultConfiguration: IConfig = {
     restartWorker: false,
     screenshots: 'disable',
     screenshotPath: './_tmp/',
-    coverage: false,
     config: '.testringrc',
     debug: false,
     silent: false,
