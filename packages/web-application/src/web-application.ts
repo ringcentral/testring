@@ -273,7 +273,7 @@ export class WebApplication extends PluggableModule {
         this.decorateMethods();
     }
 
-    private get fileWriter(): FSFileWriter {
+    protected get fileWriter(): FSFileWriter {
         const fsWriter = new FSFileWriter(this.logger);
 
         Object.defineProperty(this, 'fileWriter', {
