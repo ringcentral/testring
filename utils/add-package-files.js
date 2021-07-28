@@ -16,6 +16,6 @@ function createFile(filename) {
 }
 
 createFile('tsconfig.json');
-createFile('mocha.opts');
+createFile('.mocharc.json');
 createFile('.npmignore');
 createFile('.npmrc');
