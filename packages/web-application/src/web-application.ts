@@ -57,7 +57,7 @@ export class WebApplication extends PluggableModule {
 
     private isRegisteredInDevtool = false;
 
-    private applicationId = `webApp-${generateUniqId()}`;
+    protected applicationId = `webApp-${generateUniqId()}`;
 
     public assert = createAssertion({
         onSuccess: (meta) => this.successAssertionHandler(meta),
