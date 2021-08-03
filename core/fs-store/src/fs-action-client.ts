@@ -165,8 +165,6 @@ export class FSActionClient {
         }
         this.requestInWork[requestId] = reqData;
 
-        log.debug({requestId, reqData}, 'on release');
-
         this.transport.broadcastUniversally<IQueAcqReq>(this.releaseReqName, {
             requestId,
         });

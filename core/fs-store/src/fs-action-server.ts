@@ -95,12 +95,12 @@ export class FSActionServer extends PluggableModule {
                 'Cannot reinitialize component (queue server is singleton)',
             );
         }
+        log.debug('fs-action-server strted');
         this.initState = serverState.initStarted;
 
         const acqHook = this.queue.getHook(LockPoolHooks.ON_ACQUIRE);
         if (acqHook) {
             acqHook.readHook('queServerAcc', async ({workerId, requestId}) => {
-                log.debug({workerId, requestId}, 'inAcquire hook');
                 this.send<IQueAcqResp>(workerId, this.resName, {requestId});
             });
         }
@@ -109,7 +109,6 @@ export class FSActionServer extends PluggableModule {
             releaseHook.readHook(
                 'queServerRel',
                 async ({workerId, requestId}) => {
-                    log.debug({workerId, requestId}, 'inRelease hook');
                     this.send<IQueAcqResp>(workerId, this.resName, {requestId});
                 },
             );
@@ -129,7 +128,6 @@ export class FSActionServer extends PluggableModule {
             this.reqName,
             async ({requestId}, workerId = '*') => {
                 await this.initEnsured;
-                log.debug({workerId, requestId}, 'request action');
                 this.queue.acquire(workerId, requestId);
             },
         );
@@ -137,7 +135,6 @@ export class FSActionServer extends PluggableModule {
         this.unHookReleaseTransport = this.transport.on<IQueAcqReq>(
             this.releaseName,
             ({requestId}, workerId = '*') => {
-                log.debug({workerId, requestId}, 'release action');
                 this.callHook(hooks.ON_RELEASE, {workerId, requestId});
                 this.queue.release(workerId, requestId);
             },
@@ -146,7 +143,6 @@ export class FSActionServer extends PluggableModule {
         this.unHookCleanWorkerTransport = this.transport.on<{}>(
             this.cleanName,
             (msgData, workerId = '*') => {
-                log.debug({workerId}, 'clean worker actions');
                 this.queue.clean(workerId);
             },
         );
@@ -156,7 +152,6 @@ export class FSActionServer extends PluggableModule {
     }
 
     private send<T>(workerId: string | undefined, msgId: string, data: T) {
-        log.debug({workerId, msgId, data}, 'on send');
         if (!workerId || workerId === DW_ID) {
             this.transport.broadcastUniversally<T>(msgId, data);
         } else {

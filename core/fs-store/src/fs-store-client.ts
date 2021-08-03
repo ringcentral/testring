@@ -68,7 +68,6 @@ export class FSStoreClient {
                     'status not OK',
                 );
             }
-            log.debug({requestId, fileName, status, action}, 'on fss resp');
             const reqObj = this.reqHash[requestId];
             if (reqObj) {
                 if (reqObj.action && reqObj.action === fsReqType.release) {
@@ -190,7 +189,6 @@ export class FSStoreClient {
             return false;
         }
         const {action, fileName, valid} = curReqData;
-        log.debug({action, fileName, valid}, 'on release start');
         if (!valid) {
             this.reqHash[requestId].releaseCb = cb || true;
             return false;
@@ -204,8 +202,6 @@ export class FSStoreClient {
             reqData.cb = cb;
         }
         this.reqHash[requestId] = reqData;
-
-        log.debug({requestId, reqData}, 'on release');
 
         transport.broadcastUniversally<IFSStoreReq>(this.releaseReqName, {
             requestId,
