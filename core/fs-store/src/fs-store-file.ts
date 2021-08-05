@@ -64,6 +64,7 @@ export class FSStoreFile implements IFSStoreFile {
                 this.fileSavePath = fileData.savePath;
                 fName = path.join(fileData.savePath, fileData.fileName || ''); // || '' - avoid TS error
             }
+            await fsTool.ensureDir(this.fileSavePath);
             await fsTool.touchFile(fName);
             this.state.fileEnsured = true;
             return fName;
