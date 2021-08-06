@@ -106,10 +106,68 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         );
 
         if (mergedConfig.recorderExtension) {
-            mergedConfig = deepmerge.all<SeleniumPluginConfig>([
-                mergedConfig,
-                this.getDevelopmentConfigAdditions(),
-            ]);
+            mergedConfig = deepmerge.all<SeleniumPluginConfig>(
+                [mergedConfig, this.getDevelopmentConfigAdditions()],
+                {
+                    customMerge: (mergeKey) => {
+                        if (mergeKey === 'goog:chromeOptions') {
+                            return (itemA, itemB) => {
+                                if (!itemA.args || !itemB.args) {
+                                    return deepmerge(itemA, itemB);
+                                }
+                                const res: Record<string, any> = {};
+                                res.args = deepmerge(itemA.args, itemB.args);
+                                let ext: string[] = res.args.filter(
+                                    (argItem: string) =>
+                                        argItem.startsWith('load-extension'),
+                                );
+                                if (ext.length === 2) {
+                                    ext = [
+                                        `load-extension=${ext[0]
+                                            .split('=', 2)
+                                            .pop()},${ext[1]
+                                            .split('=', 2)
+                                            .pop()}`,
+                                    ];
+                                }
+                                res.args = [
+                                    ...ext,
+                                    ...res.args.filter(
+                                        (argItem: string) =>
+                                            !argItem.startsWith(
+                                                'load-extension',
+                                            ),
+                                    ),
+                                ];
+                                Object.keys(itemA).forEach((key) => {
+                                    if (key === 'args') {
+                                        return;
+                                    }
+                                    if (itemB[key] !== undefined) {
+                                        res[key] = deepmerge(
+                                            itemA[key],
+                                            itemB[key],
+                                        );
+                                    } else {
+                                        res[key] = itemA[key];
+                                    }
+                                });
+                                Object.keys(itemB).forEach((key) => {
+                                    if (
+                                        key === 'args' ||
+                                        res[key] !== undefined
+                                    ) {
+                                        return;
+                                    }
+
+                                    res[key] = itemB[key];
+                                });
+                                return res;
+                            };
+                        }
+                    },
+                },
+            );
         }
 
         if (!mergedConfig.hostname && mergedConfig.host) {

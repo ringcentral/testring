@@ -53,7 +53,6 @@ export class FSStoreFile implements IFSStoreFile {
     private async ensureFile(
         fileData: string | {fileName?: string; savePath: string},
     ) {
-        log.debug({fileData}, 'ensureFile');
         if (typeof fileData === 'string' || fileData.fileName !== undefined) {
             let fName: string;
             if (typeof fileData === 'string') {
@@ -65,6 +64,7 @@ export class FSStoreFile implements IFSStoreFile {
                 this.fileSavePath = fileData.savePath;
                 fName = path.join(fileData.savePath, fileData.fileName || ''); // || '' - avoid TS error
             }
+            await fsTool.ensureDir(this.fileSavePath);
             await fsTool.touchFile(fName);
             this.state.fileEnsured = true;
             return fName;
@@ -178,7 +178,6 @@ export class FSStoreFile implements IFSStoreFile {
             return false;
         }
         return new Promise<boolean>((res) => {
-            log.debug('in release promise');
             this.fsWriterClient.release(id, () => {
                 res(true);
             });
@@ -280,8 +279,7 @@ export class FSStoreFile implements IFSStoreFile {
         try {
             await cb();
         } catch (e) {
-            // eslint-disable-next-line no-console
-            console.error(e, 'Error during transaction');
+            log.error(e, 'Error during transaction');
         }
         this.state.inTransaction = false;
         await this.releaseAccess();

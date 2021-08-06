@@ -62,6 +62,19 @@ export class FSStoreServer extends PluggableModule {
 
     private state: serverState = serverState.new;
 
+    public faqState: {
+        access: {
+            active: number;
+            queue: number;
+        };
+        lock: {
+            queue: number;
+        };
+        unlink: {
+            queue: number;
+        };
+    } = {access: {active: 0, queue: 0}, lock: {queue: 0}, unlink: {queue: 0}};
+
     /**
      *
      * @param msgNamePrefix
@@ -115,7 +128,6 @@ export class FSStoreServer extends PluggableModule {
         this.unHookReqTransport = transport.on<IFSStoreReq>(
             this.reqName,
             async (msgData, workerId = DW_ID) => {
-                log.debug({msgData, workerId, files: this.files}, 'GOT REQ...');
                 const {requestId, action, meta} = msgData;
                 let {fileName} = msgData;
                 if (!fileName) {
@@ -165,7 +177,6 @@ export class FSStoreServer extends PluggableModule {
     }
 
     private send<T>(workerId: string | undefined, msgId: string, data: T) {
-        log.debug({workerId, msgId, data}, 'fs send');
         if (!workerId || workerId === DW_ID) {
             transport.broadcastUniversally<T>(msgId, data);
         } else {
@@ -250,10 +261,6 @@ export class FSStoreServer extends PluggableModule {
                     requestId,
                     async (dataObj, cleanCb) => {
                         cleanCBRec[workerId][requestId] = cleanCb;
-                        log.debug(
-                            {cleanCBRec, action, requestId},
-                            'on unlink req',
-                        );
 
                         const threadRId = await this.fac.promisedThread();
                         this.inWorkRequests[workerId][requestId] = [
@@ -270,12 +277,10 @@ export class FSStoreServer extends PluggableModule {
                     },
                 );
         }
-        log.debug({cleanCBRec, action, requestId}, 'request action done');
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
     private async ReleaseAction(data: IFSStoreReq, workerId: string) {
-        log.debug({data, workerId}, 'FSS on release');
         const {requestId, action, fileName} = data;
         if (!fileName) {
             log.warn({workerId, requestId}, 'no fileName to release');
@@ -303,10 +308,6 @@ export class FSStoreServer extends PluggableModule {
             const cleanUpCB =
                 cleanCBRec[workerId] && cleanCBRec[workerId][requestId];
 
-            log.debug(
-                {fileName, action, cleanUpCB},
-                'before next file async action step',
-            );
             cleanUpCB && cleanUpCB();
         } else {
             switch (action) {
@@ -315,10 +316,7 @@ export class FSStoreServer extends PluggableModule {
                         cleanCBRec &&
                         cleanCBRec[workerId] &&
                         cleanCBRec[workerId][requestId];
-                    log.debug(
-                        {fileName, action, cleanUpCB},
-                        'before next file action step',
-                    );
+
                     if (cleanUpCB) {
                         cleanUpCB();
                     } else {
@@ -340,13 +338,11 @@ export class FSStoreServer extends PluggableModule {
             action,
         });
 
-        const faqState = {
+        this.faqState = {
             access: FAQ.getAccessQueueLength(),
             lock: FAQ.getLockPoolSize(),
             unlink: FAQ.getUnlinkQueueLength(),
         };
-
-        log.debug({fileName, faqState}, 'on release done');
 
         return true;
     }
