@@ -1,17 +1,17 @@
 {
   "independent": false,
+  "version": "0.5.38",
   "packages": [
     "packages/*",
     "core/*"
   ],
+  "includeMergedTags": true,
   "command": {
     "exec": {
       "stream": true
     },
     "publish": {
-      "forcePublish": "*",
-      "allowBranch": "master"
+      "registry": "https://npm.pkg.github.com"
     }
-  },
-  "version": "0.5.37"
+  }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@testring/element-path",
-  "version": "0.5.37",
+  "version": "0.5.38",
   "main": "./dist/index.js",
   "typings": "./src/index.ts",
   "repository": {
@@ -8,6 +8,5 @@
     "url": "https://github.com/ringcentral/testring.git"
   },
   "author": "RingCentral",
-  "license": "MIT",
-  "devDependencies": {}
+  "license": "MIT"
 }
