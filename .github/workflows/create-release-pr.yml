@@ -20,7 +20,7 @@ jobs:
     if: |
       github.event_name == 'issue_comment' &&
       (github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'OWNER') &&
-      startsWith(github.event.comment.body, '/create release')
+      startsWith(github.event.comment.body, '/create-release')
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -30,9 +30,9 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: 'npm'
           registry-url: 'https://npm.pkg.github.com'
-      - run: npm ci
-      - run: npm run build
-      - run: npm run test:ci
+      - run: yarn ci
+      - run: yarn run build
+      - run: yarn run test:ci
       - name: Analyze with SonarCloud
         uses: sonarsource/sonarcloud-github-action@master
         env:
@@ -45,7 +45,7 @@ jobs:
             -Dsonar.verbose=true
             -Dsonar.exclusions=**/node_modules/**
             -Dsonar.test.inclusions=packages/**/*.spec.ts
-            -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.typescript.tsconfigPath=tsconfig.json
       # Send coverage report to Coveralls
       #- name: Coveralls
@@ -61,7 +61,7 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
       - name: Versionup commit
         run: |
-          npm run versionup --yes
+          yarn run versionup --yes
       - name: Set current CHANGELOG to output
         id: changelog
         shell: bash -ex {0}

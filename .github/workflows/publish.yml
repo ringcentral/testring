@@ -1,4 +1,4 @@
-name: publish
+name: Publish Release
 on:
   # When Release Pull Request is merged
   pull_request:
@@ -27,9 +27,9 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: 'npm'
           registry-url: 'https://npm.pkg.github.com'
-      - run: npm ci
-      - run: npm run build
-      - run: npm run test:ci
+      - run: yarn ci
+      - run: yarn run build
+      - run: yarn run test:ci
       - name: Analyze with SonarCloud
         uses: sonarsource/sonarcloud-github-action@master
         env:
@@ -42,7 +42,7 @@ jobs:
             -Dsonar.verbose=true
             -Dsonar.exclusions=**/node_modules/**
             -Dsonar.test.inclusions=packages/**/*.spec.ts
-            -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.javascript.lcov.reportPaths=./coverage-reports/lcov.info
             -Dsonar.typescript.tsconfigPath=tsconfig.json
       # Send coverage report to Coveralls
       #- name: Coveralls
@@ -100,7 +100,7 @@ jobs:
       - name: Publish
         if: steps.tag_check.outputs.exists_tag == 'false'
         run: |
-          npx lerna publish from-package --yes
+          yarn lerna publish from-package --yes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
