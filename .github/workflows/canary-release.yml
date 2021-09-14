@@ -53,11 +53,19 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run test:ci
-      - name: Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          path-to-lcov: './.coverage/lcov.info'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Analyze with SonarCloud
+        uses: sonarsource/sonarcloud-github-action@master
+          args: >
+            -Dsonar.verbose=true
+            -Dsonar.exclusions=**/node_modules/**
+            -Dsonar.test.inclusions=packages/**/*.spec.ts
+            -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.typescript.tsconfigPath=tsconfig.json
+      # Send coverage report to Coveralls
+      #- name: Coveralls
+      #  uses: coverallsapp/github-action@master
+      #  with:
+      #    github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish
         run: npm run release:canary
         env:
