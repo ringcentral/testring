@@ -40,6 +40,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
+            -Dsonar.projectKey=danbao_testring
+            -Dsonar.organization=danbao-github
             -Dsonar.verbose=true
             -Dsonar.exclusions=**/node_modules/**
             -Dsonar.test.inclusions=packages/**/*.spec.ts
