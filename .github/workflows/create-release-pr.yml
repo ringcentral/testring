@@ -35,6 +35,7 @@ jobs:
       - run: npm run test:ci
       - name: Analyze with SonarCloud
         uses: sonarsource/sonarcloud-github-action@master
+        with:
           args: >
             -Dsonar.verbose=true
             -Dsonar.exclusions=**/node_modules/**
