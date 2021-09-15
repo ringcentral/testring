@@ -44,6 +44,10 @@ jobs:
         with:
           ref: ${{ fromJSON(steps.pr.outputs.result).head.ref }}
           repository: ${{ fromJSON(steps.pr.outputs.result).head.repo.full_name }}
+      # https://docs.github.com/en/actions/guides/publishing-nodejs-packages
+      - name: Prepare Publish Packages to Github
+      - run: grep "@testring" -rl . | xargs sed -i "s/\@testring/\@danbao/g"
+      - run: sed -i "s/\@OWNER/\@danbao/g" .npmrc
       - name: Setup Node.js ${{ matrix.node }}
         uses: actions/setup-node@v2
         with:
