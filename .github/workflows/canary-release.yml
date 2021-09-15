@@ -50,7 +50,10 @@ jobs:
           git config --global user.email '${GITHUB_ACTOR}@users.noreply.github.com'
       # https://docs.github.com/en/actions/guides/publishing-nodejs-packages
       - name: Prepare Publish Packages to Github
-        run: grep "@testring" -rl . | xargs sed -i "s/\@testring/\@${GITHUB_ACTOR}/g" && sed -i "s/\@OWNER/\@${GITHUB_ACTOR}/g" .npmrc
+        run: |
+          grep "@testring" -rl . | xargs sed -i "s/\@testring/\@${GITHUB_ACTOR}/g"
+          grep "github.com/danbao/testring" -rl . | xargs sed -i "s/ringcentral\/testring/${GITHUB_ACTOR}\/testring/g"
+          sed -i "s/OWNER/${GITHUB_ACTOR}/g" .npmrc
       - name: Setup Node.js ${{ matrix.node }}
         uses: actions/setup-node@v2
         with:
