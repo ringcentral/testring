@@ -44,9 +44,13 @@ jobs:
         with:
           ref: ${{ fromJSON(steps.pr.outputs.result).head.ref }}
           repository: ${{ fromJSON(steps.pr.outputs.result).head.repo.full_name }}
+      - name: Git Identity
+        run: |
+          git config --global user.name '${GITHUB_ACTOR}'
+          git config --global user.email '${GITHUB_ACTOR}@users.noreply.github.com'
       # https://docs.github.com/en/actions/guides/publishing-nodejs-packages
       - name: Prepare Publish Packages to Github
-        run: grep "@testring" -rl . | xargs sed -i "s/\@testring/\@danbao/g" && sed -i "s/\@OWNER/\@danbao/g" .npmrc
+        run: grep "@testring" -rl . | xargs sed -i "s/\@testring/\@${GITHUB_ACTOR}/g" && sed -i "s/\@OWNER/\@${GITHUB_ACTOR}/g" .npmrc
       - name: Setup Node.js ${{ matrix.node }}
         uses: actions/setup-node@v2
         with:
