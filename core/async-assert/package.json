@@ -12,7 +12,7 @@
   "types": "./src/index.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ringcentral/testring.git"
+    "url": "https://github.com/ringcentral/testring.git"
   },
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1"
