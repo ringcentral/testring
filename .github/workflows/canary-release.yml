@@ -52,7 +52,7 @@ jobs:
       - name: Prepare Publish Packages to Github
         run: |
           grep "@testring" -rl . | xargs sed -i "s/\@testring/\@${GITHUB_ACTOR}/g"
-          grep "github.com/danbao/testring" -rl . | xargs sed -i "s/ringcentral\/testring/${GITHUB_ACTOR}\/testring/g"
+          grep "github.com/ringcentral/testring" -rl . | xargs sed -i "s/ringcentral\/testring/${GITHUB_ACTOR}\/testring/g"
           sed -i "s/OWNER/${GITHUB_ACTOR}/g" .npmrc
       - name: Setup Node.js ${{ matrix.node }}
         uses: actions/setup-node@v2
