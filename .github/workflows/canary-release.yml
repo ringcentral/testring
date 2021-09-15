@@ -54,6 +54,7 @@ jobs:
           grep "@testring" -rl . | xargs sed -i "s/\@testring/\@${GITHUB_ACTOR}/g"
           grep "github.com/ringcentral/testring" -rl . | xargs sed -i "s/ringcentral\/testring/${GITHUB_ACTOR}\/testring/g"
           sed -i "s/OWNER/${GITHUB_ACTOR}/g" .npmrc
+          sed -i "s/\"name\": \"testring\"/\"name\": \"${GITHUB_ACTOR}\"/g" ./core/testring/package.json
       - name: Setup Node.js ${{ matrix.node }}
         uses: actions/setup-node@v2
         with:
