@@ -54,6 +54,8 @@ jobs:
           grep "'testring'" -rl . | xargs sed -i "s/'testring'/'testring-dev'/g"
           sed -i "s/\"name\": \"testring\"/\"name\": \"testring-dev\"/g" ./core/testring/package.json
           sed -i "s/\"testring\"/\"testring-dev\"/g" ./packages/e2e-test-app/package.json
+          sed -i "s/sonar.projectKey=ringcentral_testring/sonar.projectKey=danbao_testring/g" ./sonar-project.properties
+          sed -i "s/sonar.organization=ringcentral/sonar.organization=danbao-github/g" ./sonar-project.properties
       # Define ${CURRENT_VERSION}
       - name: Set Current Version
         run: |
