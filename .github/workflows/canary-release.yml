@@ -68,6 +68,7 @@ jobs:
       - run: npm run build
       - run: npm run test:ci
       - name: Analyze with SonarCloud
+        if: secrets.SONAR_TOKEN != NULL
         uses: sonarsource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
