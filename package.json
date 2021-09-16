@@ -46,7 +46,7 @@
     "postversionup:major": "npm run commit-version",
     "commit-version": "git add . && git commit --no-verify -m \"chore(release): publish `node -p 'require(\"./lerna.json\").version'`\"",
     "release": "lerna publish from-package",
-    "release:canary": "npm run commit-version && lerna publish --canary --preid beta --dist-tag beta --force-publish='*' --no-push --yes"
+    "release:canary": "lerna publish --canary --preid beta --dist-tag beta --force-publish='*' --no-push --yes"
   },
   "precommit": "githook:precommit",
   "nyc": {

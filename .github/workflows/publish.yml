@@ -48,13 +48,6 @@ jobs:
           git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/$GITHUB_REPOSITORY
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Prepare Publish Packages to npmjs(testring-dev)
-        if: github.repository != 'ringcentral/testring'
-        run: |
-          grep "@testring" -rl . | xargs sed -i "s/\@testring/\@testring-dev/g"
-          grep "'testring'" -rl . | xargs sed -i "s/'testring'/'testring-dev'/g"
-          sed -i "s/\"name\": \"testring\"/\"name\": \"testring-dev\"/g" ./core/testring/package.json
-          sed -i "s/\"testring\"/\"testring-dev\"/g" ./packages/e2e-test-app/package.json
       # Define ${CURRENT_VERSION}
       - name: Set Current Version
         run: |
