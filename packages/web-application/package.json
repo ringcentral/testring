@@ -3,6 +3,9 @@
   "version": "0.5.39",
   "main": "./dist/index.js",
   "typings": "./src/index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/ringcentral/testring.git"

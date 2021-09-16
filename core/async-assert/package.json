@@ -10,6 +10,9 @@
   "license": "ISC",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/ringcentral/testring.git"

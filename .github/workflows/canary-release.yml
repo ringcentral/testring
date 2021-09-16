@@ -49,7 +49,8 @@ jobs:
           git config --global user.name '${GITHUB_ACTOR}'
           git config --global user.email '${GITHUB_ACTOR}@users.noreply.github.com'
       # https://docs.github.com/en/actions/guides/publishing-nodejs-packages
-      - name: Prepare Publish Packages to Github
+      # Note: If you need to publish to registries that have different scope prefixes, you'll need to modify the package.json file on the runner to change the scope prefix. For example, if you publish a package to the @mona scope for npm and @octocat scope for GitHub Packages, you can replace the @mona scope with @octocat in the package.json file on the runner after publishing to npm and before publishing to GitHub Packages.
+      - name: Prepare Publish Packages to npmjs(testring-dev)
         run: |
           grep "@testring" -rl . | xargs sed -i "s/\@testring/\@testring-dev/g"
           grep "'testring'" -rl . | xargs sed -i "s/'testring'/'testring-dev'/g"
