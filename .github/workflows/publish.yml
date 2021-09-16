@@ -55,8 +55,6 @@ jobs:
           grep "'testring'" -rl . | xargs sed -i "s/'testring'/'testring-dev'/g"
           sed -i "s/\"name\": \"testring\"/\"name\": \"testring-dev\"/g" ./core/testring/package.json
           sed -i "s/\"testring\"/\"testring-dev\"/g" ./packages/e2e-test-app/package.json
-          sed -i "s/sonar.projectKey=ringcentral_testring/sonar.projectKey=danbao_testring/g" ./sonar-project.properties
-          sed -i "s/sonar.organization=ringcentral/sonar.organization=danbao-github/g" ./sonar-project.properties
       # Define ${CURRENT_VERSION}
       - name: Set Current Version
         run: |
@@ -101,7 +99,7 @@ jobs:
       - name: Publish
         if: steps.tag_check.outputs.exists_tag == 'false'
         run: |
-          yarn lerna publish from-package --yes
+          npm lerna publish from-package --yes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
