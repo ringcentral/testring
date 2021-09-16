@@ -13,7 +13,7 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/types": "^0.5.37",
-    "@testring/utils": "^0.5.37"
+    "@testring/types": "0.5.37",
+    "@testring/utils": "0.5.37"
   }
 }

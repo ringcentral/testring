@@ -24,7 +24,7 @@
     "url": "https://github.com/ringcentral/testring/issues"
   },
   "dependencies": {
-    "@testring/types": "^0.5.37",
+    "@testring/types": "0.5.37",
     "chai": "4.3.4"
   }
 }
