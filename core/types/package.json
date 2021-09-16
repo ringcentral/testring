@@ -1,6 +1,6 @@
 {
   "name": "@testring/types",
-  "version": "0.5.39",
+  "version": "0.5.37",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "publishConfig": {
