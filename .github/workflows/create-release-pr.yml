@@ -39,11 +39,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      # Send coverage report to Coveralls
-      #- name: Coveralls
-      #  uses: coverallsapp/github-action@master
-      #  with:
-      #    github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Send coverage report to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Git Identity
         run: |
           git config --global user.name '${GITHUB_ACTOR}'
