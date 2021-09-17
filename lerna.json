@@ -1,17 +1,17 @@
 {
   "independent": false,
+  "version": "0.5.37",
   "packages": [
     "packages/*",
     "core/*"
   ],
+  "includeMergedTags": true,
   "command": {
     "exec": {
       "stream": true
     },
     "publish": {
-      "forcePublish": "*",
-      "allowBranch": "master"
+      "registry": "https://registry.npmjs.org"
     }
-  },
-  "version": "0.5.37"
+  }
 }

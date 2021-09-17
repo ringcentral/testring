@@ -35,7 +35,18 @@
     "check-deps:find-updates": "ncu -m --deep --color",
     "check-deps:lerna-update": "lernaupdate",
     "check-deps:lerna-dedupe": "lernaupdate -d",
-    "githook:precommit": "npm run check-deps:validate && npm run build && npm run lint && npm run test && npm run test:e2e-simple"
+    "githook:precommit": "npm run check-deps:validate && npm run build && npm run lint && npm run test && npm run test:e2e-simple",
+    "versionup": "lerna version --conventional-commits --no-git-tag-version",
+    "versionup:patch": "lerna version patch --conventional-commits --no-git-tag-version",
+    "versionup:minor": "lerna version minor --conventional-commits --no-git-tag-version",
+    "versionup:major": "lerna version major --conventional-commits --no-git-tag-version",
+    "postversionup": "npm run commit-version",
+    "postversionup:patch": "npm run commit-version",
+    "postversionup:minor": "npm run commit-version",
+    "postversionup:major": "npm run commit-version",
+    "commit-version": "git add . && git commit --no-verify -m \"chore(release): publish `node -p 'require(\"./lerna.json\").version'`\"",
+    "release": "lerna publish from-package",
+    "release:canary": "lerna publish --canary --preid beta --dist-tag beta --force-publish='*' --no-push --yes"
   },
   "precommit": "githook:precommit",
   "nyc": {

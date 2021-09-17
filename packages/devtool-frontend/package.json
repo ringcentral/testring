@@ -2,6 +2,9 @@
   "name": "@testring/devtool-frontend",
   "version": "0.5.37",
   "main": "./index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/ringcentral/testring.git"

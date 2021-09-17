@@ -12,5 +12,7 @@ _tmp/
 node_modules
 
 lerna-debug.log
-
+.scannerwork
 .DS_Store
+
+dist/
