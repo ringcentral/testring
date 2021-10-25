@@ -1,6 +1,6 @@
 import {requirePackage, resolvePackage} from './package-require';
 
-const PREFIXES = ['@testring/plugin-', 'testring-plugin-'];
+const PREFIXES = ['@testring/plugin-', 'testring-plugin-', '@testring/'];
 
 function normalizeExport(module) {
     // filtering null and other falsy values

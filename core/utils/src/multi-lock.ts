@@ -1,7 +1,7 @@
 /**
  * manages multi-count lock for multiple Ids - holds total count of locks & manages its change
  *
- * during init max total lock amount can be set defaulted to 1
+ * during init, max total lock amount can be set defaulted to 0 (0 - unlimited)
  *
  * on any given id lock can be acquired and released in the future
  * all locks can be cleared for specified id
@@ -30,6 +30,7 @@ export class MultiLock {
         this.lockLength += 1;
         return true;
     }
+
     /**
      * releases one lock for given id
      *
@@ -78,6 +79,7 @@ export class MultiLock {
         }
         return this.lockLength;
     }
+
     /**
      * return map if given a string, returns lock amount for that id else returns total amount for all ids in sum
      *

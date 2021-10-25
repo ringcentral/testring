@@ -1,5 +1,7 @@
 /// <reference types="mocha" />
 
+import * as fs from 'fs';
+import * as path from 'path';
 import * as chai from 'chai';
 
 import {loggerClient} from '@testring/logger';
@@ -9,15 +11,73 @@ import {FSStoreFile} from '../src/fs-store-file';
 
 import {fsReqType} from '@testring/types';
 
+const {readFile} = fs.promises;
+
 const prefix = 'fsf-test';
 const log = loggerClient.withPrefix(prefix);
-const FSS = new FSStoreServer(10, prefix);
+let FSS: FSStoreServer;
 
 describe('fs-store-file', () => {
+    before(() => {
+        FSS = new FSStoreServer(10, prefix);
+    });
+    it('store file static methods test', async () => {
+        const onRelease = FSS.getHook(fsStoreServerHooks.ON_RELEASE);
+
+        chai.expect(onRelease).not.to.be.an(
+            'undefined',
+            'Hook ON_RELEASE in undefined',
+        );
+
+        onRelease &&
+            onRelease.readHook(
+                'testRelease',
+                ({fileName, action, requestId, workerId}) => {
+                    chai.expect(fileName).to.be.a('string');
+                },
+            );
+
+        const str = 'test data';
+        const fullPath = await FSStoreFile.write(Buffer.from(str), {
+            meta: {ext: 'txt'},
+            fsStorePrefix: prefix,
+        });
+        const fName = path.basename(fullPath);
+        chai.expect(fName).to.be.a('string');
+
+        const fullPath_02 = await FSStoreFile.append(Buffer.from(str + '2'), {
+            meta: {fileName: fName},
+            fsStorePrefix: prefix,
+        });
+        chai.expect(fullPath_02).to.be.equal(fullPath_02);
+
+        const contents = await readFile(fullPath);
+        chai.expect(contents.toString()).to.be.equal(str + str + '2');
+
+        const fullPath_03 = await FSStoreFile.write(Buffer.from(str), {
+            meta: {fileName: fName},
+            fsStorePrefix: prefix,
+        });
+        chai.expect(fullPath_03).to.be.equal(fullPath);
+
+        const contents_01 = await readFile(fullPath_03);
+        chai.expect(contents_01.toString()).to.be.equal(str);
+
+        const fullPath_04 = await FSStoreFile.write(Buffer.from(str + '2'), {
+            meta: {fileName: fName},
+            fsStorePrefix: prefix,
+        });
+        chai.expect(fullPath_04).to.be.equal(fullPath);
+
+        const contents_02 = await readFile(fullPath_04);
+        chai.expect(contents_02.toString()).to.be.equal(str + '2');
+
+        return Promise.resolve();
+    });
     it('store object should lock access & unlink data', async () => {
-        const fileName = '/tmp/tmp.tmp';
+        const fileName = 'tmp.tmp';
         const file = new FSStoreFile({
-            file: fileName,
+            meta: {fileName},
             fsStorePrefix: prefix,
         });
 
@@ -30,12 +90,12 @@ describe('fs-store-file', () => {
 
         onRelease &&
             onRelease.readHook('testRelease', (readOptions) => {
-                const {action} = readOptions;
-                const hookfileName = readOptions.fileName;
-                log.debug({fileName: hookfileName, action}, 'on release hook');
+                const {action, ffName} = readOptions;
                 switch (action) {
                     case fsReqType.lock:
-                        state.lock -= 1;
+                        if (state.lock) {
+                            state.lock -= 1;
+                        }
                         break;
                     case fsReqType.access:
                         state.access -= 1;
@@ -44,8 +104,8 @@ describe('fs-store-file', () => {
                         state.unlink -= 1;
                         break;
                 }
-                chai.expect(hookfileName).to.be.a('string');
-                log.debug({fileName: hookfileName, state}, 'release hook done');
+                chai.expect(ffName).to.be.a('string');
+                log.debug({ffName, state}, 'release hook done');
             });
 
         try {
@@ -65,21 +125,32 @@ describe('fs-store-file', () => {
             const wasUnlocked = await file.unlock();
             chai.expect(wasUnlocked).to.be.equal(true);
 
-            await file.unlink();
             state.unlink += 1;
+            await file.unlink();
         } catch (e) {
             log.error(e, 'ERROR during file write test');
             throw e;
         }
 
-        chai.expect(state).to.be.deep.equal({lock: 0, access: 0, unlink: 0});
-
-        return Promise.resolve();
+        return new Promise((res, rej) => {
+            setTimeout(() => {
+                try {
+                    chai.expect(state).to.be.deep.equal({
+                        lock: 0,
+                        access: 0,
+                        unlink: 0,
+                    });
+                    res();
+                } catch (e) {
+                    rej(e);
+                }
+            }, 100);
+        });
     });
     it('store object should transactional lock access & unlink data', async () => {
-        const fileName = '/tmp/tmp_01.tmp';
+        const fileName = 'tmp_01.tmp';
         const file = new FSStoreFile({
-            file: fileName,
+            meta: {fileName},
             fsStorePrefix: prefix,
         });
 

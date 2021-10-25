@@ -5,8 +5,9 @@ import {AbstractAPI} from './abstract';
 export class FSStoreServerAPI extends AbstractAPI {
     onFileNameAssign(
         handler: (
+            fileName: string,
             fileMetaData: IOnFileNameHookData,
-        ) => Promise<IOnFileNameHookData>,
+        ) => Promise<string>,
     ) {
         this.registryWritePlugin(fsStoreServerHooks.ON_FILENAME, handler);
     }

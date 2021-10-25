@@ -50,7 +50,7 @@ export class PluginAPI {
         return new DevtoolAPI(this.pluginName, this.modules.devtool);
     }
 
-    getFSQueueServer(): FSStoreServerAPI {
+    getFSStoreServer(): FSStoreServerAPI {
         return new FSStoreServerAPI(
             this.pluginName,
             this.modules.fsStoreServer,

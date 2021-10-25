@@ -21,6 +21,7 @@
   "dependencies": {
     "@testring/cli": "0.5.37",
     "@testring/plugin-babel": "0.5.37",
+    "@testring/plugin-fs-storage": "0.5.37",
     "@testring/plugin-selenium-driver": "0.5.37",
     "@testring/web-application": "0.5.37",
     "@types/express": "4.17.12",

@@ -29,7 +29,8 @@
   "include": [
     "*.ts",
     "src/**/*.ts",
-    "src/**/*.json" ],
+    "src/**/*.json"
+, "../utils/src/fs.ts"  ],
   "exclude": [
     "./node_modules",
     "../../node_modules"

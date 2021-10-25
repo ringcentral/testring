@@ -71,36 +71,42 @@ export enum fsReqType {
     'release',
 }
 
+export enum FSFileUniqPolicy {
+    'global',
+    'worker',
+}
+
+type BaseReqMeta = {
+    type?: string; // simple file will be created in /tmp
+    subtype?: string | string[];
+    extraPath?: string;
+    uniqPolicy?: FSFileUniqPolicy;
+    options?: Record<string, any>;
+    workerId?: string;
+};
+
+export type requestMeta = BaseReqMeta & {
+    fileName?: string; // no path
+    ext?: string; // by default 'tmp'
+};
+
 export interface IFSStoreReq {
     requestId: string;
     action: fsReqType;
-    fileName?: string;
-    meta: Record<string, any>;
-}
-
-export interface IFSStoreReqFixed {
-    requestId: string;
-    action: fsReqType;
-    fileName: string;
-    meta: Record<string, any>;
+    meta: requestMeta;
 }
 
 export interface IFSStoreResp {
     requestId: string;
     action: fsReqType;
-    fileName: string;
+    fullPath: string;
     status: string;
 }
 
 export type FSStoreOptions = {
     lock?: boolean;
-    file:
-        | string
-        | {
-              fileName?: string;
-              savePath: string;
-              ext?: string;
-          };
+    meta: requestMeta;
+    fsOptions?: {encoding: BufferEncoding; flag?: string};
     fsStorePrefix?: string;
 };
 
@@ -118,5 +124,5 @@ export interface IOnFileNameHookData {
     workerId: string;
     requestId: string;
     fileName: string;
-    path: string;
+    meta: requestMeta;
 }

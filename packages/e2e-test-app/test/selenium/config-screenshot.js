@@ -1,9 +1,11 @@
 module.exports = async (config) => {
     const devtool = config.debug || config.devtool;
 
+    const screenshotPath = './screenshots';
+
     return {
         devtool,
-        screenshotPath: './_tmp/',
+        screenshotPath,
         workerLimit: 5,
         maxWriteThreadCount: 2,
         screenshots: 'enable',
@@ -11,16 +13,33 @@ module.exports = async (config) => {
         testTimeout: devtool ? 0 : config.testTimeout,
         tests: 'test/selenium/test-screenshots/*.spec.js',
         plugins: [
-            ['selenium-driver', {
-                clientTimeout: devtool ? 0 : config.testTimeout,
-                recorderExtension: devtool,
-                capabilities: devtool ? {} : {
-                    'goog:chromeOptions': {
-                        args: ['--headless', '--disable-gpu', '--no-sandbox'],
+            [
+                'selenium-driver',
+                {
+                    clientTimeout: devtool ? 0 : config.testTimeout,
+                    recorderExtension: devtool,
+                    capabilities: devtool
+                        ? {}
+                        : {
+                              'goog:chromeOptions': {
+                                  args: [
+                                      '--headless',
+                                      '--disable-gpu',
+                                      '--no-sandbox',
+                                  ],
+                              },
+                          },
+                },
+            ],
+            ['babel'],
+            [
+                'fs-storage',
+                {
+                    staticPaths: {
+                        screenshot: screenshotPath,
                     },
                 },
-            }],
-            ['babel'],
+            ],
         ],
     };
 };

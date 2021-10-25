@@ -1,6 +1,8 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
+import * as os from 'os';
+import * as path from 'path';
 
 import {
     FSStoreServer,
@@ -30,11 +32,13 @@ describe('fs-store-server', () => {
         const accessRequestID = 'acc_test';
         const unlinkRequestID = 'unlink_test';
 
+        const baseFileName = 'tmp.tmp';
+
         const state = {lock: 0, access: 0, unlink: 0};
 
         transport.on<IFSStoreResp>(
             respName,
-            ({requestId, fileName, status, action}) => {
+            ({requestId, fullPath, status, action}) => {
                 chai.expect(requestId).to.be.oneOf([
                     lockRequestID,
                     accessRequestID,
@@ -47,9 +51,10 @@ describe('fs-store-server', () => {
                             releaseReqName,
                             {
                                 requestId: accessRequestID,
-                                fileName: '/tmp.tmp',
                                 action: fsReqType.access,
-                                meta: {ext: '.tmp', path: '/'},
+                                meta: {
+                                    fileName: baseFileName,
+                                },
                             },
                         );
                         break;
@@ -58,7 +63,10 @@ describe('fs-store-server', () => {
                         break;
                 }
                 chai.expect(status).to.be.a('string');
-                chai.expect(fileName).to.be.a('string');
+                chai.expect(fullPath).to.be.a('string');
+                chai.expect(fullPath).to.be.equals(
+                    path.join(os.tmpdir(), baseFileName),
+                );
             },
         );
 
@@ -88,25 +96,28 @@ describe('fs-store-server', () => {
 
         transport.broadcastUniversally<IFSStoreReq>(reqName, {
             requestId: lockRequestID,
-            fileName: '/tmp.tmp',
             action: fsReqType.lock,
-            meta: {ext: '.tmp', path: '/'},
+            meta: {
+                fileName: baseFileName,
+            },
         });
         state.lock += 1;
 
         transport.broadcastUniversally<IFSStoreReq>(reqName, {
             requestId: accessRequestID,
-            fileName: '/tmp.tmp',
             action: fsReqType.access,
-            meta: {ext: '.tmp', path: '/'},
+            meta: {
+                fileName: baseFileName,
+            },
         });
         state.access += 1;
 
         transport.broadcastUniversally<IFSStoreReq>(reqName, {
             requestId: unlinkRequestID,
-            fileName: '/tmp.tmp',
             action: fsReqType.unlink,
-            meta: {ext: '.tmp', path: '/'},
+            meta: {
+                fileName: baseFileName,
+            },
         });
         state.unlink += 1;
 
@@ -118,9 +129,10 @@ describe('fs-store-server', () => {
             });
             transport.broadcastUniversally<IFSStoreReq>(releaseReqName, {
                 requestId: lockRequestID,
-                fileName: '/tmp.tmp',
                 action: fsReqType.lock,
-                meta: {ext: '.tmp', path: '/'},
+                meta: {
+                    fileName: baseFileName,
+                },
             });
 
             setTimeout(() => {
