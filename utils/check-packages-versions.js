@@ -24,7 +24,7 @@ function checkDependencies(deps) {
 
 try {
     const data = fs.readFileSync(path.join(root, 'package.json')).toString();
-    const { dependencies, devDependencies, peerDependencies } = JSON.parse(data);
+    const {dependencies, devDependencies, peerDependencies} = JSON.parse(data);
 
     const packages = [].concat(
         checkDependencies(dependencies),

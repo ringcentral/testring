@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-const { copyFileSync, existsSync } = require('fs');
+const {copyFileSync, existsSync} = require('fs');
 const path = require('path');
 
-const PROJECT_FOLDER = path.resolve(__dirname, '..');
+const TEMPLATES_FOLDER = path.join(__dirname, 'templates');
 const cwd = process.cwd();
 
 function createFile(filename) {
-    const input = path.join(PROJECT_FOLDER, filename);
+    const input = path.join(TEMPLATES_FOLDER, filename);
     const output = path.join(cwd, filename);
 
     if (!existsSync(output)) {
@@ -16,6 +16,6 @@ function createFile(filename) {
 }
 
 createFile('tsconfig.json');
-createFile('mocha.opts');
+createFile('.mocharc.json');
 createFile('.npmignore');
 createFile('.npmrc');

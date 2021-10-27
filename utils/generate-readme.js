@@ -6,7 +6,7 @@ const fs = require('fs');
 
 const root = process.cwd();
 
-const filename = path.join(root,'./README.md');
+const filename = path.join(root, './README.md');
 
 function generateFile(file) {
     const pkg = require(path.join(root, './package.json'));

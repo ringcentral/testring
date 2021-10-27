@@ -2,7 +2,7 @@ const path = require('path');
 const batchPackages = require('@lerna/batch-packages');
 const filterPackages = require('@lerna/filter-packages');
 const runParallelBatches = require('@lerna/run-parallel-batches');
-const { getPackages } = require('@lerna/project');
+const {getPackages} = require('@lerna/project');
 const npmPublish = require('@jsdevtools/npm-publish');
 
 const token = process.env.NPM_TOKEN;
@@ -39,9 +39,19 @@ async function main() {
     const batchedPackages = batchPackages(filtered);
 
     try {
-        const packagesBatchDescriptors = await runParallelBatches(batchedPackages, 2, task);
-        const packagesDescriptors = packagesBatchDescriptors.reduce((pkgs, batch) => pkgs.concat(batch), []);
-        const totalPackages = packagesDescriptors.reduce((acc, item) => acc += item.published ? 1 : 0, 0);
+        const packagesBatchDescriptors = await runParallelBatches(
+            batchedPackages,
+            2,
+            task,
+        );
+        const packagesDescriptors = packagesBatchDescriptors.reduce(
+            (pkgs, batch) => pkgs.concat(batch),
+            [],
+        );
+        const totalPackages = packagesDescriptors.reduce(
+            (acc, item) => (acc += item.published ? 1 : 0),
+            0,
+        );
 
         process.stdout.write(`Packages published: ${totalPackages}\n`);
     } catch (e) {
