@@ -1,6 +1,5 @@
 import {run} from 'testring';
 import {unlink, stat} from 'fs';
-// import {stat} from 'fs';
 import {promisify} from 'util';
 
 import * as assert from 'assert';
@@ -12,8 +11,6 @@ run(async (api) => {
     await api.application.url('http://localhost:8080/screenshot.html');
     const fName = await api.application.makeScreenshot();
 
-    console.log({fName});
-
     const fileStat = await statFile(fName); // check for existence
 
     assert.ok(
@@ -22,5 +19,8 @@ run(async (api) => {
     );
 
     // cleanup
-    assert.doesNotThrow(async () => await deleteFile(fName), 'error on delete screenshot');
+    assert.doesNotThrow(
+        async () => await deleteFile(fName),
+        'error on delete screenshot',
+    );
 });

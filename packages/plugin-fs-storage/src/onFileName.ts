@@ -34,10 +34,18 @@ export function makePathNameFromRequest(
     pathHash: Record<string, string>,
 ) {
     const {meta, workerId: wId} = data;
-    const {type, subtype, extraPath, uniqPolicy, workerId: mwId} = meta;
+    const {
+        type,
+        subtype,
+        extraPath,
+        uniqPolicy,
+        workerId: mwId,
+        preserveName,
+    } = meta;
 
-    const workerId = wId && wId.length > 1 ? wId : mwId;
-    const pathParts: string[] = [];
+    // allow to overwrite workerId - metaWorkerId (mwId) is primary data
+    const workerId = mwId && mwId.length > 1 ? mwId : wId;
+    let pathParts: string[] = [];
     let nameParts: string[] = [];
 
     if (type && pathHash[type]) {
@@ -48,12 +56,16 @@ export function makePathNameFromRequest(
     if (extraPath) {
         pathParts.push(extraPath);
     }
-    if (uniqPolicy === FSFileUniqPolicy.worker && workerId) {
+    if (!preserveName && uniqPolicy === FSFileUniqPolicy.worker && workerId) {
         nameParts.push(pathFromWorkerId(workerId));
     }
     if (subtype) {
         const subTypeArr = Array.isArray(subtype) ? subtype : [subtype];
-        nameParts = [...nameParts, ...subTypeArr];
+        if (preserveName) {
+            pathParts = [...pathParts, ...subTypeArr];
+        } else {
+            nameParts = [...nameParts, ...subTypeArr];
+        }
     }
     return [path.join.call(path, ...pathParts), nameParts.join('_')];
 }

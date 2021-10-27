@@ -60,7 +60,7 @@ export class FSStoreFile implements IFSStoreFile {
     ): Promise<string> {
         const file = new FSStoreFile(options);
         await file.write(data);
-        return file.getFilename() as string;
+        return file.getFullPath() as string;
     }
     public static async append(
         data: Buffer,
@@ -68,12 +68,12 @@ export class FSStoreFile implements IFSStoreFile {
     ): Promise<string> {
         const file = new FSStoreFile(options);
         await file.append(data);
-        return file.getFilename() as string;
+        return file.getFullPath() as string;
     }
     public static async unlink(options: FSStoreOptions): Promise<string> {
         const file = new FSStoreFile(options);
         await file.unlink();
-        return file.getFilename() as string;
+        return file.getFullPath() as string;
     }
 
     // ------- INSTANCE METHODS
@@ -113,7 +113,8 @@ export class FSStoreFile implements IFSStoreFile {
     }
 
     public getState = () => this.state;
-    public getFilename = () => this.fullPath;
+    // public getFilename = () => path.basename(this.fullPath || '');
+    public getFullPath = () => this.fullPath;
 
     async lock() {
         if (this.state.inTransaction) {

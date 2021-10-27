@@ -80,6 +80,7 @@ type BaseReqMeta = {
     type?: string; // simple file will be created in /tmp
     subtype?: string | string[];
     extraPath?: string;
+    preserveName?: boolean;
     uniqPolicy?: FSFileUniqPolicy;
     options?: Record<string, any>;
     workerId?: string;
