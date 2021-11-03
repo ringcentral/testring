@@ -5,20 +5,24 @@ module.exports = async (config) => {
 
     const screenshotPath = './screenshots';
 
+
+    const plugins = [
+        ...defConfig.plugins,
+        [
+            'fs-storage',
+            {
+                staticPaths: {
+                    screenshot: screenshotPath,
+                },
+            },
+        ],
+    ];
+
     return {
         ...defConfig,
         screenshotPath,
         screenshots: 'enable',
         tests: 'test/selenium/test-screenshots/*.spec.js',
-        plugins: [...defConfig.plugins,
-            ...[
-                'fs-storage',
-                {
-                    staticPaths: {
-                        screenshot: screenshotPath,
-                    },
-                },
-            ],
-        ],
+        plugins,
     };
 };

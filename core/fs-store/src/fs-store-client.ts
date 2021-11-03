@@ -21,7 +21,7 @@ const log = loggerClient.withPrefix('fsc');
 type requestsTableItem = {
     action: fsReqType;
     cb?: (f: string, r: string | null | undefined) => void;
-    fileName?: string;
+    meta: requestMeta;
     fullPath?: string; // fullFileName
 };
 type requestsTable = Record<string, requestsTableItem>;
@@ -68,7 +68,7 @@ export class FSStoreClient {
                         delete this.reqHash[requestId];
                     } else {
                         this.reqHash[requestId].fullPath = fullPath;
-                        this.reqHash[requestId].fileName = path.basename(
+                        this.reqHash[requestId].meta.fileName = path.basename(
                             fullPath,
                         );
                     }
@@ -106,13 +106,12 @@ export class FSStoreClient {
         meta: requestMeta,
         cb: (fName: string, requestId?: string) => void,
     ): string {
-        const {fileName} = meta;
         const requestId = this.ensureRequestId();
         const action = fsReqType.lock;
         this.reqHash[requestId] = {
             cb,
             action,
-            fileName,
+            meta,
         };
         transport.broadcastUniversally<IFSStoreReq>(this.reqName, {
             requestId,
@@ -130,15 +129,14 @@ export class FSStoreClient {
      */
     public getAccess(
         meta: requestMeta,
-        cb: (fName: string, requestId?: string) => void,
+        cb: (fullPath: string, requestId?: string) => void,
     ): string {
-        const {fileName} = meta;
         const requestId = this.ensureRequestId();
         const action = fsReqType.access;
         this.reqHash[requestId] = {
             cb,
             action,
-            fileName,
+            meta,
         };
         transport.broadcastUniversally<IFSStoreReq>(this.reqName, {
             requestId,
@@ -166,7 +164,7 @@ export class FSStoreClient {
         }
         const requestId = this.ensureRequestId();
         const action = fsReqType.unlink;
-        this.reqHash[requestId] = {cb, action, fileName};
+        this.reqHash[requestId] = {cb, action, meta};
         transport.broadcastUniversally<IFSStoreReq>(this.reqName, {
             requestId,
             action,
@@ -184,11 +182,11 @@ export class FSStoreClient {
             log.warn({requestId}, 'NO request data for release action');
             return false;
         }
-        const {action, fileName, fullPath} = curReqData;
+        const {action, fullPath, meta} = curReqData;
         const reqData: requestsTableItem = {
             action: fsReqType.release,
-            fileName,
             fullPath,
+            meta,
         };
         if (cb) {
             reqData.cb = cb;
@@ -198,7 +196,7 @@ export class FSStoreClient {
         transport.broadcastUniversally<IFSStoreReq>(this.releaseReqName, {
             requestId,
             action: action as fsReqType,
-            meta: {fileName},
+            meta,
         });
         return true;
     }

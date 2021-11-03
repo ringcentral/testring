@@ -75,6 +75,10 @@ export class FSStoreFile implements IFSStoreFile {
         await file.unlink();
         return file.getFullPath() as string;
     }
+    public static async read(options: FSStoreOptions): Promise<Buffer> {
+        const file = new FSStoreFile(options);
+        return await file.read();
+    }
 
     // ------- INSTANCE METHODS
 
@@ -113,7 +117,6 @@ export class FSStoreFile implements IFSStoreFile {
     }
 
     public getState = () => this.state;
-    // public getFilename = () => path.basename(this.fullPath || '');
     public getFullPath = () => this.fullPath;
 
     async lock() {
@@ -227,18 +230,20 @@ export class FSStoreFile implements IFSStoreFile {
         await this.releaseAccess();
         return res;
     }
-    async write(data: Buffer): Promise<void> {
+    async write(data: Buffer): Promise<string> {
         await this.initPromise;
         await this.getAccess();
         await writeFile(this.fullPath as string, data, this.options.fsOptions);
         await this.releaseAccess();
+        return this.getFullPath() as string;
     }
 
-    async append(data: Buffer): Promise<void> {
+    async append(data: Buffer): Promise<string> {
         await this.initPromise;
         await this.getAccess();
         await appendFile(this.fullPath as string, data, this.options.fsOptions);
         await this.releaseAccess();
+        return this.getFullPath() as string;
     }
 
     async stat(): Promise<fs.Stats> {
@@ -297,21 +302,29 @@ export class FSStoreFile implements IFSStoreFile {
     }
 
     async transaction(cb: () => Promise<void>) {
-        if (this.state.enterTransaction) {
-            const wait = new Promise((res) => {
-                this.transactionQueue.push(res);
-            });
-            await wait;
-        }
-        this.state.enterTransaction = true;
-        await this.getAccess();
-        await this.lock();
-        this.state.inTransaction = true;
+        await this.startTransaction();
         try {
             await cb();
         } catch (e) {
             log.error(e, 'Error during transaction');
         }
+        await this.endTransaction();
+    }
+
+    async startTransaction() {
+        if (this.state.enterTransaction) {
+            const waitFor = new Promise((res) => {
+                this.transactionQueue.push(res);
+            });
+            await waitFor;
+        }
+        this.state.enterTransaction = true;
+        await this.getAccess();
+        await this.lock();
+        this.state.inTransaction = true;
+    }
+
+    async endTransaction() {
         this.state.inTransaction = false;
         await this.releaseAccess();
         await this.unlock();

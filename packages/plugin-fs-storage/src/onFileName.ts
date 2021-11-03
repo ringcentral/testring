@@ -41,11 +41,17 @@ export function makePathNameFromRequest(
         uniqPolicy,
         workerId: mwId,
         preserveName,
+        global,
+        fileName,
     } = meta;
+
+    if (global && typeof fileName === 'string') {
+        return [path.dirname(fileName), ''];
+    }
 
     // allow to overwrite workerId - metaWorkerId (mwId) is primary data
     const workerId = mwId && mwId.length > 1 ? mwId : wId;
-    let pathParts: string[] = [];
+    const pathParts: string[] = [];
     let nameParts: string[] = [];
 
     if (type && pathHash[type]) {
@@ -56,25 +62,38 @@ export function makePathNameFromRequest(
     if (extraPath) {
         pathParts.push(extraPath);
     }
-    if (!preserveName && uniqPolicy === FSFileUniqPolicy.worker && workerId) {
-        nameParts.push(pathFromWorkerId(workerId));
-    }
-    if (subtype) {
-        const subTypeArr = Array.isArray(subtype) ? subtype : [subtype];
-        if (preserveName) {
-            pathParts = [...pathParts, ...subTypeArr];
-        } else {
+    if (!preserveName) {
+        if (uniqPolicy === FSFileUniqPolicy.worker && workerId) {
+            nameParts.push(pathFromWorkerId(workerId));
+        }
+        if (subtype) {
+            const subTypeArr = Array.isArray(subtype) ? subtype : [subtype];
+
             nameParts = [...nameParts, ...subTypeArr];
         }
     }
     return [path.join.call(path, ...pathParts), nameParts.join('_')];
 }
 
+function exsureExtraName(fileName: string, extraName: string) {
+    if (fileName.includes(extraName)) {
+        return fileName;
+    }
+    const parts = fileName.split('.');
+    const fileExt = parts.pop() || '';
+    parts.push(extraName);
+    parts.push(fileExt);
+    return parts.join('.');
+}
+
 export function cbGen(staticPaths: Record<string, string> = {}) {
     return async (fName: string, reqData: IOnFileNameHookData) => {
-        const {fileName, meta} = reqData;
+        const {meta} = reqData;
+        const {fileName} = meta;
+
+        // if result was altered - return previous result
         if (fileName !== fName) {
-            return fileName;
+            return fName;
         }
 
         const [tmpPath, extraName] = await makePathNameFromRequest(
@@ -89,11 +108,11 @@ export function cbGen(staticPaths: Record<string, string> = {}) {
         if (!fileName) {
             tmpName = await ensureUniqName(tmpPath, ext, extraName);
         } else {
-            const parts = fileName.split('.');
-            const fileExt = parts.pop() || '';
-            parts.push(extraName);
-            parts.push(fileExt);
-            tmpName = parts.join('.');
+            if (extraName !== '') {
+                tmpName = exsureExtraName(fileName, extraName);
+            } else {
+                tmpName = path.basename(fileName);
+            }
         }
 
         return path.join(tmpPath, tmpName);

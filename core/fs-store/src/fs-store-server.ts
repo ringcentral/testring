@@ -1,7 +1,12 @@
 import * as path from 'path';
 import * as os from 'os';
 
-import {IFSStoreReq, IFSStoreResp, fsReqType} from '@testring/types';
+import {
+    IFSStoreReq,
+    IFSStoreResp,
+    fsReqType,
+    requestMeta,
+} from '@testring/types';
 import {generateUniqId} from '@testring/utils';
 import {loggerClient} from '@testring/logger';
 import {transport} from '@testring/transport';
@@ -26,13 +31,13 @@ type ActionQueReq = {
 
 type RequestActionData = {
     requestId: string;
-    fileName: string;
     action: fsReqType;
     meta: Record<string, any>;
 };
 
 const hooks = {
     ON_FILENAME: 'onFileName',
+    ON_QUEUE: 'onQueue',
     ON_RELEASE: 'onRelease',
 };
 
@@ -50,7 +55,7 @@ export class FSStoreServer extends PluggableModule {
     private unHookReqTransport: (() => void) | null = null;
     private unHookReleaseTransport: (() => void) | null = null;
     private unHookCleanWorkerTransport: (() => void) | null = null;
-    private fsPermision: LockPool;
+    private defaultFsPermisionPool: LockPool;
 
     private files: Record<
         string,
@@ -64,19 +69,6 @@ export class FSStoreServer extends PluggableModule {
 
     private state: serverState = serverState.new;
 
-    public frpState: {
-        access: {
-            active: number;
-            queue: number;
-        };
-        lock: {
-            queue: number;
-        };
-        unlink: {
-            queue: number;
-        };
-    } = {access: {active: 0, queue: 0}, lock: {queue: 0}, unlink: {queue: 0}};
-
     /**
      *
      * @param threadCount
@@ -88,7 +80,7 @@ export class FSStoreServer extends PluggableModule {
     ) {
         super(Object.values(hooks));
 
-        this.fsPermision = new LockPool(threadCount);
+        this.defaultFsPermisionPool = new LockPool(threadCount);
 
         this.reqName = msgNamePrefix + FS_CONSTANTS.FS_REQ_NAME_POSTFIX;
         this.respName = msgNamePrefix + FS_CONSTANTS.FS_RESP_NAME_POSTFIX;
@@ -115,7 +107,7 @@ export class FSStoreServer extends PluggableModule {
             this.reqName,
             async (msgData, workerId = DW_ID) => {
                 const {requestId, action, meta} = msgData;
-                let {fileName} = meta;
+                const {fileName} = meta;
 
                 if (!fileName) {
                     // no fileName given - need to construct one
@@ -130,13 +122,10 @@ export class FSStoreServer extends PluggableModule {
 
                         return;
                     }
-                    fileName = this.generateUniqFileName(meta.ext);
+                    meta.fileName = this.generateUniqFileName(meta.ext);
                 }
 
-                this.RequestAction(
-                    {requestId, fileName, action, meta},
-                    workerId,
-                );
+                this.RequestAction({requestId, action, meta}, workerId);
             },
         );
 
@@ -194,23 +183,28 @@ export class FSStoreServer extends PluggableModule {
         }
     }
 
+    private getPermissionQueue(meta: requestMeta, workerId: string) {
+        return this.callHook(
+            hooks.ON_QUEUE,
+            this.defaultFsPermisionPool,
+            meta,
+            {
+                workerId,
+                defaultQueue: this.defaultFsPermisionPool,
+            },
+        );
+    }
+
     private async RequestAction(data: RequestActionData, workerId: string) {
-        const {requestId, fileName, action, meta} = data;
+        const {requestId, action, meta} = data;
         const fullPath = await this.generateUniqFullPath(
             workerId,
             requestId,
-            fileName,
             meta,
         );
         this.ensurePermissionQueue({requestId, fullPath, action}, workerId);
         const [FPR, releaseCBRec] = this.files[fullPath];
         this.ensureCleanUpCBRecord(releaseCBRec, workerId);
-
-        this.frpState = {
-            access: FPR.getAccessQueueLength(),
-            lock: FPR.getLockPoolSize(),
-            unlink: FPR.getUnlinkQueueLength(),
-        };
 
         switch (action) {
             case fsReqType.lock:
@@ -244,7 +238,12 @@ export class FSStoreServer extends PluggableModule {
                         // access granted (releaseCb - to call for release access)
                         releaseCBRec[workerId][requestId] = releaseCb;
 
-                        const acuired = await this.fsPermision.acquire(
+                        const permision = await this.getPermissionQueue(
+                            meta,
+                            workerId,
+                        );
+
+                        const acuired = await permision.acquire(
                             workerId,
                             requestId,
                         );
@@ -274,7 +273,12 @@ export class FSStoreServer extends PluggableModule {
                     // unlink access granted (releaseCb - to call for release access)
                     releaseCBRec[workerId][requestId] = releaseCb;
 
-                    const acuired = await this.fsPermision.acquire(
+                    const permision = await this.getPermissionQueue(
+                        meta,
+                        workerId,
+                    );
+
+                    const acuired = await permision.acquire(
                         workerId,
                         requestId,
                     );
@@ -311,7 +315,6 @@ export class FSStoreServer extends PluggableModule {
             fullPath = await this.generateUniqFullPath(
                 workerId,
                 requestId,
-                fileName,
                 meta,
             );
         } catch (e) {
@@ -345,7 +348,9 @@ export class FSStoreServer extends PluggableModule {
             this.inWorkRequests[workerId][requestId] = [action, fullPath];
 
             if (inProgress) {
-                await this.fsPermision.release(workerId, requestId);
+                const permision = await this.getPermissionQueue(meta, workerId);
+
+                await permision.release(workerId, requestId);
             }
             this.send<IFSStoreResp>(workerId, this.respName, {
                 requestId,
@@ -387,12 +392,6 @@ export class FSStoreServer extends PluggableModule {
             fileName,
             action,
         });
-
-        this.frpState = {
-            access: FPR.getAccessQueueLength(),
-            lock: FPR.getLockPoolSize(),
-            unlink: FPR.getUnlinkQueueLength(),
-        };
 
         return true;
     }
@@ -437,17 +436,17 @@ export class FSStoreServer extends PluggableModule {
     private async generateUniqFullPath(
         workerId: string,
         requestId: string,
-        fileName: string,
         meta: Record<string, any>,
     ): Promise<string> {
+        const {fileName} = meta;
+
         let filePath = await this.callHook(hooks.ON_FILENAME, fileName, {
             workerId,
             requestId,
-            fileName,
             meta,
         });
 
-        if (filePath === fileName) {
+        if (!filePath || filePath === fileName) {
             filePath = path.join(os.tmpdir(), fileName);
         }
 

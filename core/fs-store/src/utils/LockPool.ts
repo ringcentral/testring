@@ -7,6 +7,7 @@
  */
 
 import {MultiLock, Queue} from '@testring/utils';
+import {ILockPool} from '@testring/types';
 
 type queueItem = {
     workerId: string;
@@ -14,7 +15,7 @@ type queueItem = {
     notifier?: (b: boolean) => void;
 };
 
-export class LockPool {
+export class LockPool implements ILockPool {
     private poolLock: MultiLock;
     private requestQue: Queue<queueItem>;
     private requests: Set<string>;
@@ -25,12 +26,14 @@ export class LockPool {
         this.poolLock = new MultiLock(maxLockCount);
     }
 
-    public getState = () => ({
-        curLocks: this.poolLock.getSize(),
-        maxLocks: this.poolLock.lockLimit,
-        lockQueueLen: this.requestQue.length,
-        locks: this.poolLock.getIds(),
-    });
+    public getState() {
+        return {
+            curLocks: this.poolLock.getSize(),
+            maxLocks: this.poolLock.lockLimit,
+            lockQueueLen: this.requestQue.length,
+            locks: this.poolLock.getIds(),
+        };
+    }
 
     public acquire(workerId: string, requestId?: string) {
         if (requestId) {

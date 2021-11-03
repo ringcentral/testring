@@ -25,8 +25,8 @@ export interface IFSStoreFile {
     lock(): Promise<void>; // locks file for read, ID key is used as identifier for unlock in future
     unlock(options: FSActionOptions): Promise<boolean>; // unlocks file to read operation for process ID
     read(): Promise<Buffer>; // the same part but with promise wrapper
-    write(Buffer): Promise<void>; // the same part but with promise wrapper
-    append(Buffer): Promise<void>; // the same part but with promise wrapper
+    write(Buffer): Promise<string>; // the same part but with promise wrapper, returns fullPath
+    append(Buffer): Promise<string>; // the same part but with promise wrapper, returns fullPath
     isLocked(): boolean; // returns bool variable, true if nobody locks current file
     unlink(): Promise<boolean>; // async remove method
     waitForUnlock(): Promise<void>; //
@@ -76,13 +76,22 @@ export enum FSFileUniqPolicy {
     'worker',
 }
 
+export enum FSStoreType {
+    coverage = 'coverage', // text
+    screenshot = 'screenshot', // binary
+    globalText = 'globalText', // text
+    globalBin = 'globalBin', // binary
+    text = 'text',
+    bin = 'bin',
+}
+
 type BaseReqMeta = {
-    type?: string; // simple file will be created in /tmp
+    type?: FSStoreType; // simple file will be created in /tmp
     subtype?: string | string[];
     extraPath?: string;
-    preserveName?: boolean;
-    uniqPolicy?: FSFileUniqPolicy;
-    options?: Record<string, any>;
+    global?: boolean; // global file - assume fileName as fullPath
+    preserveName?: boolean; // construct ony path & use fileName with out addons
+    uniqPolicy?: FSFileUniqPolicy; //
     workerId?: string;
 };
 
@@ -104,11 +113,14 @@ export interface IFSStoreResp {
     status: string;
 }
 
-export type FSStoreOptions = {
+export type FSStoreDataOptions = {
     lock?: boolean;
-    meta: requestMeta;
     fsOptions?: {encoding: BufferEncoding; flag?: string};
     fsStorePrefix?: string;
+};
+
+export type FSStoreOptions = FSStoreDataOptions & {
+    meta: requestMeta;
 };
 
 export type FSActionOptions = {
@@ -126,4 +138,16 @@ export interface IOnFileNameHookData {
     requestId: string;
     fileName: string;
     meta: requestMeta;
+}
+
+export interface ILockPool {
+    acquire(workerId: string, requestId?: string): Promise<boolean>;
+    release(workerId: string, requestId?: string): boolean;
+    clean(workerId: string, requestId?: string): void;
+    getState(): {
+        curLocks: number;
+        maxLocks: number;
+        lockQueueLen: number;
+        locks: Map<string, number>;
+    };
 }

@@ -14,7 +14,6 @@ import {
     WebApplicationDevtoolCallback,
     ExtensionPostMessageTypes,
     FSFileLogType,
-    FSFileUniqPolicy,
 } from '@testring/types';
 
 import {asyncBreakpoints} from '@testring/async-breakpoints';
@@ -23,7 +22,7 @@ import {generateUniqId} from '@testring/utils';
 import {PluggableModule} from '@testring/pluggable-module';
 import {createElementPath, ElementPath} from '@testring/element-path';
 
-import {FSStoreFile} from '@testring/fs-store';
+import {FSScreenshotFactory} from '@testring/fs-store';
 
 import {createAssertion} from '@testring/async-assert';
 import {WebClient} from './web-client';
@@ -2061,18 +2060,8 @@ export class WebApplication extends PluggableModule {
             (this.screenshotsEnabledManually || force)
         ) {
             const screenshot = await this.client.makeScreenshot();
-
-            const filePath = await FSStoreFile.write(
+            const filePath = await FSScreenshotFactory().write(
                 Buffer.from(screenshot.toString(), 'base64'),
-                {
-                    meta: {
-                        type: 'screenshot',
-                        uniqPolicy: FSFileUniqPolicy.global,
-                        options: {testUID: this.testUID},
-                        ext: 'png',
-                    },
-                    fsOptions: {encoding: 'binary'},
-                },
             );
 
             this.logger.file(filePath, {type: FSFileLogType.SCREENSHOT});
