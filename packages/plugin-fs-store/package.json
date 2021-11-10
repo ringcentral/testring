@@ -1,5 +1,5 @@
 {
-  "name": "@testring/plugin-fs-storage",
+  "name": "@testring/plugin-fs-store",
   "version": "0.5.37",
   "description": "fs storage & default plugin",
   "main": "./dist/index.js",

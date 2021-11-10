@@ -26,6 +26,7 @@ export function requirePlugin(pluginPath: string): any {
         } catch (e) {
             continue;
         }
+        break;
     }
 
     if (!resolvedPlugin) {

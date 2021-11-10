@@ -5,11 +5,10 @@ module.exports = async (config) => {
 
     const screenshotPath = './screenshots';
 
-
     const plugins = [
         ...defConfig.plugins,
         [
-            'fs-storage',
+            'fs-store',
             {
                 staticPaths: {
                     screenshot: screenshotPath,
