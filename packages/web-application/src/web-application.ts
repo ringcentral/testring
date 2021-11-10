@@ -1,7 +1,6 @@
 // TODO (flops) rework and merge with selenium backend
 /* eslint-disable @typescript-eslint/no-shadow,@typescript-eslint/no-this-alias */
 import * as url from 'url';
-import * as path from 'path';
 
 import {
     IWebApplicationConfig,
@@ -23,7 +22,7 @@ import {generateUniqId} from '@testring/utils';
 import {PluggableModule} from '@testring/pluggable-module';
 import {createElementPath, ElementPath} from '@testring/element-path';
 
-import {FSFileWriter} from '@testring/fs-store';
+import {FSScreenshotFactory} from '@testring/fs-store';
 
 import {createAssertion} from '@testring/async-assert';
 import {WebClient} from './web-client';
@@ -271,19 +270,6 @@ export class WebApplication extends PluggableModule {
         super();
         this.config = this.getConfig(config);
         this.decorateMethods();
-    }
-
-    protected get fileWriter(): FSFileWriter {
-        const fsWriter = new FSFileWriter(this.logger);
-
-        Object.defineProperty(this, 'fileWriter', {
-            value: fsWriter,
-            enumerable: false,
-            writable: true,
-            configurable: true,
-        });
-
-        return fsWriter;
     }
 
     protected getConfig(
@@ -2074,14 +2060,8 @@ export class WebApplication extends PluggableModule {
             (this.screenshotsEnabledManually || force)
         ) {
             const screenshot = await this.client.makeScreenshot();
-            const screenPath = path.join(
-                this.config.screenshotPath,
-                this.testUID,
-            );
-
-            const filePath = await this.fileWriter.write(
+            const filePath = await FSScreenshotFactory().write(
                 Buffer.from(screenshot.toString(), 'base64'),
-                {path: screenPath, opts: {encoding: 'binary', ext: 'png'}},
             );
 
             this.logger.file(filePath, {type: FSFileLogType.SCREENSHOT});

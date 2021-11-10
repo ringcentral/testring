@@ -6,7 +6,7 @@ import {MultiLock} from '../src/multi-lock';
 
 const LockMaxAmount = 3;
 
-describe('requirePlugin', () => {
+describe('multi-lock', () => {
     it('should successfully lock', () => {
         const lock = new MultiLock(LockMaxAmount);
         const id = 'test';

@@ -7,82 +7,22 @@ import * as chai from 'chai';
 import {loggerClient} from '@testring/logger';
 
 import {FSStoreServer, fsStoreServerHooks} from '../src/fs-store-server';
-import {FSStoreFile} from '../src/fs-store-file';
+import {FSTextFactory} from '../src/';
 
-import {fsReqType, FSStoreType} from '@testring/types';
+import {fsReqType} from '@testring/types';
 
-const {readFile} = fs.promises;
-
-const prefix = 'fsf-test';
+const prefix = 'fsf-preset-test';
 const log = loggerClient.withPrefix(prefix);
 let FSS: FSStoreServer;
 
 const tmpDir = 'tmp';
 
-const filetype = FSStoreType.text;
-
-describe('fs-store-file', () => {
+describe('fs-store-presets', () => {
     before(() => {
         FSS = new FSStoreServer(10, prefix);
     });
     after(() => {
         return fs.promises.rmdir(tmpDir, {recursive: true});
-    });
-    it('store file static methods test', async () => {
-        const onRelease = FSS.getHook(fsStoreServerHooks.ON_RELEASE);
-
-        chai.expect(onRelease).not.to.be.an(
-            'undefined',
-            'Hook ON_RELEASE in undefined',
-        );
-
-        onRelease &&
-            onRelease.readHook(
-                'testRelease',
-                ({fileName, action, requestId, workerId}) => {
-                    chai.expect(fileName).to.be.a('string');
-                },
-            );
-
-        const str = 'test data';
-        const fullPath = await FSStoreFile.write(Buffer.from(str), {
-            meta: {type: filetype, ext: 'txt'},
-            fsStorePrefix: prefix,
-        });
-        const fName = path.basename(fullPath);
-        chai.expect(fName).to.be.a('string');
-
-        const fullPath_02 = await FSStoreFile.append(Buffer.from(str + '2'), {
-            meta: {type: filetype, fileName: fName},
-            fsStorePrefix: prefix,
-        });
-        chai.expect(fullPath_02).to.be.equal(fullPath_02);
-
-        const contents = await FSStoreFile.read({
-            meta: {type: filetype, fileName: fName},
-            fsStorePrefix: prefix,
-        });
-        chai.expect(contents.toString()).to.be.equal(str + str + '2');
-
-        const fullPath_03 = await FSStoreFile.write(Buffer.from(str), {
-            meta: {type: filetype, fileName: fName},
-            fsStorePrefix: prefix,
-        });
-        chai.expect(fullPath_03).to.be.equal(fullPath);
-
-        const contents_01 = await readFile(fullPath_03);
-        chai.expect(contents_01.toString()).to.be.equal(str);
-
-        const fullPath_04 = await FSStoreFile.write(Buffer.from(str + '2'), {
-            meta: {type: filetype, fileName: fName},
-            fsStorePrefix: prefix,
-        });
-        chai.expect(fullPath_04).to.be.equal(fullPath);
-
-        const contents_02 = await readFile(fullPath_04);
-        chai.expect(contents_02.toString()).to.be.equal(str + '2');
-
-        return Promise.resolve();
     });
 
     it('store object create random file', async () => {
@@ -104,10 +44,12 @@ describe('fs-store-file', () => {
                 }
                 return path.join(tmpDir, fileName);
             });
-        const file = new FSStoreFile({
-            meta: {type: filetype},
-            fsStorePrefix: prefix,
-        });
+        const file = FSTextFactory(
+            {},
+            {
+                fsStorePrefix: prefix,
+            },
+        );
 
         const str = 'qwerty';
 
@@ -120,10 +62,12 @@ describe('fs-store-file', () => {
     });
     it('store object should lock access & unlink data', async () => {
         const fileName = 'tmp.tmp';
-        const file = new FSStoreFile({
-            meta: {type: filetype, fileName},
-            fsStorePrefix: prefix,
-        });
+        const file = FSTextFactory(
+            {fileName},
+            {
+                fsStorePrefix: prefix,
+            },
+        );
 
         const state = {lock: 0, access: 0, unlink: 0};
         const onRelease = FSS.getHook(fsStoreServerHooks.ON_RELEASE);
@@ -193,10 +137,12 @@ describe('fs-store-file', () => {
     });
     it('store object should transactional lock access & unlink data', async () => {
         const fileName = 'tmp_01.tmp';
-        const file = new FSStoreFile({
-            meta: {type: filetype, fileName},
-            fsStorePrefix: prefix,
-        });
+        const file = FSTextFactory(
+            {fileName},
+            {
+                fsStorePrefix: prefix,
+            },
+        );
 
         try {
             await file.lock();

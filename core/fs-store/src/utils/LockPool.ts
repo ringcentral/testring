@@ -6,64 +6,107 @@
  *
  */
 
-import {PluggableModule} from '@testring/pluggable-module';
 import {MultiLock, Queue} from '@testring/utils';
+import {ILockPool} from '@testring/types';
 
-const hooks = {
-    ON_ACQUIRE: 'onAcquire',
-    ON_RELEASE: 'onRelease',
+type queueItem = {
+    workerId: string;
+    requestId?: string;
+    notifier?: (b: boolean) => void;
 };
 
-export {hooks};
-
-export class LockPool extends PluggableModule {
+export class LockPool implements ILockPool {
     private poolLock: MultiLock;
-    private requestQue: Queue<[string, string]> = new Queue<[string, string]>();
+    private requestQue: Queue<queueItem>;
+    private requests: Set<string>;
 
     constructor(maxLockCount = 10) {
-        super(Object.values(hooks));
+        this.requests = new Set();
+        this.requestQue = new Queue<queueItem>();
         this.poolLock = new MultiLock(maxLockCount);
     }
 
-    public getState = (getIds = false) => ({
-        queVolume: this.poolLock.lockLimit,
-        curLocks: this.poolLock.getSize(),
-        maxLocks: this.poolLock.lockLimit,
-        locks: getIds ? this.poolLock.getIds() : undefined,
-    });
+    public getState() {
+        return {
+            curLocks: this.poolLock.getSize(),
+            maxLocks: this.poolLock.lockLimit,
+            lockQueueLen: this.requestQue.length,
+            locks: this.poolLock.getIds(),
+        };
+    }
 
-    public acquire(workerId: string, requestId: string) {
-        if (this.poolLock.acquire(workerId)) {
-            this.callHook(hooks.ON_ACQUIRE, {workerId, requestId});
-        } else {
-            this.requestQue.push([workerId, requestId]);
+    public acquire(workerId: string, requestId?: string) {
+        if (requestId) {
+            if (this.requests.has(requestId)) {
+                return Promise.reject(`Repeating requestId  '${requestId}'`);
+            }
+            this.requests.add(requestId);
         }
+
+        return this.acquireAction(workerId, requestId);
+    }
+
+    private acquireAction(workerId: string, requestId?: string) {
+        if (this.poolLock.acquire(workerId)) {
+            return Promise.resolve(true);
+        }
+
+        return new Promise<boolean>((res) => {
+            this.requestQue.push({
+                workerId,
+                requestId,
+                notifier: (allow: Boolean) => {
+                    allow ? res(true) : res(false);
+                },
+            });
+        });
     }
 
     public release(workerId: string, requestId: string) {
-        const removed = this.requestQue.remove(
-            ([wId, rId]) => wId === workerId && rId === requestId,
-        );
-        if (removed > 0) {
-            return;
+        // if releasing item is still in the queue
+        const removed = this.requestQue.extract(function (item: queueItem) {
+            const {workerId: wId, requestId: rId} = item;
+            return wId === workerId && rId === requestId;
+        });
+        if (removed.length > 0) {
+            const r = removed[0];
+            r.notifier && r.notifier(false);
+            return true;
         }
-        this.poolLock.release(workerId);
-        this.callHook(hooks.ON_RELEASE, {workerId, requestId});
-        const newItem = this.requestQue.shift();
-        if (newItem) {
-            this.acquire(newItem[0], newItem[1]);
+
+        // release from the pool
+        const released = this.poolLock.release(workerId);
+
+        // if released, try acquire new lock from queue
+        if (released) {
+            const newItem = this.requestQue.shift();
+            if (newItem) {
+                const {
+                    workerId: newWorkerId,
+                    requestId: newRequestId,
+                    notifier: newNotifier,
+                } = newItem;
+                this.acquireAction(newWorkerId, newRequestId).then(() => {
+                    newNotifier && newNotifier(true);
+                });
+            }
+            this.requests.delete(requestId);
+            return true;
         }
+        return false;
     }
 
     public clean(workerId: string | void) {
         if (!workerId) {
             this.poolLock.clean();
-            this.requestQue.clean();
+            this.requestQue
+                .extract(() => true)
+                .forEach((item) => item.notifier && item.notifier(false));
         } else {
             this.poolLock.clean(workerId);
-            this.requestQue.remove(
-                ([itemWorkerId]) => itemWorkerId === workerId,
-            );
+            this.requestQue
+                .extract(([itemWorkerId]) => itemWorkerId === workerId)
+                .forEach((item) => item.notifier && item.notifier(false));
         }
     }
 }

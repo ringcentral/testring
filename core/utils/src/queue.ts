@@ -34,6 +34,26 @@ export class Queue<T> implements IQueue<T> {
         return len - this.array.length;
     }
 
+    /**
+     * extract - filter items, return filtered, leave the rest
+     *
+     * @param {(T, number?)=>boolean} fn - function to filter elements for removal
+     * @returns - number of elements removed
+     */
+    public extract(fn: <T>(T, number?) => boolean): T[] {
+        const result: T[] = [];
+        const rest: T[] = [];
+        this.array.forEach((item, index) => {
+            if (fn(item, index)) {
+                result.push(item);
+            } else {
+                rest.push(item);
+            }
+        });
+        this.array = rest;
+        return result;
+    }
+
     public getFirstElement(offset = 0): T | null {
         const elementIndex = offset;
 

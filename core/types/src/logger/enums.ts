@@ -16,6 +16,7 @@ export const enum LogTypes {
     step = 'step',
     screenshot = 'screenshot',
     file = 'file',
+    media = 'media',
     success = 'success',
 }
 

@@ -6,13 +6,13 @@ import {FSStoreServer, fsStoreServerHooks} from '../src/fs-store-server';
 import {FSStoreClient} from '../src/fs-store-client';
 
 import {fsReqType} from '@testring/types';
-import {loggerClient} from '@testring/logger';
 
-const log = loggerClient.withPrefix('fsc-test');
-
-const FSS = new FSStoreServer(10);
+let FSS: FSStoreServer;
 
 describe('fs-store-client', () => {
+    before(() => {
+        FSS = new FSStoreServer(10);
+    });
     it('client should lock access & unlink data', (done) => {
         const FSC = new FSStoreClient();
 
@@ -22,17 +22,14 @@ describe('fs-store-client', () => {
         const onRelease = FSS.getHook(fsStoreServerHooks.ON_RELEASE);
         chai.expect(onRelease).not.to.be.an(
             'undefined',
-            'Hook ON_RELEASE in undefined',
+            'Hook ON_RELEASE is undefined',
         );
 
         onRelease &&
             onRelease.readHook('testRelease', (readOptions) => {
-                const {action} = readOptions;
-                const hookFileName = readOptions.fileName;
-                log.debug({fileName: hookFileName, action}, 'on release');
+                const {action, ffName} = readOptions;
                 switch (action) {
                     case fsReqType.lock:
-                        state.lock -= 1;
                         break;
                     case fsReqType.access:
                         state.access -= 1;
@@ -41,19 +38,31 @@ describe('fs-store-client', () => {
                         state.unlink -= 1;
                         break;
                 }
-                chai.expect(hookFileName).to.be.a('string');
+                chai.expect(ffName).to.be.a('string');
             });
 
         const lockReqId = FSC.getLock({fileName}, (fName) => {
-            chai.expect(fileName).to.be.equal(fName);
+            try {
+                chai.expect(fName.includes(fileName)).to.be.equal(true);
+            } catch (err) {
+                done(err);
+            }
+            state.lock += 1;
         });
-        state.lock += 1;
         const accessReqId = FSC.getAccess({fileName}, (fName) => {
-            chai.expect(fileName).to.be.equal(fName);
+            try {
+                chai.expect(fName.includes(fileName)).to.be.equal(true);
+            } catch (err) {
+                done(err);
+            }
+            state.access += 1;
         });
-        state.access += 1;
         const unlinkReqId = FSC.getUnlink({fileName}, (fName) => {
-            chai.expect(fileName).to.be.equal(fName);
+            try {
+                chai.expect(fName.includes(fileName)).to.be.equal(true);
+            } catch (err) {
+                done(err);
+            }
         });
         state.unlink += 1;
         setTimeout(() => {
@@ -62,14 +71,19 @@ describe('fs-store-client', () => {
                 access: 1,
                 unlink: 1,
             });
-            const emptyFn = () => {
-                /* empty */
+            const lockCB = () => {
+                state.lock -= 1;
             };
-            FSC.release(lockReqId, emptyFn);
 
-            FSC.release(accessReqId, emptyFn);
+            const lockRelRet = FSC.release(lockReqId, lockCB);
+            chai.expect(lockRelRet).to.be.equal(true);
 
-            FSC.release(unlinkReqId, emptyFn);
+            const accessRelRet = FSC.release(accessReqId);
+            chai.expect(accessRelRet).to.be.equal(true);
+
+            const unlinkRelRet = FSC.release(unlinkReqId);
+            chai.expect(unlinkRelRet).to.be.equal(true);
+
             setTimeout(() => {
                 chai.expect(state).to.be.deep.equal({
                     lock: 0,
@@ -77,7 +91,7 @@ describe('fs-store-client', () => {
                     unlink: 0,
                 });
                 done();
-            }, 100);
-        }, 100);
+            }, 200);
+        }, 200);
     });
 });

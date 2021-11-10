@@ -1,11 +1,14 @@
 /**
- * FSActionQueue - is the class ensuring order & possibility of some operations on data.
+ * FilePermissionResolver - is the class ensuring order & possibility of some operations on dataId (fileName).
+ * service should be started for each dataId separately
+ *
  * allowed actions/operations are:
- * - read - can be performed by multiple agents at the same time (pool)
- * - write (append) - can be performed only by one agent at the time QUEUE is
+ * - lock - can be performed by multiple agents at the same time (POOL) - do not delete untill unlock
+ * - access (write/append) - can be performed only by one agent at the time (QUEUE)
  * - unlink (delete) - can be performed by one at a time, but action order can be ruled by FS
  *
- * action flow - agents can request permissions for read write and delete(unlink) access
+ * action flow - agents can request permissions for read/write and delete(unlink) access or
+ *  lock so the dataId(fileName) could not get permission for deleted until all locks will be unlocked
  *
  */
 import {PluggableModule} from '@testring/pluggable-module';
@@ -21,10 +24,10 @@ export const hooks = {
 };
 
 export enum actionState {
-    'init' = 0,
     'locked',
     'access',
     'free',
+    'deleting',
     'deleted',
 }
 
@@ -35,12 +38,12 @@ export type actionObject = {
 
 export type actionCB = (meta: actionObject, cleanCB?: () => void) => void;
 
-export class FileActionHookService extends PluggableModule {
+export class FilePermissionResolver extends PluggableModule {
     private access: Queue<[string, string, actionCB]> = new Queue<
         [string, string, actionCB]
     >();
     private accessing = false;
-    private lockPool: MultiLock; // lock pool
+    private multiLock: MultiLock; // lock pool
     private del: Queue<[string, string, actionCB]> = new Queue<
         [string, string, actionCB]
     >();
@@ -54,8 +57,8 @@ export class FileActionHookService extends PluggableModule {
      */
     constructor(private dataId: string) {
         super(Object.values(hooks));
-        this.lockPool = new MultiLock(); // no limit for lock
-        this.state = actionState.init;
+        this.multiLock = new MultiLock(); // no limit for locks
+        this.state = actionState.free;
     }
 
     get status() {
@@ -63,7 +66,7 @@ export class FileActionHookService extends PluggableModule {
     }
 
     public getLockPoolSize() {
-        return {queue: this.lockPool.getSize()};
+        return {queue: this.multiLock.getSize()};
     }
 
     public getAccessQueueLength() {
@@ -75,11 +78,11 @@ export class FileActionHookService extends PluggableModule {
     }
 
     public lock(workerId: string, requestId: string, cb: actionCB): boolean {
-        if (this.state === actionState.deleted) {
+        if (this.isDeleted()) {
             return false;
         }
-        if (this.lockPool.acquire(workerId)) {
-            // should always be true since Multilock is unlimited
+        // should always be true since Multilock is unlimited
+        if (this.multiLock.acquire(workerId)) {
             this.state = actionState.locked;
             this.callHook(hooks.ON_LOCK, {workerId, requestId});
             cb({dataId: this.dataId, status: this.state}, () => {
@@ -90,8 +93,7 @@ export class FileActionHookService extends PluggableModule {
     }
 
     public unlock(workerId: string, requestId: string) {
-        // console.log('FAQ unlock', workerId, requestId, Date.now());
-        if (this.lockPool.release(workerId)) {
+        if (this.multiLock.release(workerId)) {
             this.callHook(hooks.ON_UNLOCK, {workerId, requestId});
         }
         return this.chkEmpty();
@@ -99,35 +101,38 @@ export class FileActionHookService extends PluggableModule {
 
     public cleanLock(workerId: string | void) {
         if (!workerId) {
-            this.lockPool.clean();
+            this.multiLock.clean();
             this.callHook(hooks.ON_UNLOCK, {});
         } else {
-            this.lockPool.clean(workerId);
+            this.multiLock.clean(workerId);
             this.callHook(hooks.ON_UNLOCK, {workerId});
         }
 
         return this.chkEmpty();
     }
 
+    // normalize state of FilePermissions to in sync with lock/access/unlink logic during unlocking/releseAccess action
     private chkEmpty() {
         if (
-            this.lockPool.getSize() === 0 && // no locks are present
+            this.multiLock.getSize() === 0 && // no locks are present
             this.access.length === 0 // access queue is empty
         ) {
             if (!this.accessing) {
                 // no one currently accessing data
                 this.state = actionState.free;
-                return this.tryDelete();
+                this.tryDelete();
+                return true;
             }
             this.state = actionState.access;
-        } else if (this.lockPool.getSize() !== 0) {
+        } else if (this.multiLock.getSize() !== 0) {
             this.state = actionState.locked;
         }
         return true;
     }
 
+    // normalize state of FilePermissions to in sync with access/unlink logic during releseAccess action
     private tryAccess() {
-        if (this.state === actionState.deleted) {
+        if (this.isDeleted()) {
             return false;
         }
         if (this.accessing === true) {
@@ -154,7 +159,7 @@ export class FileActionHookService extends PluggableModule {
         requestId: string,
         cb: actionCB,
     ): boolean {
-        if (this.state === actionState.deleted) {
+        if (this.isDeleted()) {
             return false;
         }
         this.access.push([workerId, requestId, cb]);
@@ -162,7 +167,7 @@ export class FileActionHookService extends PluggableModule {
     }
 
     public unhookAccess(workerId: string, requestId: string): boolean {
-        if (this.state === actionState.deleted) {
+        if (this.isDeleted()) {
             return false;
         }
         this.access.remove(
@@ -181,12 +186,16 @@ export class FileActionHookService extends PluggableModule {
         }
     }
 
+    // normalize state of FilePermissions to in sync with lock/access/unlink logic during delete action
     private tryDelete(): boolean {
-        if (this.state < actionState.free) {
+        if (!this.canBeDeleted()) {
             return false;
         }
         const delItem = this.del.shift();
         if (delItem) {
+            if (!this.isDeleted()) {
+                this.state = actionState.deleting;
+            }
             const [workerId, requestId, cb] = delItem;
             this.callHook(hooks.ON_UNLINK, {workerId, requestId});
             cb({dataId: this.dataId, status: this.state}, () => {
@@ -194,8 +203,16 @@ export class FileActionHookService extends PluggableModule {
                 this.callHook(hooks.ON_UNLINK_RELEASE, {workerId, requestId});
                 this.tryDelete();
             });
+            return true;
         }
-        return true;
+        return false;
+    }
+
+    private canBeDeleted() {
+        return this.state >= actionState.free;
+    }
+    private isDeleted() {
+        return this.state > actionState.free;
     }
 
     public hookUnlink(workerId: string, requestId: string, cb: actionCB) {

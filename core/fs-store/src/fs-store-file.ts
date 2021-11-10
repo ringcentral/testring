@@ -1,25 +1,26 @@
 /**
  * file reader abstraction with ability to lock file for not be able to delete it
- * fullFileName or savePath should be passed at init time
+ * fullPath or savePath should be passed at init time
  * if no fileName is not passed, savePath should be passed at init & fileName will be generated!
  * has a hook for event of all locks OFF (onLockFree(id, cb)) - to subscribe to the event
  */
 
 import * as fs from 'fs';
+import * as path from 'path';
+import {IFSStoreFile, FSStoreOptions, requestMeta} from '@testring/types';
+import {loggerClient} from '@testring/logger';
+import {fs as fsTool} from '@testring/utils';
 
 import {FSStoreClient} from './fs-store-client';
-
-import {IFSStoreFile, FSStoreOptions} from '@testring/types';
-import {loggerClient} from '@testring/logger';
-import {generateUniqId} from '@testring/utils';
-
-import {fs as fsTool} from './utils';
-
-import * as path from 'path';
 
 const log = loggerClient.withPrefix('fsf');
 
 const {appendFile, writeFile, readFile, unlink, stat} = fs.promises;
+
+export type ActionOptionsType = {
+    meta: requestMeta & {workerId?: string};
+    opts?: Record<string, any>;
+};
 
 const defaultOptions = {lock: false};
 export class FSStoreFile implements IFSStoreFile {
@@ -27,8 +28,8 @@ export class FSStoreFile implements IFSStoreFile {
 
     private fsWriterClient: FSStoreClient;
 
-    private fullFileName: string;
-    private fileSavePath: string;
+    private fullPath: null | string = null;
+    private fileMeta: Record<string, any>;
 
     private initPromise: Promise<void>;
     private transactionQueue: Array<(any?) => void> = [];
@@ -40,55 +41,83 @@ export class FSStoreFile implements IFSStoreFile {
         this.options = {...defaultOptions, ...options};
         this.state.valid = true;
         this.fsWriterClient = new FSStoreClient(options.fsStorePrefix);
+        this.fileMeta = options.meta; // meta:{fileName, ...}
         this.initPromise = this.init();
     }
 
     private async init() {
-        this.fullFileName = await this.ensureFile(this.options.file);
         if (this.options.lock) {
             await this.lock();
+        } else {
+            await this.ensureName();
         }
     }
 
-    private async ensureFile(
-        fileData: string | {fileName?: string; savePath: string},
-    ) {
-        if (typeof fileData === 'string' || fileData.fileName !== undefined) {
-            let fName: string;
-            if (typeof fileData === 'string') {
-                this.fullFileName = fileData;
-                this.fileSavePath = path.dirname(fileData);
+    // ------- STATIC METHODS
+    public static async write(
+        data: Buffer,
+        options: FSStoreOptions,
+    ): Promise<string> {
+        const file = new FSStoreFile(options);
+        await file.write(data);
+        return file.getFullPath() as string;
+    }
+    public static async append(
+        data: Buffer,
+        options: FSStoreOptions,
+    ): Promise<string> {
+        const file = new FSStoreFile(options);
+        await file.append(data);
+        return file.getFullPath() as string;
+    }
+    public static async unlink(options: FSStoreOptions): Promise<string> {
+        const file = new FSStoreFile(options);
+        await file.unlink();
+        return file.getFullPath() as string;
+    }
+    public static async read(options: FSStoreOptions): Promise<Buffer> {
+        const file = new FSStoreFile(options);
+        return await file.read();
+    }
 
-                fName = fileData;
-            } else {
-                this.fileSavePath = fileData.savePath;
-                fName = path.join(fileData.savePath, fileData.fileName || ''); // || '' - avoid TS error
-            }
-            await fsTool.ensureDir(this.fileSavePath);
-            await fsTool.touchFile(fName);
-            this.state.fileEnsured = true;
-            return fName;
+    // ------- INSTANCE METHODS
+
+    // FIXME: allow getting name without lock/unlock operations
+    private async ensureName() {
+        return new Promise<void>((res) => {
+            this.fsWriterClient.getLock(
+                {
+                    ...this.fileMeta,
+                },
+                async (fullPath, lockId) => {
+                    this.fullPath = fullPath;
+                    this.fileMeta.fileName = path.basename(fullPath);
+                    if (lockId) {
+                        this.fsWriterClient.release(lockId, () => {
+                            res();
+                        });
+                    }
+                },
+            );
+        });
+    }
+
+    private async ensureFile() {
+        if (this.fullPath === null) {
+            throw new Error('try to ensure null file');
         }
-        this.fileSavePath = fileData.savePath;
-        this.state.fileEnsured = false;
-        return '';
+        if (this.state.fileEnsured !== this.fullPath) {
+            const fileSavePath = path.dirname(this.fullPath);
+            await fsTool.ensureDir(fileSavePath);
+            await fsTool.touchFile(this.fullPath);
+            this.state.fileEnsured = this.fullPath;
+            return true;
+        }
+        return false;
     }
 
     public getState = () => this.state;
-    public getFilename = () => this.fullFileName;
-
-    /**
-     * ensure internal state for object is corresponding to file system
-     * @param fName
-     */
-    private async fixShortFile(fName: string) {
-        if (this.state.fileEnsured === false) {
-            this.state.fileEnsured = true;
-            this.fullFileName = fName;
-            this.fileSavePath = path.dirname(fName);
-            await fsTool.touchFile(fName);
-        }
-    }
+    public getFullPath = () => this.fullPath;
 
     async lock() {
         if (this.state.inTransaction) {
@@ -99,14 +128,15 @@ export class FSStoreFile implements IFSStoreFile {
         return new Promise<void>((res) => {
             this.fsWriterClient.getLock(
                 {
-                    fileName: this.fullFileName || undefined,
-                    path: this.fileSavePath,
+                    ...this.fileMeta,
                 },
-                async (fName, lockId) => {
+                async (fullPath, lockId) => {
+                    this.fullPath = fullPath;
+                    this.fileMeta.fileName = path.basename(fullPath);
                     if (lockId) {
                         this.lockQueue.push(lockId);
                     }
-                    await this.fixShortFile(fName);
+                    await this.ensureFile();
                     res();
                 },
             );
@@ -115,7 +145,6 @@ export class FSStoreFile implements IFSStoreFile {
 
     /**
      *
-     * @param options - {unlink - sign up for unlink }
      * @returns
      */
     async unlock(): Promise<boolean> {
@@ -143,10 +172,10 @@ export class FSStoreFile implements IFSStoreFile {
     }
 
     /**
-     * ensure we get access right for
+     * ensure we get exclusive access right for a file
      * @returns
      */
-    private async getAccess() {
+    async getAccess() {
         if (this.state.inTransaction) {
             return;
         }
@@ -154,12 +183,13 @@ export class FSStoreFile implements IFSStoreFile {
         return new Promise<void>((res) => {
             this.fsWriterClient.getAccess(
                 {
-                    fileName: this.fullFileName || undefined,
-                    path: this.fileSavePath,
+                    ...this.fileMeta,
                 },
-                async (fName, accessId) => {
+                async (fullPath, accessId) => {
+                    this.fullPath = fullPath;
+                    this.fileMeta.fileName = path.basename(fullPath);
                     this.state.accessId = accessId;
-                    await this.fixShortFile(fName);
+                    await this.ensureFile();
                     res();
                 },
             );
@@ -177,14 +207,15 @@ export class FSStoreFile implements IFSStoreFile {
         if (!id) {
             return false;
         }
-        return new Promise<boolean>((res) => {
-            this.fsWriterClient.release(id, () => {
-                res(true);
+        return new Promise<boolean>((res, rej) => {
+            this.fsWriterClient.release(id, (fullPath) => {
+                fullPath === '' ? rej(false) : res(true);
+                // fullPath === '' ? res(false) : res(true);
             });
         });
     }
 
-    private async releaseAccess() {
+    async releaseAccess() {
         const res = await this.release(this.state.accessId);
         if (res) {
             this.state.accessId = null;
@@ -195,27 +226,30 @@ export class FSStoreFile implements IFSStoreFile {
     async read(): Promise<Buffer> {
         await this.initPromise;
         await this.getAccess();
-        const res = await readFile(this.fullFileName);
+        const res = await readFile(this.fullPath as string);
         await this.releaseAccess();
         return res;
     }
-    async write(data: Buffer): Promise<void> {
+    async write(data: Buffer): Promise<string> {
         await this.initPromise;
         await this.getAccess();
-        await writeFile(this.fullFileName, data);
+        await writeFile(this.fullPath as string, data, this.options.fsOptions);
         await this.releaseAccess();
+        return this.getFullPath() as string;
     }
-    async append(data: Buffer): Promise<void> {
+
+    async append(data: Buffer): Promise<string> {
         await this.initPromise;
         await this.getAccess();
-        await appendFile(this.fullFileName, data);
+        await appendFile(this.fullPath as string, data, this.options.fsOptions);
         await this.releaseAccess();
+        return this.getFullPath() as string;
     }
 
     async stat(): Promise<fs.Stats> {
         await this.initPromise;
         await this.getAccess();
-        const res = await stat(this.fullFileName);
+        const res = await stat(this.fullPath as string);
         await this.releaseAccess();
         return res;
     }
@@ -231,11 +265,12 @@ export class FSStoreFile implements IFSStoreFile {
      */
     waitForUnlock(): Promise<void> {
         return new Promise<void>((res) => {
-            const requestId = generateUniqId(10);
             this.fsWriterClient.getUnlink(
-                {fileName: this.fullFileName, requestId},
-                async () => {
-                    this.fsWriterClient.release(requestId);
+                {...this.options.meta},
+                async (_, requestId) => {
+                    if (requestId) {
+                        this.fsWriterClient.release(requestId);
+                    }
                     res();
                 },
             );
@@ -249,15 +284,16 @@ export class FSStoreFile implements IFSStoreFile {
         }
 
         return new Promise<boolean>((res) => {
-            const requestId = generateUniqId(10);
             this.fsWriterClient.getUnlink(
-                {fileName: this.fullFileName, requestId},
-                async () => {
+                {...this.options.meta},
+                async (fullPath, requestId) => {
                     if (!this.isValid()) {
                         res(false);
                     }
-                    await unlink(this.fullFileName);
-                    this.fsWriterClient.release(requestId);
+                    await unlink(fullPath);
+                    if (requestId) {
+                        this.fsWriterClient.release(requestId);
+                    }
                     this.state.valid = false;
                     res(true);
                 },
@@ -266,21 +302,29 @@ export class FSStoreFile implements IFSStoreFile {
     }
 
     async transaction(cb: () => Promise<void>) {
-        if (this.state.enterTransaction) {
-            const wait = new Promise((res) => {
-                this.transactionQueue.push(res);
-            });
-            await wait;
-        }
-        this.state.enterTransaction = true;
-        await this.getAccess();
-        await this.lock();
-        this.state.inTransaction = true;
+        await this.startTransaction();
         try {
             await cb();
         } catch (e) {
             log.error(e, 'Error during transaction');
         }
+        await this.endTransaction();
+    }
+
+    async startTransaction() {
+        if (this.state.enterTransaction) {
+            const waitFor = new Promise((res) => {
+                this.transactionQueue.push(res);
+            });
+            await waitFor;
+        }
+        this.state.enterTransaction = true;
+        await this.getAccess();
+        await this.lock();
+        this.state.inTransaction = true;
+    }
+
+    async endTransaction() {
         this.state.inTransaction = false;
         await this.releaseAccess();
         await this.unlock();

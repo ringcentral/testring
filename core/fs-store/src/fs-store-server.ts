@@ -1,27 +1,21 @@
-import {join as pathJoin} from 'path';
+import * as path from 'path';
+import * as os from 'os';
 
 import {
     IFSStoreReq,
-    IFSStoreReqFixed,
     IFSStoreResp,
     fsReqType,
-    ITransport,
+    requestMeta,
 } from '@testring/types';
 import {generateUniqId} from '@testring/utils';
 import {loggerClient} from '@testring/logger';
 import {transport} from '@testring/transport';
 import {PluggableModule} from '@testring/pluggable-module';
-import {TransportMock} from '@testring/test-utils';
 
-import {FSActionServer} from './fs-action-server';
-import {FSActionClient} from './fs-action-client';
-
-import {FileActionHookService} from './server_utils/FileActionHookService';
-
-import {FS_CONSTANTS} from './utils';
+import {LockPool, FilePermissionResolver, FS_CONSTANTS} from './utils';
 
 const log = loggerClient.withPrefix('fss');
-const {DW_ID, FS_DEFAULT_MSG_PREFIX, FS_DEFAULT_QUEUE_PREFIX} = FS_CONSTANTS;
+const {DW_ID, FS_DEFAULT_MSG_PREFIX} = FS_CONSTANTS;
 
 export enum serverState {
     'new' = 0,
@@ -29,83 +23,67 @@ export enum serverState {
     'initialized',
 }
 
+type ActionQueReq = {
+    action: fsReqType;
+    requestId: string;
+    fullPath: string;
+};
+
+type RequestActionData = {
+    requestId: string;
+    action: fsReqType;
+    meta: Record<string, any>;
+};
+
 const hooks = {
     ON_FILENAME: 'onFileName',
+    ON_QUEUE: 'onQueue',
     ON_RELEASE: 'onRelease',
 };
 
 export {hooks as fsStoreServerHooks};
 
-type cleanCBRecord = Record<string, Record<string, (() => void) | undefined>>;
+type cleanUpCBRecord = Record<string, Record<string, (() => void) | undefined>>;
 
 const asyncActions = new Set([fsReqType.access, fsReqType.unlink]);
 
 export class FSStoreServer extends PluggableModule {
     private reqName: string;
-    private resName: string;
+    private respName: string;
     private releaseReqName: string;
     private cleanReqName: string;
     private unHookReqTransport: (() => void) | null = null;
     private unHookReleaseTransport: (() => void) | null = null;
     private unHookCleanWorkerTransport: (() => void) | null = null;
-    private fas: FSActionServer;
-    private fac: FSActionClient;
-    private fasTransport: ITransport;
-    private queServerPrefix: string;
+    private defaultFsPermisionPool: LockPool;
 
-    private files: Record<string, [FileActionHookService, cleanCBRecord]> = {};
+    private files: Record<
+        string,
+        [FilePermissionResolver, cleanUpCBRecord]
+    > = {};
     private inWorkRequests: Record<
         string,
-        Record<string, [fsReqType, string, string?]>
+        Record<string, [fsReqType, string]>
     > = {};
     private usedFiles: Record<string, boolean> = {};
 
     private state: serverState = serverState.new;
 
-    public faqState: {
-        access: {
-            active: number;
-            queue: number;
-        };
-        lock: {
-            queue: number;
-        };
-        unlink: {
-            queue: number;
-        };
-    } = {access: {active: 0, queue: 0}, lock: {queue: 0}, unlink: {queue: 0}};
-
     /**
      *
+     * @param threadCount
      * @param msgNamePrefix
-     * @param queServerPrefix
-     * @param FQS
      */
     constructor(
-        FQS: FSActionServer | number = 10,
+        threadCount = 10,
         msgNamePrefix: string = FS_DEFAULT_MSG_PREFIX,
-        queServerPrefix = FS_DEFAULT_QUEUE_PREFIX,
     ) {
         super(Object.values(hooks));
 
-        if (typeof FQS === 'number') {
-            this.fasTransport = new TransportMock();
-            this.queServerPrefix = queServerPrefix;
-            this.fas = new FSActionServer(
-                FQS,
-                this.queServerPrefix,
-                this.fasTransport,
-            );
-        } else {
-            this.fas = FQS;
-            this.fasTransport = this.fas.getTransport();
-            this.queServerPrefix = this.fas.getMsgPrefix();
-        }
-
-        this.fac = new FSActionClient(this.queServerPrefix, this.fasTransport);
+        this.defaultFsPermisionPool = new LockPool(threadCount);
 
         this.reqName = msgNamePrefix + FS_CONSTANTS.FS_REQ_NAME_POSTFIX;
-        this.resName = msgNamePrefix + FS_CONSTANTS.FS_RESP_NAME_POSTFIX;
+        this.respName = msgNamePrefix + FS_CONSTANTS.FS_RESP_NAME_POSTFIX;
         this.releaseReqName =
             msgNamePrefix + FS_CONSTANTS.FS_RELEASE_NAME_POSTFIX;
         this.cleanReqName =
@@ -129,33 +107,25 @@ export class FSStoreServer extends PluggableModule {
             this.reqName,
             async (msgData, workerId = DW_ID) => {
                 const {requestId, action, meta} = msgData;
-                let {fileName} = msgData;
+                const {fileName} = meta;
+
                 if (!fileName) {
-                    // no fileName giver - need to construct one
+                    // no fileName given - need to construct one
                     if (action === fsReqType.unlink) {
                         // if no fileName during unlink -> ERROR
-                        this.send<IFSStoreResp>(workerId, this.resName, {
+                        this.send<IFSStoreResp>(workerId, this.respName, {
                             requestId,
                             action,
-                            fileName: '',
-                            status: 'no fileName for action',
+                            fullPath: '',
+                            status: 'no fileName for unlink',
                         });
 
                         return;
                     }
-                    const {ext, path} = meta;
-                    fileName = await this.generateUniqFileName(
-                        workerId,
-                        requestId,
-                        ext,
-                        path,
-                    );
+                    meta.fileName = this.generateUniqFileName(meta.ext);
                 }
 
-                this.RequestAction(
-                    {requestId, fileName, action, meta},
-                    workerId,
-                );
+                this.RequestAction({requestId, action, meta}, workerId);
             },
         );
 
@@ -190,141 +160,225 @@ export class FSStoreServer extends PluggableModule {
         this.unHookCleanWorkerTransport && this.unHookCleanWorkerTransport();
     }
 
-    private ensureActionQueue(
-        {action, requestId, fileName, meta}: IFSStoreReqFixed,
+    private ensurePermissionQueue(
+        {action, requestId, fullPath}: ActionQueReq,
         workerId: string,
     ) {
-        if (!this.files[fileName]) {
-            this.files[fileName] = [new FileActionHookService(fileName), {}];
-            delete this.usedFiles[fileName];
+        if (!this.files[fullPath]) {
+            this.files[fullPath] = [new FilePermissionResolver(fullPath), {}];
+            delete this.usedFiles[fullPath];
         }
         if (!this.inWorkRequests[workerId]) {
             this.inWorkRequests[workerId] = {};
         }
-        this.inWorkRequests[workerId][requestId] = [action, fileName];
+        this.inWorkRequests[workerId][requestId] = [action, fullPath];
     }
 
-    private ensureCleanCBRecord(
-        cleanCBRecord: cleanCBRecord,
+    private ensureCleanUpCBRecord(
+        cleanUpCBRecord: cleanUpCBRecord,
         workerId: string,
     ) {
-        if (!cleanCBRecord[workerId]) {
-            cleanCBRecord[workerId] = {};
+        if (!cleanUpCBRecord[workerId]) {
+            cleanUpCBRecord[workerId] = {};
         }
     }
 
-    private async RequestAction(data: IFSStoreReqFixed, workerId: string) {
-        this.ensureActionQueue(data, workerId);
-        const {action, requestId, fileName} = data;
+    private getPermissionQueue(meta: requestMeta, workerId: string) {
+        return this.callHook(
+            hooks.ON_QUEUE,
+            this.defaultFsPermisionPool,
+            meta,
+            {
+                workerId,
+                defaultQueue: this.defaultFsPermisionPool,
+            },
+        );
+    }
 
-        const [FAQ, cleanCBRec] = this.files[fileName];
-
-        this.ensureCleanCBRecord(cleanCBRec, workerId);
+    private async RequestAction(data: RequestActionData, workerId: string) {
+        const {requestId, action, meta} = data;
+        const fullPath = await this.generateUniqFullPath(
+            workerId,
+            requestId,
+            meta,
+        );
+        this.ensurePermissionQueue({requestId, fullPath, action}, workerId);
+        const [FPR, releaseCBRec] = this.files[fullPath];
+        this.ensureCleanUpCBRecord(releaseCBRec, workerId);
 
         switch (action) {
             case fsReqType.lock:
-                FAQ.lock(workerId, requestId, (dataObj, cleanCb) => {
-                    cleanCBRec[workerId][requestId] = cleanCb;
-                    this.send<IFSStoreResp>(workerId, this.resName, {
+                const canBeLocked = FPR.lock(
+                    workerId,
+                    requestId,
+                    (dataObj, releaseCb) => {
+                        releaseCBRec[workerId][requestId] = releaseCb;
+                        this.send<IFSStoreResp>(workerId, this.respName, {
+                            requestId,
+                            fullPath,
+                            action,
+                            status: 'OK',
+                        });
+                    },
+                );
+                if (!canBeLocked) {
+                    this.send<IFSStoreResp>(workerId, this.respName, {
                         requestId,
-                        fileName,
+                        fullPath,
                         action,
-                        status: 'OK',
+                        status: 'impossible to lock',
                     });
-                });
+                }
                 break;
             case fsReqType.access:
-                FAQ.hookAccess(
+                const canBeAccessed = FPR.hookAccess(
                     workerId,
                     requestId,
-                    async (dataObj, cleanCb) => {
-                        cleanCBRec[workerId][requestId] = cleanCb;
+                    async (_, releaseCb) => {
+                        // access granted (releaseCb - to call for release access)
+                        releaseCBRec[workerId][requestId] = releaseCb;
 
-                        const threadRId = await this.fac.promisedThread();
+                        const permision = await this.getPermissionQueue(
+                            meta,
+                            workerId,
+                        );
+
+                        const acuired = await permision.acquire(
+                            workerId,
+                            requestId,
+                        );
                         this.inWorkRequests[workerId][requestId] = [
                             action,
-                            fileName,
-                            threadRId,
+                            fullPath,
                         ];
-                        this.send<IFSStoreResp>(workerId, this.resName, {
+                        this.send<IFSStoreResp>(workerId, this.respName, {
                             requestId,
-                            fileName,
+                            fullPath,
                             action,
-                            status: 'OK',
+                            status: acuired ? 'OK' : 'no access',
                         });
                     },
                 );
+                if (!canBeAccessed) {
+                    this.send<IFSStoreResp>(workerId, this.respName, {
+                        requestId,
+                        fullPath,
+                        action,
+                        status: 'impossible to access',
+                    });
+                }
                 break;
             case fsReqType.unlink:
-                FAQ.hookUnlink(
-                    workerId,
-                    requestId,
-                    async (dataObj, cleanCb) => {
-                        cleanCBRec[workerId][requestId] = cleanCb;
+                FPR.hookUnlink(workerId, requestId, async (_, releaseCb) => {
+                    // unlink access granted (releaseCb - to call for release access)
+                    releaseCBRec[workerId][requestId] = releaseCb;
 
-                        const threadRId = await this.fac.promisedThread();
-                        this.inWorkRequests[workerId][requestId] = [
-                            action,
-                            fileName,
-                            threadRId,
-                        ];
-                        this.send<IFSStoreResp>(workerId, this.resName, {
-                            requestId,
-                            fileName,
-                            action,
-                            status: 'OK',
-                        });
-                    },
-                );
+                    const permision = await this.getPermissionQueue(
+                        meta,
+                        workerId,
+                    );
+
+                    const acuired = await permision.acquire(
+                        workerId,
+                        requestId,
+                    );
+                    this.inWorkRequests[workerId][requestId] = [
+                        action,
+                        fullPath,
+                    ];
+                    this.send<IFSStoreResp>(workerId, this.respName, {
+                        requestId,
+                        fullPath,
+                        action,
+                        status: acuired ? 'OK' : 'no access',
+                    });
+                });
         }
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
     private async ReleaseAction(data: IFSStoreReq, workerId: string) {
-        const {requestId, action, fileName} = data;
+        const {requestId, action, meta} = data;
+        const {fileName} = meta;
         if (!fileName) {
             log.warn({workerId, requestId}, 'no fileName to release');
+            this.send<IFSStoreResp>(workerId, this.respName, {
+                requestId,
+                fullPath: '',
+                action: fsReqType.release,
+                status: 'invalid fullPath/fileName for release',
+            });
             return false;
         }
-        const [FAQ, cleanCBRec] = this.files[fileName];
+        let fullPath = fileName;
+        try {
+            fullPath = await this.generateUniqFullPath(
+                workerId,
+                requestId,
+                meta,
+            );
+        } catch (e) {
+            log.error(e, 'generate Uniq full name ERROR');
+        }
+
+        if (!this.files[fullPath]) {
+            log.error(
+                {
+                    workerId,
+                    requestId,
+                    fileName,
+                    fullPath,
+                    meta,
+                },
+                'no files for release',
+            );
+            this.send<IFSStoreResp>(workerId, this.respName, {
+                requestId,
+                fullPath,
+                action: fsReqType.release,
+                status: 'NOEXIST',
+            });
+            return false;
+        }
+
+        const [FPR, releaseCBRec] = this.files[fullPath];
 
         if (asyncActions.has(action)) {
             const inProgress = this.inWorkRequests[workerId][requestId];
-            this.inWorkRequests[workerId][requestId] = [action, fileName];
+            this.inWorkRequests[workerId][requestId] = [action, fullPath];
 
             if (inProgress) {
-                const [, , threadRId] = inProgress;
-                if (threadRId) {
-                    await this.fac.releasePromisedThread(threadRId);
-                }
+                const permision = await this.getPermissionQueue(meta, workerId);
+
+                await permision.release(workerId, requestId);
             }
-            this.send<IFSStoreResp>(workerId, this.resName, {
+            this.send<IFSStoreResp>(workerId, this.respName, {
                 requestId,
-                fileName,
+                fullPath,
                 action: fsReqType.release,
                 status: 'OK',
             });
 
             const cleanUpCB =
-                cleanCBRec[workerId] && cleanCBRec[workerId][requestId];
+                releaseCBRec[workerId] && releaseCBRec[workerId][requestId];
 
             cleanUpCB && cleanUpCB();
         } else {
             switch (action) {
                 case fsReqType.lock:
                     const cleanUpCB =
-                        cleanCBRec &&
-                        cleanCBRec[workerId] &&
-                        cleanCBRec[workerId][requestId];
+                        releaseCBRec &&
+                        releaseCBRec[workerId] &&
+                        releaseCBRec[workerId][requestId];
 
                     if (cleanUpCB) {
                         cleanUpCB();
                     } else {
-                        FAQ.unlock(workerId, requestId);
+                        FPR.unlock(workerId, requestId);
                     }
-                    this.send<IFSStoreResp>(workerId, this.resName, {
+                    this.send<IFSStoreResp>(workerId, this.respName, {
                         requestId,
-                        fileName,
+                        fullPath,
                         action: fsReqType.release,
                         status: 'OK',
                     });
@@ -334,15 +388,10 @@ export class FSStoreServer extends PluggableModule {
         this.callHook(hooks.ON_RELEASE, {
             workerId,
             requestId,
+            fullPath,
             fileName,
             action,
         });
-
-        this.faqState = {
-            access: FAQ.getAccessQueueLength(),
-            lock: FAQ.getLockPoolSize(),
-            unlink: FAQ.getUnlinkQueueLength(),
-        };
 
         return true;
     }
@@ -380,43 +429,28 @@ export class FSStoreServer extends PluggableModule {
         return Object.keys(this.files);
     }
 
-    private async generateUniqFileName(
+    private generateUniqFileName(ext = 'tmp') {
+        return `${generateUniqId(10)}_.${ext}`;
+    }
+
+    private async generateUniqFullPath(
         workerId: string,
         requestId: string,
-        ext = 'tmp',
-        savePath = '/',
+        meta: Record<string, any>,
     ): Promise<string> {
-        const screenDate = new Date();
-        const formattedDate = `${screenDate.toLocaleTimeString()} ${screenDate.toDateString()}`
-            .replace(/:/g, '_')
-            .replace(/\s+/g, '_');
+        const {fileName} = meta;
 
-        const fileNameBase = `${workerId.replace(
-            '/',
-            '.',
-        )}-${requestId}-${generateUniqId(5)}-${formattedDate}.${ext}`;
-
-        const {fileName, path} = await this.callHook(hooks.ON_FILENAME, {
+        let filePath = await this.callHook(hooks.ON_FILENAME, fileName, {
             workerId,
             requestId,
-            fileName: fileNameBase,
-            path: savePath,
+            meta,
         });
 
-        const resultFileName = pathJoin(path, fileName);
-
-        if (
-            this.files[resultFileName] !== undefined ||
-            this.usedFiles[resultFileName]
-        ) {
-            return this.generateUniqFileName(
-                workerId,
-                requestId,
-                ext,
-                savePath,
-            );
+        if (!filePath || filePath === fileName) {
+            filePath = path.join(os.tmpdir(), fileName);
         }
-        this.usedFiles[resultFileName] = true;
-        return resultFileName;
+
+        this.usedFiles[filePath] = true;
+        return filePath as string;
     }
 }

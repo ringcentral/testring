@@ -9,7 +9,8 @@
   "author": "RingCentral",
   "license": "MIT",
   "scripts": {
-    "test": "concurrently -n simple,selenium \"npm run test:simple\" \"npm run test:selenium\" && npm run test:screenshots",
+    "test": "echo concurrently -n simple,selenium \"npm run test:simple\" \"npm run test:selenium \" \"npm run test:screenshots\"",
+    "test:all": "npm run test:simple && npm run test:selenium && npm run test:screenshots",
     "test:watch": "echo \"test:watch skipped\"",
     "test:selenium": "ts-node src/test-runner.ts --config ./test/selenium/config.js",
     "test:screenshots": "ts-node src/test-runner.ts --config ./test/selenium/config-screenshot.js",
@@ -20,6 +21,7 @@
   "dependencies": {
     "@testring/cli": "0.5.37",
     "@testring/plugin-babel": "0.5.37",
+    "@testring/plugin-fs-store": "0.5.37",
     "@testring/plugin-selenium-driver": "0.5.37",
     "@testring/web-application": "0.5.37",
     "@types/express": "4.17.12",
