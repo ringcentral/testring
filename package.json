@@ -77,7 +77,7 @@
     "@lerna/run-parallel-batches": "3.16.0",
     "@types/chai": "4.2.21",
     "@types/mocha": "8.2.3",
-    "@types/node": "14.17.6",
+    "@types/node": "14.17.31",
     "chai": "4.3.4",
     "eslint": "7.31.0",
     "eslint-config-ringcentral": "5.0.0",
