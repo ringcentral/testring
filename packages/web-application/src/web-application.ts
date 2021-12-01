@@ -1,6 +1,11 @@
 // TODO (flops) rework and merge with selenium backend
 /* eslint-disable @typescript-eslint/no-shadow,@typescript-eslint/no-this-alias */
 import * as url from 'url';
+import * as crypto from 'crypto';
+import {URL} from 'url';
+import fetch from 'node-fetch';
+import {transport} from '@testring/transport';
+import {FSCoverageFactory, FSScreenshotFactory} from '@testring/fs-store';
 
 import {
     IWebApplicationConfig,
@@ -22,11 +27,10 @@ import {generateUniqId} from '@testring/utils';
 import {PluggableModule} from '@testring/pluggable-module';
 import {createElementPath, ElementPath} from '@testring/element-path';
 
-import {FSScreenshotFactory} from '@testring/fs-store';
-
 import {createAssertion} from '@testring/async-assert';
 import {WebClient} from './web-client';
 import * as utils from './utils';
+import {nanoid} from 'nanoid';
 
 type valueType = string | number | null | undefined;
 
@@ -34,6 +38,79 @@ type ClickOptions = {
     x?: number | 'left' | 'center' | 'right';
     y?: number | 'top' | 'center' | 'bottom';
 };
+
+// ---COVERAGE
+
+enum WebAppMode {
+    'uninitialized',
+    'standart',
+    'coverage',
+}
+
+type CoverageStaticDataItem = {
+    srcName: string;
+    src: string;
+    srcMapName: string;
+    srcMap: string;
+};
+
+interface profiler {
+    startCoverageRecord(cb: (error: Error, result: any) => void);
+    takeCoverageRecord(
+        cb: (error: Error, result: any) => void,
+        tiemout?: number,
+    );
+}
+
+declare const $TestRingProfiler: profiler;
+
+function stripHost(url: string) {
+    const parts = url.split('://', 2);
+    if (parts.length !== 2) {
+        return url;
+    }
+    const urlParts = url.split('/');
+    return urlParts.slice(3).join('/');
+}
+function getFileNameFromUrl(url: string) {
+    return url.split('/').pop() as string;
+}
+
+type CoverageGroupData = {
+    data: {
+        timestamp: number;
+        coverage: {
+            result: {
+                functions: any[];
+                url: string;
+                scriptSource: string;
+            }[];
+        }[];
+    };
+    meta: CoverageGroupMeta;
+    error: Error;
+    ts: number;
+    duration: number;
+    id: string;
+};
+
+type CoverageGroupMeta = {
+    action: string;
+    actionMeta: null | Record<string, any>;
+    url: string;
+    fullPath: string[];
+};
+
+// TODO: possibly change to (CoverageStaticDataItem & {url:string, res:any})
+type SrcFileData = {
+    srcUrl: string;
+    res: any;
+    srcMapUrl?: string;
+    map?: string;
+    src?: string;
+};
+
+// ---COVERAGE
 
 export class WebApplication extends PluggableModule {
     protected LOGGER_PREFIX = '[web-application]';
@@ -57,6 +134,35 @@ export class WebApplication extends PluggableModule {
     private isRegisteredInDevtool = false;
 
     protected applicationId = `webApp-${generateUniqId()}`;
+
+    // ---COVERAGE
+
+    protected options: Record<string, any> = {};
+
+    protected settings: Record<string, any> = {};
+
+    protected cache: Record<string, any> = {};
+
+    private waMode: WebAppMode = WebAppMode.uninitialized;
+    private coverageData: {
+        meta: Record<string, any>;
+        actions: CoverageGroupData[];
+        // uriMap: Record<string, string>, // uri => fileName
+        statics: {
+            items: Record<string, boolean>;
+            inProgress: boolean;
+            loadCount: number;
+            loadPromises: Promise<void>[];
+        };
+    } = {
+        meta: {},
+        actions: [],
+        statics: {items: {}, inProgress: false, loadCount: 0, loadPromises: []},
+    };
+
+    protected coverageMethods: string[] = [];
+
+    // ---COVERAGE
 
     public assert = createAssertion({
         onSuccess: (meta) => this.successAssertionHandler(meta),
@@ -2079,6 +2185,17 @@ export class WebApplication extends PluggableModule {
     }
 
     public async end() {
+        // ---COVERAGE
+        if (this.isCoverageOn()) {
+            try {
+                this.coverageData.statics.inProgress = false;
+                await this.completeCoverage();
+            } catch (e) {
+                this.logger.debug('COMPLETE coverage collecting error', e);
+            }
+        }
+        // ---COVERAGE
+
         if (this.config.devtool !== null && this.isRegisteredInDevtool) {
             await this.unregisterAppInDevtool();
         }
@@ -2160,4 +2277,566 @@ export class WebApplication extends PluggableModule {
             throw e;
         }
     }
+
+    // --------------- COVERAGE METHODS
+
+    private requestOpt: null | Record<string, any> = null;
+
+    private async getSrcMapRequestOtions() {
+        if (!this.requestOpt) {
+            const cookies: string = await this.execute(function () {
+                return document.cookie;
+            });
+
+            this.requestOpt = {cookies};
+        }
+        return this.requestOpt;
+    }
+
+    protected isCoverageOn() {
+        return this.waMode === WebAppMode.coverage;
+    }
+
+    protected async loadFilesFrom(
+        urlData: URL,
+        reqOpts: Record<string, any> = {},
+    ): Promise<SrcFileData> {
+        const srcUrl = urlData.href;
+        const fileRes = await this.getSrcFileFrom(srcUrl, reqOpts);
+        const result: SrcFileData = {
+            srcUrl,
+            res: fileRes.res,
+        };
+
+        if (fileRes.res.status < 300) {
+            result.src = fileRes.src;
+        }
+        if (fileRes.mapRes && fileRes.mapRes.status < 300) {
+            result.srcMapUrl = fileRes.srcMapUrl;
+            result.map = fileRes.map;
+        }
+
+        return result;
+    }
+
+    protected async getSrcFileFrom(
+        srcUrl: string,
+        reqOpts: Record<string, any> = {},
+    ): Promise<Record<string, any>> {
+        if (!this.cache[srcUrl]) {
+            const fileRes = await this.getSrcMap(srcUrl);
+            if (fileRes.src && fileRes.map) {
+                this.cache[srcUrl] = fileRes;
+            } else {
+                return fileRes;
+            }
+        }
+        return this.cache[srcUrl] as Record<string, any>;
+    }
+
+    private async addCoverageResult(
+        coverResult: {result; error; ts; duration},
+        groupData: CoverageGroupMeta,
+    ) {
+        if (coverResult) {
+            const {meta, id} = this.genGroupData(groupData);
+
+            const {result, error, ts, duration} = coverResult;
+
+            loggerClient.info({result, id}, 'COVEARGE ACTION DATA');
+            const action: CoverageGroupData = {
+                data: result,
+                error,
+                meta,
+                ts,
+                duration,
+                id,
+            };
+
+            // save coverage in plugin
+
+            transport.broadcastUniversally('coverageAction', {
+                meta: this.options.meta,
+                action,
+            });
+
+            let gitHash = '';
+
+            // collect statics
+            const {hash, srcUrls} = await getSrcUrlsAndHashFromCoverage([
+                action,
+            ]);
+
+            // make fake hash if it was not found
+            if (hash.length < 8) {
+                gitHash = `unknown_${ts}`;
+            } else {
+                gitHash = hash;
+            }
+
+            // find files & get sourcemaps & save them ASYNC (this.coverageData.statics.loadPromises -should be used for syncing)
+            this.getSrcFiles(srcUrls, await this.getSrcMapRequestOtions());
+
+            // undate coverage META
+            const hashes: string[] = this.coverageData.meta.hashes || [];
+
+            hashes.push(gitHash);
+
+            this.coverageData.meta.hashes = Array.from(
+                new Set(hashes.filter((item) => !item.startsWith('unknown'))),
+            );
+
+            this.coverageData.meta.webAppType = this.options.webAppType;
+
+            const hosts = Object.keys(
+                srcUrls.reduce((res, val) => {
+                    const {hostname} = new URL(val);
+                    res[hostname] = true;
+                    return res;
+                }, {} as Record<string, boolean>),
+            );
+
+            this.coverageData.meta.hosts =
+                this.coverageData.meta.hosts || new Set();
+            hosts.forEach((host) => this.coverageData.meta.hosts.add(host));
+        } else {
+            loggerClient.error('EMPTY COVEARGE ACTION DATA');
+        }
+    }
+
+    private async completeCoverage() {
+        const {meta: extraMeta} = this.coverageData;
+
+        loggerClient.info('START completing coverage collection');
+
+        const feedBackId = `${nanoid(8)}_${Date.now()}`;
+
+        extraMeta.hosts = Array.from(extraMeta.hosts || []);
+
+        extraMeta.hashes = extraMeta.hashes || [];
+        if (!extraMeta.hashes.length) {
+            extraMeta.hashes.push(`unknown_${Date.now()}`);
+        }
+
+        extraMeta.hash = extraMeta.hashes[0];
+
+        await Promise.all(this.coverageData.statics.loadPromises); // wait for all loading statics
+
+        return new Promise((res, rej) => {
+            const tout = setTimeout(() => rej('coverageMeta timeout'), 5000);
+
+            transport.once(feedBackId, () => {
+                clearTimeout(tout);
+                loggerClient.info('DONE completing coverage collection');
+                res(true);
+            });
+            transport.broadcastUniversally('coverageMeta', {
+                meta: this.options.meta,
+                extraMeta,
+                feedBackId,
+            });
+        });
+    }
+
+    // -- ACTION COVERAGE --
+
+    private coverageCurrentLevel = 0;
+
+    protected startActionCoverage(): Promise<any> {
+        this.coverageCurrentLevel++;
+        if (this.coverageCurrentLevel !== 1) {
+            return Promise.resolve();
+        }
+        // start coverage action
+
+        return this.client.executeAsync((done) => {
+            if (!$TestRingProfiler) {
+                return done(
+                    JSON.stringify({
+                        error:
+                            'no extention  found (no global.$TestRingProfiler)!' +
+                            $TestRingProfiler,
+                    }),
+                );
+            }
+            $TestRingProfiler.startCoverageRecord((error, result) => {
+                if (error) {
+                    done(
+                        JSON.stringify({
+                            error: (error && error.message) || null,
+                        }),
+                    );
+                } else {
+                    done(JSON.stringify({result}));
+                }
+            });
+        });
+    }
+
+    protected async takeActionCoverage(): Promise<any> {
+        this.coverageCurrentLevel--;
+        if (this.coverageCurrentLevel < 0) {
+            this.coverageCurrentLevel = 0;
+            return Promise.resolve();
+        }
+        if (this.coverageCurrentLevel !== 0) {
+            return Promise.resolve();
+        }
+        // collect coverage
+        const result = await this.client.executeAsync((done) => {
+            if (!$TestRingProfiler) {
+                return done(
+                    JSON.stringify({
+                        error:
+                            'no extention  found (no global.$TestRingProfiler)!' +
+                            $TestRingProfiler,
+                    }),
+                );
+            }
+            $TestRingProfiler.takeCoverageRecord(
+                (error: Error, result: any) => {
+                    done(
+                        JSON.stringify({
+                            error: (error && error.message) || null,
+                            result,
+                        }),
+                    );
+                },
+                10 * 1000,
+            );
+        });
+
+        return JSON.parse(result);
+    }
+
+    private genGroupData(data: CoverageGroupMeta) {
+        const meta = Object.assign({}, data);
+
+        return {
+            meta,
+            id: crypto
+                .createHash('md5')
+                .update(JSON.stringify(meta))
+                .digest('hex'),
+        };
+    }
+
+    private getMethodActionMeta(methodName: string, args: any[]) {
+        return null;
+    }
+
+    protected decorateCoverageMethods() {
+        const getFullPath = (xpath: any): string[] => {
+            if (!(xpath instanceof ElementPath)) {
+                return [xpath as string];
+            }
+            return [this.normalizeSelector(xpath)];
+
+            // --------- MORE COMPLEX XPATH GEN METHOD
+            // return this.client.executeAsync(function tmp(xpath, done) {
+
+            //     function getElementByXPath(xpath) {
+            //         // eslint-disable-next-line no-var
+            //         var element = document.evaluate(xpath, document, null,
+            //             XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+            //         if (element.snapshotLength > 0) {
+            //             return element.snapshotItem(0) as any;
+            //         }
+            //         return null;
+            //     }
+
+            //     try {
+            //         let element = getElementByXPath(xpath);
+            //         if (element) {
+            //             element.className = element.className.replace(/invisible/gi, '');
+            //             element.focus();
+            //             element.click();
+            //             done(null);
+            //         } else {
+            //             done(`Element not found ${xpath}`);
+            //         }
+            //     } catch (e) {
+            //         done(`${e.message} ${xpath}`);
+            //     }
+            // }, xpath);
+        };
+
+        const methodCaller = async (
+            self,
+            originMethod,
+            args,
+            opts: {methodName: string},
+        ) => {
+            let coverResult;
+            try {
+                const startTs = Date.now();
+                const prevUrl: any = await this.url();
+
+                const fullPath = await getFullPath(args[0]);
+
+                const actionMeta = await this.getMethodActionMeta(
+                    opts.methodName,
+                    args,
+                );
+
+                this.logger.info(
+                    {ts: Date.now()},
+                    'COVERAGE method call - starting',
+                );
+                await this.startActionCoverage();
+                this.logger.info(
+                    {ts: Date.now()},
+                    'COVERAGE method call - started',
+                );
+
+                await originMethod.apply(self, args);
+                this.logger.info({ts: Date.now()}, 'COVERAGE waiting for root');
+
+                await this.waitForRoot();
+                this.logger.info({ts: Date.now()}, 'COVERAGE take coverage');
+
+                coverResult = await this.takeActionCoverage();
+                this.logger.info({ts: Date.now()}, 'COVERAGE DONE');
+
+                await this.addCoverageResult(
+                    {
+                        ...coverResult,
+                        ts: startTs as number,
+                        duration: (Date.now() - startTs) as number,
+                    },
+                    {
+                        fullPath,
+                        url: stripHost(prevUrl),
+                        action: opts.methodName,
+                        actionMeta,
+                    },
+                );
+            } catch (err) {
+                this.logger.error(err, 'ERROR during methodCall');
+            }
+
+            if (coverResult && coverResult.error) {
+                this.logger.error(
+                    coverResult.error,
+                    'ERROR during take action coverage ',
+                );
+            }
+        };
+
+        this.coverageMethods.forEach((methodName) => {
+            const originMethod = this[methodName];
+
+            const method = (...args) => {
+                return methodCaller(this, originMethod, args, {methodName});
+            };
+
+            Object.defineProperty(method, 'originFunction', {
+                value: originMethod,
+                enumerable: false,
+                writable: false,
+                configurable: false,
+            });
+
+            Object.defineProperty(this, methodName, {
+                value: method,
+                enumerable: false,
+                writable: true,
+                configurable: true,
+            });
+        });
+    }
+
+    protected initCoverage() {
+        // if app mode was initialized no need to performe action
+        const opts = this.options; // still need to properly
+        if (opts.coverage) {
+            this.waMode = WebAppMode.coverage;
+            this.decorateCoverageMethods();
+            this.coverageData.statics.inProgress = true;
+        } else {
+            this.waMode = WebAppMode.standart;
+        }
+    }
+
+    private async getSrcFiles(
+        srcUrl: string[],
+        reqOpts: Record<string, any> = {},
+    ) {
+        const files: SrcFileData[] = [];
+
+        this.coverageData.statics.loadPromises.push(
+            Promise.all(
+                srcUrl.map(async (dataKey) => {
+                    const dataUrl = getUrlParts(dataKey);
+                    if (dataUrl) {
+                        const srcName = getFileNameFromUrl(dataUrl.href);
+                        if (!this.addStaticsLoader(srcName)) {
+                            // file already processing or processed
+                            return Promise.resolve();
+                        }
+
+                        const fileData = await this.loadFilesFrom(
+                            dataUrl,
+                            reqOpts,
+                        );
+                        files.push(fileData);
+                    }
+                }),
+            ).then(() => this.saveSrcFiles(files)),
+        );
+        return files;
+    }
+
+    private addStaticsLoader(fileName: string) {
+        if (this.coverageData.statics.items[fileName]) {
+            return false;
+        }
+        this.coverageData.statics.items[fileName] = true;
+        return true;
+    }
+
+    private async saveSrcFiles(files: SrcFileData[]) {
+        return Promise.all(
+            files.map((file) => {
+                // const srcName = getFileNameFromUrl(file.srcUrl);
+                const srcName = stripHost(file.srcUrl);
+                // const promises: Promise<void>[] = [];
+                const saveData: CoverageStaticDataItem = {
+                    srcName,
+                    src: '',
+                    srcMapName: '',
+                    srcMap: '',
+                };
+
+                const fsFile = FSCoverageFactory({
+                    ext: 'json',
+                    subtype: 'src',
+                });
+                if (file.src) {
+                    saveData.src = file.src;
+                    // promises.push(fsSrcFile.write(Buffer.from( file.src)));
+                }
+
+                if (file.srcMapUrl && file.map) {
+                    saveData.srcMap = file.map;
+                    // saveData.srcMapName = getFileNameFromUrl(file.srcMapUrl);
+                    saveData.srcMapName = stripHost(file.srcMapUrl);
+                }
+                return fsFile
+                    .write(Buffer.from(JSON.stringify(saveData)))
+                    .then(() => fsFile.getFullPath());
+            }),
+        ).then((fileList) => {
+            const feedBackId = `${nanoid(8)}_${Date.now()}`;
+            return new Promise<void>((res, rej) => {
+                const tout = setTimeout(
+                    () => rej('coverageList timeout'),
+                    10000,
+                );
+
+                transport.once(feedBackId, () => {
+                    clearTimeout(tout);
+                    loggerClient.info('DONE completing coverage collection');
+                    res();
+                });
+                transport.broadcastUniversally('coverageList', {
+                    meta: this.options.meta,
+                    type: 'src',
+                    data: fileList,
+                    feedBackId,
+                });
+            });
+        });
+    }
+
+    protected async getSrcMap(
+        srcUrl: string,
+        options: Record<string, any> = {},
+    ): Promise<Record<string, any>> {
+        const res = await fetch(srcUrl, options);
+        const result: Record<string, any> = {res, srcUrl};
+        // try to collect sourcemap
+        if (res.status < 300) {
+            const src = await res.text();
+            result.src = src;
+            const lastStr = src.split('\n').pop();
+            if (lastStr) {
+                //# sourceMappingURL=core.min.js.map
+                const srcMappingName = lastStr
+                    .substr(2)
+                    .trim()
+                    .split('=')
+                    .pop();
+                const srcParts = srcUrl.split('/');
+                srcParts.pop();
+                const srcMapUrl = `${srcParts.join('/')}/${srcMappingName}`;
+                result.srcMapUrl = srcMapUrl;
+                const mapRes = await fetch(srcMapUrl, options);
+                if (mapRes.status < 300) {
+                    const resMap = await mapRes.text();
+                    if (!resMap) {
+                        this.logger.error('empty sourcemap', {
+                            src: srcMapUrl.substr(-200),
+                        });
+                    } else {
+                        result.map = resMap;
+                    }
+                } else {
+                    this.logger.error({srcMapUrl}, 'cannot load sourcemap');
+                }
+                result.mapRes = mapRes;
+            } else {
+                this.logger.error('cannot load sourcemap', {
+                    src: src.substr(-100),
+                });
+            }
+        } else {
+            this.logger.error({srcUrl, options, res}, 'NO FILE loaded');
+        }
+
+        return result;
+    }
+}
+
+function getUrlParts(urlPath: string): URL | false {
+    try {
+        return new URL(urlPath);
+    } catch (e) {
+        return false;
+    }
+}
+
+function getGitHashFromName(fName: string): string {
+    let gitHash = '';
+    if (fName.includes('.chunk.')) {
+        gitHash = fName.split('.chunk.').shift() || '';
+        gitHash = gitHash.split('.').pop() || '';
+    } else if (fName.includes('.bundle.')) {
+        gitHash = fName.split('.bundle.').shift() || '';
+        gitHash = gitHash.split('.').pop() || '';
+    }
+
+    return gitHash;
+}
+
+function getSrcUrlsAndHashFromCoverage(
+    actions: CoverageGroupData[],
+): Promise<{hash: string; srcUrls: string[]}> {
+    let hash = '';
+    const srcUrls: string[] = [];
+    actions.forEach(({data}) => {
+        data.coverage.forEach(({result}) => {
+            result.forEach(({url}) => {
+                const gitHash = getGitHashFromName(url || '');
+                if (url) {
+                    srcUrls.push(url);
+                    if (hash === '') {
+                        hash = gitHash;
+                    }
+                }
+            });
+        });
+    });
+
+    return Promise.resolve({hash, srcUrls});
 }
