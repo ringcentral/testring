@@ -18,8 +18,7 @@
     "@testring/pluggable-module": "0.5.37",
     "@testring/transport": "0.5.37",
     "@testring/types": "0.5.37",
-    "@testring/utils": "0.5.37",
-    "nanoid": "3.1.30"
+    "@testring/utils": "0.5.37"
   },
   "devDependencies": {
     "@testring/child-process": "0.5.37",

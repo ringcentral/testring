@@ -30,7 +30,6 @@ import {createElementPath, ElementPath} from '@testring/element-path';
 import {createAssertion} from '@testring/async-assert';
 import {WebClient} from './web-client';
 import * as utils from './utils';
-import {nanoid} from 'nanoid';
 
 type valueType = string | number | null | undefined;
 
@@ -43,7 +42,7 @@ type ClickOptions = {
 
 enum WebAppMode {
     'uninitialized',
-    'standart',
+    'standard',
     'coverage',
 }
 
@@ -58,7 +57,7 @@ interface profiler {
     startCoverageRecord(cb: (error: Error, result: any) => void);
     takeCoverageRecord(
         cb: (error: Error, result: any) => void,
-        tiemout?: number,
+        timeout?: number,
     );
 }
 
@@ -289,7 +288,7 @@ export class WebApplication extends PluggableModule {
         isCSSClassExists(xpath, ...suitableClasses) {
             return `Checking classes ${suitableClasses.join(
                 ', ',
-            )} is\\are exisists in ${this.formatXpath(xpath)}`;
+            )} is\\are exists in ${this.formatXpath(xpath)}`;
         },
         moveToObject(xpath, x = 1, y = 1) {
             return `Move cursor to ${this.formatXpath(
@@ -2282,7 +2281,7 @@ export class WebApplication extends PluggableModule {
 
     private requestOpt: null | Record<string, any> = null;
 
-    private async getSrcMapRequestOtions() {
+    private async getSrcMapRequestOptions() {
         if (!this.requestOpt) {
             const cookies: string = await this.execute(function () {
                 return document.cookie;
@@ -2343,7 +2342,7 @@ export class WebApplication extends PluggableModule {
 
             const {result, error, ts, duration} = coverResult;
 
-            loggerClient.info({result, id}, 'COVEARGE ACTION DATA');
+            loggerClient.info({result, id}, 'COVERAGE ACTION DATA');
             const action: CoverageGroupData = {
                 data: result,
                 error,
@@ -2375,9 +2374,9 @@ export class WebApplication extends PluggableModule {
             }
 
             // find files & get sourcemaps & save them ASYNC (this.coverageData.statics.loadPromises -should be used for syncing)
-            this.getSrcFiles(srcUrls, await this.getSrcMapRequestOtions());
+            this.getSrcFiles(srcUrls, await this.getSrcMapRequestOptions());
 
-            // undate coverage META
+            // update coverage META
             const hashes: string[] = this.coverageData.meta.hashes || [];
 
             hashes.push(gitHash);
@@ -2400,7 +2399,7 @@ export class WebApplication extends PluggableModule {
                 this.coverageData.meta.hosts || new Set();
             hosts.forEach((host) => this.coverageData.meta.hosts.add(host));
         } else {
-            loggerClient.error('EMPTY COVEARGE ACTION DATA');
+            loggerClient.error('EMPTY COVERAGE ACTION DATA');
         }
     }
 
@@ -2409,7 +2408,7 @@ export class WebApplication extends PluggableModule {
 
         loggerClient.info('START completing coverage collection');
 
-        const feedBackId = `${nanoid(8)}_${Date.now()}`;
+        const feedBackId = `${generateUniqId(8)}_${Date.now()}`;
 
         extraMeta.hosts = Array.from(extraMeta.hosts || []);
 
@@ -2454,7 +2453,7 @@ export class WebApplication extends PluggableModule {
                 return done(
                     JSON.stringify({
                         error:
-                            'no extention  found (no global.$TestRingProfiler)!' +
+                            'no extension  found (no global.$TestRingProfiler)!' +
                             $TestRingProfiler,
                     }),
                 );
@@ -2488,7 +2487,7 @@ export class WebApplication extends PluggableModule {
                 return done(
                     JSON.stringify({
                         error:
-                            'no extention  found (no global.$TestRingProfiler)!' +
+                            'no extension  found (no global.$TestRingProfiler)!' +
                             $TestRingProfiler,
                     }),
                 );
@@ -2647,14 +2646,14 @@ export class WebApplication extends PluggableModule {
     }
 
     protected initCoverage() {
-        // if app mode was initialized no need to performe action
+        // if app mode was initialized no need to perform action
         const opts = this.options; // still need to properly
         if (opts.coverage) {
             this.waMode = WebAppMode.coverage;
             this.decorateCoverageMethods();
             this.coverageData.statics.inProgress = true;
         } else {
-            this.waMode = WebAppMode.standart;
+            this.waMode = WebAppMode.standard;
         }
     }
 
@@ -2727,7 +2726,7 @@ export class WebApplication extends PluggableModule {
                     .then(() => fsFile.getFullPath());
             }),
         ).then((fileList) => {
-            const feedBackId = `${nanoid(8)}_${Date.now()}`;
+            const feedBackId = `${generateUniqId(8)}_${Date.now()}`;
             return new Promise<void>((res, rej) => {
                 const tout = setTimeout(
                     () => rej('coverageList timeout'),
