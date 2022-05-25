@@ -12,7 +12,7 @@
     "cleanup:root": "node ./utils/cleanup.js",
     "cleanup:packages": "lerna clean --yes && lerna exec --parallel -- node ../../utils/cleanup",
     "postinstall": "lerna bootstrap --no-ci",
-    "reinstall": "npm run cleanup && npm install && npm run build",
+    "reinstall": "npm run cleanup && npm install --legacy-peer-deps && npm run build",
     "add-package-files": "lerna exec --no-sort -- node ../../utils/add-package-files",
     "generate-readme": "lerna exec --no-sort -- node ../../utils/generate-readme",
     "lint": "eslint --ext .ts ./",
