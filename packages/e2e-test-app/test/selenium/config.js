@@ -16,6 +16,7 @@ module.exports = async (config) => {
                 {
                     clientTimeout: devtool ? 0 : config.testTimeout,
                     recorderExtension: devtool,
+                    path: '/wd/hub',
                     capabilities: devtool
                         ? {}
                         : {
