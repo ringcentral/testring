@@ -367,4 +367,33 @@ export class WebClient implements IWebApplicationClient {
     public gridTestSession() {
         return this.makeRequest(BrowserProxyActions.gridTestSession, []);
     }
+
+    /**
+     *
+     * @param url string
+     * @param overwrites should NOT be an arrow function, Otherwise it would throw an error
+     * @param params [Optional]
+     * @param params.filterOptions
+     * @param params.mockResponseParams
+     * @returns
+     */
+    public mock(
+        url: string,
+        overwrites: string | Object | Function,
+        params = {
+            filterOptions: {},
+            mockResponseParams: {},
+        },
+    ) {
+        return this.makeRequest(BrowserProxyActions.mock, [
+            url,
+            overwrites,
+            params.filterOptions || {},
+            params.mockResponseParams || {},
+        ]);
+    }
+
+    public getMockData(url: string) {
+        return this.makeRequest(BrowserProxyActions.getMockData, [url]);
+    }
 }

@@ -72,4 +72,6 @@ export const enum BrowserProxyActions {
     getGridNodeDetails = 'getGridNodeDetails',
     gridTestSession = 'gridTestSession',
     keysOnElement = 'keysOnElement',
+    mock = 'mock',
+    getMockData = 'getMockData',
 }

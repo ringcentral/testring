@@ -10,8 +10,13 @@ import {spawn} from '@testring/child-process';
 import {loggerClient} from '@testring/logger';
 import {absoluteExtensionPath} from '@testring/devtool-extension';
 
-import type {ClickOptions} from 'webdriverio';
 import type {Cookie} from '@wdio/protocols';
+import type {
+    ClickOptions,
+    MockFilterOptions,
+    MockResponseParams,
+    Matches,
+} from 'webdriverio';
 
 // Stupidly needed thing for making our own requests
 const _webdriverReq = require('webdriver/build/request');
@@ -20,6 +25,7 @@ const WebDriverRequest = _webdriverReq.default;
 type BrowserObjectCustom = WebdriverIO.Browser & {
     sessionId: string;
     deleteSessionId: (sessionId: string) => Promise<void>;
+    mockData: Record<string, Matches[]>;
 };
 
 type browserClientItem = {
@@ -1069,6 +1075,54 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
 
         return testSession;
+    }
+
+    /**
+     * @param overwrites should NOT be an arrow function, Otherwise it would throw an error
+     */
+    public async mock(
+        applicant: string,
+        url: string,
+        overwrites: ((res: Matches) => void) | Object | string,
+        filterOptions?: MockFilterOptions,
+        mockResponseParams?: MockResponseParams,
+    ) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const mock = await client.mock(url, filterOptions);
+        if (typeof overwrites === 'function') {
+            mock.respond((res) => {
+                overwrites(res);
+                this.setMockData(applicant, url, res);
+                return res.body;
+            }, mockResponseParams);
+        } else {
+            mock.respond(overwrites);
+        }
+    }
+
+    public async setMockData(applicant: string, url: string, data: Matches) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        client.mockData = client.mockData || {};
+        if (client.mockData[url]) {
+            client.mockData[url].push(data);
+        } else {
+            client.mockData[url] = [data];
+        }
+        return true;
+    }
+
+    public async getMockData(applicant: string, url: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        if (url) {
+            return client.mockData[url];
+        }
+        return client.mockData;
     }
 }
 
