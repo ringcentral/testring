@@ -1,6 +1,6 @@
 const path = require('path');
 const batchPackages = require('@lerna/batch-packages');
-const filterPackages = require('@lerna/filter-packages');
+const {filterPackages} = require('@lerna/filter-packages');
 const runParallelBatches = require('@lerna/run-parallel-batches');
 const {getPackages} = require('@lerna/project');
 const npmPublish = require('@jsdevtools/npm-publish');
@@ -59,4 +59,7 @@ async function main() {
     }
 }
 
-main().catch(() => process.exit(1));
+main().catch((err) => {
+    console.log(err)
+    process.exit(1)
+});

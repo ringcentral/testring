@@ -1,6 +1,6 @@
 {
   "name": "@testring-dev/cli",
-  "version": "0.5.37",
+  "version": "0.5.42",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,22 +10,21 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring-dev/browser-proxy": "0.5.37",
-    "@testring-dev/cli-config": "0.5.37",
-    "@testring-dev/devtool-backend": "0.5.37",
-    "@testring-dev/fs-reader": "0.5.37",
-    "@testring-dev/fs-store": "0.5.37",
-    "@testring-dev/http-api": "0.5.37",
-    "@testring-dev/logger": "0.5.37",
-    "@testring-dev/plugin-api": "0.5.37",
-    "@testring-dev/test-run-controller": "0.5.37",
-    "@testring-dev/test-worker": "0.5.37",
-    "@testring-dev/transport": "0.5.37",
-    "@testring-dev/types": "0.5.37",
-    "@testring-dev/web-application": "0.5.37",
+    "@testring-dev/browser-proxy": "0.5.42",
+    "@testring-dev/cli-config": "0.5.42",
+    "@testring-dev/devtool-backend": "0.5.42",
+    "@testring-dev/fs-reader": "0.5.42",
+    "@testring-dev/fs-store": "0.5.42",
+    "@testring-dev/http-api": "0.5.42",
+    "@testring-dev/logger": "0.5.42",
+    "@testring-dev/plugin-api": "0.5.42",
+    "@testring-dev/test-run-controller": "0.5.42",
+    "@testring-dev/test-worker": "0.5.42",
+    "@testring-dev/transport": "0.5.42",
+    "@testring-dev/types": "0.5.42",
+    "@testring-dev/web-application": "0.5.42",
     "@types/node": "14.6.0",
     "@types/yargs": "15.0.13",
     "yargs": "15.4.1"
-  },
-  "devDependencies": {}
+  }
 }

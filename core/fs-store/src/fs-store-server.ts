@@ -269,6 +269,7 @@ export class FSStoreServer extends PluggableModule {
                 }
                 break;
             case fsReqType.unlink:
+                // eslint-disable-next-line sonarjs/no-identical-functions
                 FPR.hookUnlink(workerId, requestId, async (_, releaseCb) => {
                     // unlink access granted (releaseCb - to call for release access)
                     releaseCBRec[workerId][requestId] = releaseCb;

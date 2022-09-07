@@ -29,6 +29,7 @@ async function ensureUniqName(
     return ensureUniqName(dirPath, ext, prefixName, false);
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export function makePathNameFromRequest(
     data: IOnFileNameHookData,
     pathHash: Record<string, string>,

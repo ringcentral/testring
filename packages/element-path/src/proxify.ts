@@ -256,7 +256,7 @@ export function proxify(instance: ElementPath, strictMode = true) {
         throw new TypeError('Immutable object');
     }
 
-    function ownKeysTrap(target: ElementPath): ArrayLike<string | symbol> {
+    function ownKeysTrap(target: ElementPath): Array<string | symbol> {
         return PROXY_OWN_PROPS.concat(Object.keys(instance.getFlows() || {}));
     }
 

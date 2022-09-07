@@ -102,6 +102,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         } as any;
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     private createConfig(
         config: Partial<SeleniumPluginConfig>,
     ): SeleniumPluginConfig {
@@ -1061,7 +1062,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         const testSession = await this.gridTestSession(applicant);
 
-        if (!testSession.localSelenium) {
+        if (testSession && !testSession.localSelenium) {
             const proxyDetails = await client.gridProxyDetails(applicant);
 
             delete testSession.msg;
