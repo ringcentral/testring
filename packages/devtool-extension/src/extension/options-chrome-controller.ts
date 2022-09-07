@@ -1,7 +1,7 @@
 import {
     IExtensionApplicationConfig,
     WebApplicationDevtoolCallback,
-} from '@testring/types';
+} from '@testring-dev/types';
 import {BackgroundChromeClient} from './chrome-transport/chrome-client';
 
 export interface IOptionsWindow extends Window {

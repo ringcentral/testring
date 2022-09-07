@@ -30,8 +30,8 @@
     "*.ts",
     "src/**/*.ts",
     "src/**/*.json",
-    "node_modules/@testring/types/src/index.ts",
-    "node_modules/@testring/client-ws-transport/src/index.ts"
+    "node_modules/@testring-dev/types/src/index.ts",
+    "node_modules/@testring-dev/client-ws-transport/src/index.ts"
   ],
   "exclude": [
     "./node_modules",

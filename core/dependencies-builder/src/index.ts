@@ -8,7 +8,7 @@ import {
     IDependencyTreeNode,
     DependencyDict,
     DependencyFileReader,
-} from '@testring/types';
+} from '@testring-dev/types';
 import {resolveAbsolutePath} from './absolute-path-resolver';
 
 function getDependencies(absolutePath: string, content: string): Array<string> {
@@ -103,7 +103,7 @@ async function buildNodes(
             dependencyAbsolutePath.includes('node_modules') ||
             // Fix for local e2e tests running (lerna makes symlink and resolver eats it as path for real file)
             // require 'node_modules/testring' = require 'packages/testring/dist'
-            dependencyAbsolutePath.includes('testring/dist')
+            dependencyAbsolutePath.includes('testring-dev/dist')
         ) {
             continue;
         }

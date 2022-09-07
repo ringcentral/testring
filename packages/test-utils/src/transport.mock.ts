@@ -1,5 +1,5 @@
 import {EventEmitter} from 'events';
-import {ITransport, IWorkerEmitter} from '@testring/types';
+import {ITransport, IWorkerEmitter} from '@testring-dev/types';
 
 export class TransportMock extends EventEmitter implements ITransport {
     private processes: Map<string, IWorkerEmitter> = new Map();

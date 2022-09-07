@@ -6,7 +6,7 @@ import {
     IWebApplicationResponseMessage,
     WebApplicationMessageType,
     WebApplicationControllerEventType,
-} from '@testring/types';
+} from '@testring-dev/types';
 
 export class WebApplicationController extends EventEmitter {
     private isKilled = false;

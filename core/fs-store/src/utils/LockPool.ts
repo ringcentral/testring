@@ -6,8 +6,8 @@
  *
  */
 
-import {MultiLock, Queue} from '@testring/utils';
-import {ILockPool} from '@testring/types';
+import {MultiLock, Queue} from '@testring-dev/utils';
+import {ILockPool} from '@testring-dev/types';
 
 type queueItem = {
     workerId: string;

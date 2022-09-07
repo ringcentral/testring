@@ -1,5 +1,5 @@
 {
-  "name": "@testring/async-breakpoints",
+  "name": "@testring-dev/async-breakpoints",
   "version": "0.5.37",
   "main": "./dist/index.js",
   "types": "./src/index.ts",

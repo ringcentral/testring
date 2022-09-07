@@ -8,9 +8,9 @@ import {
     IBrowserProxyWorker,
     IBrowserProxyWorkerConfig,
     ITransport,
-} from '@testring/types';
-import {PluggableModule} from '@testring/pluggable-module';
-import {loggerClient} from '@testring/logger';
+} from '@testring-dev/types';
+import {PluggableModule} from '@testring-dev/pluggable-module';
+import {loggerClient} from '@testring-dev/logger';
 
 import {BrowserProxyWorker} from './browser-proxy-worker';
 

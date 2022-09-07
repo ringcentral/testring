@@ -1,10 +1,10 @@
 import {
     ExtensionMessagingTransportEvents,
     IExtensionMessagingTransportMessage,
-} from '@testring/types';
+} from '@testring-dev/types';
 
 import {EventEmitter} from 'events';
-import {generateUniqId} from '@testring/utils';
+import {generateUniqId} from '@testring-dev/utils';
 import Port = chrome.runtime.Port;
 
 export class BackgroundChromeServer extends EventEmitter {

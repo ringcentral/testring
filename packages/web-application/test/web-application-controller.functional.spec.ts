@@ -2,11 +2,11 @@
 
 import * as path from 'path';
 import * as chai from 'chai';
-import {fork} from '@testring/child-process';
-import {Transport} from '@testring/transport';
-import {WebApplicationControllerEventType} from '@testring/types';
-import {BrowserProxyControllerMock} from '@testring/test-utils';
-import {generateUniqId} from '@testring/utils';
+import {fork} from '@testring-dev/child-process';
+import {Transport} from '@testring-dev/transport';
+import {WebApplicationControllerEventType} from '@testring-dev/types';
+import {BrowserProxyControllerMock} from '@testring-dev/test-utils';
+import {generateUniqId} from '@testring-dev/utils';
 import {WebApplicationController} from '../src/web-application-controller';
 import {ELEMENT_NAME, TEST_NAME} from './fixtures/constants';
 

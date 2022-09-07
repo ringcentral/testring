@@ -14,17 +14,17 @@ import {
     WebApplicationDevtoolCallback,
     ExtensionPostMessageTypes,
     FSFileLogType,
-} from '@testring/types';
+} from '@testring-dev/types';
 
-import {asyncBreakpoints} from '@testring/async-breakpoints';
-import {loggerClient, LoggerClient} from '@testring/logger';
-import {generateUniqId} from '@testring/utils';
-import {PluggableModule} from '@testring/pluggable-module';
-import {createElementPath, ElementPath} from '@testring/element-path';
+import {asyncBreakpoints} from '@testring-dev/async-breakpoints';
+import {loggerClient, LoggerClient} from '@testring-dev/logger';
+import {generateUniqId} from '@testring-dev/utils';
+import {PluggableModule} from '@testring-dev/pluggable-module';
+import {createElementPath, ElementPath} from '@testring-dev/element-path';
 
-import {FSScreenshotFactory} from '@testring/fs-store';
+import {FSScreenshotFactory} from '@testring-dev/fs-store';
 
-import {createAssertion} from '@testring/async-assert';
+import {createAssertion} from '@testring-dev/async-assert';
 import {WebClient} from './web-client';
 import * as utils from './utils';
 

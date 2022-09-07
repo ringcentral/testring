@@ -2,8 +2,8 @@
 
 import * as chai from 'chai';
 import * as sinon from 'sinon';
-import {IHttpRequestMessage, HttpMessageType} from '@testring/types';
-import {TransportMock} from '@testring/test-utils';
+import {IHttpRequestMessage, HttpMessageType} from '@testring-dev/types';
+import {TransportMock} from '@testring-dev/test-utils';
 import {HttpClient} from '../src/http-client';
 
 type resolveFn = (value?: void | PromiseLike<void>) => void;

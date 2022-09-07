@@ -1,5 +1,5 @@
 import {AbstractAPI} from './abstract';
-import {DevtoolPluginHooks, IDevtoolServerConfig} from '@testring/types';
+import {DevtoolPluginHooks, IDevtoolServerConfig} from '@testring-dev/types';
 
 export class DevtoolAPI extends AbstractAPI {
     beforeStart(handler: (IRecorderServerConfig) => IDevtoolServerConfig) {

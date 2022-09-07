@@ -1,4 +1,4 @@
-import {IStack} from '@testring/types';
+import {IStack} from '@testring-dev/types';
 
 export class Stack<T> implements IStack<T> {
     private array: Array<T>;

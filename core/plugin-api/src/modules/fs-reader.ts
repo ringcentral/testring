@@ -1,4 +1,4 @@
-import {FSReaderPlugins} from '@testring/types';
+import {FSReaderPlugins} from '@testring-dev/types';
 import {AbstractAPI} from './abstract';
 
 export class FSReaderAPI extends AbstractAPI {

@@ -2,8 +2,8 @@
 
 import * as chai from 'chai';
 
-import {TransportMock} from '@testring/test-utils';
-import {generateUniqId} from '@testring/utils';
+import {TransportMock} from '@testring-dev/test-utils';
+import {generateUniqId} from '@testring-dev/utils';
 import {WebApplication} from '../src/web-application';
 
 // TODO (flops) add more tests

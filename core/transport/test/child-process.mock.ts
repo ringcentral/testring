@@ -2,7 +2,7 @@ import {EventEmitter} from 'events';
 import {
     ITransportDirectMessage,
     TransportInternalMessageType,
-} from '@testring/types';
+} from '@testring-dev/types';
 
 class ChildProcessMock extends EventEmitter {
     constructor(private shouldFail: boolean = false) {

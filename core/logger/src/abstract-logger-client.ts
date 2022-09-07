@@ -1,5 +1,5 @@
-import {Stack, generateUniqId} from '@testring/utils';
-import {transport} from '@testring/transport';
+import {Stack, generateUniqId} from '@testring-dev/utils';
+import {transport} from '@testring-dev/transport';
 import {
     ILogEntity,
     ILoggerClient,
@@ -10,7 +10,7 @@ import {
     LogTypes,
     LogEntityPrefixType,
     LogEntityMarkerType,
-} from '@testring/types';
+} from '@testring-dev/types';
 
 type stepEntity = {
     stepID: string;

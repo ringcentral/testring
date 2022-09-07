@@ -1,5 +1,5 @@
 import * as inspector from 'inspector';
-import {IConfig} from '@testring/types';
+import {IConfig} from '@testring-dev/types';
 import {getArguments} from './arguments-parser';
 import {getFileConfig} from './config-file-reader';
 import {defaultConfiguration} from './default-config';

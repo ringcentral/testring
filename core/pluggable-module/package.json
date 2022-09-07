@@ -1,5 +1,5 @@
 {
-  "name": "@testring/pluggable-module",
+  "name": "@testring-dev/pluggable-module",
   "version": "0.5.37",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
@@ -10,6 +10,6 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/types": "0.5.37"
+    "@testring-dev/types": "0.5.37"
   }
 }

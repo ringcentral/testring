@@ -1,18 +1,18 @@
-import {createHttpServer, HttpClient, HttpServer} from '@testring/http-api';
-import {LoggerServer, loggerClient} from '@testring/logger';
-import {TestRunController} from '@testring/test-run-controller';
-import {applyPlugins} from '@testring/plugin-api';
-import {FSReader} from '@testring/fs-reader';
-import {TestWorker} from '@testring/test-worker';
-import {WebApplicationController} from '@testring/web-application';
+import {createHttpServer, HttpClient, HttpServer} from '@testring-dev/http-api';
+import {LoggerServer, loggerClient} from '@testring-dev/logger';
+import {TestRunController} from '@testring-dev/test-run-controller';
+import {applyPlugins} from '@testring-dev/plugin-api';
+import {FSReader} from '@testring-dev/fs-reader';
+import {TestWorker} from '@testring-dev/test-worker';
+import {WebApplicationController} from '@testring-dev/web-application';
 import {
     browserProxyControllerFactory,
     BrowserProxyController,
-} from '@testring/browser-proxy';
-import {ICLICommand, IConfig, ITransport} from '@testring/types';
-import {DevtoolServerController} from '@testring/devtool-backend';
+} from '@testring-dev/browser-proxy';
+import {ICLICommand, IConfig, ITransport} from '@testring-dev/types';
+import {DevtoolServerController} from '@testring-dev/devtool-backend';
 
-import {FSStoreServer} from '@testring/fs-store';
+import {FSStoreServer} from '@testring-dev/fs-store';
 
 class RunCommand implements ICLICommand {
     private logger = loggerClient;

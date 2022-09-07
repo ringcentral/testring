@@ -1,6 +1,6 @@
 import * as path from 'path';
-import {fork} from '@testring/child-process';
-import {ITransport, IChildProcessForkOptions} from '@testring/types';
+import {fork} from '@testring-dev/child-process';
+import {ITransport, IChildProcessForkOptions} from '@testring-dev/types';
 import {BrowserProxyController} from './browser-proxy-controller';
 
 const WORKER_PATH = path.join(__dirname, './browser-proxy');

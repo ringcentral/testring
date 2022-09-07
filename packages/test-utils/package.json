@@ -1,5 +1,5 @@
 {
-  "name": "@testring/test-utils",
+  "name": "@testring-dev/test-utils",
   "version": "0.5.37",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
@@ -10,6 +10,6 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/types": "0.5.37"
+    "@testring-dev/types": "0.5.37"
   }
 }

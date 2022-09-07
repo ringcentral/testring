@@ -3,9 +3,9 @@
 
 import * as path from 'path';
 import * as chai from 'chai';
-import {Transport} from '@testring/transport';
-import {fork} from '@testring/child-process';
-import {BrowserProxyActions, BrowserProxyPlugins} from '@testring/types';
+import {Transport} from '@testring-dev/transport';
+import {fork} from '@testring-dev/child-process';
+import {BrowserProxyActions, BrowserProxyPlugins} from '@testring-dev/types';
 import {BrowserProxyController} from '../src/browser-proxy-controller';
 
 const workerPath = path.resolve(__dirname, './fixtures/worker.ts');

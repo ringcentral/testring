@@ -3,11 +3,11 @@ import {
     DEFAULT_RECORDER_HTTP_PORT,
     DEFAULT_RECORDER_WS_PORT,
 } from './constants';
-import {IDevtoolServerConfig} from '@testring/types';
+import {IDevtoolServerConfig} from '@testring-dev/types';
 
 import * as path from 'path';
 
-import {absolutePath as FRONTEND_PATH} from '@testring/devtool-frontend';
+import {absolutePath as FRONTEND_PATH} from '@testring-dev/devtool-frontend';
 
 const getRouterPath = (filepath) =>
     path.resolve(__dirname, './routes/', filepath);

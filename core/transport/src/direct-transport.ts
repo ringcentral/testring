@@ -4,8 +4,8 @@ import {
     TransportMessageHandler,
     ITransportDirectMessage,
     ITransportMessage,
-} from '@testring/types';
-import {generateUniqId} from '@testring/utils';
+} from '@testring-dev/types';
+import {generateUniqId} from '@testring-dev/utils';
 import {serialize, deserialize} from './serialize';
 
 class DirectTransport {

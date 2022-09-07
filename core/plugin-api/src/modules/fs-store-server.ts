@@ -1,5 +1,5 @@
-import {fsStoreServerHooks} from '@testring/fs-store';
-import {IOnFileNameHookData, IOnFileReleaseHookData} from '@testring/types';
+import {fsStoreServerHooks} from '@testring-dev/fs-store';
+import {IOnFileNameHookData, IOnFileReleaseHookData} from '@testring-dev/types';
 import {AbstractAPI} from './abstract';
 
 export class FSStoreServerAPI extends AbstractAPI {

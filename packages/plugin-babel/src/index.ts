@@ -1,5 +1,5 @@
 import * as path from 'path';
-import {PluginAPI} from '@testring/plugin-api';
+import {PluginAPI} from '@testring-dev/plugin-api';
 import * as babelCore from '@babel/core';
 
 export const babelPlugins = [

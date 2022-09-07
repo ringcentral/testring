@@ -6,7 +6,7 @@ import {
     IDevtoolWSMessage,
     ITestControllerExecutionState,
     TestWorkerAction,
-} from '@testring/types';
+} from '@testring-dev/types';
 import { ButtonsLayout } from '../components/popup-layout';
 
 interface IPopupWsProviderProps {

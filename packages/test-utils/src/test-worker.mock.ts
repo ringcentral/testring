@@ -1,4 +1,4 @@
-import {ITestWorker, ITestWorkerInstance} from '@testring/types';
+import {ITestWorker, ITestWorkerInstance} from '@testring-dev/types';
 
 const ERROR_INSTANCE = {
     test: 'file.js',

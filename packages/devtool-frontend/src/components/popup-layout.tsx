@@ -1,7 +1,7 @@
 import {
     ITestControllerExecutionState,
     TestWorkerAction,
-} from '@testring/types';
+} from '@testring-dev/types';
 
 import React from 'react';
 

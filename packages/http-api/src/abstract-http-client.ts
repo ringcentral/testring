@@ -9,9 +9,9 @@ import {
     IHttpResponseRejectMessage,
     IQueue,
     HttpClientParams,
-} from '@testring/types';
-import {LoggerClient, loggerClient} from '@testring/logger';
-import {Queue, generateUniqId} from '@testring/utils';
+} from '@testring-dev/types';
+import {LoggerClient, loggerClient} from '@testring-dev/logger';
+import {Queue, generateUniqId} from '@testring-dev/utils';
 import {HttpCookieJar} from './cookie-jar';
 
 const toString = (c) => c.toString();

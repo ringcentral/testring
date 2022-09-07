@@ -1,4 +1,4 @@
-import { run } from 'testring';
+import { run } from 'testring-dev';
 
 const expectedHtml = '<div data-test-automation-id="container"><p>test</p></div>';
 

@@ -1,5 +1,5 @@
-import {loggerClient} from '@testring/logger';
-import {restructureError} from '@testring/utils';
+import {loggerClient} from '@testring-dev/logger';
+import {restructureError} from '@testring-dev/utils';
 
 import {TestContext} from './test-context';
 import {testAPIController} from './test-api-controller';

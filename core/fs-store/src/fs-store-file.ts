@@ -7,9 +7,9 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import {IFSStoreFile, FSStoreOptions, requestMeta} from '@testring/types';
-import {loggerClient} from '@testring/logger';
-import {fs as fsTool} from '@testring/utils';
+import {IFSStoreFile, FSStoreOptions, requestMeta} from '@testring-dev/types';
+import {loggerClient} from '@testring-dev/logger';
+import {fs as fsTool} from '@testring-dev/utils';
 
 import {FSStoreClient} from './fs-store-client';
 

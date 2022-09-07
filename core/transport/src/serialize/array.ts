@@ -2,7 +2,7 @@ import {
     ITransportSerializedStruct,
     TransportSerializer,
     TransportDeserializer,
-} from '@testring/types';
+} from '@testring-dev/types';
 
 export interface ISerializedArray extends ITransportSerializedStruct {
     $key: string;

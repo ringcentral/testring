@@ -6,11 +6,11 @@ import {
     IFSStoreResp,
     fsReqType,
     requestMeta,
-} from '@testring/types';
-import {generateUniqId} from '@testring/utils';
-import {loggerClient} from '@testring/logger';
-import {transport} from '@testring/transport';
-import {PluggableModule} from '@testring/pluggable-module';
+} from '@testring-dev/types';
+import {generateUniqId} from '@testring-dev/utils';
+import {loggerClient} from '@testring-dev/logger';
+import {transport} from '@testring-dev/transport';
+import {PluggableModule} from '@testring-dev/pluggable-module';
 
 import {LockPool, FilePermissionResolver, FS_CONSTANTS} from './utils';
 

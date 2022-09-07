@@ -10,17 +10,17 @@ import {
     ITransport,
     TestWorkerAction,
     WebApplicationDevtoolActions,
-} from '@testring/types';
+} from '@testring-dev/types';
 
 import * as path from 'path';
 
-import {fork} from '@testring/child-process';
-import {generateUniqId} from '@testring/utils';
-import {PluggableModule} from '@testring/pluggable-module';
-import {loggerClient} from '@testring/logger';
+import {fork} from '@testring-dev/child-process';
+import {generateUniqId} from '@testring-dev/utils';
+import {PluggableModule} from '@testring-dev/pluggable-module';
+import {loggerClient} from '@testring-dev/logger';
 import {defaultDevtoolConfig} from './default-devtool-config';
 
-import {extensionId} from '@testring/devtool-extension';
+import {extensionId} from '@testring-dev/devtool-extension';
 
 export class DevtoolServerController
     extends PluggableModule

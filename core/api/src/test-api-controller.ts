@@ -1,8 +1,8 @@
-import {TestEvents} from '@testring/types';
+import {TestEvents} from '@testring-dev/types';
 
 import {EventEmitter} from 'events';
 
-import {asyncBreakpoints} from '@testring/async-breakpoints';
+import {asyncBreakpoints} from '@testring-dev/async-breakpoints';
 
 type BeforeRunCallback = () => any;
 type AfterRunCallback = () => any;

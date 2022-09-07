@@ -2,12 +2,12 @@
 
 import * as path from 'path';
 import * as chai from 'chai';
-import * as typesModuleImport from '@testring/types';
+import * as typesModuleImport from '@testring-dev/types';
 import {requirePlugin} from '../src/plugin-require';
 
 describe('requirePlugin', () => {
     it('should resolve npm modules', () => {
-        const plugin = requirePlugin('@testring/types');
+        const plugin = requirePlugin('@testring-dev/types');
 
         chai.expect(plugin).to.be.equal(typesModuleImport);
     });

@@ -1,5 +1,9 @@
-import {ConfigPluginDescriptor, IConfig, IPluginModules} from '@testring/types';
-import {requirePlugin} from '@testring/utils';
+import {
+    ConfigPluginDescriptor,
+    IConfig,
+    IPluginModules,
+} from '@testring-dev/types';
+import {requirePlugin} from '@testring-dev/utils';
 import {PluginAPI} from './plugin-api';
 
 export class PluginController {

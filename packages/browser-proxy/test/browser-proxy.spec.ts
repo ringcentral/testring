@@ -8,8 +8,8 @@ import {
     BrowserProxyActions,
     IBrowserProxyCommandResponse,
     IBrowserProxyCommand,
-} from '@testring/types';
-import {TransportMock} from '@testring/test-utils';
+} from '@testring-dev/types';
+import {TransportMock} from '@testring-dev/test-utils';
 import {BrowserProxy} from '../src/browser-proxy/browser-proxy';
 
 const asyncPluginPath = path.resolve(__dirname, './fixtures/async-plugin.ts');

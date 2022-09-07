@@ -19,7 +19,7 @@
       "dom"
     ],
     "typeRoots": [
-      "./node_modules/@testring/types",
+      "./node_modules/@testring-dev/types",
       "./node_modules/@types",
       "../../node_modules/@types"
     ],

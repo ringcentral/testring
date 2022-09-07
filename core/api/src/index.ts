@@ -1,4 +1,4 @@
-import {WebApplication} from '@testring/web-application';
+import {WebApplication} from '@testring-dev/web-application';
 import {testAPIController, TestAPIController} from './test-api-controller';
 import {run} from './run';
 

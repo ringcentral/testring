@@ -1,14 +1,14 @@
 import * as path from 'path';
-import {loggerClient} from '@testring/logger';
-import {FSReader} from '@testring/fs-reader';
-import {FSStoreClient} from '@testring/fs-store';
-import {fork} from '@testring/child-process';
-import {generateUniqId} from '@testring/utils';
+import {loggerClient} from '@testring-dev/logger';
+import {FSReader} from '@testring-dev/fs-reader';
+import {FSStoreClient} from '@testring-dev/fs-store';
+import {fork} from '@testring-dev/child-process';
+import {generateUniqId} from '@testring-dev/utils';
 import {TestWorkerLocal} from './test-worker-local';
 import {
     buildDependencyDictionary,
     mergeDependencyDictionaries,
-} from '@testring/dependencies-builder';
+} from '@testring-dev/dependencies-builder';
 import {
     IFile,
     ITransport,
@@ -20,7 +20,7 @@ import {
     FileCompiler,
     TestStatus,
     IWorkerEmitter,
-} from '@testring/types';
+} from '@testring-dev/types';
 
 const WORKER_ROOT = require.resolve(path.resolve(__dirname, 'worker'));
 

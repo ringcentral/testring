@@ -1,5 +1,5 @@
 import {CookieJar, Cookie} from 'tough-cookie';
-import {IHttpCookieJar} from '@testring/types';
+import {IHttpCookieJar} from '@testring-dev/types';
 
 export class HttpCookieJar implements IHttpCookieJar {
     private jar = new CookieJar();

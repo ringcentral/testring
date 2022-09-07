@@ -1,4 +1,4 @@
-import {IHttpRequest, IHttpResponse} from '@testring/types';
+import {IHttpRequest, IHttpResponse} from '@testring-dev/types';
 import {Response, jar} from 'request';
 import * as requestPromise from 'request-promise-native';
 

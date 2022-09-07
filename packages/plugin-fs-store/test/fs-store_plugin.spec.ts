@@ -1,7 +1,7 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import {FSFileUniqPolicy} from '@testring/types';
+import {FSFileUniqPolicy} from '@testring-dev/types';
 
 import {cbGen} from '../src/onFileName';
 

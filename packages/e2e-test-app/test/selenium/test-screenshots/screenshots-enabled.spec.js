@@ -1,4 +1,4 @@
-import {run} from 'testring';
+import {run} from 'testring-dev';
 import {unlink, stat} from 'fs';
 import {promisify} from 'util';
 

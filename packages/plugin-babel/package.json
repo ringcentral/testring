@@ -1,5 +1,5 @@
 {
-  "name": "@testring/plugin-babel",
+  "name": "@testring-dev/plugin-babel",
   "version": "0.5.37",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
@@ -10,7 +10,7 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/plugin-api": "0.5.37",
+    "@testring-dev/plugin-api": "0.5.37",
     "@types/babel__core": "7.1.15",
     "@babel/core": "7.14.8",
     "@babel/plugin-transform-modules-commonjs": "7.14.5"

@@ -1,4 +1,4 @@
-import {IConfig, IPluginModules} from '@testring/types';
+import {IConfig, IPluginModules} from '@testring-dev/types';
 import {PluginController} from './plugin-controller';
 import {PluginAPI} from './plugin-api';
 

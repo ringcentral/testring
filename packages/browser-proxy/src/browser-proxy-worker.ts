@@ -9,9 +9,9 @@ import {
     IBrowserProxyWorker,
     IBrowserProxyWorkerConfig,
     ITransport,
-} from '@testring/types';
-import {generateUniqId} from '@testring/utils';
-import {loggerClient} from '@testring/logger';
+} from '@testring-dev/types';
+import {generateUniqId} from '@testring-dev/utils';
+import {loggerClient} from '@testring-dev/logger';
 
 export class BrowserProxyWorker implements IBrowserProxyWorker {
     private pendingCommandsQueue: Set<IBrowserProxyPendingCommand> = new Set();

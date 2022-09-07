@@ -1,4 +1,4 @@
-import {IPluggableModule} from '@testring/types';
+import {IPluggableModule} from '@testring-dev/types';
 import {Hook} from './hook';
 
 type HookDescriptor = string;

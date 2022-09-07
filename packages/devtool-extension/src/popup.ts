@@ -1,4 +1,4 @@
-import {IExtensionApplicationConfig} from '@testring/types';
+import {IExtensionApplicationConfig} from '@testring-dev/types';
 import {BackgroundChromeClient} from './extension/chrome-transport/chrome-client';
 
 const client = new BackgroundChromeClient();

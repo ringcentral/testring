@@ -3,9 +3,9 @@ import {
     ExtensionMessagingTransportTypes,
     IExtensionMessagingTransportMessage,
     IExtensionApplicationConfig,
-} from '@testring/types';
+} from '@testring-dev/types';
 
-import {ClientWsTransport} from '@testring/client-ws-transport';
+import {ClientWsTransport} from '@testring-dev/client-ws-transport';
 
 import {BackgroundChromeServer} from './chrome-transport/chrome-server';
 import {CSPController} from './csp-controller';

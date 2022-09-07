@@ -1,8 +1,8 @@
-import {LogLevel} from '@testring/types';
-import {transport} from '@testring/transport';
+import {LogLevel} from '@testring-dev/types';
+import {transport} from '@testring-dev/transport';
 
 import {DevtoolWorkerController} from './worker/devtool-worker-controller';
-import {loggerClient, LoggerServer} from '@testring/logger';
+import {loggerClient, LoggerServer} from '@testring-dev/logger';
 
 import {defaultDevtoolConfig} from './default-devtool-config';
 

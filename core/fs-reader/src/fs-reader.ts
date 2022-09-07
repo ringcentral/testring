@@ -1,8 +1,8 @@
-import {IFSReader, IFile, FSReaderPlugins} from '@testring/types';
-import {PluggableModule} from '@testring/pluggable-module';
+import {IFSReader, IFile, FSReaderPlugins} from '@testring-dev/types';
+import {PluggableModule} from '@testring-dev/pluggable-module';
 import {locateFiles} from './file-locator';
 import {resolveFiles, readFile} from './file-resolver';
-import {loggerClient} from '@testring/logger';
+import {loggerClient} from '@testring-dev/logger';
 
 export class FSReader extends PluggableModule implements IFSReader {
     constructor() {

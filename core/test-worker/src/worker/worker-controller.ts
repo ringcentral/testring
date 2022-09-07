@@ -10,13 +10,16 @@ import {
     TestWorkerAction,
     TestStatus,
     TestEvents,
-} from '@testring/types';
-import {restructureError} from '@testring/utils';
+} from '@testring-dev/types';
+import {restructureError} from '@testring-dev/utils';
 
-import {Sandbox} from '@testring/sandbox';
-import {testAPIController, TestAPIController} from '@testring/api';
-import {asyncBreakpoints, BreakStackError} from '@testring/async-breakpoints';
-import {loggerClient, LoggerClient} from '@testring/logger';
+import {Sandbox} from '@testring-dev/sandbox';
+import {testAPIController, TestAPIController} from '@testring-dev/api';
+import {
+    asyncBreakpoints,
+    BreakStackError,
+} from '@testring-dev/async-breakpoints';
+import {loggerClient, LoggerClient} from '@testring-dev/logger';
 
 export class WorkerController {
     private logger: LoggerClient = loggerClient.withPrefix(

@@ -1,14 +1,14 @@
 import {SeleniumPluginConfig} from '../types';
-import {IBrowserProxyPlugin, WindowFeaturesConfig} from '@testring/types';
+import {IBrowserProxyPlugin, WindowFeaturesConfig} from '@testring-dev/types';
 
 import {ChildProcess} from 'child_process';
 
 import {remote} from 'webdriverio';
 import * as deepmerge from 'deepmerge';
 
-import {spawn} from '@testring/child-process';
-import {loggerClient} from '@testring/logger';
-import {absoluteExtensionPath} from '@testring/devtool-extension';
+import {spawn} from '@testring-dev/child-process';
+import {loggerClient} from '@testring-dev/logger';
+import {absoluteExtensionPath} from '@testring-dev/devtool-extension';
 
 import type {Cookie} from '@wdio/protocols';
 import type {

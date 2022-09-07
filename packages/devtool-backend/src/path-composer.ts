@@ -1,4 +1,4 @@
-import {ElementSummary} from '@testring/types';
+import {ElementSummary} from '@testring-dev/types';
 
 export class PathComposer {
     constructor(private targetAttribute: string) {}

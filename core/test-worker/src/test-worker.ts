@@ -4,8 +4,8 @@ import {
     ITestWorkerConfig,
     FileCompiler,
     TestWorkerPlugin,
-} from '@testring/types';
-import {PluggableModule} from '@testring/pluggable-module';
+} from '@testring-dev/types';
+import {PluggableModule} from '@testring-dev/pluggable-module';
 import {TestWorkerInstance} from './test-worker-instance';
 
 export class TestWorker extends PluggableModule implements ITestWorker {

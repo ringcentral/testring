@@ -1,6 +1,6 @@
 /// <reference types="chrome" />
 
-import {ExtensionPostMessageTypes} from '@testring/types';
+import {ExtensionPostMessageTypes} from '@testring-dev/types';
 import {BackgroundChromeClient} from './extension/chrome-transport/chrome-client';
 
 import {ElementHighlightController} from './extension/element-highlight-controller';

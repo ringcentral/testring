@@ -3,13 +3,13 @@ import {
     IServer,
     DevtoolEvents,
     DevtoolWSServerEvents,
-} from '@testring/types';
+} from '@testring-dev/types';
 
 import {EventEmitter} from 'events';
 import {Server as WSS} from 'ws';
 import * as WebSocket from 'ws';
-import {generateUniqId} from '@testring/utils';
-import {LoggerClient, loggerClient} from '@testring/logger';
+import {generateUniqId} from '@testring-dev/utils';
+import {LoggerClient, loggerClient} from '@testring-dev/logger';
 
 export class DevtoolWsServer extends EventEmitter implements IServer {
     private connections: Map<string, WebSocket> = new Map();
