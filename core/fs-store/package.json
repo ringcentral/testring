@@ -1,6 +1,6 @@
 {
   "name": "@testring-dev/fs-store",
-  "version": "0.5.42",
+  "version": "0.5.43",
   "description": "fs storage & operations service",
   "keywords": [
     "fs",
@@ -15,13 +15,13 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring-dev/cli-config": "0.5.42",
-    "@testring-dev/logger": "0.5.42",
-    "@testring-dev/pluggable-module": "0.5.42",
-    "@testring-dev/test-utils": "0.5.42",
-    "@testring-dev/transport": "0.5.42",
-    "@testring-dev/types": "0.5.42",
-    "@testring-dev/utils": "0.5.42"
+    "@testring-dev/cli-config": "0.5.43",
+    "@testring-dev/logger": "0.5.43",
+    "@testring-dev/pluggable-module": "0.5.43",
+    "@testring-dev/test-utils": "0.5.43",
+    "@testring-dev/transport": "0.5.43",
+    "@testring-dev/types": "0.5.43",
+    "@testring-dev/utils": "0.5.43"
   },
   "scripts": {
     "test": "mocha"
