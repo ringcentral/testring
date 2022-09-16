@@ -31,7 +31,7 @@
     "@testring-dev/test-utils": "0.5.42",
     "@types/babel-traverse": "6.25.5",
     "@types/express-serve-static-core": "4.17.21",
-    "@types/node": "14.6.0",
+    "@types/node": "14.17.6",
     "@types/ws": "7.4.5",
     "request": "2.88.2",
     "request-promise": "4.2.6",
