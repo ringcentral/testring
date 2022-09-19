@@ -1,6 +1,6 @@
 {
   "name": "@testring-dev/async-assert",
-  "version": "0.5.43",
+  "version": "0.5.44",
   "description": "an async wrapper around chai",
   "keywords": [
     "assert"
@@ -21,7 +21,7 @@
     "url": "https://github.com/ringcentral/testring/issues"
   },
   "dependencies": {
-    "@testring-dev/types": "0.5.43",
+    "@testring-dev/types": "0.5.44",
     "chai": "4.3.4"
   }
 }

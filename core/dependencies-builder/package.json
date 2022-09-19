@@ -1,6 +1,6 @@
 {
   "name": "@testring-dev/dependencies-builder",
-  "version": "0.5.43",
+  "version": "0.5.44",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,9 +10,9 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring-dev/test-utils": "0.5.43",
-    "@testring-dev/types": "0.5.43",
-    "@testring-dev/utils": "0.5.43",
+    "@testring-dev/test-utils": "0.5.44",
+    "@testring-dev/types": "0.5.44",
+    "@testring-dev/utils": "0.5.44",
     "@types/babel-traverse": "6.25.5",
     "@types/babylon": "6.16.5",
     "babel-traverse": "6.26.0",
