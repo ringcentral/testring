@@ -70,6 +70,7 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.getSize, [xpath]);
     }
 
+    // @deprecated WAT-1872
     public gridProxyDetails() {
         return this.makeRequest(BrowserProxyActions.gridProxyDetails, []);
     }
@@ -360,10 +361,12 @@ export class WebClient implements IWebApplicationClient {
         ]);
     }
 
+    // @deprecated WAT-1872
     public getGridNodeDetails() {
         return this.makeRequest(BrowserProxyActions.getGridNodeDetails, []);
     }
 
+    // @deprecated WAT-1872
     public gridTestSession() {
         return this.makeRequest(BrowserProxyActions.gridTestSession, []);
     }

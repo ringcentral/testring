@@ -1030,6 +1030,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return selector.selectByAttribute(attribute, value);
     }
 
+    // @deprecated WAT-1872
     public async gridProxyDetails(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
@@ -1043,6 +1044,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.gridProxyDetails(client.sessionId);
     }
 
+    // @deprecated WAT-1872
     public async gridTestSession(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
@@ -1056,6 +1058,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.gridTestSession(client.sessionId);
     }
 
+    // @deprecated WAT-1872
     public async getGridNodeDetails(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
