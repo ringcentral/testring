@@ -1,4 +1,4 @@
-import {ITransportSerializedStruct} from '@testring-dev/types';
+import {ITransportSerializedStruct} from '@testring/types';
 
 export interface ISerializedFunction extends ITransportSerializedStruct {
     $key: string;

@@ -1,4 +1,4 @@
-declare module '@testring-dev/devtool-extension' {
+declare module '@testring/devtool-extension' {
     export const extensionId: string;
     export const extensionPath: string;
     export const absoluteExtensionPath: string;

@@ -3,7 +3,7 @@ import {
     TransportMessageHandler,
     ITransportBroadcastMessage,
     ITransportDirectMessage,
-} from '@testring-dev/types';
+} from '@testring/types';
 import {deserialize, serialize} from './serialize';
 
 class BroadcastTransport {

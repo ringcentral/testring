@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 
-const { runCLI } = require('@testring-dev/cli');
+const { runCLI } = require('@testring/cli');
 
 runCLI(process.argv);

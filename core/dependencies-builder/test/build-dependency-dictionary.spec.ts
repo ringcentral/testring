@@ -1,7 +1,7 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import {fileReaderFactory, fileResolverFactory} from '@testring-dev/test-utils';
+import {fileReaderFactory, fileResolverFactory} from '@testring/test-utils';
 import {buildDependencyDictionary} from '../src';
 
 const fixtureReader = fileReaderFactory(__dirname, './fixtures');

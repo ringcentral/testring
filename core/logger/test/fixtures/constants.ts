@@ -1,9 +1,4 @@
-import {
-    ILogEntity,
-    LogLevel,
-    LogStepTypes,
-    LogTypes,
-} from '@testring-dev/types';
+import {ILogEntity, LogLevel, LogStepTypes, LogTypes} from '@testring/types';
 
 export const report = ['foo', ['bar'], {baz: 'baz'}];
 

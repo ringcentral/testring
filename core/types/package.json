@@ -1,6 +1,6 @@
 {
-  "name": "@testring-dev/types",
-  "version": "0.5.46",
+  "name": "@testring/types",
+  "version": "0.5.37",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {

@@ -2,7 +2,7 @@ import {
     ITransportSerializedStruct,
     TransportSerializer,
     TransportDeserializer,
-} from '@testring-dev/types';
+} from '@testring/types';
 import {
     ISerializedArray,
     serializeArray,

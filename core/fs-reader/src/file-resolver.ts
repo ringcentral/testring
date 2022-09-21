@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import {IFile} from '@testring-dev/types';
+import {IFile} from '@testring/types';
 
 const ERR_NO_FILES = new Error('No test files found');
 

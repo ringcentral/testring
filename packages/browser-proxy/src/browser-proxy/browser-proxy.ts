@@ -5,9 +5,9 @@ import {
     IBrowserProxyMessage,
     IBrowserProxyPlugin,
     ITransport,
-} from '@testring-dev/types';
-import {requirePlugin} from '@testring-dev/utils';
-import {loggerClient} from '@testring-dev/logger';
+} from '@testring/types';
+import {requirePlugin} from '@testring/utils';
+import {loggerClient} from '@testring/logger';
 
 function resolvePlugin(pluginPath: string): IBrowserProxyPlugin {
     const resolvedPlugin = requirePlugin(pluginPath);

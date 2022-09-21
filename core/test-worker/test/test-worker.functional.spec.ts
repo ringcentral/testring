@@ -1,8 +1,8 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import {Transport} from '@testring-dev/transport';
-import {ScreenshotsConfig, TestWorkerPlugin} from '@testring-dev/types';
+import {Transport} from '@testring/transport';
+import {ScreenshotsConfig, TestWorkerPlugin} from '@testring/types';
 import {TestWorker} from '../src/test-worker';
 
 describe('TestWorkerInstance', () => {

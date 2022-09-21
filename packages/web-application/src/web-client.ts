@@ -6,8 +6,8 @@ import {
     IWebApplicationResponseMessage,
     WebApplicationMessageType,
     WindowFeaturesConfig,
-} from '@testring-dev/types';
-import {generateUniqId} from '@testring-dev/utils';
+} from '@testring/types';
+import {generateUniqId} from '@testring/utils';
 
 export class WebClient implements IWebApplicationClient {
     constructor(private applicant: string, private transport: ITransport) {}

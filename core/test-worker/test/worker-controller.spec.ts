@@ -2,17 +2,17 @@
 /* eslint sonarjs/no-identical-functions: 0 */
 
 import * as chai from 'chai';
-import {TransportMock} from '@testring-dev/test-utils';
-import {testAPIController, TestAPIController} from '@testring-dev/api';
+import {TransportMock} from '@testring/test-utils';
+import {testAPIController, TestAPIController} from '@testring/api';
 import {
     TestWorkerAction,
     TestStatus,
     ITestExecutionMessage,
     ITestExecutionCompleteMessage,
-} from '@testring-dev/types';
+} from '@testring/types';
 import {WorkerController} from '../src/worker/worker-controller';
 
-const TESTRING_API_ABSOLUTE_PATH = require.resolve('@testring-dev/api');
+const TESTRING_API_ABSOLUTE_PATH = require.resolve('@testring/api');
 
 describe('WorkerController', () => {
     it('should run sync test', (callback) => {

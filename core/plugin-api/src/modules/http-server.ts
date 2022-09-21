@@ -4,7 +4,7 @@ import {
     IHttpRequest,
     IHttpRequestMessage,
     IHttpResponse,
-} from '@testring-dev/types';
+} from '@testring/types';
 
 export class HttpServerAPI extends AbstractAPI {
     beforeRequest(

@@ -1,8 +1,8 @@
-import {ITestQueuedTestRunData} from '@testring-dev/types';
-import {loggerClient} from '@testring-dev/logger';
-import {HttpClient} from '@testring-dev/http-api';
-import {transport} from '@testring-dev/transport';
-import {WebApplication} from '@testring-dev/web-application';
+import {ITestQueuedTestRunData} from '@testring/types';
+import {loggerClient} from '@testring/logger';
+import {HttpClient} from '@testring/http-api';
+import {transport} from '@testring/transport';
+import {WebApplication} from '@testring/web-application';
 import {testAPIController} from './test-api-controller';
 
 const LOG_PREFIX = '[logged inside test]';

@@ -1,8 +1,8 @@
 import * as path from 'path';
 import * as os from 'os';
 
-import {FSFileUniqPolicy, IOnFileNameHookData} from '@testring-dev/types';
-import {generateUniqId, fs} from '@testring-dev/utils';
+import {FSFileUniqPolicy, IOnFileNameHookData} from '@testring/types';
+import {generateUniqId, fs} from '@testring/utils';
 
 const {ensureNewFile, ensureDir} = fs;
 

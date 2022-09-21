@@ -1,6 +1,6 @@
 import {Action} from 'redux';
 
-import {ITestControllerExecutionState} from '@testring-dev/types';
+import {ITestControllerExecutionState} from '@testring/types';
 
 export enum devtoolWorkerStateActions {
     UPDATE = 'WORKER_STATE@UPDATE',

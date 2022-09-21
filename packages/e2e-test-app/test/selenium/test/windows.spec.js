@@ -1,4 +1,4 @@
-import { run } from 'testring-dev';
+import { run } from 'testring';
 
 run(async (api) => {
     let mainTabId = await api.application.getMainTabId();

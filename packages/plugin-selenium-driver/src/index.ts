@@ -1,6 +1,6 @@
 import * as path from 'path';
 import {SeleniumPluginConfig} from './types';
-import {PluginAPI} from '@testring-dev/plugin-api';
+import {PluginAPI} from '@testring/plugin-api';
 
 export default function seleniumPlugin(
     pluginAPI: PluginAPI,

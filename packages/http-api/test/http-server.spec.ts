@@ -8,8 +8,8 @@ import {
     IHttpRequest,
     IHttpRequestMessage,
     IHttpResponse,
-} from '@testring-dev/types';
-import {TransportMock} from '@testring-dev/test-utils';
+} from '@testring/types';
+import {TransportMock} from '@testring/test-utils';
 import {HttpServer} from '../src/http-server';
 
 // TODO (flops) add tests for cookies

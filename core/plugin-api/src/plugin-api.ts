@@ -1,4 +1,4 @@
-import {IHttpClient, IPluginModules} from '@testring-dev/types';
+import {IHttpClient, IPluginModules} from '@testring/types';
 import {BrowserProxyAPI} from './modules/browser-proxy';
 import {FSReaderAPI} from './modules/fs-reader';
 import {LoggerAPI} from './modules/logger';

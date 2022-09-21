@@ -3,13 +3,13 @@
 import {Writable} from 'stream';
 import * as sinon from 'sinon';
 import * as chai from 'chai';
-import {TransportMock} from '@testring-dev/test-utils';
+import {TransportMock} from '@testring/test-utils';
 import {
     LoggerMessageTypes,
     LogLevel,
     LogTypes,
     LoggerPlugins,
-} from '@testring-dev/types';
+} from '@testring/types';
 import {LOG_ENTITY} from './fixtures/constants';
 import {voidLogger} from './fixtures/void-logger';
 import {LoggerServer} from '../src/logger-server';

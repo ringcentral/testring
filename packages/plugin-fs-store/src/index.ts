@@ -1,4 +1,4 @@
-import {PluginAPI} from '@testring-dev/plugin-api';
+import {PluginAPI} from '@testring/plugin-api';
 
 import {cbGen} from './onFileName';
 

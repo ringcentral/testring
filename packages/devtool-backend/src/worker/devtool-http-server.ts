@@ -6,7 +6,7 @@ import {
     IServer,
     DevtoolHttpContextResolver,
     DevtoolHttpRouteHandler,
-} from '@testring-dev/types';
+} from '@testring/types';
 
 import * as express from 'express';
 

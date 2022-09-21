@@ -1,4 +1,4 @@
-import {IHttpRequestMessage, HttpMessageType} from '@testring-dev/types';
+import {IHttpRequestMessage, HttpMessageType} from '@testring/types';
 import {AbstractHttpClient} from './abstract-http-client';
 
 export class HttpClient extends AbstractHttpClient {

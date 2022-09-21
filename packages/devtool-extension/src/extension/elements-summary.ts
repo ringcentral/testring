@@ -1,4 +1,4 @@
-import {ElementSummary} from '@testring-dev/types';
+import {ElementSummary} from '@testring/types';
 
 const composePath = (
     element: HTMLElement,

@@ -1,7 +1,7 @@
 import * as process from 'process';
 import * as util from 'util';
 import {default as chalk} from 'chalk';
-import {ILogEntity, LogLevel, LogTypes} from '@testring-dev/types';
+import {ILogEntity, LogLevel, LogTypes} from '@testring/types';
 
 const HAS_EMOJI_SUPPORT = !!(
     process.stdout.isTTY && process.platform === 'darwin'

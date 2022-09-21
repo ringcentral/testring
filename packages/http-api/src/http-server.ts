@@ -8,9 +8,9 @@ import {
     IHttpResponseRejectMessage,
     HttpMessageType,
     HttpServerPlugins,
-} from '@testring-dev/types';
-import {PluggableModule} from '@testring-dev/pluggable-module';
-import {LoggerClient, loggerClient} from '@testring-dev/logger';
+} from '@testring/types';
+import {PluggableModule} from '@testring/pluggable-module';
+import {LoggerClient, loggerClient} from '@testring/logger';
 
 type MakeRequest = (request: IHttpRequest) => Promise<IHttpResponse>;
 

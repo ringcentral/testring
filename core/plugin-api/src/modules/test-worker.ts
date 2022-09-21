@@ -1,4 +1,4 @@
-import {TestWorkerPlugin} from '@testring-dev/types';
+import {TestWorkerPlugin} from '@testring/types';
 import {AbstractAPI} from './abstract';
 
 export class TestWorkerAPI extends AbstractAPI {

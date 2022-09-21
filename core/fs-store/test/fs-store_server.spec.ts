@@ -11,9 +11,9 @@ import {
 } from '../src/fs-store-server';
 import {FS_CONSTANTS} from '../src/utils';
 
-import {transport} from '@testring-dev/transport';
+import {transport} from '@testring/transport';
 
-import {IFSStoreReq, IFSStoreResp, fsReqType} from '@testring-dev/types';
+import {IFSStoreReq, IFSStoreResp, fsReqType} from '@testring/types';
 
 const msgNamePrefix = 'fs-st_test';
 

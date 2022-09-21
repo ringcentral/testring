@@ -4,15 +4,15 @@
 
 import * as path from 'path';
 
-import {generateUniqId} from '@testring-dev/utils';
-import {loggerClient} from '@testring-dev/logger';
-import {transport} from '@testring-dev/transport';
+import {generateUniqId} from '@testring/utils';
+import {loggerClient} from '@testring/logger';
+import {transport} from '@testring/transport';
 import {
     fsReqType,
     IFSStoreReq,
     IFSStoreResp,
     requestMeta,
-} from '@testring-dev/types';
+} from '@testring/types';
 
 import {FS_CONSTANTS} from './utils';
 

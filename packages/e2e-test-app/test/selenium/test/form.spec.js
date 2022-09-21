@@ -1,4 +1,4 @@
-import { run } from 'testring-dev';
+import { run } from 'testring';
 
 run(async (api) => {
     await api.application.url('http://localhost:8080/form.html');

@@ -1,4 +1,4 @@
-import {throttle} from '@testring-dev/utils';
+import {throttle} from '@testring/utils';
 
 import {HighlightElement} from './highlight-element';
 

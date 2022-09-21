@@ -1,5 +1,5 @@
-import {PluggableModule} from '@testring-dev/pluggable-module';
-import {Queue} from '@testring-dev/utils';
+import {PluggableModule} from '@testring/pluggable-module';
+import {Queue} from '@testring/utils';
 import {
     IConfigLogger,
     ILogEntity,
@@ -9,7 +9,7 @@ import {
     LoggerMessageTypes,
     LoggerPlugins,
     LogQueueStatus,
-} from '@testring-dev/types';
+} from '@testring/types';
 import {formatLog} from './format-log';
 
 export enum LogLevelNumeric {

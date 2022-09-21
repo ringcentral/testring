@@ -3,8 +3,8 @@
 import * as chai from 'chai';
 import * as sinon from 'sinon';
 
-import {TransportMock} from '@testring-dev/test-utils';
-import {LoggerMessageTypes, LogTypes, FSFileLogType} from '@testring-dev/types';
+import {TransportMock} from '@testring/test-utils';
+import {LoggerMessageTypes, LogTypes, FSFileLogType} from '@testring/types';
 
 import {LoggerClient} from '../src/logger-client';
 import {report, stepsTypes} from './fixtures/constants';

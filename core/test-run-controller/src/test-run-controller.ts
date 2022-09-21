@@ -9,10 +9,10 @@ import {
     ITestWorkerCallbackMeta,
     ITestWorkerInstance,
     TestRunControllerPlugins,
-} from '@testring-dev/types';
-import {loggerClient} from '@testring-dev/logger';
-import {PluggableModule} from '@testring-dev/pluggable-module';
-import {Queue} from '@testring-dev/utils';
+} from '@testring/types';
+import {loggerClient} from '@testring/logger';
+import {PluggableModule} from '@testring/pluggable-module';
+import {Queue} from '@testring/utils';
 
 type TestQueue = Queue<IQueuedTest>;
 

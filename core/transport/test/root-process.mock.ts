@@ -1,5 +1,5 @@
 import {EventEmitter} from 'events';
-import {ITransportDirectMessage} from '@testring-dev/types';
+import {ITransportDirectMessage} from '@testring/types';
 
 class RootProcessMock extends EventEmitter {
     private messageStack: Array<ITransportDirectMessage> = [];

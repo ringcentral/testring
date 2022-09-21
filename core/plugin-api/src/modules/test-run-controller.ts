@@ -1,4 +1,4 @@
-import {TestRunControllerPlugins, IQueuedTest} from '@testring-dev/types';
+import {TestRunControllerPlugins, IQueuedTest} from '@testring/types';
 import {AbstractAPI} from './abstract';
 
 export class TestRunControllerAPI extends AbstractAPI {

@@ -1,6 +1,6 @@
 {
-  "name": "@testring-dev/plugin-babel",
-  "version": "0.5.46",
+  "name": "@testring/plugin-babel",
+  "version": "0.5.37",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -9,10 +9,10 @@
   },
   "author": "RingCentral",
   "license": "MIT",
-  "dependencies": {
+  "dependencies": {,
     "@babel/core": "7.14.8",
     "@babel/plugin-transform-modules-commonjs": "7.14.5",
-    "@testring-dev/plugin-api": "0.5.46",
+    "@testring/plugin-api": "0.5.37",
     "@types/babel__core": "7.1.15"
   }
 }

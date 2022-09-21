@@ -1,4 +1,4 @@
-import {IConfig, LogLevel} from '@testring-dev/types';
+import {IConfig, LogLevel} from '@testring/types';
 
 export const defaultConfiguration: IConfig = {
     devtool: false,

@@ -1,4 +1,4 @@
-import {ITransport} from '@testring-dev/types';
+import {ITransport} from '@testring/types';
 import {requestFunction} from './request-function';
 import {HttpClient} from './http-client';
 import {HttpServer} from './http-server';

@@ -4,7 +4,7 @@ import {
     ExtensionMessagingTransportEvents,
     ExtensionMessagingTransportTypes,
     IExtensionApplicationConfig,
-} from '@testring-dev/types';
+} from '@testring/types';
 
 import Port = chrome.runtime.Port;
 

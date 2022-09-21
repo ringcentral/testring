@@ -1,4 +1,4 @@
-import { run } from 'testring-dev';
+import { run } from 'testring';
 import { getEnv } from './test-2.helper';
 
 run((api) => {

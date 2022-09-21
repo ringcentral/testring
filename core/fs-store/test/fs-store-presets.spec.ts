@@ -4,12 +4,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as chai from 'chai';
 
-import {loggerClient} from '@testring-dev/logger';
+import {loggerClient} from '@testring/logger';
 
 import {FSStoreServer, fsStoreServerHooks} from '../src/fs-store-server';
 import {FSTextFactory} from '../src/';
 
-import {fsReqType} from '@testring-dev/types';
+import {fsReqType} from '@testring/types';
 
 const prefix = 'fsf-preset-test';
 const log = loggerClient.withPrefix(prefix);

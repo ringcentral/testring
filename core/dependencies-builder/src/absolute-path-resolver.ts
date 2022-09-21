@@ -1,5 +1,5 @@
 import * as path from 'path';
-import {resolvePackage} from '@testring-dev/utils';
+import {resolvePackage} from '@testring/utils';
 
 export function resolveAbsolutePath(
     request: string,

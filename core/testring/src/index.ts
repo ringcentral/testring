@@ -1,4 +1,4 @@
-import {run} from '@testring-dev/api';
+import {run} from '@testring/api';
 
 export default run;
 export {run};

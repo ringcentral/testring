@@ -5,10 +5,10 @@ import {
     IClientWsTransport,
     IDevtoolWSHandshakeResponseMessage,
     DevtoolEvents,
-} from '@testring-dev/types';
+} from '@testring/types';
 
 import {EventEmitter} from 'events';
-import {Queue} from '@testring-dev/utils';
+import {Queue} from '@testring/utils';
 
 interface IQueuedMessage {
     type: DevtoolEvents;

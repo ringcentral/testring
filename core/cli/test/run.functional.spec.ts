@@ -2,8 +2,8 @@
 
 import * as path from 'path';
 import {Writable} from 'stream';
-import {getConfig} from '@testring-dev/cli-config';
-import {Transport} from '@testring-dev/transport';
+import {getConfig} from '@testring/cli-config';
+import {Transport} from '@testring/transport';
 import {runTests} from '../src/commands/runCommand';
 
 const fixturesPath = path.resolve(__dirname, './fixtures');

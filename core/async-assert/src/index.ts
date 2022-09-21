@@ -1,5 +1,5 @@
 import * as chai from 'chai';
-import {IAssertionOptions} from '@testring-dev/types';
+import {IAssertionOptions} from '@testring/types';
 import {PromisedAssert} from './promisedAssert';
 
 const errorMessagesField = '_errorMessages';

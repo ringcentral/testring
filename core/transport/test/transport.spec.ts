@@ -2,7 +2,7 @@
 /* eslint sonarjs/no-identical-functions: 0 */
 
 import * as chai from 'chai';
-import {ITransportMessage} from '@testring-dev/types';
+import {ITransportMessage} from '@testring/types';
 import {ChildProcessMock} from './child-process.mock';
 import {RootProcessMock} from './root-process.mock';
 import {serialize} from '../src/serialize';

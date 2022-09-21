@@ -1,7 +1,7 @@
 import * as vm from 'vm';
 import * as path from 'path';
-import {DependencyDict} from '@testring-dev/types';
-import {requirePackage} from '@testring-dev/utils';
+import {DependencyDict} from '@testring/types';
+import {requirePackage} from '@testring/utils';
 import {Script} from './script';
 
 class Sandbox {

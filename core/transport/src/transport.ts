@@ -1,12 +1,12 @@
 import * as process from 'process';
 
-import {isChildProcess} from '@testring-dev/child-process';
+import {isChildProcess} from '@testring/child-process';
 import {
     ITransport,
     IWorkerEmitter,
     TransportMessageHandler,
     ITransportDirectMessage,
-} from '@testring-dev/types';
+} from '@testring/types';
 import {DirectTransport} from './direct-transport';
 import {BroadcastTransport} from './broadcast-transport';
 import {EventEmitter} from 'events';

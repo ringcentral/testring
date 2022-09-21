@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as process from 'process';
-import {getAvailablePort} from '@testring-dev/utils';
-import {IChildProcessForkOptions, IChildProcessFork} from '@testring-dev/types';
+import {getAvailablePort} from '@testring/utils';
+import {IChildProcessForkOptions, IChildProcessFork} from '@testring/types';
 import {resolveBinary} from './resolve-binary';
 import {spawn} from './spawn';
 

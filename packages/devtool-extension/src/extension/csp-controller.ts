@@ -1,4 +1,4 @@
-import {IExtensionNetworkConfig} from '@testring-dev/types';
+import {IExtensionNetworkConfig} from '@testring/types';
 
 // @see base code https://transitory.technology/browser-extensions-and-csp-headers
 export class CSPController {

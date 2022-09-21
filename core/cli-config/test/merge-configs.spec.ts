@@ -1,7 +1,7 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
-import {IConfig} from '@testring-dev/types';
+import {IConfig} from '@testring/types';
 import {mergeConfigs} from '../src/merge-configs';
 
 describe('getConfig', () => {

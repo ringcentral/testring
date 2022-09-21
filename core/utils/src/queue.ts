@@ -1,4 +1,4 @@
-import {IQueue} from '@testring-dev/types';
+import {IQueue} from '@testring/types';
 
 export class Queue<T> implements IQueue<T> {
     private array: Array<T>;

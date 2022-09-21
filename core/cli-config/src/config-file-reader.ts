@@ -1,9 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
-import {loggerClient} from '@testring-dev/logger';
-import {requirePackage} from '@testring-dev/utils';
-import {IConfig} from '@testring-dev/types';
+import {loggerClient} from '@testring/logger';
+import {requirePackage} from '@testring/utils';
+import {IConfig} from '@testring/types';
 
 import {mergeConfigs} from './merge-configs';
 import ProcessEnv = NodeJS.ProcessEnv;

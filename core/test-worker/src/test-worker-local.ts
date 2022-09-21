@@ -1,12 +1,12 @@
 import {EventEmitter} from 'events';
-import {testAPIController} from '@testring-dev/api';
+import {testAPIController} from '@testring/api';
 import {WorkerController} from './worker/worker-controller';
 import {
     ITransport,
     TestWorkerAction,
     IWorkerEmitter,
     ITransportDirectMessage,
-} from '@testring-dev/types';
+} from '@testring/types';
 
 export class TestWorkerLocal extends EventEmitter implements IWorkerEmitter {
     private workerController: WorkerController;
