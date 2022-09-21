@@ -1,0 +1,24 @@
+name: Publish Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version
+        default: 0.6.0
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14.x'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm run publish:version ${{ github.event.inputs.version }}
+      - run: npm run publish:ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
