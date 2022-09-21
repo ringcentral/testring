@@ -2021,6 +2021,7 @@ export class WebApplication extends PluggableModule {
                 done: WebApplicationDevtoolCallback,
             ) {
                 (window as any).resolveWebApp = done;
+                done(null);
             });
 
             this.isRegisteredInDevtool = true;
