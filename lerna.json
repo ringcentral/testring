@@ -12,9 +12,10 @@
       "forcePublish": "*",
       "allowBranch": [
         "master",
-        "wat*"
+        "wat*",
+        "WAT*"
       ]
     }
   },
-  "version": "0.5.46"
+  "version": "0.6.0"
 }

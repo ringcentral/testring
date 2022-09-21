@@ -28,7 +28,7 @@
     "build:main": "lerna exec --ignore=\"@testring/@(e2e-test-app|devtool-frontend|devtool-extension|ui-kit)\" -- tsc",
     "build:devtool": "lerna run --stream --scope @testring/devtool-frontend build",
     "build:extension": "lerna run --stream --scope @testring/devtool-extension build",
-    "publish:version": "lerna version --exact",
+    "publish:version": "lerna version --exact --yes",
     "publish:ci": "node ./utils/publish.js",
     "check-deps": "npm run check-deps:precommit",
     "check-deps:validate": "lerna exec -- node ../../utils/check-packages-versions",
