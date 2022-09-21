@@ -12,7 +12,8 @@
       "forcePublish": "*",
       "allowBranch": [
         "master",
-        "wat*"
+        "wat*",
+        "WAT"
       ]
     }
   },
