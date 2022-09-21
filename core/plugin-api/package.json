@@ -1,6 +1,6 @@
 {
   "name": "@testring/plugin-api",
-  "version": "0.6.0",
+  "version": "0.5.36",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,10 +10,10 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/fs-store": "0.6.0",
-    "@testring/logger": "0.6.0",
-    "@testring/types": "0.6.0",
-    "@testring/utils": "0.6.0",
+    "@testring/fs-store": "0.5.36",
+    "@testring/logger": "0.5.36",
+    "@testring/types": "0.5.36",
+    "@testring/utils": "0.5.36",
     "@types/node": "14.17.6"
   }
 }
