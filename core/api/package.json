@@ -1,6 +1,6 @@
 {
   "name": "@testring-dev/api",
-  "version": "0.5.45",
+  "version": "0.5.46",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,12 +10,12 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring-dev/async-breakpoints": "0.5.45",
-    "@testring-dev/http-api": "0.5.45",
-    "@testring-dev/logger": "0.5.45",
-    "@testring-dev/transport": "0.5.45",
-    "@testring-dev/types": "0.5.45",
-    "@testring-dev/utils": "0.5.45",
-    "@testring-dev/web-application": "0.5.45"
+    "@testring-dev/async-breakpoints": "0.5.46",
+    "@testring-dev/http-api": "0.5.46",
+    "@testring-dev/logger": "0.5.46",
+    "@testring-dev/transport": "0.5.46",
+    "@testring-dev/types": "0.5.46",
+    "@testring-dev/utils": "0.5.46",
+    "@testring-dev/web-application": "0.5.46"
   }
 }
