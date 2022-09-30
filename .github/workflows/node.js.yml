@@ -14,10 +14,7 @@ jobs:
   build:
     strategy:
       matrix:
-        node-version: [lts/erbium, lts/fermium, lts/gallium]
-        #lts/erbium -> v12
-        #lts/fermium -> v14
-        #lts/gallium -> v16
+        node-version: [14, 16]
         os: [ubuntu-latest, windows-latest, macos-latest]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
@@ -33,15 +30,8 @@ jobs:
     - run: npm run build
     - run: npm run test:ci
 
-    - name: Coveralls
-      if: ${{ matrix.os=='ubuntu-latest' && matrix.node-version=='lts/gallium'}}
-      uses: coverallsapp/github-action@master
-      with:
-        path-to-lcov: './.coverage/lcov.info'
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-
     - name: SonarCloud Scan
-      if: ${{ matrix.os=='ubuntu-latest' && matrix.node-version=='lts/gallium'}}
+      if: ${{ matrix.os=='ubuntu-latest' && matrix.node-version=='16'}}
       uses: sonarsource/sonarcloud-github-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
