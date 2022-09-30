@@ -1,5 +1,4 @@
 import {TestEvents} from '@testring/types';
-import {loggerClient} from '@testring/logger';
 
 import {EventEmitter} from 'events';
 
@@ -10,11 +9,7 @@ type AfterRunCallback = () => any;
 
 export class BusEmitter extends EventEmitter {
     private async addDelayToStack(): Promise<void> {
-        try {
-            new Promise((resolve) => setImmediate(resolve));
-        } catch (e) {
-            loggerClient.error(e);
-        }
+        new Promise((resolve) => setImmediate(resolve));
     }
 
     public async startedTest(): Promise<void> {
