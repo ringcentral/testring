@@ -2,10 +2,10 @@
 
 
 [![license](https://img.shields.io/github/license/ringcentral/testring.svg)](https://github.com/ringcentral/testring/blob/master/LICENSE)
-[![npm](https://img.shields.io/npm/v/npm.svg)](https://www.npmjs.com/package/testring)
-[![Travis status](https://img.shields.io/travis/ringcentral/testring/master.svg?style=flat)](https://travis-ci.com/ringcentral/testring)
-[![Coveralls](https://img.shields.io/coveralls/ringcentral/testring/master.svg?style=flat)](https://coveralls.io/github/ringcentral/testring)
-[![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=ringcentral_testring&metric=alert_status)](https://sonarcloud.io/dashboard?id=ringcentral_testring)
+[![npm](https://img.shields.io/npm/v/testring.svg)](https://www.npmjs.com/package/testring)
+[![Node.js CI](https://github.com/ringcentral/testring/actions/workflows/node.js.yml/badge.svg)](https://github.com/ringcentral/testring/actions/workflows/node.js.yml)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ringcentral_testring&metric=coverage)](https://sonarcloud.io/summary/new_code?id=ringcentral_testring)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=ringcentral_testring&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=ringcentral_testring)
 
 A simple way to create, run and support automatic UI tests, based on Node.js.
 

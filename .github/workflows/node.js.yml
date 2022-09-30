@@ -8,21 +8,21 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+    types: [opened, synchronize, reopened]
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        node-version: [12.x, 14.x]
+        node-version: [12, 14, 16]
+        os: [ubuntu-latest, macos-latest]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
+    runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
@@ -30,8 +30,9 @@ jobs:
     - run: npm run build
     - run: npm run test:ci
 
-    - name: Coveralls
-      uses: coverallsapp/github-action@master
-      with:
-        path-to-lcov: './.coverage/lcov.info'
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: SonarCloud Scan
+      if: ${{ matrix.os=='ubuntu-latest' && matrix.node-version=='16'}}
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
