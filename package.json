@@ -82,7 +82,7 @@
     "eslint": "7.31.0",
     "eslint-config-ringcentral": "5.0.0",
     "eslint-config-ringcentral-typescript": "5.0.0",
-    "glob": "7.1.7",
+    "glob": "7.2.3",
     "lerna": "4.0.0",
     "lerna-update-wizard": "0.17.8",
     "mocha": "9.0.2",
