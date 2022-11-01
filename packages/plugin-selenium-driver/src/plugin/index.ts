@@ -3,22 +3,29 @@ import {IBrowserProxyPlugin, WindowFeaturesConfig} from '@testring/types';
 
 import {ChildProcess} from 'child_process';
 
-import {Config, BrowserObject, remote} from 'webdriverio';
+import {remote} from 'webdriverio';
 import * as deepmerge from 'deepmerge';
 
 import {spawn} from '@testring/child-process';
 import {loggerClient} from '@testring/logger';
 import {absoluteExtensionPath} from '@testring/devtool-extension';
 
-import Cookie = WebdriverIO.Cookie;
-import ClickOptions = WebdriverIO.ClickOptions;
+import type {Cookie} from '@wdio/protocols';
+import type {
+    ClickOptions,
+    MockFilterOptions,
+    MockResponseParams,
+    Matches,
+} from 'webdriverio';
 
 // Stupidly needed thing for making our own requests
 const _webdriverReq = require('webdriver/build/request');
 const WebDriverRequest = _webdriverReq.default;
 
-type BrowserObjectCustom = BrowserObject & {
+type BrowserObjectCustom = WebdriverIO.Browser & {
+    sessionId: string;
     deleteSessionId: (sessionId: string) => Promise<void>;
+    mockData: Record<string, Matches[]>;
 };
 
 type browserClientItem = {
@@ -95,6 +102,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         } as any;
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     private createConfig(
         config: Partial<SeleniumPluginConfig>,
     ): SeleniumPluginConfig {
@@ -348,7 +356,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             throw Error('Session can not be null');
         }
 
-        const customClient = this.addCustromMethods(client);
+        const customClient = this.addCustromMethods(
+            client as BrowserObjectCustom,
+        );
 
         this.browserClients.set(applicant, {
             client: customClient,
@@ -361,7 +371,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         );
     }
 
-    protected addCustromMethods(client: BrowserObject): BrowserObjectCustom {
+    protected addCustromMethods(
+        client: BrowserObjectCustom,
+    ): BrowserObjectCustom {
         // Creating our delete selenium session to be able to close
         // session if it's id is changed while we are running test
         client.addCommand(
@@ -517,7 +529,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
         const args = stringifyWindowFeatures(windowFeatures);
 
-        return client.newWindow(val, windowName || this.generateWinId(), args);
+        return client.newWindow(val, {
+            windowName: windowName || this.generateWinId(),
+            windowFeatures: args,
+        });
     }
 
     public async waitForExist(
@@ -529,7 +544,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         const selector = await client.$(xpath);
-        return selector.waitForExist(timeout);
+        return selector.waitForExist({timeout});
     }
 
     public async waitForVisible(
@@ -541,7 +556,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         const selector = await client.$(xpath);
-        return selector.waitForDisplayed(timeout);
+        return selector.waitForDisplayed({timeout});
     }
 
     public async isVisible(applicant: string, xpath: string) {
@@ -555,14 +570,14 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     public async moveToObject(
         applicant: string,
         xpath: string,
-        x: number,
-        y: number,
+        xOffset = 0,
+        yOffset = 0,
     ) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
         const selector = await client.$(xpath);
-        return selector.moveTo(x || 0, y || 0);
+        return selector.moveTo({xOffset, yOffset});
     }
 
     public async execute(applicant: string, fn: any, args: Array<any>) {
@@ -619,7 +634,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         });
     }
 
-    public async frame(applicant: string, frameID: string) {
+    public async frame(applicant: string, frameID: number) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
@@ -707,15 +722,15 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     public async scroll(
         applicant: string,
         xpath: string,
-        x: number,
-        y: number,
+        xOffset: number,
+        yOffset: number,
     ) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
         const element = await client.$(xpath);
         await element.scrollIntoView();
-        return element.moveTo(x, y);
+        return element.moveTo({xOffset, yOffset});
     }
 
     public async scrollIntoView(
@@ -858,7 +873,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         const result = await client.switchToWindow(tabId);
         const body = await client.$('body');
-        await client.waitUntil(async () => body.isExisting(), 10000);
+        await client.waitUntil(async () => body.isExisting(), {timeout: 10000});
 
         return result;
     }
@@ -962,10 +977,13 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        return client.waitUntil(async () => {
-            const elemValue = await (await client.$(xpath)).getValue();
-            return reverse ? !elemValue : !!elemValue;
-        }, timeout);
+        return client.waitUntil(
+            async () => {
+                const elemValue = await (await client.$(xpath)).getValue();
+                return reverse ? !elemValue : !!elemValue;
+            },
+            {timeout},
+        );
     }
 
     public async waitForSelected(
@@ -977,10 +995,13 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        return client.waitUntil(async () => {
-            const isSelected = await (await client.$(xpath)).isSelected();
-            return reverse ? !isSelected : isSelected;
-        }, timeout);
+        return client.waitUntil(
+            async () => {
+                const isSelected = await (await client.$(xpath)).isSelected();
+                return reverse ? !isSelected : isSelected;
+            },
+            {timeout},
+        );
     }
 
     public async waitUntil(
@@ -993,7 +1014,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        return client.waitUntil(condition, timeout, timeoutMsg, interval);
+        return client.waitUntil(condition, {timeout, timeoutMsg, interval});
     }
 
     public async selectByAttribute(
@@ -1009,6 +1030,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return selector.selectByAttribute(attribute, value);
     }
 
+    // @deprecated WAT-1872
     public async gridProxyDetails(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
@@ -1022,6 +1044,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.gridProxyDetails(client.sessionId);
     }
 
+    // @deprecated WAT-1872
     public async gridTestSession(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
@@ -1035,13 +1058,14 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.gridTestSession(client.sessionId);
     }
 
+    // @deprecated WAT-1872
     public async getGridNodeDetails(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
         const testSession = await this.gridTestSession(applicant);
 
-        if (!testSession.localSelenium) {
+        if (testSession && !testSession.localSelenium) {
             const proxyDetails = await client.gridProxyDetails(applicant);
 
             delete testSession.msg;
@@ -1056,8 +1080,56 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         return testSession;
     }
+
+    /**
+     * @param overwrites should NOT be an arrow function, Otherwise it would throw an error
+     */
+    public async mock(
+        applicant: string,
+        url: string,
+        overwrites: ((res: Matches) => void) | Object | string,
+        filterOptions?: MockFilterOptions,
+        mockResponseParams?: MockResponseParams,
+    ) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const mock = await client.mock(url, filterOptions);
+        if (typeof overwrites === 'function') {
+            mock.respond((res) => {
+                overwrites(res);
+                this.setMockData(applicant, url, res);
+                return res.body;
+            }, mockResponseParams);
+        } else {
+            mock.respond(overwrites);
+        }
+    }
+
+    public async setMockData(applicant: string, url: string, data: Matches) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        client.mockData = client.mockData || {};
+        if (client.mockData[url]) {
+            client.mockData[url].push(data);
+        } else {
+            client.mockData[url] = [data];
+        }
+        return true;
+    }
+
+    public async getMockData(applicant: string, url: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        if (url) {
+            return client.mockData[url];
+        }
+        return client.mockData;
+    }
 }
 
-export default function seleniumProxy(config: Config) {
+export default function seleniumProxy(config: SeleniumPluginConfig) {
     return new SeleniumPlugin(config);
 }

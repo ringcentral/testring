@@ -10,8 +10,12 @@
     },
     "publish": {
       "forcePublish": "*",
-      "allowBranch": "master"
+      "allowBranch": [
+        "master",
+        "wat*",
+        "WAT*"
+      ]
     }
   },
-  "version": "0.5.37"
+  "version": "0.6.0"
 }

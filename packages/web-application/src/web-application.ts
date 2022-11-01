@@ -2126,6 +2126,7 @@ export class WebApplication extends PluggableModule {
                 done: WebApplicationDevtoolCallback,
             ) {
                 (window as any).resolveWebApp = done;
+                done(null);
             });
 
             this.isRegisteredInDevtool = true;
@@ -2781,11 +2782,11 @@ export class WebApplication extends PluggableModule {
                         result.map = resMap;
                     }
                 } else {
-                    this.logger.error({srcMapUrl}, 'cannot load sourcemap');
+                    this.logger.warn({srcMapUrl}, 'cannot load sourcemap');
                 }
                 result.mapRes = mapRes;
             } else {
-                this.logger.error('cannot load sourcemap', {
+                this.logger.warn('cannot load sourcemap', {
                     src: src.substr(-100),
                 });
             }

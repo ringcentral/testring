@@ -1,6 +1,6 @@
 {
   "name": "@testring/cli",
-  "version": "0.5.37",
+  "version": "0.6.0",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,22 +10,21 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/browser-proxy": "0.5.37",
-    "@testring/cli-config": "0.5.37",
-    "@testring/devtool-backend": "0.5.37",
-    "@testring/fs-reader": "0.5.37",
-    "@testring/fs-store": "0.5.37",
-    "@testring/http-api": "0.5.37",
-    "@testring/logger": "0.5.37",
-    "@testring/plugin-api": "0.5.37",
-    "@testring/test-run-controller": "0.5.37",
-    "@testring/test-worker": "0.5.37",
-    "@testring/transport": "0.5.37",
-    "@testring/types": "0.5.37",
-    "@testring/web-application": "0.5.37",
-    "@types/node": "14.6.0",
+    "@testring/browser-proxy": "0.6.0",
+    "@testring/cli-config": "0.6.0",
+    "@testring/devtool-backend": "0.6.0",
+    "@testring/fs-reader": "0.6.0",
+    "@testring/fs-store": "0.6.0",
+    "@testring/http-api": "0.6.0",
+    "@testring/logger": "0.6.0",
+    "@testring/plugin-api": "0.6.0",
+    "@testring/test-run-controller": "0.6.0",
+    "@testring/test-worker": "0.6.0",
+    "@testring/transport": "0.6.0",
+    "@testring/types": "0.6.0",
+    "@testring/web-application": "0.6.0",
+    "@types/node": "14.17.6",
     "@types/yargs": "15.0.13",
     "yargs": "15.4.1"
-  },
-  "devDependencies": {}
+  }
 }

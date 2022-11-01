@@ -1,6 +1,6 @@
 {
   "name": "testring",
-  "version": "0.5.37",
+  "version": "0.6.0",
   "description": "Main package with CLI interface and test API.",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
@@ -14,7 +14,7 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/api": "0.5.37",
-    "@testring/cli": "0.5.37"
+    "@testring/api": "0.6.0",
+    "@testring/cli": "0.6.0"
   }
 }
