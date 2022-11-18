@@ -85,6 +85,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     constructor(config: Partial<SeleniumPluginConfig> = {}) {
         this.config = this.createConfig(config);
 
+        console.log(`SeleniumPluginConfig: ${JSON.stringify(this.config, null, 2)}`);
+
         if (this.config.host === undefined) {
             this.runLocalSelenium();
         }
