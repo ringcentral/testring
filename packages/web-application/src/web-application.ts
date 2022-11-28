@@ -53,6 +53,7 @@ type CoverageStaticDataItem = {
     srcMap: string;
 };
 
+//  -------- COVERAGE -----------  (need to make function for starting and collecting data)
 interface profiler {
     startCoverageRecord(cb: (error: Error, result: any) => void);
     takeCoverageRecord(
@@ -62,6 +63,8 @@ interface profiler {
 }
 
 declare const $TestRingProfiler: profiler;
+
+//  ------ COVERAGE END --------
 
 function stripHost(url: string) {
     const parts = url.split('://', 2);
@@ -2324,7 +2327,7 @@ export class WebApplication extends PluggableModule {
         reqOpts: Record<string, any> = {},
     ): Promise<Record<string, any>> {
         if (!this.cache[srcUrl]) {
-            const fileRes = await this.getSrcMap(srcUrl);
+            const fileRes = await this.getSrcMap(srcUrl, reqOpts);
             if (fileRes.src && fileRes.map) {
                 this.cache[srcUrl] = fileRes;
             } else {
@@ -2664,24 +2667,30 @@ export class WebApplication extends PluggableModule {
     ) {
         const files: SrcFileData[] = [];
 
+        const addr = await this.url();
+
+        const url = new URL(addr).hostname;
+
         this.coverageData.statics.loadPromises.push(
             Promise.all(
-                srcUrl.map(async (dataKey) => {
-                    const dataUrl = getUrlParts(dataKey);
-                    if (dataUrl) {
-                        const srcName = getFileNameFromUrl(dataUrl.href);
-                        if (!this.addStaticsLoader(srcName)) {
-                            // file already processing or processed
-                            return Promise.resolve();
-                        }
+                srcUrl
+                    .filter((item) => item.includes(url))
+                    .map(async (dataKey) => {
+                        const dataUrl = getUrlParts(dataKey);
+                        if (dataUrl) {
+                            const srcName = getFileNameFromUrl(dataUrl.href);
+                            if (!this.addStaticsLoader(srcName)) {
+                                // file already processing or processed
+                                return Promise.resolve();
+                            }
 
-                        const fileData = await this.loadFilesFrom(
-                            dataUrl,
-                            reqOpts,
-                        );
-                        files.push(fileData);
-                    }
-                }),
+                            const fileData = await this.loadFilesFrom(
+                                dataUrl,
+                                reqOpts,
+                            );
+                            files.push(fileData);
+                        }
+                    }),
             ).then(() => this.saveSrcFiles(files)),
         );
         return files;
@@ -2825,7 +2834,7 @@ function getSrcUrlsAndHashFromCoverage(
     let hash = '';
     const srcUrls: string[] = [];
     actions.forEach(({data}) => {
-        data.coverage.forEach(({result}) => {
+        data?.coverage.forEach(({result}) => {
             result.forEach(({url}) => {
                 const gitHash = getGitHashFromName(url || '');
                 if (url) {
