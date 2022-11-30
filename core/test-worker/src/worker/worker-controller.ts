@@ -128,6 +128,7 @@ export class WorkerController {
     }
 
     private async completeExecutionFailed(error: Error) {
+        this.logger.error(error, 'Error during test execution');
         this.releasePauseMode();
 
         try {
