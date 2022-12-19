@@ -2595,7 +2595,11 @@ export class WebApplication extends PluggableModule {
                 await originMethod.apply(self, args);
                 this.logger.info({ts: Date.now()}, 'COVERAGE waiting for root');
 
-                await this.waitForRoot();
+                try {
+                    await this.waitForRoot();
+                } catch {
+                    this.logger.info({ts: Date.now()}, 'COVERAGE root is not in ready state after wait timeout, let\'s continue anyway');
+                }
                 this.logger.info({ts: Date.now()}, 'COVERAGE take coverage');
 
                 coverResult = await this.takeActionCoverage();
