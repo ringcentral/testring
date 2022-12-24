@@ -2847,5 +2847,29 @@ function getSrcUrlsAndHashFromCoverage(
         });
     });
 
-    return Promise.resolve({hash, srcUrls});
+    return new Promise((resolve, reject) => {
+        const feedBackId = `${generateUniqId(8)}_${Date.now()}`;
+
+        let failed = false;
+
+        const tout = setTimeout(() => {
+            failed = true;
+            reject('loadedList TO');
+        }, 30000);
+
+        transport.once(feedBackId, (list: string[]) => {
+            if (failed) {
+                return;
+            }
+            clearTimeout(tout);
+            const fileSet = new Set(list);
+            resolve({
+                hash,
+                srcUrls: srcUrls.filter(
+                    (it) => !fileSet.has(it.split('/').slice(3).join('/')),
+                ),
+            });
+        });
+        transport.broadcastUniversally('getLoadedNames', {feedBackId});
+    });
 }
