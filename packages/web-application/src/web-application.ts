@@ -2598,7 +2598,10 @@ export class WebApplication extends PluggableModule {
                 try {
                     await this.waitForRoot();
                 } catch {
-                    this.logger.info({ts: Date.now()}, 'COVERAGE root is not in ready state after wait timeout, let\'s continue anyway');
+                    this.logger.info(
+                        {ts: Date.now()},
+                        "COVERAGE root is not in ready state after wait timeout, let's continue anyway",
+                    );
                 }
                 this.logger.info({ts: Date.now()}, 'COVERAGE take coverage');
 
@@ -2858,8 +2861,11 @@ function getSrcUrlsAndHashFromCoverage(
 
         const tout = setTimeout(() => {
             failed = true;
-            reject('loadedList TO');
-        }, 30000);
+            resolve({
+                hash,
+                srcUrls,
+            });
+        }, 10000);
 
         transport.once(feedBackId, (list: string[]) => {
             if (failed) {
