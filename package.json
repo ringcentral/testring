@@ -75,7 +75,7 @@
     "@lerna/filter-packages": "4.0.0",
     "@lerna/project": "4.0.0",
     "@lerna/run-parallel-batches": "3.16.0",
-    "@types/chai": "4.2.21",
+    "@types/chai": "4.3.4",
     "@types/mocha": "8.2.3",
     "@types/node": "14.18.28",
     "chai": "4.3.4",
