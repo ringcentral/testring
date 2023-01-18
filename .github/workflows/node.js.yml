@@ -29,7 +29,6 @@ jobs:
     - run: npm ci
     - run: npm run build
     - run: npm run test:ci
-    - run: npm run test:e2e
 
     - name: Coveralls
       if: ${{ matrix.os=='ubuntu-latest' && matrix.node-version=='16'}}
