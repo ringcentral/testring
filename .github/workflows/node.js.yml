@@ -38,7 +38,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: SonarCloud Scan
-      if: ${{ matrix.os=='ubuntu-latest' && matrix.node-version=='16'}}
+      if: ${{ matrix.os=='ubuntu-latest' && matrix.node-version=='16' && github.event.pull_request.merged == true}}
       uses: sonarsource/sonarcloud-github-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
