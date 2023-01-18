@@ -20,7 +20,7 @@
     "test": "lerna exec --ignore=\"@testring/@(ui-kit|types|e2e-test-app)\" -- mocha",
     "test:watch": "lerna exec --ignore=\"@testring/@(ui-kit|types|e2e-test-app)\" --parallel -- mocha --watch",
     "test:coverage": "nyc npm test",
-    "test:e2e": "lerna run --stream --scope @testring/e2e-test-app test:all",
+    "test:e2e": "lerna run --stream --scope @testring/e2e-test-app test",
     "test:e2e-simple": "lerna run --stream --scope @testring/e2e-test-app test:simple",
     "test:ci": "npm run test:coverage && npm run test:e2e",
     "build": "npm run build:main && npm run build:devtool && npm run build:extension",
