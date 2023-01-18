@@ -22,7 +22,7 @@ describe('fs-store-presets', () => {
         FSS = new FSStoreServer(10, prefix);
     });
     after(() => {
-        return fs.promises.rmdir(tmpDir, {recursive: true});
+        return fs.promises.rm(tmpDir, {recursive: true});
     });
 
     it('store object create random file', async () => {

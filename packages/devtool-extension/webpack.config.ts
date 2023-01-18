@@ -1,7 +1,7 @@
 import * as path from 'path';
 
 import * as webpack from 'webpack';
-import * as CopyWebpackPlugin from 'copy-webpack-plugin';
+import * as CopyPlugin from 'copy-webpack-plugin';
 
 import {CRXPlugin} from './crx-plugin';
 
@@ -16,23 +16,6 @@ const staticRelativeDir = 'static/';
 const outputDir = getAbsolutePath('dist');
 
 const manifestRelativePath = path.join(staticRelativeDir, 'manifest.json');
-
-const staticFilesTransform = (content: string, absolutePath: string) => {
-    const relativePath = path.relative(__dirname, absolutePath);
-
-    if (relativePath === manifestRelativePath) {
-        const data = JSON.parse(content);
-
-        // Adding version and key in manifest.json
-        return JSON.stringify({
-            ...data,
-            ...manifestKeyJson,
-            version: appVersion,
-        });
-    }
-
-    return content;
-};
 
 const config: webpack.Configuration = {
     mode: 'development',
@@ -51,6 +34,11 @@ const config: webpack.Configuration = {
 
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
+        fallback:{
+            net:false,
+            fs: false,
+            "path": require.resolve("path-browserify"),
+        },
     },
 
     module: {
@@ -68,23 +56,34 @@ const config: webpack.Configuration = {
         ],
     },
 
-    node: {
-        net: 'empty',
-        fs: 'empty',
-    },
-
     devtool: false,
 
     stats: 'minimal',
 
     plugins: [
-        new CopyWebpackPlugin([
-            {
-                from: staticRelativeDir,
-                to: outputDir,
-                transform: staticFilesTransform,
-            },
-        ]),
+        new CopyPlugin({
+            patterns: [
+                {
+                    from: staticRelativeDir,
+                    to: outputDir,
+                    transform(content, absolutePath){
+                        const relativePath = path.relative(__dirname, absolutePath);
+
+                        if (relativePath === manifestRelativePath) {
+                            const data = JSON.parse(content.toString());
+
+                            // Adding version and key in manifest.json
+                            return JSON.stringify({
+                                ...data,
+                                ...manifestKeyJson,
+                                version: appVersion,
+                            });
+                        }
+                        return content;
+                    },
+                },
+            ],
+        }),
         process.argv.indexOf('--enable-crx') > -1
             ? new CRXPlugin({
                   directory: outputDir,

@@ -1,4 +1,3 @@
-import * as path from 'path';
 import * as webpack from 'webpack';
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin';
 
@@ -9,11 +8,15 @@ const config: webpack.Configuration = {
         popup: './src/popup.tsx',
     },
     output: {
-        path: path.resolve(__dirname, 'dist'),
         filename: '[name].bundle.js',
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js', '.css'],
+        fallback:{
+            net:false,
+            fs: false,
+            "path": require.resolve("path-browserify"),
+        },
     },
     plugins: [
         new MonacoWebpackPlugin({
@@ -66,11 +69,6 @@ const config: webpack.Configuration = {
     },
 
     stats: 'minimal',
-
-    node: {
-        net: 'empty',
-        fs: 'empty',
-    },
 };
 
 export default config;

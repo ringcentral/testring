@@ -26,7 +26,7 @@ describe('fs-store-file', () => {
         FSS = new FSStoreServer(10, prefix);
     });
     after(() => {
-        return fs.promises.rmdir(tmpDir, {recursive: true});
+        return fs.promises.rm(tmpDir, {recursive: true});
     });
     it('store file static methods test', async () => {
         const onRelease = FSS.getHook(fsStoreServerHooks.ON_RELEASE);

@@ -29,6 +29,6 @@
     "concurrently": "6.2.0",
     "express": "4.17.1",
     "testring": "0.6.0",
-    "ts-node": "10.1.0"
+    "ts-node": "10.9.1"
   }
 }
