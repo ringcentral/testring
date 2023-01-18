@@ -38,6 +38,7 @@ const config: webpack.Configuration = {
             net:false,
             fs: false,
             "path": require.resolve("path-browserify"),
+            "events": require.resolve("events/"),
         },
     },
 
