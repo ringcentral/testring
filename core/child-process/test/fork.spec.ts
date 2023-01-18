@@ -7,7 +7,7 @@ import {fork} from '../src/fork';
 const fixtures = path.resolve(__dirname, './fixtures');
 
 describe('fork', () => {
-    it('should fork .js files with node', (callback) => {
+    it('should fork.ts files with node', (callback) => {
         fork(path.join(fixtures, 'javascript.js')).then((ps) => {
             ps.on('exit', (code, signal) => {
                 if (signal) {

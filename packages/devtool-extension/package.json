@@ -21,6 +21,7 @@
     "@types/webpack": "5.28.0",
     "chrome-launcher": "0.15.1",
     "copy-webpack-plugin": "11.0.0",
+    "os-browserify": "0.3.0",
     "path-browserify": "1.0.1",
     "ts-loader": "9.4.2",
     "ts-node": "10.9.1",
