@@ -21,6 +21,7 @@ const PREFERRED_DEBUG_PORTS: Array<number> = [
 const IS_WIN = process.platform === 'win32';
 const EMPTY_PARAMETERS = [];
 const REQUIRE_TS_NODE = ['-r', 'ts-node/register'];
+const Module = require("module").Module;
 
 const DEFAULT_FORK_OPTIONS: IChildProcessForkOptions = {
     debug: false,
@@ -38,7 +39,7 @@ function getAdditionalParameters(filePath: string): Array<string> {
             return REQUIRE_TS_NODE;
 
         case '':
-            return require.extensions['.ts']
+            return Module._extensions['.ts']
                 ? REQUIRE_TS_NODE
                 : EMPTY_PARAMETERS;
 
@@ -58,7 +59,7 @@ function getExecutor(filePath: string): string {
             return resolveBinary('ts-node');
 
         case '':
-            return require.extensions['.ts']
+            return Module._extensions['.ts']
                 ? resolveBinary('ts-node')
                 : process.execPath;
 

@@ -13,7 +13,9 @@
       "allowBranch": [
         "master",
         "wat*",
-        "WAT*"
+        "WAT*",
+        "xtap*",
+        "XTAP*"
       ]
     }
   },

@@ -20,7 +20,6 @@ console.log(data);
 `.trim();
 const REQUIRE_OUTPUT = `
 var _somewhere = require("somewhere");
-
 console.log(_somewhere.data);
 `.trim();
 
