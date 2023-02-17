@@ -17,13 +17,15 @@
     "@testring/client-ws-transport": "0.6.0",
     "@testring/types": "0.6.0",
     "@testring/utils": "0.6.0",
-    "@types/chrome": "0.0.145",
-    "@types/webpack": "4.4.22",
-    "chrome-launcher": "0.10.5",
-    "copy-webpack-plugin": "5.0.2",
-    "ts-loader": "8.0.2",
-    "ts-node": "10.1.0",
-    "webpack": "4.28.4",
-    "webpack-cli": "3.3.12"
+    "@types/chrome": "0.0.208",
+    "@types/webpack": "5.28.0",
+    "chrome-launcher": "0.15.1",
+    "copy-webpack-plugin": "11.0.0",
+    "os-browserify": "0.3.0",
+    "path-browserify": "1.0.1",
+    "ts-loader": "9.4.2",
+    "ts-node": "10.9.1",
+    "webpack": "5.75.0",
+    "webpack-cli": "5.0.1"
   }
 }
