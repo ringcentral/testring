@@ -86,7 +86,7 @@
     "lerna": "6.4.1",
     "lerna-update-wizard": "1.1.2",
     "mocha": "10.2.0",
-    "npm-check-updates": "16.6.2",
+    "npm-check-updates": "16.6.3",
     "nyc": "15.1.0",
     "pre-commit": "1.2.2",
     "rimraf": "4.1.1",
