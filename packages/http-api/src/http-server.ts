@@ -113,17 +113,24 @@ export class HttpServer
                     HttpMessageType.reject,
                     {
                         uid,
-                        error: errorAfterHook,
+                        error: this.errorToObject(errorAfterHook),
                     },
                 );
-
-                this.logger.debug(errorAfterHook);
             }
         };
 
         setImmediate(() =>
             send(data, src).catch((err) => this.logger.error(err)),
         );
+    }
+
+    private errorToObject(error: Error) {
+        try {
+            return JSON.parse(JSON.stringify(error));
+        } catch (e) {
+            this.logger.debug('Cannot convert http error to object');
+        }
+        return error;
     }
 
     private async sendResponse<T>(
