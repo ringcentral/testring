@@ -1,4 +1,4 @@
-import {SeleniumPluginConfig} from '../types';
+import {SeleniumPluginConfig, CdpConfig} from '../types';
 import {IBrowserProxyPlugin, WindowFeaturesConfig} from '@testring/types';
 
 import {ChildProcess} from 'child_process';
@@ -9,6 +9,7 @@ import * as deepmerge from 'deepmerge';
 import {spawn} from '@testring/child-process';
 import {loggerClient} from '@testring/logger';
 import {absoluteExtensionPath} from '@testring/devtool-extension';
+import {CDPCoverageCollector} from '@ringcentral/code-coverage-client';
 
 import type {Cookie} from '@wdio/protocols';
 import type {
@@ -32,6 +33,7 @@ type browserClientItem = {
     client: BrowserObjectCustom;
     sessionId: string;
     initTime: number;
+    cdpCoverageCollector: CDPCoverageCollector;
 };
 
 const DEFAULT_CONFIG: SeleniumPluginConfig = {
@@ -47,6 +49,8 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
             args: [] as string[],
         },
     },
+    cdpCoverage: false,
+    cdpConfig: {} as CdpConfig
 };
 
 function delay(timeout) {
@@ -360,15 +364,69 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             client as BrowserObjectCustom,
         );
 
+        let cdpCoverageCollector;
+        if (this.config.cdpCoverage) {
+            this.logger.debug('Started to init cdp coverage....');
+            cdpCoverageCollector = await this.enableCDPCoverageClient(client);
+            this.logger.debug('ended to init cdp coverage....');
+        }
         this.browserClients.set(applicant, {
             client: customClient,
             sessionId,
             initTime: Date.now(),
+            cdpCoverageCollector: cdpCoverageCollector ? cdpCoverageCollector : null
         });
 
         this.logger.debug(
             `Started session for applicant: ${applicant}. Session id: ${sessionId}`,
         );
+    }
+
+    private async enableCDPCoverageClient(client) {
+        if (this.config.host === undefined) {
+            return null;
+        }
+        //accurate
+        if (!client.capabilities['se:cdp']) {
+            return null;
+        }
+        const cdpAddress = client.capabilities['se:cdp'];
+        const collector = new CDPCoverageCollector({
+            wsEndpoint: cdpAddress,
+            coverageApiServer: this.config.cdpConfig.coverageApiServer,
+        });
+        await collector.init();
+        await collector.start();
+        return collector;
+    }
+
+     public async uploadCdpCoverage(applicant: string) {
+        const clientData = this.browserClients.get(applicant);
+        this.logger.debug(`start upload coverage for applicant ${applicant}`);
+        if (!clientData) {
+            return;
+        }
+        const coverageCollector = clientData.cdpCoverageCollector;
+        if (!coverageCollector) {
+            return;
+        }
+        const textArray = applicant.split('/');
+        const CASE_ID = textArray[3];
+        const coverages = await coverageCollector.collect();
+        const data = {
+            projectId: this.config.cdpConfig.projectId,
+            releaseId: this.config.cdpConfig.releaseId,
+            sut: this.config.cdpConfig.sut,
+            testingType: 'AT',
+            caseId: CASE_ID,
+            buildVersion: this.config.cdpConfig.buildVersion,
+            uploadedBy: 'SW-E2E',
+            fileFormat: 'V8',
+            // Files is a buffer array, how many files here depends on how many browsers launched by test case
+            files: [Buffer.from(JSON.stringify(coverages))],
+        };
+        await coverageCollector.upload(data);
+        await coverageCollector.stop();
     }
 
     protected addCustromMethods(
@@ -431,7 +489,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         } else {
             await this.logger.stepWarning(
                 `Stopping sessions for applicant warning ${applicant}. ` +
-                    `Session ids are not equal, started with - ${startingSessionID}, ended with - ${sessionID}`,
+                `Session ids are not equal, started with - ${startingSessionID}, ended with - ${sessionID}`,
                 async () => {
                     try {
                         if (startingSessionID) {
@@ -855,6 +913,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         return client.getWindowHandles();
     }
+
     // @deprecated
     public async windowHandles(applicant: string) {
         return this.getTabIds(applicant);
