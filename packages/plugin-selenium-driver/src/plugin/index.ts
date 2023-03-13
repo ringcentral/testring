@@ -412,7 +412,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
         const textArray = applicant.split('/');
         const CASE_ID = textArray[3];
-        const coverages = await coverageCollector.collect();
+        const {coverage} = await coverageCollector.collect();
         const data = {
             projectId: this.config.cdpConfig.projectId,
             releaseId: this.config.cdpConfig.releaseId,
@@ -423,7 +423,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             uploadedBy: 'SW-E2E',
             fileFormat: 'V8',
             // Files is a buffer array, how many files here depends on how many browsers launched by test case
-            files: [Buffer.from(JSON.stringify(coverages))],
+            files: [Buffer.from(JSON.stringify(coverage))],
         };
         await coverageCollector.upload(data);
         await coverageCollector.stop();
