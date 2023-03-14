@@ -400,7 +400,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return collector;
     }
 
-     public async uploadCdpCoverage(applicant: string) {
+     public async uploadCdpCoverage(applicant: string, caseId: string) {
         const clientData = this.browserClients.get(applicant);
         this.logger.debug(`start upload coverage for applicant ${applicant}`);
         if (!clientData) {
@@ -410,15 +410,13 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         if (!coverageCollector) {
             return;
         }
-        const textArray = applicant.split('/');
-        const CASE_ID = textArray[3];
         const {coverage} = await coverageCollector.collect();
         const data = {
             projectId: this.config.cdpConfig.projectId,
             releaseId: this.config.cdpConfig.releaseId,
             sut: this.config.cdpConfig.sut,
             testingType: 'AT',
-            caseId: CASE_ID,
+            caseId,
             buildVersion: this.config.cdpConfig.buildVersion,
             uploadedBy: 'SW-E2E',
             fileFormat: 'V8',

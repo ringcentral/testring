@@ -400,7 +400,7 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.getMockData, [url]);
     }
 
-    public uploadCdpCoverage(url: string) {
-        return this.makeRequest(BrowserProxyActions.uploadCdpCoverage, [url]);
+    public uploadCdpCoverage(caseId: string) {
+        return this.makeRequest(BrowserProxyActions.uploadCdpCoverage, [caseId]);
     }
 }
