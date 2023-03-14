@@ -418,7 +418,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             testingType: 'AT',
             caseId,
             buildVersion: this.config.cdpConfig.buildVersion,
-            uploadedBy: 'SW-E2E',
+            uploadedBy: 'CI',
             fileFormat: 'V8',
             // Files is a buffer array, how many files here depends on how many browsers launched by test case
             files: [Buffer.from(JSON.stringify(coverage))],
