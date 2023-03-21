@@ -1,3 +1,4 @@
+import * as path from 'path';
 import {requirePackage, resolvePackage} from './package-require';
 
 const PREFIXES = ['@testring/plugin-', 'testring-plugin-', '@testring/'];
@@ -19,10 +20,11 @@ function normalizeExport(module) {
 
 export function requirePlugin(pluginPath: string): any {
     let resolvedPlugin;
+    const parentModule = path.join(__dirname, '../..')
 
     for (let index = 0; index < PREFIXES.length; index++) {
         try {
-            resolvedPlugin = resolvePackage(PREFIXES[index] + pluginPath);
+            resolvedPlugin = resolvePackage(PREFIXES[index] + pluginPath, parentModule);
         } catch (e) {
             continue;
         }
