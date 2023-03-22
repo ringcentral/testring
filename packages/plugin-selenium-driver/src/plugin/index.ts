@@ -9,7 +9,7 @@ import * as deepmerge from 'deepmerge';
 import {spawn} from '@testring/child-process';
 import {loggerClient} from '@testring/logger';
 import {absoluteExtensionPath} from '@testring/devtool-extension';
-import {CDPCoverageCollector} from '@ringcentral/code-coverage-client';
+import {CDPCoverageCollector} from '@nullcc/code-coverage-client';
 
 import type {Cookie} from '@wdio/protocols';
 import type {
@@ -50,7 +50,7 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
         },
     },
     cdpCoverage: false,
-    cdpConfig: {} as CdpConfig
+    cdpConfig: {} as CdpConfig,
 };
 
 function delay(timeout) {
@@ -374,7 +374,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             client: customClient,
             sessionId,
             initTime: Date.now(),
-            cdpCoverageCollector: cdpCoverageCollector ? cdpCoverageCollector : null
+            cdpCoverageCollector: cdpCoverageCollector
+                ? cdpCoverageCollector
+                : null,
         });
 
         this.logger.debug(
@@ -393,14 +395,13 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const cdpAddress = client.capabilities['se:cdp'];
         const collector = new CDPCoverageCollector({
             wsEndpoint: cdpAddress,
-            coverageApiServer: this.config.cdpConfig.coverageApiServer,
         });
         await collector.init();
         await collector.start();
         return collector;
     }
 
-     public async uploadCdpCoverage(applicant: string, caseId: string) {
+    public async uploadCdpCoverage(applicant: string, caseId: string) {
         const clientData = this.browserClients.get(applicant);
         this.logger.debug(`start upload coverage for applicant ${applicant}`);
         if (!clientData) {
@@ -411,20 +412,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             return;
         }
         const {coverage} = await coverageCollector.collect();
-        const data = {
-            projectId: this.config.cdpConfig.projectId,
-            releaseId: this.config.cdpConfig.releaseId,
-            sut: this.config.cdpConfig.sut,
-            testingType: 'AT',
-            caseId,
-            buildVersion: this.config.cdpConfig.buildVersion,
-            uploadedBy: 'CI',
-            fileFormat: 'V8',
-            // Files is a buffer array, how many files here depends on how many browsers launched by test case
-            files: [Buffer.from(JSON.stringify(coverage))],
-        };
-        await coverageCollector.upload(data);
         await coverageCollector.stop();
+        return [Buffer.from(JSON.stringify(coverage))];
     }
 
     protected addCustromMethods(
@@ -487,7 +476,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         } else {
             await this.logger.stepWarning(
                 `Stopping sessions for applicant warning ${applicant}. ` +
-                `Session ids are not equal, started with - ${startingSessionID}, ended with - ${sessionID}`,
+                    `Session ids are not equal, started with - ${startingSessionID}, ended with - ${sessionID}`,
                 async () => {
                     try {
                         if (startingSessionID) {

@@ -10,6 +10,7 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
+    "@nullcc/code-coverage-client": "1.4.2",
     "@testring/child-process": "0.6.1",
     "@testring/devtool-extension": "0.6.1",
     "@testring/logger": "0.6.1",
@@ -20,7 +21,6 @@
     "chromedriver": "*",
     "deepmerge": "4.2.2",
     "selenium-server": "3.141.59",
-    "webdriverio": "7.20.7",
-    "@ringcentral/code-coverage-client": "1.4.0"
+    "webdriverio": "7.20.7"
   }
 }
