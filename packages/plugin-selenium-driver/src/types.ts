@@ -8,16 +8,4 @@ export type SeleniumPluginConfig = RemoteOptions & {
     host?: string; // fallback for configuration. In WebdriverIO 5 field host renamed to hostname
     desiredCapabilities?: WebDriver.DesiredCapabilities[]; // fallback for configuration. In WebdriverIO 5 field renamed
     cdpCoverage: boolean;
-    cdpConfig: CdpConfig;
-};
-
-/*
- * CDP coverage params
- */
-export type CdpConfig = {
-    coverageApiServer: string;
-    projectId: string;
-    releaseId: string;
-    sut: string;
-    buildVersion: string;
 };

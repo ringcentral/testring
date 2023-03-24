@@ -1,4 +1,4 @@
-import {SeleniumPluginConfig, CdpConfig} from '../types';
+import {SeleniumPluginConfig} from '../types';
 import {IBrowserProxyPlugin, WindowFeaturesConfig} from '@testring/types';
 
 import {ChildProcess} from 'child_process';
@@ -49,8 +49,7 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
             args: [] as string[],
         },
     },
-    cdpCoverage: false,
-    cdpConfig: {} as CdpConfig,
+    cdpCoverage: false
 };
 
 function delay(timeout) {
@@ -401,7 +400,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return collector;
     }
 
-    public async uploadCdpCoverage(applicant: string, caseId: string) {
+    public async getCdpCoverageFile(applicant: string, caseId: string) {
         const clientData = this.browserClients.get(applicant);
         this.logger.debug(`start upload coverage for applicant ${applicant}`);
         if (!clientData) {
