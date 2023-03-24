@@ -400,7 +400,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return collector;
     }
 
-    public async getCdpCoverageFile(applicant: string, caseId: string) {
+    public async getCdpCoverageFile(applicant: string) {
         const clientData = this.browserClients.get(applicant);
         this.logger.debug(`start upload coverage for applicant ${applicant}`);
         if (!clientData) {
