@@ -76,6 +76,9 @@ export class WebClient implements IWebApplicationClient {
     }
 
     public url(val) {
+        if (val === 'about:blank') {
+            return null;
+        }
         return this.makeRequest(BrowserProxyActions.url, [val]);
     }
 
