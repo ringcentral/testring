@@ -11,7 +11,7 @@ const requireById = (id) => {
 };
 
 const requireResolveById = (id, options?: {paths?: string[]}) => {
-    return (module.require as NodeRequire).resolve(id, options);
+    return require.resolve(id, options);
 };
 
 export function resolvePackage(
