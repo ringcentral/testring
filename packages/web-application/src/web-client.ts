@@ -399,4 +399,35 @@ export class WebClient implements IWebApplicationClient {
     public getMockData(url: string) {
         return this.makeRequest(BrowserProxyActions.getMockData, [url]);
     }
+
+    public getCdpCoverageFile() {
+        return this.makeRequest(BrowserProxyActions.getCdpCoverageFile, []);
+    }
+
+    // XTAP-55439 For A11y Testing ONLY ---start
+    public switchToFrame(name) {
+        return name;
+    }
+
+    public switchToParentFrame() {
+        return null as any;
+    }
+
+    public getWindowHandle() {
+        return null as any;
+    }
+
+    public createWindow(windowName = '') {
+        const handles = {handle: windowName};
+        return Object.assign({}, handles, null);
+    }
+
+    public closeWindow() {
+        return null as any;
+    }
+
+    public switchToWindow(tabId) {
+        return tabId;
+    }
+    // XTAP-55439 For A11y Testing ONLY ---end
 }

@@ -74,4 +74,5 @@ export const enum BrowserProxyActions {
     keysOnElement = 'keysOnElement',
     mock = 'mock',
     getMockData = 'getMockData',
+    getCdpCoverageFile = 'getCdpCoverageFile'
 }
