@@ -55,6 +55,7 @@ type CoverageStaticDataItem = {
 
 //  -------- COVERAGE -----------  (need to make function for starting and collecting data)
 interface profiler {
+    init(meta: Record<string, any>);
     startCoverageRecord(cb: (error: Error, result: any) => void);
     takeCoverageRecord(
         cb: (error: Error, result: any) => void,
@@ -2346,6 +2347,11 @@ export class WebApplication extends PluggableModule {
 
             const {result, error, ts, duration} = coverResult;
 
+            if (!result) {
+                loggerClient.warn('EMPTY COVERAGE ACTION DATA');
+                return;
+            }
+
             loggerClient.info({result, id}, 'COVERAGE ACTION DATA');
             const action: CoverageGroupData = {
                 data: result,
@@ -2359,7 +2365,10 @@ export class WebApplication extends PluggableModule {
             // save coverage in plugin
 
             transport.broadcastUniversally('coverageAction', {
-                meta: this.options.meta,
+                meta: {
+                    coverageMeta: this.options.coverageMeta,
+                    ...this.options.meta,
+                },
                 action,
             });
 
@@ -2411,6 +2420,34 @@ export class WebApplication extends PluggableModule {
         const {meta: extraMeta} = this.coverageData;
 
         loggerClient.info('START completing coverage collection');
+        this.logger.info({ts: Date.now()}, 'COVERAGE take left coverage');
+
+        const startTs = Date.now();
+        const coverResult = await this.takeActionCoverage(10 * 1000);
+        this.logger.info(
+            {ts: Date.now(), coverResult},
+            'COVERAGE CLOSING DONE',
+        );
+
+        const prevUrl: any = await this.url();
+
+        const fullPath = await this.getFullPath('closing...');
+
+        const actionMeta = await this.getMethodActionMeta('closing', []);
+
+        await this.addCoverageResult(
+            {
+                ...coverResult,
+                ts: startTs as number,
+                duration: (Date.now() - startTs) as number,
+            },
+            {
+                fullPath,
+                url: stripHost(prevUrl),
+                action: 'endAction',
+                actionMeta,
+            },
+        );
 
         const feedBackId = `${generateUniqId(8)}_${Date.now()}`;
 
@@ -2434,7 +2471,10 @@ export class WebApplication extends PluggableModule {
                 res(true);
             });
             transport.broadcastUniversally('coverageMeta', {
-                meta: this.options.meta,
+                meta: {
+                    coverageMeta: this.options.coverageMeta,
+                    ...this.options.meta,
+                },
                 extraMeta,
                 feedBackId,
             });
@@ -2452,7 +2492,7 @@ export class WebApplication extends PluggableModule {
         }
         // start coverage action
 
-        return this.client.executeAsync((done) => {
+        return this.client.executeAsync((meta, done) => {
             if (!$TestRingProfiler) {
                 return done(
                     JSON.stringify({
@@ -2462,6 +2502,7 @@ export class WebApplication extends PluggableModule {
                     }),
                 );
             }
+            $TestRingProfiler.init(meta);
             $TestRingProfiler.startCoverageRecord((error, result) => {
                 if (error) {
                     done(
@@ -2473,10 +2514,10 @@ export class WebApplication extends PluggableModule {
                     done(JSON.stringify({result}));
                 }
             });
-        });
+        }, this.options?.coverageMeta || {});
     }
 
-    protected async takeActionCoverage(): Promise<any> {
+    protected async takeActionCoverage(to: number = 5 * 1000): Promise<any> {
         this.coverageCurrentLevel--;
         if (this.coverageCurrentLevel < 0) {
             this.coverageCurrentLevel = 0;
@@ -2486,7 +2527,7 @@ export class WebApplication extends PluggableModule {
             return Promise.resolve();
         }
         // collect coverage
-        const result = await this.client.executeAsync((done) => {
+        const result = await this.client.executeAsync((timeout, done) => {
             if (!$TestRingProfiler) {
                 return done(
                     JSON.stringify({
@@ -2505,9 +2546,9 @@ export class WebApplication extends PluggableModule {
                         }),
                     );
                 },
-                10 * 1000,
+                timeout,
             );
-        });
+        }, to);
 
         return JSON.parse(result);
     }
@@ -2528,42 +2569,42 @@ export class WebApplication extends PluggableModule {
         return null;
     }
 
+    private getFullPath(xpath: any): string[] {
+        if (!(xpath instanceof ElementPath)) {
+            return [xpath as string];
+        }
+        return [this.normalizeSelector(xpath)];
+
+        // --------- MORE COMPLEX XPATH GEN METHOD
+        // return this.client.executeAsync(function tmp(xpath, done) {
+
+        //     function getElementByXPath(xpath) {
+        //         // eslint-disable-next-line no-var
+        //         var element = document.evaluate(xpath, document, null,
+        //             XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        //         if (element.snapshotLength > 0) {
+        //             return element.snapshotItem(0) as any;
+        //         }
+        //         return null;
+        //     }
+
+        //     try {
+        //         let element = getElementByXPath(xpath);
+        //         if (element) {
+        //             element.className = element.className.replace(/invisible/gi, '');
+        //             element.focus();
+        //             element.click();
+        //             done(null);
+        //         } else {
+        //             done(`Element not found ${xpath}`);
+        //         }
+        //     } catch (e) {
+        //         done(`${e.message} ${xpath}`);
+        //     }
+        // }, xpath);
+    }
+
     protected decorateCoverageMethods() {
-        const getFullPath = (xpath: any): string[] => {
-            if (!(xpath instanceof ElementPath)) {
-                return [xpath as string];
-            }
-            return [this.normalizeSelector(xpath)];
-
-            // --------- MORE COMPLEX XPATH GEN METHOD
-            // return this.client.executeAsync(function tmp(xpath, done) {
-
-            //     function getElementByXPath(xpath) {
-            //         // eslint-disable-next-line no-var
-            //         var element = document.evaluate(xpath, document, null,
-            //             XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-            //         if (element.snapshotLength > 0) {
-            //             return element.snapshotItem(0) as any;
-            //         }
-            //         return null;
-            //     }
-
-            //     try {
-            //         let element = getElementByXPath(xpath);
-            //         if (element) {
-            //             element.className = element.className.replace(/invisible/gi, '');
-            //             element.focus();
-            //             element.click();
-            //             done(null);
-            //         } else {
-            //             done(`Element not found ${xpath}`);
-            //         }
-            //     } catch (e) {
-            //         done(`${e.message} ${xpath}`);
-            //     }
-            // }, xpath);
-        };
-
         const methodCaller = async (
             self,
             originMethod,
@@ -2575,7 +2616,7 @@ export class WebApplication extends PluggableModule {
                 const startTs = Date.now();
                 const prevUrl: any = await this.url();
 
-                const fullPath = await getFullPath(args[0]);
+                const fullPath = await this.getFullPath(args[0]);
 
                 const actionMeta = await this.getMethodActionMeta(
                     opts.methodName,
@@ -2588,7 +2629,7 @@ export class WebApplication extends PluggableModule {
                 );
                 await this.startActionCoverage();
                 this.logger.info(
-                    {ts: Date.now()},
+                    {ts: Date.now(), coverMeta: this.options?.coverageMeta},
                     'COVERAGE method call - started',
                 );
 
@@ -2605,8 +2646,11 @@ export class WebApplication extends PluggableModule {
                 }
                 this.logger.info({ts: Date.now()}, 'COVERAGE take coverage');
 
-                coverResult = await this.takeActionCoverage();
-                this.logger.info({ts: Date.now()}, 'COVERAGE DONE');
+                coverResult = await this.takeActionCoverage(2 * 1000);
+                this.logger.info(
+                    {ts: Date.now(), coverResult},
+                    'COVERAGE DONE',
+                );
 
                 await this.addCoverageResult(
                     {
@@ -2756,7 +2800,10 @@ export class WebApplication extends PluggableModule {
                     res();
                 });
                 transport.broadcastUniversally('coverageList', {
-                    meta: this.options.meta,
+                    meta: {
+                        coverageMeta: this.options.coverageMeta,
+                        ...this.options.meta,
+                    },
                     type: 'src',
                     data: fileList,
                     feedBackId,
