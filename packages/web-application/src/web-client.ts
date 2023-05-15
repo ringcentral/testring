@@ -399,4 +399,8 @@ export class WebClient implements IWebApplicationClient {
     public getMockData(url: string) {
         return this.makeRequest(BrowserProxyActions.getMockData, [url]);
     }
+
+    public getCdpCoverageFile() {
+        return this.makeRequest(BrowserProxyActions.getCdpCoverageFile, []);
+    }
 }
