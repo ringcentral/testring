@@ -138,7 +138,7 @@ describe('Browser proxy controller functional test', () => {
             .catch(callback);
     });
 
-    it.skip('should be able to run multiple workers', async () => {
+    it('should be able to run multiple workers', async () => {
         const transport = new Transport();
         const controller = new BrowserProxyController(
             transport,
@@ -195,7 +195,7 @@ describe('Browser proxy controller functional test', () => {
         await controller.kill();
     });
 
-    it.skip('should be able to run multiple workers in parallel', async () => {
+    it('should be able to run multiple workers in parallel', async () => {
         const transport = new Transport();
         const controller = new BrowserProxyController(
             transport,
