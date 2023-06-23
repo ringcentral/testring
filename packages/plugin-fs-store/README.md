@@ -7,5 +7,4 @@
 ```
 const fsStore = require('fs-store');
 
-// TODO: DEMONSTRATE API
 ```
