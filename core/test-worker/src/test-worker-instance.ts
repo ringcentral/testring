@@ -1,7 +1,7 @@
 import * as path from 'path';
 import {loggerClient} from '@testring/logger';
 import {FSReader} from '@testring/fs-reader';
-import {FSStoreClient} from '@testring/fs-store';
+import {FSStoreClient, FSClientGet} from '@testring/fs-store';
 import {fork} from '@testring/child-process';
 import {generateUniqId} from '@testring/utils';
 import {TestWorkerLocal} from './test-worker-local';
@@ -92,7 +92,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         workerConfig: Partial<ITestWorkerConfig> = {},
     ) {
         this.config = this.createConfig(workerConfig);
-        this.fsWriterClient = new FSStoreClient();
+        this.fsWriterClient = FSClientGet();
     }
 
     private createConfig(

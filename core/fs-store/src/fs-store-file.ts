@@ -13,6 +13,8 @@ import {fs as fsTool} from '@testring/utils';
 
 import {FSStoreClient} from './fs-store-client';
 
+import FSClientGet from './fs-store-client-fabric';
+
 const log = loggerClient.withPrefix('fsf');
 
 const {appendFile, writeFile, readFile, unlink, stat} = fs.promises;
@@ -40,7 +42,7 @@ export class FSStoreFile implements IFSStoreFile {
     constructor(options: FSStoreOptions) {
         this.options = {...defaultOptions, ...options};
         this.state.valid = true;
-        this.fsWriterClient = new FSStoreClient(options.fsStorePrefix);
+        this.fsWriterClient = FSClientGet(options.fsStorePrefix);
         this.fileMeta = options.meta; // meta:{fileName, ...}
         this.initPromise = this.init();
     }

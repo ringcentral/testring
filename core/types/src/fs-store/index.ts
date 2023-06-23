@@ -5,8 +5,7 @@ export const enum FSFileType {
 
 export const enum FSFileLogType {
     SCREENSHOT = 1,
-    COVERAGE = 2,
-    TEXT = 3,
+    TEXT = 2,
 }
 
 export const enum FSFileEncoding {
@@ -77,7 +76,6 @@ export enum FSFileUniqPolicy {
 }
 
 export enum FSStoreType {
-    coverage = 'coverage', // text
     screenshot = 'screenshot', // binary
     globalText = 'globalText', // text
     globalBin = 'globalBin', // binary

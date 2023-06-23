@@ -42,7 +42,10 @@ export function createAssertion(options: IAssertionOptions = {}) {
                     break;
                 }
 
-                const replacer = (k, v) => Object.prototype.toString.call(v) === '[object RegExp]' ? v.toString() : v;
+                const replacer = (k, v) =>
+                    Object.prototype.toString.call(v) === '[object RegExp]'
+                        ? v.toString()
+                        : v;
                 const argsString =
                     typeof args[index] !== 'undefined'
                         ? JSON.stringify(args[index], replacer)

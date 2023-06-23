@@ -1,6 +1,7 @@
 // TODO (flops) rework and merge with selenium backend
 /* eslint-disable @typescript-eslint/no-shadow,@typescript-eslint/no-this-alias */
 import * as url from 'url';
+import {FSScreenshotFactory} from '@testring/fs-store';
 
 import {
     IWebApplicationConfig,
@@ -21,8 +22,6 @@ import {loggerClient, LoggerClient} from '@testring/logger';
 import {generateUniqId} from '@testring/utils';
 import {PluggableModule} from '@testring/pluggable-module';
 import {createElementPath, ElementPath} from '@testring/element-path';
-
-import {FSScreenshotFactory} from '@testring/fs-store';
 
 import {createAssertion} from '@testring/async-assert';
 import {WebClient} from './web-client';
@@ -183,7 +182,7 @@ export class WebApplication extends PluggableModule {
         isCSSClassExists(xpath, ...suitableClasses) {
             return `Checking classes ${suitableClasses.join(
                 ', ',
-            )} is\\are exisists in ${this.formatXpath(xpath)}`;
+            )} is\\are exists in ${this.formatXpath(xpath)}`;
         },
         moveToObject(xpath, x = 1, y = 1) {
             return `Move cursor to ${this.formatXpath(
