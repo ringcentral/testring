@@ -1,6 +1,5 @@
 {
   "name": "@testring/plugin-fs-store",
-  "private": true,
   "version": "0.6.4",
   "description": "fs storage & default plugin",
   "main": "./dist/index.js",
