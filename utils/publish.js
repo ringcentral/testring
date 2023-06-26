@@ -20,6 +20,7 @@ async function task(pkg) {
         await npmPublish({
             package: path.join(pkg.location, 'package.json'),
             token,
+            access: 'public'
         });
         published = true;
     } catch (error) {
