@@ -331,7 +331,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    private async createClient(applicant: string): Promise<void> {
+    private async createClient(applicant: string, config?: Partial<WebdriverIO.Config>): Promise<void> {
         await this.waitForReadyState;
         const clientData = this.browserClients.get(applicant);
 
@@ -350,7 +350,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             );
         }
 
-        const client = await remote(this.config);
+        const _config: any = deepmerge.all([{}, this.config, config as any || {}]);
+        const client = await remote(_config);
 
         let sessionId: string;
         if (client.sessionId) {
@@ -1172,6 +1173,23 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             return client.mockData[url];
         }
         return client.mockData;
+    }
+
+    public async emulateDevice(applicant: string, deviceName) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        await client.deleteSession();
+        this.browserClients.delete(applicant);
+        await this.createClient(applicant, {
+            capabilities: {
+                'goog:chromeOptions': {
+                    mobileEmulation: {
+                        deviceName,
+                    },
+                },
+            },
+        } as any)
     }
 }
 
