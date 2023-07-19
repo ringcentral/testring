@@ -1,6 +1,6 @@
 {
   "name": "@testring/pluggable-module",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,6 +10,6 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/types": "0.6.7"
+    "@testring/types": "0.6.8"
   }
 }
