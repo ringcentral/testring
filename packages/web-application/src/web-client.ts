@@ -403,4 +403,8 @@ export class WebClient implements IWebApplicationClient {
     public getCdpCoverageFile() {
         return this.makeRequest(BrowserProxyActions.getCdpCoverageFile, []);
     }
+
+    public emulateDevice(deviceName = 'iPhone X') {
+        return this.makeRequest(BrowserProxyActions.emulateDevice, [deviceName]);
+    }
 }
