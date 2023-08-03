@@ -20,7 +20,6 @@ class DirectTransport {
     private childRegistry: Map<string, IWorkerEmitter> = new Map();
 
     private responseHandlers: Map<string, Function> = new Map();
-
     constructor(private triggerListeners: TransportMessageHandler) {}
 
     public getProcessesList(): Array<string> {
@@ -105,10 +104,17 @@ class DirectTransport {
         let normalizedMessage = message;
 
         if (message.payload && typeof message.payload.$key === 'string') {
-            normalizedMessage = {
-                ...message,
-                payload: deserialize(message.payload),
-            };
+            try {
+                normalizedMessage = {
+                    ...message,
+                    payload: deserialize(message.payload),
+                };
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.log('[transport] Cannot deserialize child process message:\n' +
+                    JSON.stringify(message, null, 2));
+                throw e;
+            }
         }
 
         switch (message.type) {
