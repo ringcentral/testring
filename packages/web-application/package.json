@@ -1,6 +1,6 @@
 {
   "name": "@testring/web-application",
-  "version": "0.6.7-alpha.0",
+  "version": "0.6.7-alpha.1",
   "main": "./dist/index.js",
   "typings": "./src/index.ts",
   "repository": {
@@ -10,19 +10,19 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/async-assert": "0.6.7-alpha.0",
-    "@testring/async-breakpoints": "0.6.7-alpha.0",
-    "@testring/element-path": "0.6.7-alpha.0",
-    "@testring/fs-store": "0.6.7-alpha.0",
-    "@testring/logger": "0.6.7-alpha.0",
-    "@testring/pluggable-module": "0.6.7-alpha.0",
-    "@testring/transport": "0.6.7-alpha.0",
-    "@testring/types": "0.6.7-alpha.0",
-    "@testring/utils": "0.6.7-alpha.0"
+    "@testring/async-assert": "0.6.7-alpha.1",
+    "@testring/async-breakpoints": "0.6.7-alpha.1",
+    "@testring/element-path": "0.6.7-alpha.1",
+    "@testring/fs-store": "0.6.7-alpha.1",
+    "@testring/logger": "0.6.7-alpha.1",
+    "@testring/pluggable-module": "0.6.7-alpha.1",
+    "@testring/transport": "0.6.7-alpha.1",
+    "@testring/types": "0.6.7-alpha.1",
+    "@testring/utils": "0.6.7-alpha.1"
   },
   "devDependencies": {
-    "@testring/child-process": "0.6.7-alpha.0",
-    "@testring/test-utils": "0.6.7-alpha.0",
+    "@testring/child-process": "0.6.7-alpha.1",
+    "@testring/test-utils": "0.6.7-alpha.1",
     "@types/node": "18.11.18"
   }
 }
