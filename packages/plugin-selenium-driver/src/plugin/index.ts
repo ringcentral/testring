@@ -10,6 +10,7 @@ import {spawn} from '@testring/child-process';
 import {loggerClient} from '@testring/logger';
 import {absoluteExtensionPath} from '@testring/devtool-extension';
 import {CDPCoverageCollector} from '@nullcc/code-coverage-client';
+import chromium from '../chromium';
 
 import type {Cookie} from '@wdio/protocols';
 import type {
@@ -85,10 +86,13 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     private incrementWinId = 0;
 
+    private waitForChromiumReady: Promise<void>;
+
     constructor(config: Partial<SeleniumPluginConfig> = {}) {
         this.config = this.createConfig(config);
 
         if (this.config.host === undefined) {
+            this._installChromium();
             this.runLocalSelenium();
         }
 
@@ -236,6 +240,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return [`-Dwebdriver.chrome.driver=${chromeDriverPath}`];
     }
 
+    private _installChromium() {
+        this.config.capabilities['goog:chromeOptions'].binary = chromium.path
+        this.waitForChromiumReady = chromium.install()
+    }
+
     private async runLocalSelenium() {
         const seleniumServer = require('selenium-server');
         const seleniumJarPath = seleniumServer.path;
@@ -350,7 +359,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             );
         }
 
-        const _config: any = deepmerge.all([{}, this.config, config as any || {}]);
+        const _config: any = config ? deepmerge.all([{}, this.config, config as any || {}]) : this.config;
+        await this.waitForChromiumReady;
         const client = await remote(_config);
 
         let sessionId: string;
