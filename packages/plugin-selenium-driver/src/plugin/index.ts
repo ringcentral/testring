@@ -1186,20 +1186,20 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     public async emulateDevice(applicant: string, deviceName) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        await client.deleteSession();
-        this.browserClients.delete(applicant);
+        if (this.hasBrowserClient(applicant)) {
+            await this.end(applicant);
+        }
+        const userAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1'
         await this.createClient(applicant, {
             capabilities: {
                 'goog:chromeOptions': {
                     mobileEmulation: {
                         deviceName,
                     },
-                },
+                    args: [`--user-agent=${userAgent}`],
+                }
             },
-        } as any)
+        } as any);
     }
 }
 
