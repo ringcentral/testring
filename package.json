@@ -7,6 +7,10 @@
     "type": "git",
     "url": "https://github.com/ringcentral/testring.git"
   },
+  "workspaces": [
+    "core/*",
+    "packages/*"
+  ],
   "scripts": {
     "cleanup": "npm run cleanup:packages && npm run cleanup:root",
     "cleanup:root": "node ./utils/cleanup.js",
