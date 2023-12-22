@@ -1,14 +1,15 @@
 /// <reference types="mocha" />
 
 import * as chai from 'chai';
+import * as path from 'path';
 import {FSFileUniqPolicy} from '@testring/types';
 
 import {cbGen} from '../src/onFileName';
 
 const testData: Record<string, any> = {
-    'tmp.tmp': {workerId: 'abc', type: 'test', fullPath: 'test/tmp.abc.tmp'},
-    'tmp_0.tmp': {type: 'tmp', fullPath: 'tmp/tmp_0.tmp'},
-    'tmp_1.tmp': {type: 'tt', subtype: 'aa', fullPath: 'tt/tmp_1.aa.tmp'},
+    'tmp.tmp': {workerId: 'abc', type: 'test', fullPath: path.join('test', 'tmp.abc.tmp')},
+    'tmp_0.tmp': {type: 'tmp', fullPath: path.join('tmp', 'tmp_0.tmp')},
+    'tmp_1.tmp': {type: 'tt', subtype: 'aa', fullPath: path.join('tt', 'tmp_1.aa.tmp')},
 };
 
 describe('fs-store-plugin', () => {

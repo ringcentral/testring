@@ -1,4 +1,4 @@
-import * as glob from 'glob';
+import {glob} from 'glob';
 
 export function locateFiles(searchpath: string): Promise<string[]> {
     return new Promise((resolve, reject) => {
@@ -6,12 +6,10 @@ export function locateFiles(searchpath: string): Promise<string[]> {
             return resolve([]);
         }
 
-        glob(searchpath, {}, (err, files) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(files);
-            }
+        glob(searchpath, {}).then((files) => {
+            resolve(files);
+        }).catch((error) => {
+            reject(error);
         });
     });
 }
