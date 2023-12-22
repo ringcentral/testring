@@ -1,4 +1,4 @@
-import {glob} from 'glob';
+import * as fg from 'fast-glob';
 
 export function locateFiles(searchpath: string): Promise<string[]> {
     return new Promise((resolve, reject) => {
@@ -6,7 +6,7 @@ export function locateFiles(searchpath: string): Promise<string[]> {
             return resolve([]);
         }
 
-        glob(searchpath, {}).then((files) => {
+        fg.async(fg.convertPathToPattern(searchpath)).then((files) => {
             resolve(files);
         }).catch((error) => {
             reject(error);
