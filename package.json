@@ -80,7 +80,7 @@
     "@lerna/run-parallel-batches": "3.16.0",
     "@types/chai": "4.3.11",
     "@types/mocha": "10.0.6",
-    "@types/node": "20.10.5",
+    "@types/node": "18.11.18",
     "chai": "4.3.10",
     "eslint": "8.56.0",
     "eslint-config-ringcentral": "7.0.3",
@@ -96,5 +96,8 @@
     "sinon": "17.0.1",
     "ts-node": "10.9.2",
     "typescript": "5.3.3"
+  },
+  "overrides": {
+    "got": "11.8.6"
   }
 }
