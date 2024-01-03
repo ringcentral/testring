@@ -22,7 +22,7 @@
     "@testring/transport": "0.6.8",
     "@testring/types": "0.6.8",
     "@testring/utils": "0.6.8",
-    "@types/node": "18.11.18"
+    "@types/node": "20.10.6"
   },
   "devDependencies": {
     "@testring/test-utils": "0.6.8"

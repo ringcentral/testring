@@ -1,7 +1,11 @@
 {
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  },
   "compilerOptions": {
     "target": "es2015",
-    "module": "commonjs",
+    "module": "ESNext",
     "allowJs": false,
     "noEmitOnError": true,
     "moduleResolution": "node",
@@ -11,6 +15,7 @@
     "declaration": false,
     "outDir": "dist",
     "sourceMap": false,
+    "resolveJsonModule": true,
     "lib": [
       "es5",
       "es2015",

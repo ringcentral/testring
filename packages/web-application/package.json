@@ -23,6 +23,6 @@
   "devDependencies": {
     "@testring/child-process": "0.6.8",
     "@testring/test-utils": "0.6.8",
-    "@types/node": "18.11.18"
+    "@types/node": "20.10.6"
   }
 }

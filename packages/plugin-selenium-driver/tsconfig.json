@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es2019",
     "module": "commonjs",
-    "types": ["node", "webdriverio/async"],
+    "types": ["node"],
     "allowJs": false,
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,

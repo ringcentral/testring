@@ -13,9 +13,9 @@
     "url": "https://github.com/ringcentral/testring/issues"
   },
   "dependencies": {
-    "@types/node": "18.11.18"
+    "@types/node": "20.10.6"
   },
   "devDependencies": {
-    "chai": "4.3.7"
+    "chai": "5.0.0"
   }
 }

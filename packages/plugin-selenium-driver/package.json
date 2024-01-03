@@ -17,10 +17,10 @@
     "@testring/plugin-api": "0.6.8",
     "@testring/types": "0.6.8",
     "@types/deepmerge": "2.2.0",
-    "@types/node": "18.11.18",
+    "@types/node": "20.10.6",
     "chromedriver": "*",
-    "deepmerge": "4.2.2",
+    "deepmerge": "4.3.1",
     "selenium-server": "3.141.59",
-    "webdriverio": "7.33.0"
+    "webdriverio": "8.27.0"
   }
 }

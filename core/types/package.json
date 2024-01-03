@@ -10,6 +10,6 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@types/node": "18.11.18"
+    "@types/node": "20.10.6"
   }
 }
