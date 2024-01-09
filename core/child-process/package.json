@@ -9,7 +9,9 @@
   },
   "dependencies": {
     "@testring/types": "0.6.8",
-    "@testring/utils": "0.6.8"
+    "@testring/utils": "0.6.8",
+    "chai": "4.4.0",
+    "@types/node": "20.10.6"
   },
   "author": "RingCentral",
   "license": "MIT"

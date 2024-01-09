@@ -22,6 +22,6 @@
   },
   "dependencies": {
     "@testring/types": "0.6.8",
-    "chai": "5.0.0"
+    "chai": "4.4.0"
   }
 }

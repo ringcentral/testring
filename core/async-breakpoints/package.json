@@ -16,6 +16,6 @@
     "@types/node": "20.10.6"
   },
   "devDependencies": {
-    "chai": "5.0.0"
+    "chai": "4.4.0"
   }
 }

@@ -1,3 +1,4 @@
 const tsNode = require('ts-node');
-
-tsNode.register({ cache: false, project: './tsconfig.json', });
+const path = require('path');
+const project = path.join(process.cwd(), 'tsconfig.json');
+tsNode.register({ cache: false, project: project});
