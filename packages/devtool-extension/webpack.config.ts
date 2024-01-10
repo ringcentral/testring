@@ -1,20 +1,14 @@
 import * as path from 'path';
 
 import * as webpack from 'webpack';
-import CopyPlugin from 'copy-webpack-plugin';
+import * as CopyPlugin from 'copy-webpack-plugin';
 
 import {CRXPlugin} from './crx-plugin';
-import { fileURLToPath } from 'url';
-const __filename = fileURLToPath(import.meta.url);
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-
-const __dirname = path.dirname(__filename);
 
 const getAbsolutePath = (filepath): string => path.join(__dirname, filepath);
 
-import packageJson from './package.json' assert { type: 'json' };
-import manifestKeyJson from './extension/manifest-key.json' assert { type: 'json' };
+const packageJson = require('./package.json');
+const manifestKeyJson = require('./extension/manifest-key.json');
 
 const appVersion = packageJson.version;
 
@@ -94,15 +88,15 @@ const config: webpack.Configuration = {
         }),
         process.argv.indexOf('--enable-crx') > -1
             ? new CRXPlugin({
-                  directory: outputDir,
-                  keyPath: getAbsolutePath('extension/testring-dev.pem'),
-                  filename: 'testring-dev',
-                  outputDirectory: getAbsolutePath('extension'),
-                  rootPath: __dirname,
-              })
+                directory: outputDir,
+                keyPath: getAbsolutePath('extension/testring-dev.pem'),
+                filename: 'testring-dev',
+                outputDirectory: getAbsolutePath('extension'),
+                rootPath: __dirname,
+            })
             : () => {
-                  /* empty */
-              },
+                /* empty */
+            },
     ],
 };
 

@@ -9,9 +9,8 @@
   },
   "author": "RingCentral",
   "license": "MIT",
-  "type": "module",
   "scripts": {
-    "build": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" webpack --config webpack.config.ts",
+    "build": "webpack --config webpack.config.ts",
     "build:watch": "webpack --config webpack.config.ts --watch --devtool inline-source-map"
   },
   "devDependencies": {
@@ -20,7 +19,7 @@
     "@testring/utils": "0.6.8",
     "@types/chrome": "0.0.254",
     "@types/webpack": "5.28.5",
-    "chrome-launcher": "1.1.0",
+    "chrome-launcher": "0.15.2",
     "copy-webpack-plugin": "11.0.0",
     "cross-env": "7.0.3",
     "os-browserify": "0.3.0",
