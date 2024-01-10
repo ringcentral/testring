@@ -3,7 +3,7 @@ import {IBrowserProxyPlugin, WindowFeaturesConfig} from '@testring/types';
 
 import {ChildProcess} from 'child_process';
 
-import {remote } from 'webdriverio';
+import {Browser, remote} from 'webdriverio';
 import * as deepmerge from 'deepmerge';
 
 import {spawn} from '@testring/child-process';
@@ -14,13 +14,16 @@ import {CDPCoverageCollector} from '@nullcc/code-coverage-client';
 import type {Cookie} from '@wdio/protocols';
 import type {
     ClickOptions,
+    MockFilterOptions,
+    MockResponseParams,
+    Matches,
 } from 'webdriverio';
-import type {Matches, MockFilterOptions, MockResponseParams} from 'webdriverio/build/utils/interception/types';
+
 // Stupidly needed thing for making our own requests
 const _webdriverReq = require('webdriver/build/request');
 const WebDriverRequest = _webdriverReq.default;
 
-type BrowserObjectCustom = WebdriverIO.Browser & {
+type BrowserObjectCustom = Browser<'async'> & {
     sessionId: string;
     deleteSessionId: (sessionId: string) => Promise<void>;
     mockData: Record<string, Matches[]>;
