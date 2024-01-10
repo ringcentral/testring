@@ -79,7 +79,7 @@
     "@lerna/project": "6.4.1",
     "@lerna/run-parallel-batches": "3.16.0",
     "@types/mocha": "10.0.6",
-    "@types/node": "18.11.18",
+    "@types/node": "20.10.6",
     "chai": "4.4.0",
     "eslint": "8.56.0",
     "eslint-config-ringcentral": "7.0.3",
