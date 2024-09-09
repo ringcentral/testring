@@ -117,7 +117,7 @@ export class HttpServer
                     },
                 );
 
-                this.logger.debug(errorAfterHook);
+                this.logger.debug(`Request failed ${errorAfterHook?.name} - ${errorAfterHook?.message}`);
             }
         };
 
@@ -142,7 +142,7 @@ export class HttpServer
                 this.transportInstance.broadcastLocal<T>(messageType, payload);
             }
         } catch (err) {
-            this.logger.debug(err);
+            this.logger.debug(`Send response failed - ${err?.message}`);
         }
     }
 }
