@@ -1,6 +1,6 @@
 {
   "name": "@testring/devtool-frontend",
-  "version": "0.6.10",
+  "version": "0.6.11",
   "main": "./index.js",
   "repository": {
     "type": "git",
@@ -13,8 +13,8 @@
     "build:watch": "webpack --config webpack.config.ts --watch --devtool inline-source-map"
   },
   "devDependencies": {
-    "@testring/client-ws-transport": "0.6.10",
-    "@testring/types": "0.6.10",
+    "@testring/client-ws-transport": "0.6.11",
+    "@testring/types": "0.6.11",
     "@types/react": "18.0.26",
     "@types/react-dom": "18.0.10",
     "@types/webpack": "5.28.0",
