@@ -23,7 +23,6 @@ import type {
 // Stupidly needed thing for making our own requests
 const _webdriverReq = require('webdriver/build/request');
 const WebDriverRequest = _webdriverReq.default;
-const dowldMonitorCrx = getCrxBase64();
 
 type BrowserObjectCustom = WebdriverIO.Browser & {
     sessionId: string;
@@ -196,6 +195,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             )
         ) {
             const extensions = mergedConfig.capabilities?.['goog:chromeOptions'].extensions;
+            const dowldMonitorCrx = getCrxBase64();
             if (extensions) {
                 extensions.push(dowldMonitorCrx);
             } else {
