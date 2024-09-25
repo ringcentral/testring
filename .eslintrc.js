@@ -15,6 +15,9 @@ ringcentralPreset.extends = ringcentralPreset.extends.map((item) => {
 
 module.exports = {
     ...ringcentralPreset,
+    globals: {
+        chrome: 'writable',
+    },
     env: {
         ...ringcentralPreset.env,
         es6: true,

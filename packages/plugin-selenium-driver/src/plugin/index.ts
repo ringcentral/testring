@@ -8,6 +8,7 @@ import * as deepmerge from 'deepmerge';
 
 import {spawn} from '@testring/child-process';
 import {loggerClient} from '@testring/logger';
+import {getCrxBase64} from '@testring/dwnld-collector-crx';
 import {absoluteExtensionPath} from '@testring/devtool-extension';
 import {CDPCoverageCollector} from '@nullcc/code-coverage-client';
 
@@ -22,6 +23,7 @@ import type {
 // Stupidly needed thing for making our own requests
 const _webdriverReq = require('webdriver/build/request');
 const WebDriverRequest = _webdriverReq.default;
+const dowldMonitorCrx = getCrxBase64();
 
 type BrowserObjectCustom = WebdriverIO.Browser & {
     sessionId: string;
@@ -49,7 +51,7 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
             args: [] as string[],
         },
     },
-    cdpCoverage: false
+    cdpCoverage: false,
 };
 
 function delay(timeout) {
@@ -183,6 +185,22 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         if (!mergedConfig.hostname && mergedConfig.host) {
             mergedConfig.hostname = mergedConfig.host;
+        }
+
+        const googleChromeOptions = mergedConfig.capabilities?.['goog:chromeOptions'];
+        if (
+            googleChromeOptions && 
+            (
+                googleChromeOptions.args?.includes('--headless') || 
+                googleChromeOptions.args?.includes('headless')
+            )
+        ) {
+            const extensions = mergedConfig.capabilities?.['goog:chromeOptions'].extensions;
+            if (extensions) {
+                extensions.push(dowldMonitorCrx);
+            } else {
+                googleChromeOptions.extensions = [dowldMonitorCrx];
+            }
         }
 
         return mergedConfig;
@@ -331,7 +349,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    private async createClient(applicant: string, config?: Partial<WebdriverIO.Config>): Promise<void> {
+    private async createClient(
+        applicant: string,
+        config?: Partial<WebdriverIO.Config>,
+    ): Promise<void> {
         await this.waitForReadyState;
         const clientData = this.browserClients.get(applicant);
 
@@ -350,7 +371,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             );
         }
 
-        const _config: any = deepmerge.all([{}, this.config, config as any || {}]);
+        const _config: any = deepmerge.all([
+            {},
+            this.config,
+            (config as any) || {},
+        ]);
         const client = await remote(_config);
 
         let sessionId: string;
@@ -424,10 +449,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         client.addCommand(
             'deleteSessionId',
             function (sessionId) {
-                const {
-                    w3cCaps,
-                    jsonwpCaps,
-                } = this.options.requestedCapabilities;
+                const {w3cCaps, jsonwpCaps} =
+                    this.options.requestedCapabilities;
 
                 const sessionDeleteRequest = new WebDriverRequest(
                     'DELETE',
@@ -1189,7 +1212,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                     },
                 },
             },
-        } as any)
+        } as any);
     }
 }
 
