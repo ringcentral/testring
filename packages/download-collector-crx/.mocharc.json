@@ -1,0 +1,7 @@
+{
+  "require" : "../../utils/ts-mocha.js",
+  "watch-extensions": "ts",
+  "timeout": 30000,
+  "reporter": "dot",
+  "spec": "test/**/*.spec.ts"
+}
