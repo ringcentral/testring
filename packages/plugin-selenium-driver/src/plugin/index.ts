@@ -187,14 +187,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
 
         const googleChromeOptions = mergedConfig.capabilities?.['goog:chromeOptions'];
-        if (
-            googleChromeOptions && 
-            (
-                googleChromeOptions.args?.includes('--headless') || 
-                googleChromeOptions.args?.includes('headless')
-            )
-        ) {
-            const extensions = mergedConfig.capabilities?.['goog:chromeOptions'].extensions;
+        if (googleChromeOptions?.args?.includes('--headless=new')) {
+            const extensions = googleChromeOptions.extensions;
             const dowldMonitorCrx = getCrxBase64();
             if (extensions) {
                 extensions.push(dowldMonitorCrx);
