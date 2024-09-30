@@ -46,6 +46,7 @@ export async function requestFunction(
         headers: request.headers,
         json: request.json,
         gzip: request.gzip,
+        simple: request.simple !== false,
         jar: cookieJar,
         resolveWithFullResponse: true,
     };

@@ -23,6 +23,7 @@ export interface IHttpRequest {
     headers?: IHttpHeaders;
     query?: IHttpQueryParameters;
     cookies?: Array<any>;
+    simple?: boolean;
     resolveWithFullResponse?: boolean;
     gzip?: boolean;
 }
