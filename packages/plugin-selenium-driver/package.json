@@ -1,6 +1,6 @@
 {
   "name": "@testring/plugin-selenium-driver",
-  "version": "0.6.12",
+  "version": "0.6.13",
   "main": "./dist/index.js",
   "typings": "./src/index.ts",
   "repository": {
@@ -11,12 +11,12 @@
   "license": "MIT",
   "dependencies": {
     "@nullcc/code-coverage-client": "1.4.2",
-    "@testring/child-process": "0.6.12",
-    "@testring/devtool-extension": "0.6.12",
-    "@testring/dwnld-collector-crx": "0.6.12",
-    "@testring/logger": "0.6.12",
-    "@testring/plugin-api": "0.6.12",
-    "@testring/types": "0.6.12",
+    "@testring/child-process": "0.6.13",
+    "@testring/devtool-extension": "0.6.13",
+    "@testring/dwnld-collector-crx": "0.6.13",
+    "@testring/logger": "0.6.13",
+    "@testring/plugin-api": "0.6.13",
+    "@testring/types": "0.6.13",
     "@types/deepmerge": "2.2.0",
     "@types/node": "18.11.18",
     "chromedriver": "*",
