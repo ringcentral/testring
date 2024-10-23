@@ -71,7 +71,7 @@ export class WebApplication extends PluggableModule {
     public root = createElementPath();
 
     static stepLogMessagesDecorator = {
-        waitForRoot(timeout) {
+        waitForRoot(timeout: number = this.WAIT_TIMEOUT) {
             return `Waiting for root element for ${timeout}`;
         },
         waitForExist(xpath, timeout: number = this.WAIT_TIMEOUT) {
