@@ -14,6 +14,6 @@
     "@testring/logger": "0.6.13",
     "@testring/types": "0.6.13",
     "@testring/utils": "0.6.13",
-    "@types/node": "18.11.18"
+    "@types/node": "22.8.5"
   }
 }

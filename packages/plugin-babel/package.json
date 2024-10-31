@@ -10,9 +10,9 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@babel/core": "7.20.12",
-    "@babel/plugin-transform-modules-commonjs": "7.20.11",
+    "@babel/core": "7.26.0",
+    "@babel/plugin-transform-modules-commonjs": "7.25.9",
     "@testring/plugin-api": "0.6.13",
-    "@types/babel__core": "7.1.20"
+    "@types/babel__core": "7.20.5"
   }
 }

@@ -23,8 +23,8 @@
     "@testring/transport": "0.6.13",
     "@testring/types": "0.6.13",
     "@testring/web-application": "0.6.13",
-    "@types/node": "18.11.18",
-    "@types/yargs": "15.0.13",
-    "yargs": "15.4.1"
+    "@types/node": "22.8.5",
+    "@types/yargs": "17.0.33",
+    "yargs": "17.7.2"
   }
 }
