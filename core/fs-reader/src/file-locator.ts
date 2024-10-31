@@ -1,17 +1,15 @@
-import * as glob from 'glob';
+import {glob} from 'glob';
 
 export function locateFiles(searchpath: string): Promise<string[]> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         if (!searchpath) {
             return resolve([]);
         }
-
-        glob(searchpath, {}, (err, files) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(files);
-            }
-        });
+        try {
+            const files = await glob(searchpath, {});
+            resolve(files);
+        } catch (error) {
+            reject(error);
+        }
     });
 }
