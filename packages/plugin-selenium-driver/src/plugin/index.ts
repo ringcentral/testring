@@ -16,9 +16,9 @@ import type {Cookie} from '@wdio/protocols';
 import type {
     ClickOptions,
     MockFilterOptions,
-    MockResponseParams,
-    Matches,
 } from 'webdriverio';
+import type {JsonCompatible} from '@wdio/types';
+import type {RespondWithOptions} from 'webdriverio/build/utils/interception/types';
 
 // Stupidly needed thing for making our own requests
 const _webdriverReq = require('webdriver/build/request');
@@ -27,7 +27,6 @@ const WebDriverRequest = _webdriverReq.default;
 type BrowserObjectCustom = WebdriverIO.Browser & {
     sessionId: string;
     deleteSessionId: (sessionId: string) => Promise<void>;
-    mockData: Record<string, Matches[]>;
 };
 
 type browserClientItem = {
@@ -209,7 +208,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
 
         process.on('exit', () => {
-            clearInterval(this.clientCheckInterval);
+            clearInterval(this.clientCheckInterval as NodeJS.Timeout);
             this.stopAllSessions().catch((err) => {
                 this.logger.error('Clean process exit failed', err);
             });
@@ -1150,46 +1149,15 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     public async mock(
         applicant: string,
         url: string,
-        overwrites: ((res: Matches) => void) | Object | string,
+        overwrites: string | JsonCompatible | Buffer,
         filterOptions?: MockFilterOptions,
-        mockResponseParams?: MockResponseParams,
+        mockResponseParams?: Omit<RespondWithOptions, 'body'>,
     ) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
         const mock = await client.mock(url, filterOptions);
-        if (typeof overwrites === 'function') {
-            mock.respond((res) => {
-                overwrites(res);
-                this.setMockData(applicant, url, res);
-                return res.body;
-            }, mockResponseParams);
-        } else {
-            mock.respond(overwrites);
-        }
-    }
-
-    public async setMockData(applicant: string, url: string, data: Matches) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        client.mockData = client.mockData || {};
-        if (client.mockData[url]) {
-            client.mockData[url].push(data);
-        } else {
-            client.mockData[url] = [data];
-        }
-        return true;
-    }
-
-    public async getMockData(applicant: string, url: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        if (url) {
-            return client.mockData[url];
-        }
-        return client.mockData;
+        mock.respond(overwrites, mockResponseParams);
     }
 
     public async emulateDevice(applicant: string, deviceName) {

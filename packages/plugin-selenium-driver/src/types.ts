@@ -1,11 +1,11 @@
-import {RemoteOptions} from 'webdriverio';
+import { Capabilities } from '@wdio/types';
 
-export type SeleniumPluginConfig = RemoteOptions & {
+export type SeleniumPluginConfig = Capabilities.RemoteConfig & {
     chromeDriverPath?: string;
     recorderExtension: boolean;
     clientCheckInterval: number;
     clientTimeout: number;
     host?: string; // fallback for configuration. In WebdriverIO 5 field host renamed to hostname
-    desiredCapabilities?: WebDriver.DesiredCapabilities[]; // fallback for configuration. In WebdriverIO 5 field renamed
+    desiredCapabilities?: Capabilities.RequestedStandaloneCapabilities[]; // fallback for configuration. In WebdriverIO 5 field renamed
     cdpCoverage: boolean;
 };
