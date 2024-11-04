@@ -21,7 +21,9 @@
 
     "noUnusedLocals": true,
     "strictNullChecks": true,
-    "removeComments": false
+    "removeComments": false,
+    "moduleDetection": "force",
+    "esModuleInterop": true
   },
   "include": [
     "*.ts",
