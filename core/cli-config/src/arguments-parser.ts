@@ -1,4 +1,4 @@
-import * as yargs from 'yargs';
+import {default as yargs} from 'yargs';
 import {IConfig} from '@testring/types';
 
 const RESTRICTED_FIELDS = ['_', '$0', 'version', 'help'];

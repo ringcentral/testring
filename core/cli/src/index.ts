@@ -1,5 +1,5 @@
 import * as process from 'process';
-import * as yargs from 'yargs';
+import {default as yargs} from 'yargs';
 import {loggerClient, LoggerServer} from '@testring/logger';
 import {getConfig} from '@testring/cli-config';
 import {transport} from '@testring/transport';

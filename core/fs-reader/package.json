@@ -9,10 +9,14 @@
   },
   "author": "RingCentral",
   "license": "MIT",
+  "scripts": {
+    "test:perfomance": "mocha --performance --reporter spec"
+  },
   "dependencies": {
     "@testring/logger": "0.6.13",
     "@testring/pluggable-module": "0.6.13",
     "@testring/types": "0.6.13",
-    "glob": "11.0.0"
+    "fast-glob": "3.3.2",
+    "p-limit": "3.1.0"
   }
 }

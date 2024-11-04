@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import {IFile} from '@testring/types';
+const pLimit = require('p-limit');
 
 const ERR_NO_FILES = new Error('No test files found');
 
@@ -32,9 +33,13 @@ export async function resolveFiles(files: Array<string>): Promise<IFile[]> {
         throw ERR_NO_FILES;
     }
 
+    const limit = pLimit(10);
+
+    // Limit concurrent file reads
     const readFilePromises = files.map((file) =>
-        readFile(file).catch(() => null),
+        limit(() => readFile(file).catch(() => null))
     );
+
     const filesContent = await Promise.all(readFilePromises);
     const compacted = filesContent.filter(isNotEmpty);
 
@@ -44,3 +49,4 @@ export async function resolveFiles(files: Array<string>): Promise<IFile[]> {
 
     return compacted;
 }
+
