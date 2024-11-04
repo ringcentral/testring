@@ -81,7 +81,7 @@
     "@types/chai": "5.0.1",
     "@types/mocha": "10.0.9",
     "@types/node": "22.8.5",
-    "chai": "5.1.2",
+    "chai": "4.3.10",
     "eslint": "9.13.0",
     "eslint-config-ringcentral": "7.0.3",
     "eslint-config-ringcentral-typescript": "7.0.3",

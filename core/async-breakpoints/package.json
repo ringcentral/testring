@@ -16,6 +16,6 @@
     "@types/node": "22.8.5"
   },
   "devDependencies": {
-    "chai": "5.1.2"
+    "chai": "4.3.10"
   }
 }
