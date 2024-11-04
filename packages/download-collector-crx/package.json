@@ -10,9 +10,10 @@
     "author": "RingCentral",
     "license": "MIT",
     "scripts": {
-        "postinstall": "mkdir -p dist && crx pack src/extension -o dist/extension.crx"
+        "postinstall": "mkdirp dist && crx pack src/extension -o dist/extension.crx"
     },
     "dependencies": {
-        "crx": "5.0.1"
+        "crx": "5.0.1",
+        "mkdirp": "3.0.1"
     }
 }
