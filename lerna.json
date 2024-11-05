@@ -1,6 +1,5 @@
 {
   "independent": false,
-  "useWorkspaces": true,
   "packages": [
     "packages/*",
     "core/*"
