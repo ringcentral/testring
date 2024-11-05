@@ -19,14 +19,10 @@ import type {
 } from 'webdriverio';
 import type {JsonCompatible} from '@wdio/types';
 import type {RespondWithOptions} from 'webdriverio/build/utils/interception/types';
-
-// Stupidly needed thing for making our own requests
-const _webdriverReq = require('webdriver/build/request');
-const WebDriverRequest = _webdriverReq.default;
+import webdriver from 'webdriver';
 
 type BrowserObjectCustom = WebdriverIO.Browser & {
     sessionId: string;
-    deleteSessionId: (sessionId: string) => Promise<void>;
 };
 
 type browserClientItem = {
@@ -48,6 +44,7 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
             // for local ChromeDriver
             args: [] as string[],
         },
+        'wdio:enforceWebDriverClassic': true
     },
     cdpCoverage: false,
 };
@@ -437,31 +434,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     protected addCustromMethods(
         client: BrowserObjectCustom,
     ): BrowserObjectCustom {
-        // Creating our delete selenium session to be able to close
-        // session if it's id is changed while we are running test
-        client.addCommand(
-            'deleteSessionId',
-            function (sessionId) {
-                const {w3cCaps, jsonwpCaps} =
-                    this.options.requestedCapabilities;
-
-                const sessionDeleteRequest = new WebDriverRequest(
-                    'DELETE',
-                    '/session/:sessionId',
-                    {
-                        capabilities: w3cCaps, // W3C compliant
-                        desiredCapabilities: jsonwpCaps, // JSONWP compliant
-                    },
-                );
-
-                return sessionDeleteRequest.makeRequest(
-                    this.options,
-                    sessionId,
-                );
-            },
-            false,
-        );
-
         return client as BrowserObjectCustom;
     }
 
@@ -496,7 +468,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 async () => {
                     try {
                         if (startingSessionID) {
-                            await client.deleteSessionId(startingSessionID);
+                            const attachedClient = webdriver.attachToSession({
+                                sessionId: startingSessionID,
+                            });
+                            await attachedClient.deleteSession();
                         }
                     } catch (err) {
                         this.logger.error(
