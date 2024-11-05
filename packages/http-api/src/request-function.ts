@@ -1,11 +1,11 @@
 import {IHttpRequest, IHttpResponse} from '@testring/types';
-import {Response, jar} from 'request';
+import * as requestLib from 'request';
 import * as requestPromise from 'request-promise-native';
 
 const toString = (c) => c.toString();
 
 function createCookieStore(cookies: Array<string> | void, url: string) {
-    const cookieJar = jar();
+    const cookieJar = requestLib.jar();
 
     if (Array.isArray(cookies)) {
         cookies.forEach((c) => {
@@ -24,7 +24,7 @@ const filterRequestField = (rawRequest) => (request, key) => {
     return request;
 };
 
-const mapResponse = (response: Response, cookies) => ({
+const mapResponse = (response: requestLib.Response, cookies) => ({
     statusCode: response.statusCode,
     statusMessage: response.statusMessage,
     headers: response.headers,

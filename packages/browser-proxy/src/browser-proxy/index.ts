@@ -1,4 +1,4 @@
-import {default as yargs} from 'yargs';
+import * as yargs from 'yargs';
 import {transport} from '@testring/transport';
 import {BrowserProxy} from './browser-proxy';
 
