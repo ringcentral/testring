@@ -1,6 +1,6 @@
 {
   "name": "@testring/plugin-selenium-driver",
-  "version": "0.6.14-alpha.2",
+  "version": "0.6.14-alpha.3",
   "main": "./dist/index.js",
   "typings": "./src/index.ts",
   "repository": {
@@ -11,12 +11,12 @@
   "license": "MIT",
   "dependencies": {
     "@nullcc/code-coverage-client": "1.4.2",
-    "@testring/child-process": "0.6.14-alpha.2",
-    "@testring/devtool-extension": "0.6.14-alpha.2",
-    "@testring/dwnld-collector-crx": "0.6.14-alpha.2",
-    "@testring/logger": "0.6.14-alpha.2",
-    "@testring/plugin-api": "0.6.14-alpha.2",
-    "@testring/types": "0.6.14-alpha.2",
+    "@testring/child-process": "0.6.14-alpha.3",
+    "@testring/devtool-extension": "0.6.14-alpha.3",
+    "@testring/dwnld-collector-crx": "0.6.14-alpha.3",
+    "@testring/logger": "0.6.14-alpha.3",
+    "@testring/plugin-api": "0.6.14-alpha.3",
+    "@testring/types": "0.6.14-alpha.3",
     "@types/deepmerge": "2.2.3",
     "@types/node": "22.8.5",
     "@wdio/types": "9.2.2",
