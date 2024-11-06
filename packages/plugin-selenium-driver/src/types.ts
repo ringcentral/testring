@@ -1,6 +1,6 @@
 import { Capabilities } from '@wdio/types';
 
-export type SeleniumPluginConfig = Capabilities.RemoteConfig & {
+export type SeleniumPluginConfig = Capabilities.WebdriverIOConfig & {
     chromeDriverPath?: string;
     recorderExtension: boolean;
     clientCheckInterval: number;

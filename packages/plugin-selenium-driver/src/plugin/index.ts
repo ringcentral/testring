@@ -37,7 +37,7 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
     clientCheckInterval: 5 * 1000,
     clientTimeout: 15 * 60 * 1000,
     port: 4444,
-    logLevel: 'warn',
+    logLevel: 'error',
     capabilities: {
         browserName: 'chrome',
         'goog:chromeOptions': {
@@ -565,10 +565,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
         const args = stringifyWindowFeatures(windowFeatures);
 
-        return client.newWindow(val, {
+        const newWindow = await client.newWindow(val, {
             windowName: windowName || this.generateWinId(),
             windowFeatures: args,
         });
+        return newWindow?.handle || newWindow;
     }
 
     public async waitForExist(
@@ -673,8 +674,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     public async frame(applicant: string, frameID: number) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
-
-        return client.switchToFrame(frameID);
+        return client.switchFrame(frameID.toString());
     }
 
     public async frameParent(applicant: string) {
