@@ -1,7 +1,7 @@
 {
   "name": "@testring/e2e-test-app",
   "private": true,
-  "version": "0.6.14-alpha.2",
+  "version": "0.6.14-alpha.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/ringcentral/testring.git"
@@ -19,16 +19,16 @@
     "build:watch": "echo \"build:watch skipped\""
   },
   "dependencies": {
-    "@testring/cli": "0.6.14-alpha.2",
-    "@testring/plugin-babel": "0.6.14-alpha.2",
-    "@testring/plugin-fs-store": "0.6.14-alpha.2",
-    "@testring/plugin-selenium-driver": "0.6.14-alpha.2",
-    "@testring/web-application": "0.6.14-alpha.2",
+    "@testring/cli": "0.6.14-alpha.3",
+    "@testring/plugin-babel": "0.6.14-alpha.3",
+    "@testring/plugin-fs-store": "0.6.14-alpha.3",
+    "@testring/plugin-selenium-driver": "0.6.14-alpha.3",
+    "@testring/web-application": "0.6.14-alpha.3",
     "@types/express": "5.0.0",
     "babel-preset-es2015": "6.24.1",
     "concurrently": "9.0.1",
     "express": "4.21.1",
-    "testring": "0.6.14-alpha.2",
+    "testring": "0.6.14-alpha.3",
     "ts-node": "10.9.2"
   }
 }
