@@ -526,7 +526,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         const element = await client.$(selector);
-        return element.click();
+        return element.click(options);
     }
 
     public async getSize(applicant: string, selector: string) {
@@ -671,10 +671,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         });
     }
 
-    public async frame(applicant: string, frameID: number) {
+    public async frame(applicant: string, frameID: any) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
-        return client.switchFrame(frameID.toString());
+        return client.switchFrame(frameID);
     }
 
     public async frameParent(applicant: string) {
