@@ -526,7 +526,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         const element = await client.$(selector);
-        return element.click(options);
+        return options && Object.keys(options).length > 0 ? element.click(options) : element.click();
     }
 
     public async getSize(applicant: string, selector: string) {
