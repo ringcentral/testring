@@ -1,9 +1,7 @@
 import * as path from 'path';
 
 import * as webpack from 'webpack';
-import * as CopyPlugin from 'copy-webpack-plugin';
-
-import {CRXPlugin} from './crx-plugin';
+import CopyPlugin from 'copy-webpack-plugin';
 
 const getAbsolutePath = (filepath): string => path.join(__dirname, filepath);
 
@@ -86,17 +84,6 @@ const config: webpack.Configuration = {
                 },
             ],
         }),
-        process.argv.indexOf('--enable-crx') > -1
-            ? new CRXPlugin({
-                  directory: outputDir,
-                  keyPath: getAbsolutePath('extension/testring-dev.pem'),
-                  filename: 'testring-dev',
-                  outputDirectory: getAbsolutePath('extension'),
-                  rootPath: __dirname,
-              })
-            : () => {
-                  /* empty */
-              },
     ],
 };
 

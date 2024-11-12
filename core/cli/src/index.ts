@@ -75,7 +75,7 @@ createField('devtool', {
 // handles all errors, that was not cached inside command
 
 export const runCLI = async (argv: Array<string>): Promise<unknown> => {
-    const args = yargs.parse(argv);
+    const args = yargs.parseSync(argv);
     const command = args._[2];
 
     const config = await getConfig(argv);

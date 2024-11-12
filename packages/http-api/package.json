@@ -1,6 +1,6 @@
 {
   "name": "@testring/http-api",
-  "version": "0.6.13",
+  "version": "0.6.14-alpha.6",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -10,16 +10,16 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/logger": "0.6.13",
-    "@testring/pluggable-module": "0.6.13",
-    "@testring/test-utils": "0.6.13",
-    "@testring/transport": "0.6.13",
-    "@testring/types": "0.6.13",
-    "@testring/utils": "0.6.13",
-    "@types/node": "18.11.18",
-    "@types/request-promise-native": "1.0.18",
-    "@types/tough-cookie": "4.0.2",
+    "@testring/logger": "0.6.14-alpha.6",
+    "@testring/pluggable-module": "0.6.14-alpha.6",
+    "@testring/test-utils": "0.6.14-alpha.6",
+    "@testring/transport": "0.6.14-alpha.6",
+    "@testring/types": "0.6.14-alpha.6",
+    "@testring/utils": "0.6.14-alpha.6",
+    "@types/node": "22.8.5",
+    "@types/request-promise-native": "1.0.21",
+    "@types/tough-cookie": "4.0.5",
     "request-promise-native": "1.0.9",
-    "tough-cookie": "4.1.2"
+    "tough-cookie": "4.1.4"
   }
 }

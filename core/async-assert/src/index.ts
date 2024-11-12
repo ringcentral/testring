@@ -73,7 +73,7 @@ export function createAssertion(options: IAssertionOptions = {}) {
                 }
             } catch (error) {
                 const errorMessage = error.message;
-                let handleError: void | Error;
+                let handleError: void | Error | null = null;
 
                 error.message = successMessage || assertMessage || errorMessage;
 

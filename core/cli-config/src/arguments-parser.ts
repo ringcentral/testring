@@ -59,7 +59,7 @@ export function getArguments(argv: Array<string>): Partial<IConfig> | null {
         return null;
     }
 
-    const args = yargs.parse(argv);
+    const args = yargs.parseSync(argv);
 
     return normalize(args, true);
 }

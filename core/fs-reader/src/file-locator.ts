@@ -1,17 +1,12 @@
-import * as glob from 'glob';
+import * as fg from 'fast-glob';
+import * as process from 'node:process';
 
-export function locateFiles(searchpath: string): Promise<string[]> {
-    return new Promise((resolve, reject) => {
-        if (!searchpath) {
-            return resolve([]);
-        }
-
-        glob(searchpath, {}, (err, files) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(files);
-            }
-        });
-    });
+export async function locateFiles(searchpath: string): Promise<string[]> {
+    if(!searchpath) {
+        return [];
+    }
+    if (process.platform === 'win32') {
+        searchpath = fg.convertPathToPattern(searchpath);
+    }
+    return await fg(searchpath, {});
 }
