@@ -67,7 +67,7 @@ createField('envConfig', {
 });
 
 createField('devtool', {
-    describe: 'Passed to enable recorder/debug server',
+    describe: 'Passed to enable recorder/debug server - deprecated',
     type: 'boolean',
 });
 
