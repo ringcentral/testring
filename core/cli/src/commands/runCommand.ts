@@ -10,7 +10,6 @@ import {
     BrowserProxyController,
 } from '@testring/browser-proxy';
 import {ICLICommand, IConfig, ITransport} from '@testring/types';
-import {DevtoolServerController} from '@testring/devtool-backend';
 
 import {FSStoreServer} from '@testring/fs-store';
 
@@ -23,7 +22,6 @@ class RunCommand implements ICLICommand {
     private browserProxyController: BrowserProxyController;
     private testRunController: TestRunController;
     private httpServer: HttpServer;
-    private devtoolServerController: DevtoolServerController;
 
     private fsStoreServer: FSStoreServer;
 
@@ -61,14 +59,9 @@ class RunCommand implements ICLICommand {
     }
 
     async execute() {
-        const devtoolEnabled = this.config.devtool;
-
-        if (devtoolEnabled) {
-            this.devtoolServerController = await this.initDevtoolServer();
-        }
 
         const testWorker = new TestWorker(this.transport, {
-            waitForRelease: devtoolEnabled,
+            waitForRelease: false,
             localWorker: this.config.workerLimit === 'local',
             screenshots: this.config.screenshots,
         });
@@ -81,9 +74,7 @@ class RunCommand implements ICLICommand {
         this.testRunController = new TestRunController(
             this.config,
             testWorker,
-            this.devtoolServerController
-                ? this.devtoolServerController.getRuntimeConfiguration()
-                : null,
+            null,
         );
 
         this.webApplicationController = new WebApplicationController(
@@ -111,7 +102,6 @@ class RunCommand implements ICLICommand {
                 testRunController: this.testRunController,
                 httpClientInstance: httpClient,
                 httpServer: this.httpServer,
-                devtool: this.devtoolServerController,
             },
             this.config,
         );
@@ -147,29 +137,16 @@ class RunCommand implements ICLICommand {
         }
     }
 
-    async initDevtoolServer() {
-        this.logger.info('Recorder Server is enabled');
-
-        const devtoolServerController = new DevtoolServerController(
-            this.transport,
-        );
-        await devtoolServerController.init();
-
-        return devtoolServerController;
-    }
-
     async shutdown() {
         const httpServer = this.httpServer;
         const testRunController = this.testRunController;
         const browserProxyController = this.browserProxyController;
         const webApplicationController = this.webApplicationController;
-        const devtoolServer = this.devtoolServerController;
 
         this.httpServer = null as any;
         this.testRunController = null as any;
         this.browserProxyController = null as any;
         this.webApplicationController = null as any;
-        this.devtoolServerController = null as any;
 
         this.fsWriterQueueServer && this.fsWriterQueueServer.cleanUpTransport();
         this.fsWriterQueueServer = null as any;
@@ -178,7 +155,6 @@ class RunCommand implements ICLICommand {
         webApplicationController && webApplicationController.kill();
         testRunController && (await testRunController.kill());
         browserProxyController && (await browserProxyController.kill());
-        devtoolServer && (await devtoolServer.kill());
     }
 }
 

@@ -12,7 +12,6 @@
   "dependencies": {
     "@testring/browser-proxy": "0.7.0",
     "@testring/cli-config": "0.7.0",
-    "@testring/devtool-backend": "0.7.0",
     "@testring/fs-reader": "0.7.0",
     "@testring/fs-store": "0.7.0",
     "@testring/http-api": "0.7.0",

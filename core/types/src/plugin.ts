@@ -6,7 +6,6 @@ import {IPluggableModule} from './pluggable-module';
 import {IBrowserProxyController} from './browser-proxy';
 import {IHttpClient} from './http-api';
 import {
-    IDevtoolServerController,
     IHttpServerController,
 } from './devtool-backend';
 
@@ -22,6 +21,5 @@ export interface IPluginModules {
     browserProxy: IBrowserProxyController & IPluggableModule;
     httpClientInstance: IHttpClient;
     httpServer: IHttpServerController & IPluggableModule;
-    devtool: IDevtoolServerController & IPluggableModule;
     fsStoreServer: IPluggableModule;
 }

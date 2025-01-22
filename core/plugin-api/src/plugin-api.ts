@@ -4,7 +4,6 @@ import {FSReaderAPI} from './modules/fs-reader';
 import {LoggerAPI} from './modules/logger';
 import {TestWorkerAPI} from './modules/test-worker';
 import {TestRunControllerAPI} from './modules/test-run-controller';
-import {DevtoolAPI} from './modules/devtool';
 import {HttpServerAPI} from './modules/http-server';
 import {FSStoreServerAPI} from './modules/fs-store-server';
 
@@ -44,10 +43,6 @@ export class PluginAPI {
 
     getHttpClient(): IHttpClient {
         return this.modules.httpClientInstance;
-    }
-
-    getDevtool(): DevtoolAPI {
-        return new DevtoolAPI(this.pluginName, this.modules.devtool);
     }
 
     getFSStoreServer(): FSStoreServerAPI {
