@@ -12,13 +12,17 @@
     "test": "echo concurrently -n simple,selenium \"npm run test:simple\" \"npm run test:selenium \" \"npm run test:screenshots\"",
     "test:all": "npm run test:simple && npm run test:selenium && npm run test:screenshots",
     "test:watch": "echo \"test:watch skipped\"",
-    "test:selenium": "ts-node src/test-runner.ts --config ./test/selenium/config.js",
+    "test:selenium": "ts-node src/test-runner.ts --config ./test/selenium/config.js --env-config=./test/selenium/env.json",
+    "test:selenium:headless": "ts-node src/test-runner.ts --config ./test/selenium/config.js --env-config=./test/selenium/env.json --headless",
     "test:screenshots": "ts-node src/test-runner.ts --config ./test/selenium/config-screenshot.js",
     "test:simple": "testring run --config test/simple/.testringrc --env-parameters.test 10 --rc.tags-list=#P0,#P1",
     "build": "echo \"build skipped\"",
-    "build:watch": "echo \"build:watch skipped\""
+    "build:watch": "echo \"build:watch skipped\"",
+    "install:chrome": "npx @puppeteer/browsers install chrome@stable --path ./chrome-cache",
+    "install:chromedriver": "npx @puppeteer/browsers install chromedriver@stable --path ./chrome-cache"
   },
   "dependencies": {
+    "@puppeteer/browsers": "2.7.0",
     "@testring/cli": "0.7.1",
     "@testring/plugin-babel": "0.7.1",
     "@testring/plugin-fs-store": "0.7.1",

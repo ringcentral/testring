@@ -27,5 +27,3 @@
 
 //     api.application.assert.equal(cookies[1].key, 'RCRoutingInfo');
 // });
-
-

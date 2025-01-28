@@ -1,37 +1,59 @@
-import { run } from 'testring';
+import {run} from 'testring';
+import {getTargetUrl} from './utils';
 
 run(async (api) => {
-    await api.application.url('http://localhost:8080/css.html');
+    let app = api.application;
+    await app.url(getTargetUrl(api, 'css.html'));
 
-    const bgColorFromClass = await api.application.getCssProperty(api.application.root.withClass, 'background-color');
-    const bgColorFromStyle = await api.application.getCssProperty(api.application.root.withStyle, 'background-color');
-
-    await api.application.assert.equal(bgColorFromClass, 'rgba(139,0,0,1)'); // necessary what css-property have 'darkred' value in html
-    await api.application.assert.equal(bgColorFromStyle, 'rgba(255,0,0,1)'); // necessary what css-property have 'red' value in html
-
-    const isCSSClassExistsFalse = await api.application.isCSSClassExists(
-        api.application.root.withStyle, 'customDivClass',
+    const bgColorFromClass = await app.getCssProperty(
+        app.root.withClass,
+        'background-color',
     );
-    const isCSSClassExistsTrue = await api.application.isCSSClassExists(
-        api.application.root.withClass, 'customDivClass',
+    const bgColorFromStyle = await app.getCssProperty(
+        app.root.withStyle,
+        'background-color',
     );
 
-    await api.application.assert.equal(isCSSClassExistsFalse, false);
-    await api.application.assert.equal(isCSSClassExistsTrue, true);
+    await app.assert.equal(bgColorFromClass, 'rgba(139,0,0,1)'); // necessary what css-property have 'darkred' value in html
+    await app.assert.equal(bgColorFromStyle, 'rgba(255,0,0,1)'); // necessary what css-property have 'red' value in html
+
+    const isCSSClassExistsFalse = await app.isCSSClassExists(
+        app.root.withStyle,
+        'customDivClass',
+    );
+    const isCSSClassExistsTrue = await app.isCSSClassExists(
+        app.root.withClass,
+        'customDivClass',
+    );
+
+    await app.assert.equal(isCSSClassExistsFalse, false);
+    await app.assert.equal(isCSSClassExistsTrue, true);
 
     // ------------------------------------------------------------------------------
 
-    const isBecomeVisibleElementVisibleNow = await api.application.isVisible(api.application.root.becomeVisible);
-    const isBecomeHiddenElementVisibleNow = await api.application.isVisible(api.application.root.becomeHidden);
+    const isBecomeVisibleElementVisibleNow = await app.isVisible(
+        app.root.becomeVisible,
+    );
+    const isBecomeHiddenElementVisibleNow = await app.isVisible(
+        app.root.becomeHidden,
+    );
 
-    await api.application.assert.equal(isBecomeVisibleElementVisibleNow, false);
-    await api.application.assert.equal(isBecomeHiddenElementVisibleNow, true);
+    await app.assert.equal(isBecomeVisibleElementVisibleNow, false);
+    await app.assert.equal(isBecomeHiddenElementVisibleNow, true);
 
-    await api.application.click(api.application.root.hideVisibleButton);
-    const becomeHidden = await api.application.isBecomeHidden(api.application.root.becomeHidden);
-    await api.application.assert.equal(becomeHidden, true, 'becomeHidden item should become hidden');
+    await app.click(app.root.hideVisibleButton);
+    const becomeHidden = await app.isBecomeHidden(app.root.becomeHidden);
+    await app.assert.equal(
+        becomeHidden,
+        true,
+        'becomeHidden item should become hidden',
+    );
 
-    await api.application.click(api.application.root.showHiddenButton);
-    const becomeVisible = await api.application.isBecomeVisible(api.application.root.becomeVisible);
-    await api.application.assert.equal(becomeVisible, true, 'becomeVisible item should become visible');
+    await app.click(app.root.showHiddenButton);
+    const becomeVisible = await app.isBecomeVisible(app.root.becomeVisible);
+    await app.assert.equal(
+        becomeVisible,
+        true,
+        'becomeVisible item should become visible',
+    );
 });

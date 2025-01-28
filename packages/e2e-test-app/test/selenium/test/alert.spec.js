@@ -1,28 +1,30 @@
-import { run } from 'testring';
+import {run} from 'testring';
+import {getTargetUrl} from './utils';
 
 run(async (api) => {
-    await api.application.url('http://localhost:8080/alert.html');
+    let app = api.application;
+    await app.url(getTargetUrl(api, 'alert.html'));
 
-    if (await api.application.isAlertOpen()) {
-        await api.application.alertAccept();
+    if (await app.isAlertOpen()) {
+        await app.alertAccept();
     } else {
         throw Error('Alert is not opened');
     }
 
-    if (await api.application.isAlertOpen()) {
-        await api.application.alertDismiss();
+    if (await app.isAlertOpen()) {
+        await app.alertDismiss();
     } else {
         throw Error('Alert is not opened');
     }
 
-    const text = await api.application.alertText();
+    const text = await app.alertText();
 
-    const firstAlertState = await api.application.getText(api.application.root.alerts.first);
-    const secondAlertState = await api.application.getText(api.application.root.alerts.second);
-    const thirdAlertState = await api.application.getText(api.application.root.alerts.third);
+    const firstAlertState = await app.getText(app.root.alerts.first);
+    const secondAlertState = await app.getText(app.root.alerts.second);
+    const thirdAlertState = await app.getText(app.root.alerts.third);
 
-    api.application.assert.equal(firstAlertState, 'true');
-    api.application.assert.equal(secondAlertState, 'false');
-    api.application.assert.equal(thirdAlertState, 'false');
-    api.application.assert.equal(text, 'test');
+    await app.assert.equal(firstAlertState, 'true');
+    await app.assert.equal(secondAlertState, 'false');
+    await app.assert.equal(thirdAlertState, 'false');
+    await app.assert.equal(text, 'test');
 });

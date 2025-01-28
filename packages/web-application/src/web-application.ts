@@ -803,7 +803,7 @@ export class WebApplication extends PluggableModule {
         await this.waitForExist(normalizedSelector, timeout);
         await this.makeScreenshot();
 
-        return this.client.click(normalizedSelector, {button: 'middle'});
+        return this.client.click(normalizedSelector, {button: 'left'});
     }
 
     public async clickCoordinates(
@@ -816,46 +816,44 @@ export class WebApplication extends PluggableModule {
         await this.waitForExist(normalizedSelector, timeout);
         await this.makeScreenshot();
 
-        let hPos = 1;
-        let vPos = 1;
+        let hPos = 0;
+        let vPos = 0;
 
         if (typeof options?.x === 'string' || typeof options?.y === 'string') {
-            const {width, height} = await this.client.getSize(
-                normalizedSelector,
-            );
+            const {width, height} = await this.client.getSize(normalizedSelector);
 
             switch (options?.x) {
                 case 'left':
-                    hPos = 0;
+                    hPos = -Math.ceil(width / 2) + 1;
                     break;
 
                 case 'right':
-                    hPos = width;
+                    hPos = Math.ceil(width / 2) - 1;
                     break;
 
                 case 'center':
-                    hPos = Math.ceil(width / 2);
+                    hPos = 0;
                     break;
 
                 default:
-                    hPos = 1;
+                    hPos = 0;
             }
 
             switch (options?.y) {
                 case 'top':
-                    vPos = 0;
+                    vPos = -Math.ceil(height / 2) + 1;
                     break;
 
                 case 'bottom':
-                    vPos = width;
+                    vPos = Math.ceil(height / 2) - 1;
                     break;
 
                 case 'center':
-                    vPos = Math.ceil(height / 2);
+                    vPos = 0;
                     break;
 
                 default:
-                    hPos = 1;
+                    vPos = 0;
             }
         }
 
@@ -1816,7 +1814,7 @@ export class WebApplication extends PluggableModule {
 
         xpath = this.normalizeSelector(xpath);
 
-        return this.client.getHTML(xpath, true);
+        return this.client.getHTML(xpath, {prettify: false});
     }
 
     public async getCurrentTabId() {

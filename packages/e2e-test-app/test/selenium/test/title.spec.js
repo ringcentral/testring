@@ -1,11 +1,13 @@
-import { run } from 'testring';
+import {run} from 'testring';
+import {getTargetUrl} from './utils';
 
 run(async (api) => {
-    await api.application.url('http://localhost:8080/title.html');
-    const originalTitle = await api.application.getTitle();
-    api.application.assert.equal(originalTitle, 'original title');
+    let app = api.application;
+    await app.url(getTargetUrl(api, 'title.html'));
+    const originalTitle = await app.getTitle();
+    await app.assert.equal(originalTitle, 'original title');
 
-    await api.application.click(api.application.root.changeTitleButton);
-    const newTitle = await api.application.getTitle();
-    api.application.assert.equal(newTitle, 'title changed');
+    await app.click(app.root.changeTitleButton);
+    const newTitle = await app.getTitle();
+    await app.assert.equal(newTitle, 'title changed');
 });

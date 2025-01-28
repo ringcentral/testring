@@ -1,9 +1,11 @@
-import { run } from 'testring';
+import {run} from 'testring';
+import {getTargetUrl} from './utils';
 
 run(async (api) => {
-    await api.application.url('http://localhost:8080/scroll.html');
+    let app = api.application;
+    await app.url(getTargetUrl(api, 'scroll.html'));
 
-    await api.application.moveToObject(api.application.root.item_10);
+    await app.moveToObject(app.root.item_10);
 
     function getScrollTop(selector) {
         function getElementByXPath(xpath) {
@@ -11,7 +13,8 @@ run(async (api) => {
                 xpath,
                 document,
                 null,
-                XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null,
+                XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+                null,
             );
 
             if (element.snapshotLength > 0) {
@@ -23,36 +26,42 @@ run(async (api) => {
 
         return getElementByXPath(selector).scrollTop;
     }
-    const scrollTop = await api.application.execute(getScrollTop, api.application.root.container.toString());
-    const mouseOverResult10 = await api.application.getText(api.application.root.mouseOverResult);
-
-    await api.application.assert.isAtLeast(+scrollTop, 140);
-    await api.application.assert.equal(mouseOverResult10, '10');
-
-    await api.application.scroll(api.application.root.container.item_1);
-
-    const scrollTopAfterScrollingToFirstItem = await api.application.getAttribute(
-        api.application.root.container, 'scrollTop',
+    const scrollTop = await app.execute(
+        getScrollTop,
+        app.root.container.toString(),
     );
-    await api.application.assert.isAtMost(+scrollTopAfterScrollingToFirstItem, 30);
+    const mouseOverResult10 = await app.getText(app.root.mouseOverResult);
 
-    await api.application.moveToObject(api.application.root.item_1);
-    const mouseOverResult1 = await api.application.getText(api.application.root.mouseOverResult);
-    await api.application.assert.equal(mouseOverResult1, '1');
+    await app.assert.isAtLeast(+scrollTop, 140);
+    await app.assert.equal(mouseOverResult10, '10');
 
-    await api.application.scrollIntoView(api.application.root.button);
-    let scrollTopView = await api.application.execute(() => document.scrollingElement.scrollTop);
+    await app.scroll(app.root.container.item_1);
 
-    await api.application.scrollIntoView(api.application.root.button, -100);
-    await api.application.assert.equal(
-        scrollTopView-100,
-        await api.application.execute(() => document.scrollingElement.scrollTop),
+    const scrollTopAfterScrollingToFirstItem = await app.getAttribute(
+        app.root.container,
+        'scrollTop',
+    );
+    await app.assert.isAtMost(+scrollTopAfterScrollingToFirstItem, 30);
+
+    await app.moveToObject(app.root.item_1);
+    const mouseOverResult1 = await app.getText(app.root.mouseOverResult);
+    await app.assert.equal(mouseOverResult1, '1');
+
+    await app.scrollIntoView(app.root.button);
+    let scrollTopView = await app.execute(
+        () => document.scrollingElement.scrollTop,
     );
 
-    await api.application.scrollIntoViewIfNeeded(api.application.root.button);
-    await api.application.click(api.application.root.button);
-    await api.application.assert.equal(
-        scrollTopView-100,
-        await api.application.execute(() => document.scrollingElement.scrollTop),
+    await app.scrollIntoView(app.root.button, -100);
+    await app.assert.equal(
+        scrollTopView - 100,
+        await app.execute(() => document.scrollingElement.scrollTop),
+    );
+
+    await app.scrollIntoViewIfNeeded(app.root.button);
+    await app.click(app.root.button);
+    await app.assert.equal(
+        scrollTopView - 100,
+        await app.execute(() => document.scrollingElement.scrollTop),
     );
 });

@@ -1,36 +1,52 @@
-import { run } from 'testring';
+import {run} from 'testring';
+import {getTargetUrl} from './utils';
 
 run(async (api) => {
-    await api.application.url('http://localhost:8080/form.html');
+    let app = api.application;
+    await app.url(getTargetUrl(api, 'form.html'));
 
-    await api.application.selectByValue(api.application.root.form.select, 'byValue');
-    const byValueText = await api.application.getSelectedText(api.application.root.form.select);
-    api.application.assert.equal(byValueText, 'By value');
+    await app.selectByValue(app.root.form.select, 'byValue');
+    const byValueText = await app.getSelectedText(app.root.form.select);
+    await app.assert.equal(byValueText, 'By value');
 
-    await api.application.selectByAttribute(api.application.root.form.select, 'data-test-attr', 'value');
-    const byAttributeText = await api.application.getSelectedText(api.application.root.form.select);
-    api.application.assert.equal(byAttributeText, 'By attribute');
+    await app.selectByAttribute(
+        app.root.form.select,
+        'data-test-attr',
+        'value',
+    );
+    const byAttributeText = await app.getSelectedText(app.root.form.select);
+    await app.assert.equal(byAttributeText, 'By attribute');
 
-    await api.application.selectByIndex(api.application.root.form.select, 2);
-    const byIndexText = await api.application.getSelectedText(api.application.root.form.select);
-    api.application.assert.equal(byIndexText, 'By index');
+    await app.selectByIndex(app.root.form.select, 2);
+    const byIndexText = await app.getSelectedText(app.root.form.select);
+    await app.assert.equal(byIndexText, 'By index');
 
-    await api.application.selectByVisibleText(api.application.root.form.select, 'By visible text');
-    const byVisibleText = await api.application.getSelectedText(api.application.root.form.select);
-    api.application.assert.equal(byVisibleText, 'By visible text');
+    await app.selectByVisibleText(app.root.form.select, 'By visible text');
+    const byVisibleText = await app.getSelectedText(app.root.form.select);
+    await app.assert.equal(byVisibleText, 'By visible text');
 
-    const previousText = await api.application.getSelectedText(api.application.root.form.select);
-    await api.application.selectNotCurrent(api.application.root.form.select);
-    const nonCurrentText = await api.application.getSelectedText(api.application.root.form.select);
-    await api.application.assert.notEqual(nonCurrentText, previousText);
+    const previousText = await app.getSelectedText(app.root.form.select);
+    await app.selectNotCurrent(app.root.form.select);
+    const nonCurrentText = await app.getSelectedText(app.root.form.select);
+    await app.assert.notEqual(nonCurrentText, previousText);
 
-    const selectTexts = await api.application.getSelectTexts(api.application.root.form.select);
-    const selectValues = await api.application.getSelectValues(api.application.root.form.select);
+    const selectTexts = await app.getSelectTexts(app.root.form.select);
+    const selectValues = await app.getSelectValues(app.root.form.select);
 
-    await api.application.assert.deepEqual(selectTexts, [
-        'By attribute', 'By name', 'By index', 'By value', 'By visible text', 'With test id',
+    await app.assert.deepEqual(selectTexts, [
+        'By attribute',
+        'By name',
+        'By index',
+        'By value',
+        'By visible text',
+        'With test id',
     ]);
-    await api.application.assert.deepEqual(selectValues, [
-        'byAttribute', 'byName', 'byIndex', 'byValue', 'byVisibleText', 'withTestId',
+    await app.assert.deepEqual(selectValues, [
+        'byAttribute',
+        'byName',
+        'byIndex',
+        'byValue',
+        'byVisibleText',
+        'withTestId',
     ]);
 });

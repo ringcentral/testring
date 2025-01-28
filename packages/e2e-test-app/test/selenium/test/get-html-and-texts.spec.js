@@ -1,18 +1,28 @@
-import { run } from 'testring';
+import {run} from 'testring';
+import {getTargetUrl} from './utils';
 
-const expectedHtml = '<div data-test-automation-id="container"><p>test</p></div>';
+const expectedHtml =
+    '<div data-test-automation-id="container"><p>test</p></div>';
 
 run(async (api) => {
-    await api.application.url('http://localhost:8080/html-and-text.html');
-    const html = await api.application.getHTML(api.application.root.container);
-    await api.application.assert.equal(html, expectedHtml);
+    let app = api.application;
+    await app.url(getTargetUrl(api, 'html-and-text.html'));
+    const html = await app.getHTML(app.root.container);
+    await app.assert.equal(html, expectedHtml);
 
-    const text = await api.application.getText(api.application.root.text);
-    await api.application.assert.equal(text, 'Text is here!');
+    const text = await app.getText(app.root.text);
+    await app.assert.equal(text, 'Text is here!');
 
-    const texts = await api.application.getTexts(api.application.root.texts);
-    await api.application.assert.deepEqual(texts[0].split('\n'), ['Text 1', 'Text 2', 'Text 3', 'Text 4']);
+    const texts = await app.getTexts(app.root.texts);
+    await app.assert.deepEqual(texts[0].split('\n'), [
+        'Text 1',
+        'Text 2',
+        'Text 3',
+        'Text 4',
+    ]);
 
-    const textWithoutFocus = await api.application.getTextWithoutFocus(api.application.root.textWithoutFocus);
-    await api.application.assert.equal(textWithoutFocus, 'Text without focus');
+    const textWithoutFocus = await app.getTextWithoutFocus(
+        app.root.textWithoutFocus,
+    );
+    await app.assert.equal(textWithoutFocus, 'Text without focus');
 });
