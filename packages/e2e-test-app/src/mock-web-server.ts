@@ -1,5 +1,6 @@
 import * as express from 'express';
 import * as Http from 'http';
+import * as path from "node:path";
 
 const port = 8080;
 export class MockWebServer {
@@ -20,7 +21,10 @@ export class MockWebServer {
 
     private static createExpressWebApplication(): express.Application {
         const app = express();
-        app.use(express.static('static-fixtures'));
+        app.use(express.static(
+            // path to 'static-fixtures' depends on where process is started
+            path.join(__dirname, '..', 'static-fixtures'),
+        ));
         return app;
     }
 }
