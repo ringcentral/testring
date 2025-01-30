@@ -40,7 +40,7 @@ module.exports = async (config) => {
             [
                 'selenium-driver',
                 {
-                    clientTimeout: local ? 0 : config.testTimeout,
+                    clientTimeout: 60000,
                     path: '/wd/hub',
                     chromeDriverPath: process.env['CHROMEDRIVER_PATH'] || chromedriver.executablePath,
                     workerLimit: 'local',
