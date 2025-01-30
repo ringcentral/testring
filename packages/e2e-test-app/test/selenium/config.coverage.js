@@ -6,9 +6,6 @@ module.exports = async (config) => {
         cacheDir: path.join(__dirname, '..', '..', 'chrome-cache'),
     });
     const chrome = info.find((item) => item.browser === 'chrome');
-    if (!chrome) {
-        throw new Error('Chrome is not found');
-    }
     const chromedriver = info.find((item) => item.browser === 'chromedriver');
     const local = !config.headless;
 
@@ -50,12 +47,12 @@ module.exports = async (config) => {
                     capabilities: local
                         ? {
                             'goog:chromeOptions': {
-                                binary: chrome.executablePath,
+                                binary: process.env['CHROME_BIN'] || chrome.executablePath,
                             },
                         }
                         : {
                             'goog:chromeOptions': {
-                                binary: chrome.executablePath,
+                                binary: process.env['CHROME_BIN'] || chrome.executablePath,
                                 args: ['--headless=new', '--no-sandbox'],
                             },
                         },
