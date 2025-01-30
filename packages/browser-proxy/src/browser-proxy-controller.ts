@@ -1,5 +1,4 @@
 import {ChildProcess} from 'child_process';
-
 import {
     BrowserProxyActions,
     BrowserProxyPlugins,
@@ -11,68 +10,54 @@ import {
 } from '@testring/types';
 import {PluggableModule} from '@testring/pluggable-module';
 import {loggerClient} from '@testring/logger';
-
 import {BrowserProxyWorker} from './browser-proxy-worker';
+import {BrowserProxyLocalWorker} from './browser-proxy-local-worker';
 
 const logger = loggerClient.withPrefix('[browser-proxy-controller]');
 
-export class BrowserProxyController
-    extends PluggableModule
-    implements IBrowserProxyController {
+export class BrowserProxyController extends PluggableModule implements IBrowserProxyController {
     private workersPool: Set<IBrowserProxyWorker> = new Set();
-
     private applicantWorkerMap: Map<string, IBrowserProxyWorker> = new Map();
-
     private defaultExternalPlugin: IBrowserProxyWorkerConfig = {
         plugin: 'unknown',
         config: null,
     };
-
     private externalPlugin: IBrowserProxyWorkerConfig;
-
     private lastWorkerIndex = -1;
-
-    private workerLimit = 1;
-
+    private workerLimit: number | 'local' = 1;
     private logger = logger;
+    private localWorker: BrowserProxyLocalWorker | null = null;
 
     constructor(
         private transport: ITransport,
-        private workerCreator: (
-            onActionPluginPath: string,
-            config: any,
-        ) => ChildProcess | Promise<ChildProcess>,
+        private workerCreator: (pluginPath: string, config: any) => ChildProcess | Promise<ChildProcess>,
     ) {
         super([BrowserProxyPlugins.getPlugin]);
     }
 
     public async init(): Promise<void> {
         if (typeof this.workerCreator !== 'function') {
-            this.logger.error(
-                `Unsupported worker type "${typeof this.workerCreator}"`,
-            );
-            throw new Error(
-                `Unsupported worker type "${typeof this.workerCreator}"`,
-            );
+            this.logger.error(`Unsupported worker type "${typeof this.workerCreator}"`);
+            throw new Error(`Unsupported worker type "${typeof this.workerCreator}"`);
         }
 
-        this.externalPlugin = await this.callHook(
-            BrowserProxyPlugins.getPlugin,
-            this.defaultExternalPlugin,
-        );
-
+        this.externalPlugin = await this.callHook(BrowserProxyPlugins.getPlugin, this.defaultExternalPlugin);
         const {config} = this.externalPlugin;
 
-        if (
-            config &&
-            typeof config.workerLimit === 'number' &&
-            !isNaN(config.workerLimit)
-        ) {
-            this.workerLimit = config.workerLimit;
+        if (config && config.workerLimit) {
+            this.workerLimit = config.workerLimit === 'local' ? 'local' : Number(config.workerLimit);
+        }
+
+        if (this.workerLimit === 'local') {
+            this.localWorker = new BrowserProxyLocalWorker(this.transport, this.externalPlugin);
         }
     }
 
     private getWorker(applicant: string): IBrowserProxyWorker {
+        if (this.workerLimit === 'local' && this.localWorker) {
+            return this.localWorker;
+        }
+
         const mappedWorker = this.applicantWorkerMap.get(applicant);
         let worker;
 
@@ -80,64 +65,40 @@ export class BrowserProxyController
             return mappedWorker;
         }
 
-        if (this.workersPool.size < this.workerLimit) {
-            worker = new BrowserProxyWorker(
-                this.transport,
-                this.workerCreator,
-                this.externalPlugin,
-            );
+        if (this.workersPool.size < (this.workerLimit as number)) {
+            worker = new BrowserProxyWorker(this.transport, this.workerCreator, this.externalPlugin);
             this.workersPool.add(worker);
             this.lastWorkerIndex = this.workersPool.size - 1;
         } else {
-            this.lastWorkerIndex =
-                this.lastWorkerIndex + 1 < this.workersPool.size
-                    ? this.lastWorkerIndex + 1
-                    : 0;
+            this.lastWorkerIndex = this.lastWorkerIndex + 1 < this.workersPool.size ? this.lastWorkerIndex + 1 : 0;
             worker = [...this.workersPool.values()][this.lastWorkerIndex];
         }
 
         this.applicantWorkerMap.set(applicant, worker);
-
         return worker;
     }
 
-    public async execute(
-        applicant: string,
-        command: IBrowserProxyCommand,
-    ): Promise<any> {
-        let worker;
-
+    public async execute(applicant: string, command: IBrowserProxyCommand): Promise<any> {
         if (command.action === BrowserProxyActions.end) {
             if (this.applicantWorkerMap.has(applicant)) {
-                worker = this.getWorker(applicant);
-            } else {
-                return true;
+                const worker = this.getWorker(applicant);
+                this.applicantWorkerMap.delete(applicant);
+                return worker.execute(applicant, command);
             }
-
-            this.applicantWorkerMap.delete(applicant);
-        } else {
-            worker = this.getWorker(applicant);
+            return true;
         }
 
+        const worker = this.getWorker(applicant);
         return worker.execute(applicant, command);
     }
 
-    private reset() {
-        this.workersPool.clear();
-
-        this.applicantWorkerMap.clear();
-
-        this.externalPlugin = this.defaultExternalPlugin;
-
-        this.lastWorkerIndex = -1;
-
-        this.workerLimit = 1;
-    }
-
     public async kill(): Promise<void> {
-        const workersToKill = [...this.workersPool.values()].map((worker) =>
-            worker.kill(),
-        );
+        if (this.workerLimit === 'local' && this.localWorker) {
+            await this.localWorker.kill();
+            return;
+        }
+
+        const workersToKill = [...this.workersPool.values()].map(worker => worker.kill());
 
         try {
             await Promise.all(workersToKill);
@@ -145,6 +106,10 @@ export class BrowserProxyController
             logger.error('Exit failed ', err);
         }
 
-        this.reset();
+        this.workersPool.clear();
+        this.applicantWorkerMap.clear();
+        this.externalPlugin = this.defaultExternalPlugin;
+        this.lastWorkerIndex = -1;
+        this.workerLimit = 1;
     }
 }

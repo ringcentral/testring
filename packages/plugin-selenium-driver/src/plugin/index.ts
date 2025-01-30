@@ -6,7 +6,7 @@ import {ChildProcess} from 'child_process';
 import {remote} from 'webdriverio';
 import * as deepmerge from 'deepmerge';
 
-import {spawn} from '@testring/child-process';
+import {spawnWithPipes} from '@testring/child-process';
 import {loggerClient} from '@testring/logger';
 import {getCrxBase64} from '@testring/dwnld-collector-crx';
 import {CDPCoverageCollector} from '@nullcc/code-coverage-client';
@@ -121,19 +121,21 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     private initIntervals() {
-        if (this.config.clientCheckInterval > 0) {
-            this.clientCheckInterval = setInterval(
-                () => this.checkClientsTimeout(),
-                this.config.clientCheckInterval,
-            );
-        }
+        if (this.config.workerLimit !== 'local') {
+            if (this.config.clientCheckInterval > 0) {
+                this.clientCheckInterval = setInterval(
+                    () => this.checkClientsTimeout(),
+                    this.config.clientCheckInterval,
+                );
+            }
 
-        process.on('exit', () => {
-            clearInterval(this.clientCheckInterval as NodeJS.Timeout);
-            this.stopAllSessions().catch((err) => {
-                this.logger.error('Clean process exit failed', err);
+            process.on('exit', () => {
+                clearInterval(this.clientCheckInterval as NodeJS.Timeout);
+                this.stopAllSessions().catch((err) => {
+                    this.logger.error('Clean process exit failed', err);
+                });
             });
-        });
+        }
     }
 
     private stopAllSessions() {
@@ -174,7 +176,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         this.logger.debug('Init local selenium server');
 
         try {
-            this.localSelenium = spawn('java', [
+            this.localSelenium = spawnWithPipes('java', [
                 ...this.getChromeDriverArgs(),
                 '-jar',
                 seleniumJarPath,
@@ -421,6 +423,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     public async kill() {
         this.logger.debug('Kill command is called');
+
+        // Close all browser sessions
         for (const applicant of this.browserClients.keys()) {
             try {
                 await this.end(applicant);
@@ -429,10 +433,57 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             }
         }
 
+        // If using 'local' mode, stop all active sessions
+        if (this.config.workerLimit === 'local') {
+            await this.stopAllSessions();
+        }
+
         if (this.localSelenium) {
-            this.localSelenium.kill();
+
+            // remove listener
+            if (this.localSelenium.stderr) {
+                this.localSelenium.stderr.removeAllListeners('data');
+                this.localSelenium.stdout?.removeAllListeners();
+            }
+
+            // Ensure all pipes are closed
+            this.localSelenium.stdout?.destroy();
+            this.localSelenium.stderr?.destroy();
+            this.localSelenium.stdin?.destroy();
+
+            this.logger.debug(`Stopping local Selenium server (PID: ${this.localSelenium.pid})`);
+
+            // Try SIGTERM first
+            this.localSelenium.kill('SIGTERM');
+
+            // Wait for exit event with a timeout (ensures it does not hang forever)
+            const waitForExit = new Promise<void>((resolve) => {
+                this.localSelenium.once('exit', () => {
+                    this.logger.debug('Selenium process exited.');
+                    resolve();
+                });
+            });
+
+            // Force kill if not exiting within 3 seconds
+            const forceKill = new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    if (!this.localSelenium.killed) {
+                        this.logger.warn(`Selenium did not exit in time. Sending SIGKILL.`);
+                        this.localSelenium.kill('SIGKILL');
+                    }
+                    resolve();
+                }, 3000);
+            });
+
+            // Wait for either normal exit or force kill
+            await Promise.race([waitForExit, forceKill]);
+
+            this.localSelenium.removeAllListeners();
+
+            this.logger.debug('Selenium process and all associated pipes closed.');
         }
     }
+
 
     public async refresh(applicant: string) {
         await this.createClient(applicant);
