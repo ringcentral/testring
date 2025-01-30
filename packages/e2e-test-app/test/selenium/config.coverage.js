@@ -10,9 +10,6 @@ module.exports = async (config) => {
         throw new Error('Chrome is not found');
     }
     const chromedriver = info.find((item) => item.browser === 'chromedriver');
-    if (!chromedriver) {
-        throw new Error('Chromedriver is not found');
-    }
     const local = !config.headless;
 
     const babelConfig = {
@@ -48,7 +45,7 @@ module.exports = async (config) => {
                 {
                     clientTimeout: local ? 0 : config.testTimeout,
                     path: '/wd/hub',
-                    chromeDriverPath: chromedriver.executablePath,
+                    chromeDriverPath: process.env['CHROMEDRIVER_PATH'] || chromedriver.executablePath,
                     workerLimit: 'local',
                     capabilities: local
                         ? {
