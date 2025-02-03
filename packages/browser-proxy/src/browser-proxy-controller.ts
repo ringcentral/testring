@@ -80,6 +80,11 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
 
     public async execute(applicant: string, command: IBrowserProxyCommand): Promise<any> {
         if (command.action === BrowserProxyActions.end) {
+
+            if (this.localWorker) {
+                return this.localWorker.execute(applicant, command);
+            }
+
             if (this.applicantWorkerMap.has(applicant)) {
                 const worker = this.getWorker(applicant);
                 this.applicantWorkerMap.delete(applicant);
@@ -95,6 +100,7 @@ export class BrowserProxyController extends PluggableModule implements IBrowserP
     public async kill(): Promise<void> {
         if (this.workerLimit === 'local' && this.localWorker) {
             await this.localWorker.kill();
+            this.localWorker = null;
             return;
         }
 
