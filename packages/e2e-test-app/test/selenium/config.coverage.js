@@ -1,12 +1,15 @@
+/* eslint-disable */
 const browsers = require('@puppeteer/browsers');
 const path = require('path');
 
 module.exports = async (config) => {
     const info = await browsers.getInstalledBrowsers({
-        cacheDir: path.join(__dirname, '..', '..', 'chrome-cache'),
+        cacheDir: process.env['CHROME_CACHE_DIR'] || path.join(__dirname, '..', '..', 'chrome-cache'),
     });
     const chrome = info.find((item) => item.browser === 'chrome');
     const chromedriver = info.find((item) => item.browser === 'chromedriver');
+    console.log('Chrome:', chrome.executablePath);
+    console.log('Chromedriver:', chromedriver.executablePath);
     const local = !config.headless;
 
     const babelConfig = {
