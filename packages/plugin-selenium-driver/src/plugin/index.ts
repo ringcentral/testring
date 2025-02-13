@@ -613,7 +613,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.getTitle();
     }
 
-    public async clearElement(applicant: string, xpath: string) {
+    public async clearValue(applicant: string, xpath: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 

@@ -68,11 +68,18 @@ run(async (api) => {
     await app.assert.equal(initialValueOfInputWithDefaultValue, 'readonly');
 
     await app.setValue(app.root.form.nameInput, 'testValue');
-    const afterSetValue = await app.getValue(app.root.form.nameInput);
+    let afterSetValue = await app.getValue(app.root.form.nameInput);
     await app.assert.equal(afterSetValue, 'testValue');
 
     await app.clearElement(app.root.form.nameInput);
-    const afterClearValue = await app.getValue(app.root.form.nameInput);
+    let afterClearValue = await app.getValue(app.root.form.nameInput);
+    await app.assert.equal(afterClearValue, '');
+
+    await app.setValue(app.root.form.nameInput, 'testValueNew');
+    afterSetValue = await app.getValue(app.root.form.nameInput);
+    await app.assert.equal(afterSetValue, 'testValueNew');
+    await app.clearValue(app.root.form.nameInput);
+    afterClearValue = await app.getValue(app.root.form.nameInput);
     await app.assert.equal(afterClearValue, '');
 
     // placeholder

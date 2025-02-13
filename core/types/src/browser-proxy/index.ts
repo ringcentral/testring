@@ -68,7 +68,7 @@ export interface IBrowserProxyPlugin {
 
     getTitle(applicant: string): Promise<any>;
 
-    clearElement(applicant: string, xpath: string): Promise<any>;
+    clearValue(applicant: string, xpath: string): Promise<any>;
 
     keys(applicant: string, value: any): Promise<any>;
 

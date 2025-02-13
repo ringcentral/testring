@@ -52,4 +52,24 @@ run(async (api) => {
         await app.root.existingElement.li,
     );
     await app.assert.equal(liElementsCount, 5);
+
+    // -------------------------------------------------------------------------------------------------
+
+    // getElementsIds
+    const elementsIds = [
+        await app.getElementsIds(app.root.checkbox1),
+        await app.getElementsIds(app.root.checkbox2),
+    ];
+
+    await app.assert.ok(elementsIds.every((id) => typeof id === 'string'));
+
+    // -------------------------------------------------------------------------------------------------
+
+    let checkedStates = [];
+    for (const id of elementsIds) {
+        checkedStates.push(await app.isElementSelected(id));
+    }
+
+    await app.assert.deepEqual(checkedStates, [false, true]);
+
 });

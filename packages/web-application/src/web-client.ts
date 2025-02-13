@@ -125,19 +125,12 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.executeAsync, [fn, args]);
     }
 
-    public timeoutsAsyncScript(timeout, fn) {
-        return this.makeRequest(BrowserProxyActions.timeoutsAsyncScript, [
-            timeout,
-            fn,
-        ]);
-    }
-
     public getTitle() {
         return this.makeRequest(BrowserProxyActions.getTitle, []);
     }
 
-    public clearElement(xpath) {
-        return this.makeRequest(BrowserProxyActions.clearElement, [xpath]);
+    public clearValue(xpath) {
+        return this.makeRequest(BrowserProxyActions.clearValue, [xpath]);
     }
 
     public keys(value) {

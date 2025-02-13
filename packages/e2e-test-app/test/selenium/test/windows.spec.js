@@ -9,6 +9,7 @@ run(async (api) => {
 
     await app.openPage(getTargetUrl(api, 'scroll.html'));
     await app.url(getTargetUrl(api, 'title.html'));
+    await app.maximizeWindow();
     await app.assert.equal(mainTabId, await app.getCurrentTabId());
     await app.assert.deepEqual(await app.getTabIds(), [mainTabId]);
 
@@ -80,17 +81,32 @@ run(async (api) => {
 
     // Reinit current manager after all tabs are closed
     await app.openPage(getTargetUrl(api, 'scroll.html'));
+    await app.maximizeWindow();
     mainTabId = await app.getCurrentTabId();
     await app.newWindow(getTargetUrl(api, 'title.html'));
     secondTabId = await app.getCurrentTabId();
     await app.newWindow(getTargetUrl(api, 'elements.html'));
     thirdTabId = await app.getCurrentTabId();
 
-    await app.assert.deepEqual(await app.getTabIds(), [
+    let expectedWindows = [
         mainTabId,
         secondTabId,
         thirdTabId,
-    ]);
+    ];
+    await app.assert.deepEqual(await app.getTabIds(), expectedWindows);
+
+    let windowHandles = await app.windowHandles();
+
+    await app.assert.deepEqual(windowHandles, expectedWindows);
+
+    let isChecked = await app.isChecked(app.root.checkbox1);
+    await app.assert.equal(isChecked, false);
+    await app.click(app.root.checkbox1);
+    isChecked = await app.isChecked(app.root.checkbox1);
+    await app.assert.equal(isChecked, true);
+    await app.refresh();
+    isChecked = await app.isChecked(app.root.checkbox1);
+    await app.assert.equal(isChecked, false);
 
     await app.switchToFirstSiblingTab();
     await app.assert.equal(await app.getCurrentTabId(), secondTabId);
