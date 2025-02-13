@@ -917,7 +917,7 @@ export class WebApplication extends PluggableModule {
 
     public async clearValue(xpath, timeout: number = this.WAIT_TIMEOUT) {
         await this.waitForExist(xpath, timeout);
-        let normalizedXpath = this.normalizeSelector(xpath);
+        const normalizedXpath = this.normalizeSelector(xpath);
         return this.client.clearValue(normalizedXpath);
     }
 
