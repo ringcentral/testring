@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title data-test-automation-id="title">Drag and Drop Test</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+
+        .draggable {
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            line-height: 100px;
+            cursor: move;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .draggable:active {
+            transform: scale(1.1);
+        }
+
+        .dropzone {
+            width: 120px;
+            height: 120px;
+            margin: 10px;
+            border: 2px dashed #ccc;
+            display: inline-block;
+            vertical-align: top;
+            transition: all 0.3s ease;
+        }
+
+        .dropzone.over {
+            border-color: #4CAF50;
+        }
+
+        .dropzone.expanded {
+            width: 140px;
+            height: 140px;
+        }
+    </style>
+</head>
+<body data-test-automation-id="root">
+<div id="draggable1" class="draggable" draggable="true" data-test-automation-id="draggable1">Drag 1</div>
+<div id="draggable2" class="draggable" draggable="true" data-test-automation-id="draggable2">Drag 2</div>
+<div id="draggable3" class="draggable" draggable="true" data-test-automation-id="draggable3">Drag 3</div>
+
+<div id="dropzone1" class="dropzone" data-test-automation-id="dropzone1">Drop Area 1</div>
+<div id="dropzone2" class="dropzone" data-test-automation-id="dropzone2">Drop Area 2</div>
+<div id="dropzone3" class="dropzone" data-test-automation-id="dropzone3">Drop Area 3</div>
+
+<script>
+    const draggables = document.querySelectorAll('.draggable');
+    const dropzones = document.querySelectorAll('.dropzone');
+
+    draggables.forEach(draggable => {
+        draggable.addEventListener('dragstart', dragStart);
+    });
+
+    dropzones.forEach(dropzone => {
+        dropzone.addEventListener('dragover', dragOver);
+        dropzone.addEventListener('dragleave', dragLeave);
+        dropzone.addEventListener('drop', drop);
+    });
+
+    function dragStart(event) {
+        event.dataTransfer.setData('text/plain', event.target.id);
+    }
+
+    function dragOver(event) {
+        event.preventDefault();
+        event.target.classList.add('over');
+    }
+
+    function dragLeave(event) {
+        event.target.classList.remove('over');
+    }
+
+    function drop(event) {
+        event.preventDefault();
+        const id = event.dataTransfer.getData('text');
+        const draggable = document.getElementById(id);
+        event.target.classList.remove('over');
+        event.target.classList.add('expanded');
+        event.target.appendChild(draggable);
+    }
+</script>
+</body>
+</html>
