@@ -393,4 +393,24 @@ export class WebClient implements IWebApplicationClient {
     public emulateDevice(deviceName = 'iPhone X') {
         return this.makeRequest(BrowserProxyActions.emulateDevice, [deviceName]);
     }
+
+    public status() {
+        return this.makeRequest(BrowserProxyActions.status, []);
+    }
+
+    public back() {
+        return this.makeRequest(BrowserProxyActions.back, []);
+    }
+
+    public forward() {
+        return this.makeRequest(BrowserProxyActions.forward, []);
+    }
+
+    public getActiveElement() {
+        return this.makeRequest(BrowserProxyActions.getActiveElement, []);
+    }
+
+    public getLocation(xpath: string) {
+        return this.makeRequest(BrowserProxyActions.getLocation, [xpath]);
+    }
 }

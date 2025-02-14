@@ -1046,12 +1046,30 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
+        if (this.localSelenium) {
+            return {
+                sessionId: client.sessionId,
+                host: this.config.host,
+                port: this.config.port,
+                localSelenium: true,
+            };
+        }
+
         return client.gridTestSession(client.sessionId);
     }
 
     public async getHubConfig(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
+
+        if (this.localSelenium) {
+            return {
+                sessionId: client.sessionId,
+                host: this.config.host,
+                port: this.config.port,
+                localSelenium: true,
+            };
+        }
 
         return client.getHubConfig();
     }
@@ -1088,6 +1106,41 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 },
             },
         } as any);
+    }
+
+    public async status(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        return client.status();
+    }
+
+    public async back(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        return client.back();
+    }
+
+    public async forward(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        return client.forward();
+    }
+
+    public async getActiveElement(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        return client.getActiveElement();
+    }
+
+    public async getLocation(applicant: string, xpath: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+        const element = client.$(xpath);
+        return element.getLocation();
     }
 }
 

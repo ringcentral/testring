@@ -74,4 +74,9 @@ export const enum BrowserProxyActions {
     getCdpCoverageFile = 'getCdpCoverageFile',
     emulateDevice = 'emulateDevice',
     getHubConfig = 'getHubConfig',
+    status = 'status',
+    back = 'back',
+    forward = 'forward',
+    getActiveElement = 'getActiveElement',
+    getLocation = 'getLocation',
 }

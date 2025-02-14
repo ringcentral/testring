@@ -264,6 +264,12 @@ export class WebApplication extends PluggableModule {
         selectByAttribute(xpath, attribute: string, value: string) {
             return `Select by attribute ${attribute} with value ${value} from ${xpath}`;
         },
+        getLocation(xpath) {
+            return `Get location from ${this.formatXpath(xpath)}`;
+        },
+        getActiveElement() {
+            return 'Get active element';
+        },
     };
 
     constructor(
@@ -1864,5 +1870,16 @@ export class WebApplication extends PluggableModule {
             e.message = errorMessage;
             throw e;
         }
+    }
+
+    public async getLocation(xpath, timeout: number = this.WAIT_TIMEOUT) {
+        await this.waitForExist(xpath, timeout);
+
+        xpath = this.normalizeSelector(xpath);
+        return await this.client.getLocation(xpath);
+    }
+
+    public async getActiveElement() {
+        return await this.client.getActiveElement();
     }
 }
