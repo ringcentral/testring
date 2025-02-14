@@ -87,4 +87,14 @@ run(async (api) => {
         app.root.form.nameInput,
     );
     await app.assert.equal(nameInputPlaceholder, 'name');
+
+    // keys
+    await app.setValue(app.root.form.nameInput, 'testValueKeys');
+    afterSetValue = await app.getValue(app.root.form.nameInput);
+    await app.assert.equal(afterSetValue, 'testValueKeys');
+    await app.click(app.root.form.nameInput);
+    await app.keys(['Control', 'A']);
+    await app.keys(['Backspace']);
+    afterClearValue = await app.getValue(app.root.form.nameInput);
+    await app.assert.equal(afterClearValue, '');
 });
