@@ -62,17 +62,16 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.refresh, []);
     }
 
+    public getHubConfig() {
+        return this.makeRequest(BrowserProxyActions.getHubConfig, []);
+    }
+
     public click(xpath, options?) {
         return this.makeRequest(BrowserProxyActions.click, [xpath, options]);
     }
 
     public getSize(xpath) {
         return this.makeRequest(BrowserProxyActions.getSize, [xpath]);
-    }
-
-    // @deprecated WAT-1872
-    public gridProxyDetails() {
-        return this.makeRequest(BrowserProxyActions.gridProxyDetails, []);
     }
 
     public url(val) {
@@ -354,12 +353,6 @@ export class WebClient implements IWebApplicationClient {
         ]);
     }
 
-    // @deprecated WAT-1872
-    public getGridNodeDetails() {
-        return this.makeRequest(BrowserProxyActions.getGridNodeDetails, []);
-    }
-
-    // @deprecated WAT-1872
     public gridTestSession() {
         return this.makeRequest(BrowserProxyActions.gridTestSession, []);
     }

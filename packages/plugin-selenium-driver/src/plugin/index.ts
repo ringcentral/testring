@@ -1042,55 +1042,18 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return selector.selectByAttribute(attribute, value);
     }
 
-    // @deprecated WAT-1872
-    public async gridProxyDetails(applicant: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        if (this.localSelenium) {
-            return {
-                localSelenium: true,
-            };
-        }
-
-        return client.gridProxyDetails(client.sessionId);
-    }
-
-    // @deprecated WAT-1872
     public async gridTestSession(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        if (this.localSelenium) {
-            return {
-                localSelenium: true,
-            };
-        }
-
         return client.gridTestSession(client.sessionId);
     }
 
-    // @deprecated WAT-1872
-    public async getGridNodeDetails(applicant: string) {
+    public async getHubConfig(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        const testSession = await this.gridTestSession(applicant);
-
-        if (testSession && !testSession.localSelenium) {
-            const proxyDetails = await client.gridProxyDetails(applicant);
-
-            delete testSession.msg;
-            delete testSession.success;
-
-            delete proxyDetails.msg;
-            delete proxyDetails.success;
-            delete proxyDetails.id;
-
-            return {...testSession, ...proxyDetails};
-        }
-
-        return testSession;
+        return client.getHubConfig();
     }
 
     /**
