@@ -21,7 +21,7 @@ import {asyncBreakpoints} from '@testring/async-breakpoints';
 import {loggerClient, LoggerClient} from '@testring/logger';
 import {generateUniqId} from '@testring/utils';
 import {PluggableModule} from '@testring/pluggable-module';
-import {createElementPath, ElementPath} from '@testring/element-path';
+import {createElementPath, ElementPathProxy} from '@testring/element-path';
 
 import {createAssertion} from '@testring/async-assert';
 import {WebClient} from './web-client';
@@ -563,19 +563,19 @@ export class WebApplication extends PluggableModule {
         return utils.getFormattedString(xpath);
     }
 
-    protected getRootSelector(): ElementPath {
-        return this.root;
+    protected getRootSelector(): ElementPathProxy {
+        return this.root as ElementPathProxy;
     }
 
     protected normalizeSelector(
-        selector: string | ElementPath,
+        selector: string | ElementPathProxy,
         allowMultipleNodesInResult = false,
     ): string {
         if (!selector) {
             return this.getRootSelector().toString();
         }
 
-        return (selector as ElementPath).toString(allowMultipleNodesInResult);
+        return (selector as ElementPathProxy).toString(allowMultipleNodesInResult);
     }
 
     protected async asyncErrorHandler(error) {
@@ -587,7 +587,7 @@ export class WebApplication extends PluggableModule {
     }
 
     protected async devtoolHighlight(
-        xpath: string | ElementPath | null,
+        xpath: string | ElementPathProxy | null,
         multiple = false,
     ): Promise<void> {
         const normalizedXPath =
