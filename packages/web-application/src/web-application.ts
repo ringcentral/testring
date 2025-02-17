@@ -949,7 +949,7 @@ export class WebApplication extends PluggableModule {
         if (emulateViaJs) {
             return this.simulateJSFieldClear(xpath);
         }
-        await this.client.setValue(xpath, ' ');
+        await this.client.setValue(xpath, '_');
         await this.waitForExist(xpath, timeout);
         return this.client.keys(['Backspace']);
     }
