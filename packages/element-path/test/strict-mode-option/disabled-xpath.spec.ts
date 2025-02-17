@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {expect} from 'chai';
 import {createElementPath} from '../../src';
 
@@ -20,6 +21,7 @@ describe('.xpath()', () => {
 
     describe('arguments validation', () => {
         it('call without xpath and id', () => {
+            // @ts-ignore
             const error = () => root.foo.xpath();
             expect(error).to.throw(
                 'Invalid options, "xpath" string is required',
@@ -27,6 +29,7 @@ describe('.xpath()', () => {
         });
 
         it('call without xpath', () => {
+            // @ts-ignore
             const error = () => root.foo.xpath('test');
             expect(error).to.throw(
                 'Invalid options, "xpath" string is required',
@@ -34,7 +37,10 @@ describe('.xpath()', () => {
         });
 
         it('call without id', () => {
-            const child = root.foo.xpath(undefined, "//*[@class='selected']");
+            const child = root.foo.xpath(
+                // @ts-ignore
+                undefined,
+                "//*[@class='selected']");
             expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
 
@@ -44,7 +50,10 @@ describe('.xpath()', () => {
         });
 
         it('call with not string', () => {
-            const child = root.foo.xpath(0, "//*[@class='selected']");
+            const child = root.foo.xpath(
+                // @ts-ignore
+                0,
+                "//*[@class='selected']");
             expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
     });

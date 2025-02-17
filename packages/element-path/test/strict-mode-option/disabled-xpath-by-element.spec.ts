@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {expect} from 'chai';
 import {createElementPath} from '../../src';
 
@@ -21,6 +22,7 @@ describe('.xpathByElement()', () => {
 
     describe('arguments validation', () => {
         it('call without xpath and id', () => {
+            // @ts-ignore
             const error = () => root.foo.xpathByElement({});
             expect(error).to.throw(
                 'Invalid options, "xpath" string is required',
@@ -28,6 +30,7 @@ describe('.xpathByElement()', () => {
         });
 
         it('call without xpath', () => {
+            // @ts-ignore
             const error = () => root.foo.xpathByElement({id: 'selected'});
             expect(error).to.throw(
                 'Invalid options, "xpath" string is required',

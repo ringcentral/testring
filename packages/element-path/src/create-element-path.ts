@@ -10,6 +10,11 @@ export type ElementPathProxy = ElementPath & {
     xpathByLocator: (element: XpathLocatorProxified) => ElementPathProxy;
     xpathByElement: (element: XpathLocatorProxified) => ElementPathProxy;
     xpath: (id: string, xpath: string) => ElementPathProxy;
+    __getInstance: () => ElementPath;
+    __path?: ElementPath['getElementPathChain'];
+    __findChildren: (options: any) => ElementPathProxy;
+    __getReversedChain: ElementPath['getReversedChain'];
+    __getChildType: ElementPath['getElementType'];
 } & {
     [key: string] : ElementPathProxy
 };

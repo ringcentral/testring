@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {expect} from 'chai';
 import {createElementPath} from '../../src';
 
@@ -21,6 +22,7 @@ describe('.xpathByLocator() with parent', () => {
 
     describe('arguments validation', () => {
         it('call without xpath', () => {
+            // @ts-ignore
             const error = () => root.xpathByLocator({parent: 'foo.bar'});
             expect(error).to.throw(
                 'Invalid options, "locator" string is required',
@@ -39,6 +41,7 @@ describe('.xpathByLocator() with parent', () => {
         });
 
         it('call without id', () => {
+            // @ts-ignore
             const child = root.xpathByLocator({
                 locator: "//*[@class='selected']",
                 parent: 'foo.bar',
@@ -56,7 +59,9 @@ describe('.xpathByLocator() with parent', () => {
         });
 
         it('call with not string', () => {
+
             const child = root.xpathByLocator({
+                // @ts-ignore
                 id: 0,
                 locator: "//*[@class='selected']",
                 parent: 'foo.bar',

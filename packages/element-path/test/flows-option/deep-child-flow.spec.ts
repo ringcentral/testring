@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {expect} from 'chai';
 import {createElementPath} from '../../src';
 
@@ -41,6 +42,7 @@ describe('flows option on deep child', () => {
         });
 
         it('function call', async () => {
+            // @ts-ignore
             expect(await deepChildFoo.foo()).to.be.equal('test string foo');
         });
     });
@@ -52,6 +54,7 @@ describe('flows option on deep child', () => {
         });
 
         it('function call', () => {
+            // @ts-ignore
             expect(deepChildFoo.bar()).to.be.equal('test string bar');
         });
     });
