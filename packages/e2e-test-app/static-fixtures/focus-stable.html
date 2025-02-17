@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebdriverIO Test</title>
+    <script>
+        function focusInput() {
+            document.getElementById('testInput').focus();
+        }
+
+        function enableButton() {
+            setTimeout(() => {
+                document.getElementById('testButton').disabled = false;
+            }, 3000);
+        }
+
+        function stabilizeElement() {
+            const element = document.getElementById('testDiv');
+            element.style.transition = 'all 5s';
+            element.style.width = '200px';
+        }
+    </script>
+    <style>
+        #testDiv {
+            width: 100px;
+            height: 100px;
+            background-color: red;
+        }
+    </style>
+</head>
+<body data-test-automation-id="root">
+<input type="text" id="testInput" placeholder="Focus on me" data-test-automation-id="testInput">
+<button id="testButton" disabled data-test-automation-id="testButton">Click me when enabled</button>
+<div id="testDiv" data-test-automation-id="testDiv"></div>
+
+<button onclick="focusInput()" data-test-automation-id="focusInputButton">Focus Input</button>
+<button onclick="enableButton()" data-test-automation-id="enableButton">Enable Button</button>
+<button onclick="stabilizeElement()" data-test-automation-id="stabilizeElementButton">Stabilize Element</button>
+</body>
+</html>

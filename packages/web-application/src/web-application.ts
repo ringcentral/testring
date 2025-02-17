@@ -14,7 +14,7 @@ import {
     IWebApplicationRegisterCompleteMessage,
     WebApplicationDevtoolCallback,
     ExtensionPostMessageTypes,
-    FSFileLogType,
+    FSFileLogType, SavePdfOptions,
 } from '@testring/types';
 
 import {asyncBreakpoints} from '@testring/async-breakpoints';
@@ -269,6 +269,39 @@ export class WebApplication extends PluggableModule {
         },
         getActiveElement() {
             return 'Get active element';
+        },
+        setTimeZone(timezone: string) {
+            return `Set browser timezone to ${timezone}`;
+        },
+        getWindowSize() {
+            return 'Get window size';
+        },
+        savePDF(options: SavePdfOptions) {
+            return `Save PDF to ${options.filepath}`;
+        },
+        addValue(xpath, value: string|number) {
+            return `Add value ${value} to ${this.formatXpath(xpath)}`;
+        },
+        doubleClick(xpath) {
+            return `Double click on ${this.formatXpath(xpath)}`;
+        },
+        waitForClickable(xpath, timeout = this.WAIT_TIMEOUT) {
+            return `Wait for clickable ${this.formatXpath(xpath)} for ${timeout}`;
+        },
+        isClickable(xpath) {
+            return `Is clickable ${this.formatXpath(xpath)}`;
+        },
+        isFocused(xpath) {
+            return `Is focused ${this.formatXpath(xpath)}`;
+        },
+        isStable(xpath) {
+            return `Is stable ${this.formatXpath(xpath)}`;
+        },
+        waitForEnabled(xpath, timeout = this.WAIT_TIMEOUT) {
+            return `Wait for enabled ${this.formatXpath(xpath)} for ${timeout}`;
+        },
+        waitForStable(xpath, timeout = this.WAIT_TIMEOUT) {
+            return `Wait for stable ${this.formatXpath(xpath)} for ${timeout}`;
         },
     };
 
@@ -1881,5 +1914,62 @@ export class WebApplication extends PluggableModule {
 
     public async getActiveElement() {
         return await this.client.getActiveElement();
+    }
+
+    public async setTimeZone(timezone: string) {
+        return this.client.setTimeZone(timezone);
+    }
+
+    public async getWindowSize() {
+        return this.client.getWindowSize();
+    }
+
+    public async savePDF(options: SavePdfOptions) {
+        if (!options.filepath) {
+            throw new Error('Filepath is not defined');
+        }
+        return this.client.savePDF(options);
+    }
+
+    public async addValue(xpath, value: string|number, timeout: number = this.WAIT_TIMEOUT) {
+        await this.waitForExist(xpath, timeout);
+        xpath = this.normalizeSelector(xpath);
+        return this.client.addValue(xpath, value);
+    }
+
+    public async doubleClick(xpath, timeout: number = this.WAIT_TIMEOUT) {
+        await this.waitForExist(xpath, timeout);
+        xpath = this.normalizeSelector(xpath);
+        return this.client.doubleClick(xpath);
+    }
+
+    public async waitForClickable(xpath, timeout: number = this.WAIT_TIMEOUT) {
+        xpath = this.normalizeSelector(xpath);
+        return this.client.waitForClickable(xpath, timeout);
+    }
+
+    public async isClickable(xpath, timeout: number = this.WAIT_TIMEOUT) {
+        xpath = this.normalizeSelector(xpath);
+        return this.client.isClickable(xpath);
+    }
+
+    public async waitForEnabled(xpath, timeout: number = this.WAIT_TIMEOUT) {
+        xpath = this.normalizeSelector(xpath);
+        return this.client.waitForEnabled(xpath, timeout);
+    }
+
+    public async waitForStable(xpath, timeout: number = this.WAIT_TIMEOUT) {
+        xpath = this.normalizeSelector(xpath);
+        return this.client.waitForStable(xpath, timeout);
+    }
+
+    public async isFocused(xpath) {
+        xpath = this.normalizeSelector(xpath);
+        return this.client.isFocused(xpath);
+    }
+
+    public async isStable(xpath) {
+        xpath = this.normalizeSelector(xpath);
+        return this.client.isStable(xpath);
     }
 }

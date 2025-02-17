@@ -1,5 +1,5 @@
 import {SeleniumPluginConfig} from '../types';
-import {IBrowserProxyPlugin, WindowFeaturesConfig} from '@testring/types';
+import {IBrowserProxyPlugin, SavePdfOptions, WindowFeaturesConfig} from '@testring/types';
 
 import {ChildProcess} from 'child_process';
 
@@ -1141,6 +1141,91 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
         const element = client.$(xpath);
         return element.getLocation();
+    }
+
+    public async setTimeZone(applicant: string, timeZone: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+        return client.setTimeZone(timeZone);
+    }
+
+    public async getWindowSize(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+        return client.getWindowSize();
+    }
+
+    public async savePDF(applicant: string, options: SavePdfOptions) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const {filepath, ...restOptions} = options;
+
+        return client.savePDF(filepath, restOptions);
+    }
+
+    public async addValue(applicant: string, xpath: string, value: string|number) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const selector = await client.$(xpath);
+        return selector.addValue(value);
+    }
+
+    public async doubleClick(applicant: string, xpath: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const selector = await client.$(xpath);
+        return selector.doubleClick();
+    }
+
+    public async isClickable(applicant: string, xpath: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const selector = await client.$(xpath);
+        return selector.isClickable();
+    }
+
+    public async waitForClickable(applicant: string, xpath: string, timeout: number) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const selector = await client.$(xpath);
+        return selector.waitForClickable({timeout});
+    }
+
+    public async isFocused(applicant: string, xpath: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const selector = await client.$(xpath);
+        return selector.isFocused();
+    }
+
+    public async isStable(applicant: string, xpath: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const selector = await client.$(xpath);
+        return selector.isStable();
+    }
+
+    public async waitForEnabled(applicant: string, xpath: string, timeout: number) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const selector = await client.$(xpath);
+        return selector.waitForEnabled({timeout});
+    }
+
+    public async waitForStable(applicant: string, xpath: string, timeout: number) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const selector = await client.$(xpath);
+        return selector.waitForStable({timeout});
     }
 }
 

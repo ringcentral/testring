@@ -3,7 +3,7 @@ import {
     ITransport,
     IWebApplicationClient,
     IWebApplicationExecuteMessage,
-    IWebApplicationResponseMessage,
+    IWebApplicationResponseMessage, SavePdfOptions,
     WebApplicationMessageType,
     WindowFeaturesConfig,
 } from '@testring/types';
@@ -412,5 +412,49 @@ export class WebClient implements IWebApplicationClient {
 
     public getLocation(xpath: string) {
         return this.makeRequest(BrowserProxyActions.getLocation, [xpath]);
+    }
+
+    public setTimeZone(timeZone: string) {
+        return this.makeRequest(BrowserProxyActions.setTimeZone, [timeZone]);
+    }
+
+    public getWindowSize() {
+        return this.makeRequest(BrowserProxyActions.getWindowSize, []);
+    }
+
+    public savePDF(options: SavePdfOptions) {
+        return this.makeRequest(BrowserProxyActions.savePDF, [options]);
+    }
+
+    public addValue(xpath: string, value: string | number) {
+        return this.makeRequest(BrowserProxyActions.addValue, [xpath, value]);
+    }
+
+    public doubleClick(xpath: string) {
+        return this.makeRequest(BrowserProxyActions.doubleClick, [xpath]);
+    }
+
+    public isClickable(xpath: string) {
+        return this.makeRequest(BrowserProxyActions.isClickable, [xpath]);
+    }
+
+    public waitForClickable(xpath: string, timeout: number) {
+        return this.makeRequest(BrowserProxyActions.waitForClickable, [xpath, timeout]);
+    }
+
+    public isFocused(xpath: string) {
+        return this.makeRequest(BrowserProxyActions.isFocused, [xpath]);
+    }
+
+    public isStable(xpath: string) {
+        return this.makeRequest(BrowserProxyActions.isStable, [xpath]);
+    }
+
+    public waitForEnabled(xpath: string, timeout: number) {
+        return this.makeRequest(BrowserProxyActions.waitForEnabled, [xpath, timeout]);
+    }
+
+    public waitForStable(xpath: string, timeout: number) {
+        return this.makeRequest(BrowserProxyActions.waitForStable, [xpath, timeout]);
     }
 }

@@ -51,3 +51,18 @@ export interface IWindowFeatures {
 }
 
 export type WebApplicationDevtoolCallback = (err: null | Error) => void;
+
+export type SavePdfOptions = {
+    filepath: string;
+    orientation: string,
+    scale: number,
+    background: boolean,
+    width: number,
+    height: number,
+    top: number,
+    bottom: number,
+    left: number,
+    right: number,
+    shrinkToFit: boolean,
+    pageRanges: Array<any>,
+};

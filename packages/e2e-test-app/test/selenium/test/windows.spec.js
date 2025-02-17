@@ -113,4 +113,8 @@ run(async (api) => {
 
     await app.closeAllOtherTabs();
     await app.assert.deepEqual(await app.getTabIds(), [mainTabId]);
+
+    let windowSize = await app.getWindowSize();
+    await app.assert.isNumber(windowSize.width);
+    await app.assert.isNumber(windowSize.height);
 });

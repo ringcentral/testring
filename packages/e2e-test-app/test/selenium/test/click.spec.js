@@ -43,4 +43,19 @@ run(async (api) => {
         app.root.partiallyHoveredOutput,
     );
     await app.assert.equal(partiallyHoveredOutputText, 'success');
+
+    // doubleClick
+    await app.click(app.root.clickCounterButton);
+    await app.doubleClick(app.root.clickCounterButton);
+    await app.doubleClick(app.root.clickCounterButton);
+    const clicksCount = await app.getText(app.root.clickCountOutput);
+    await app.assert.equal(clicksCount, 'Click count: 5');
+
+    // isClickable, waitForClickable
+    let isClickable = await app.isClickable(app.root.clickableButton);
+    await app.assert.equal(isClickable, false);
+    await app.click(app.root.manageClickableStateButton);
+    await app.waitForClickable(app.root.clickableButton);
+    isClickable = await app.isClickable(app.root.clickableButton);
+    await app.assert.equal(isClickable, true);
 });

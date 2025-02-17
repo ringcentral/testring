@@ -97,4 +97,10 @@ run(async (api) => {
     await app.keys(['Backspace']);
     afterClearValue = await app.getValue(app.root.form.nameInput);
     await app.assert.equal(afterClearValue, '');
+
+    // addValue
+    await app.addValue(app.root.form.nameInput, 'testValueAdd');
+    await app.addValue(app.root.form.nameInput, 123);
+    afterSetValue = await app.getValue(app.root.form.nameInput);
+    await app.assert.equal(afterSetValue, 'testValueAdd123');
 });
