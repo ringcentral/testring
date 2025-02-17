@@ -38,7 +38,7 @@ module.exports = async (config) => {
         logLevel: 'verbose',
         retryCount: 0,
         testTimeout: local ? 0 : config.testTimeout,
-        tests: 'packages/e2e-test-app/test/selenium/test/*.spec.js',
+        tests: 'packages/e2e-test-app/test/selenium/test/**/*.spec.js',
         plugins: [
             [
                 'selenium-driver',
