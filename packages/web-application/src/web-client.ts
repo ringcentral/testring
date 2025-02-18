@@ -4,6 +4,7 @@ import {
     IWebApplicationClient,
     IWebApplicationExecuteMessage,
     IWebApplicationResponseMessage,
+    SavePdfOptions,
     WebApplicationMessageType,
     WindowFeaturesConfig,
 } from '@testring/types';
@@ -62,17 +63,16 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.refresh, []);
     }
 
+    public getHubConfig() {
+        return this.makeRequest(BrowserProxyActions.getHubConfig, []);
+    }
+
     public click(xpath, options?) {
         return this.makeRequest(BrowserProxyActions.click, [xpath, options]);
     }
 
     public getSize(xpath) {
         return this.makeRequest(BrowserProxyActions.getSize, [xpath]);
-    }
-
-    // @deprecated WAT-1872
-    public gridProxyDetails() {
-        return this.makeRequest(BrowserProxyActions.gridProxyDetails, []);
     }
 
     public url(val) {
@@ -125,19 +125,12 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.executeAsync, [fn, args]);
     }
 
-    public timeoutsAsyncScript(timeout, fn) {
-        return this.makeRequest(BrowserProxyActions.timeoutsAsyncScript, [
-            timeout,
-            fn,
-        ]);
-    }
-
     public getTitle() {
         return this.makeRequest(BrowserProxyActions.getTitle, []);
     }
 
-    public clearElement(xpath) {
-        return this.makeRequest(BrowserProxyActions.clearElement, [xpath]);
+    public clearValue(xpath) {
+        return this.makeRequest(BrowserProxyActions.clearValue, [xpath]);
     }
 
     public keys(value) {
@@ -361,12 +354,6 @@ export class WebClient implements IWebApplicationClient {
         ]);
     }
 
-    // @deprecated WAT-1872
-    public getGridNodeDetails() {
-        return this.makeRequest(BrowserProxyActions.getGridNodeDetails, []);
-    }
-
-    // @deprecated WAT-1872
     public gridTestSession() {
         return this.makeRequest(BrowserProxyActions.gridTestSession, []);
     }
@@ -405,6 +392,81 @@ export class WebClient implements IWebApplicationClient {
     }
 
     public emulateDevice(deviceName = 'iPhone X') {
-        return this.makeRequest(BrowserProxyActions.emulateDevice, [deviceName]);
+        return this.makeRequest(BrowserProxyActions.emulateDevice, [
+            deviceName,
+        ]);
+    }
+
+    public status() {
+        return this.makeRequest(BrowserProxyActions.status, []);
+    }
+
+    public back() {
+        return this.makeRequest(BrowserProxyActions.back, []);
+    }
+
+    public forward() {
+        return this.makeRequest(BrowserProxyActions.forward, []);
+    }
+
+    public getActiveElement() {
+        return this.makeRequest(BrowserProxyActions.getActiveElement, []);
+    }
+
+    public getLocation(xpath: string) {
+        return this.makeRequest(BrowserProxyActions.getLocation, [xpath]);
+    }
+
+    public setTimeZone(timeZone: string) {
+        return this.makeRequest(BrowserProxyActions.setTimeZone, [timeZone]);
+    }
+
+    public getWindowSize() {
+        return this.makeRequest(BrowserProxyActions.getWindowSize, []);
+    }
+
+    public savePDF(options: SavePdfOptions) {
+        return this.makeRequest(BrowserProxyActions.savePDF, [options]);
+    }
+
+    public addValue(xpath: string, value: string | number) {
+        return this.makeRequest(BrowserProxyActions.addValue, [xpath, value]);
+    }
+
+    public doubleClick(xpath: string) {
+        return this.makeRequest(BrowserProxyActions.doubleClick, [xpath]);
+    }
+
+    public isClickable(xpath: string) {
+        return this.makeRequest(BrowserProxyActions.isClickable, [xpath]);
+    }
+
+    public waitForClickable(xpath: string, timeout: number) {
+        return this.makeRequest(BrowserProxyActions.waitForClickable, [
+            xpath,
+            timeout,
+        ]);
+    }
+
+    public isFocused(xpath: string) {
+        return this.makeRequest(BrowserProxyActions.isFocused, [xpath]);
+    }
+
+    public isStable(xpath: string) {
+        return this.makeRequest(BrowserProxyActions.isStable, [xpath]);
+    }
+
+    public waitForEnabled(xpath: string, timeout: number) {
+        return this.makeRequest(BrowserProxyActions.waitForEnabled, [
+            xpath,
+            timeout,
+        ]);
+    }
+
+    public waitForStable(xpath: string, timeout: number) {
+        return this.makeRequest(BrowserProxyActions.waitForStable, [
+            xpath,
+            timeout,
+        ]);
     }
 }

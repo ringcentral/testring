@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {expect} from 'chai';
 import {createElementPath} from '../../src';
 
@@ -16,7 +17,9 @@ describe('flows option function context behavior', () => {
     const childFoo = root.foo;
 
     it('Call chidlFoo.getContext()', () => {
+        // @ts-ignore
         expect(childFoo.getContext()).to.be.equal(childFoo.__proxy);
+        // @ts-ignore
         expect(childFoo.getContext().__getInstance()).to.be.equal(
             childFoo.__getInstance(),
         );
@@ -24,12 +27,14 @@ describe('flows option function context behavior', () => {
 
     it('Call childFoo.getContext.apply(obj)', () => {
         const obj = {};
+        // @ts-ignore
         expect(childFoo.getContext.apply(obj)).to.be.equal(obj);
     });
 
     it('Call getContext()', () => {
         // eslint-disable-next-line @typescript-eslint/no-shadow
         const {getContext} = childFoo;
+        // @ts-ignore
         expect(getContext()).to.be.equal(undefined);
     });
 });

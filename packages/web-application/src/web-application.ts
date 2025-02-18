@@ -15,17 +15,24 @@ import {
     WebApplicationDevtoolCallback,
     ExtensionPostMessageTypes,
     FSFileLogType,
+    SavePdfOptions,
 } from '@testring/types';
 
 import {asyncBreakpoints} from '@testring/async-breakpoints';
 import {loggerClient, LoggerClient} from '@testring/logger';
 import {generateUniqId} from '@testring/utils';
 import {PluggableModule} from '@testring/pluggable-module';
-import {createElementPath, ElementPath} from '@testring/element-path';
+import {createElementPath, ElementPathProxy} from '@testring/element-path';
 
 import {createAssertion} from '@testring/async-assert';
 import {WebClient} from './web-client';
 import * as utils from './utils';
+import {
+    getOptionsPropertyScript,
+    scrollIntoViewCallScript,
+    scrollIntoViewIfNeededCallScript,
+    simulateJSFieldChangeScript,
+} from './browser-scripts';
 
 type valueType = string | number | null | undefined;
 
@@ -259,6 +266,47 @@ export class WebApplication extends PluggableModule {
         selectByAttribute(xpath, attribute: string, value: string) {
             return `Select by attribute ${attribute} with value ${value} from ${xpath}`;
         },
+        getLocation(xpath) {
+            return `Get location from ${this.formatXpath(xpath)}`;
+        },
+        getActiveElement() {
+            return 'Get active element';
+        },
+        setTimeZone(timezone: string) {
+            return `Set browser timezone to ${timezone}`;
+        },
+        getWindowSize() {
+            return 'Get window size';
+        },
+        savePDF(options: SavePdfOptions) {
+            return `Save PDF to ${options.filepath}`;
+        },
+        addValue(xpath, value: string | number) {
+            return `Add value ${value} to ${this.formatXpath(xpath)}`;
+        },
+        doubleClick(xpath) {
+            return `Double click on ${this.formatXpath(xpath)}`;
+        },
+        waitForClickable(xpath, timeout = this.WAIT_TIMEOUT) {
+            return `Wait for clickable ${this.formatXpath(
+                xpath,
+            )} for ${timeout}`;
+        },
+        isClickable(xpath) {
+            return `Is clickable ${this.formatXpath(xpath)}`;
+        },
+        isFocused(xpath) {
+            return `Is focused ${this.formatXpath(xpath)}`;
+        },
+        isStable(xpath) {
+            return `Is stable ${this.formatXpath(xpath)}`;
+        },
+        waitForEnabled(xpath, timeout = this.WAIT_TIMEOUT) {
+            return `Wait for enabled ${this.formatXpath(xpath)} for ${timeout}`;
+        },
+        waitForStable(xpath, timeout = this.WAIT_TIMEOUT) {
+            return `Wait for stable ${this.formatXpath(xpath)} for ${timeout}`;
+        },
     };
 
     constructor(
@@ -295,10 +343,8 @@ export class WebApplication extends PluggableModule {
         }
 
         const promiseGetter = (self, logFn, errorFn, originMethod, args) => {
-            let errorLogInterceptor: (
-                err: Error,
-                ...args: any
-            ) => string = errorFn;
+            let errorLogInterceptor: (err: Error, ...args: any) => string =
+                errorFn;
 
             // eslint-disable-next-line no-async-promise-executor
             const promise = new Promise(async (resolve, reject) => {
@@ -519,19 +565,21 @@ export class WebApplication extends PluggableModule {
         return utils.getFormattedString(xpath);
     }
 
-    protected getRootSelector(): ElementPath {
-        return this.root;
+    protected getRootSelector(): ElementPathProxy {
+        return this.root as ElementPathProxy;
     }
 
     protected normalizeSelector(
-        selector: string | ElementPath,
+        selector: string | ElementPathProxy,
         allowMultipleNodesInResult = false,
     ): string {
         if (!selector) {
             return this.getRootSelector().toString();
         }
 
-        return (selector as ElementPath).toString(allowMultipleNodesInResult);
+        return (selector as ElementPathProxy).toString(
+            allowMultipleNodesInResult,
+        );
     }
 
     protected async asyncErrorHandler(error) {
@@ -543,7 +591,7 @@ export class WebApplication extends PluggableModule {
     }
 
     protected async devtoolHighlight(
-        xpath: string | ElementPath | null,
+        xpath: string | ElementPathProxy | null,
         multiple = false,
     ): Promise<void> {
         const normalizedXPath =
@@ -562,8 +610,7 @@ export class WebApplication extends PluggableModule {
                     if (addHighlightXpath) {
                         window.postMessage(
                             {
-                                type:
-                                    ExtensionPostMessageTypes.ADD_XPATH_HIGHLIGHT,
+                                type: ExtensionPostMessageTypes.ADD_XPATH_HIGHLIGHT,
                                 xpath: addHighlightXpath,
                             },
                             '*',
@@ -803,7 +850,7 @@ export class WebApplication extends PluggableModule {
         await this.waitForExist(normalizedSelector, timeout);
         await this.makeScreenshot();
 
-        return this.client.click(normalizedSelector, {button: 'middle'});
+        return this.client.click(normalizedSelector, {button: 'left'});
     }
 
     public async clickCoordinates(
@@ -816,8 +863,8 @@ export class WebApplication extends PluggableModule {
         await this.waitForExist(normalizedSelector, timeout);
         await this.makeScreenshot();
 
-        let hPos = 1;
-        let vPos = 1;
+        let hPos = 0;
+        let vPos = 0;
 
         if (typeof options?.x === 'string' || typeof options?.y === 'string') {
             const {width, height} = await this.client.getSize(
@@ -826,36 +873,36 @@ export class WebApplication extends PluggableModule {
 
             switch (options?.x) {
                 case 'left':
-                    hPos = 0;
+                    hPos = -Math.ceil(width / 2) + 1;
                     break;
 
                 case 'right':
-                    hPos = width;
+                    hPos = Math.ceil(width / 2) - 1;
                     break;
 
                 case 'center':
-                    hPos = Math.ceil(width / 2);
+                    hPos = 0;
                     break;
 
                 default:
-                    hPos = 1;
+                    hPos = 0;
             }
 
             switch (options?.y) {
                 case 'top':
-                    vPos = 0;
+                    vPos = -Math.ceil(height / 2) + 1;
                     break;
 
                 case 'bottom':
-                    vPos = width;
+                    vPos = Math.ceil(height / 2) - 1;
                     break;
 
                 case 'center':
-                    vPos = Math.ceil(height / 2);
+                    vPos = 0;
                     break;
 
                 default:
-                    hPos = 1;
+                    vPos = 0;
             }
         }
 
@@ -884,106 +931,7 @@ export class WebApplication extends PluggableModule {
     public async simulateJSFieldChange(xpath, value) {
         /* eslint-disable object-shorthand, no-var */
         const result = await this.client.executeAsync(
-            (xpath, value, done) => {
-                var supportedInputTypes = {
-                    color: true,
-                    date: true,
-                    datetime: true,
-                    'datetime-local': true,
-                    email: true,
-                    month: true,
-                    number: true,
-                    password: true,
-                    range: true,
-                    search: true,
-                    tel: true,
-                    text: true,
-                    time: true,
-                    url: true,
-                    week: true,
-                };
-
-                function isTextNode(el) {
-                    var nodeName = el.nodeName.toLowerCase();
-
-                    return (
-                        nodeName === 'textarea' ||
-                        (nodeName === 'input' &&
-                            supportedInputTypes[el.getAttribute('type')])
-                    );
-                }
-
-                function simulateEvent(el, type) {
-                    var oEvent = new CustomEvent(type, {
-                        bubbles: true,
-                        cancelable: true,
-                    });
-
-                    el.dispatchEvent(oEvent);
-                }
-
-                function simulateKey(el, type, keyCode, key) {
-                    var oEvent = new KeyboardEvent(type, {
-                        bubbles: true,
-                        cancelable: true,
-                        key: key,
-                    });
-
-                    // Chromium Hack
-                    Object.defineProperty(oEvent, 'keyCode', {
-                        get: function () {
-                            return this.keyCodeVal;
-                        },
-                    });
-                    Object.defineProperty(oEvent, 'which', {
-                        get: function () {
-                            return this.keyCodeVal;
-                        },
-                    });
-
-                    (oEvent as any).keyCodeVal = keyCode;
-
-                    el.dispatchEvent(oEvent);
-                }
-
-                function getElementByXPath(xpath) {
-                    var element = document.evaluate(
-                        xpath,
-                        document,
-                        null,
-                        XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-                        null,
-                    );
-                    if (element.snapshotLength > 0) {
-                        return element.snapshotItem(0) as any;
-                    }
-
-                    return null;
-                }
-
-                try {
-                    (function (el) {
-                        if (el) {
-                            el.focus();
-
-                            if (isTextNode(el)) {
-                                simulateKey(el, 'keydown', 8, 'Backspace');
-                                simulateKey(el, 'keypress', 8, 'Backspace');
-                                simulateKey(el, 'keyup', 8, 'Backspace');
-                            }
-
-                            el.value = value;
-                            simulateEvent(el, 'input');
-                            simulateEvent(el, 'change');
-                            done();
-                        } else {
-                            throw Error(`Element ${xpath} not found.`);
-                        }
-                    })(getElementByXPath(xpath));
-                } catch (e) {
-                    done(`${e.message} ${xpath}`);
-                }
-            },
+            simulateJSFieldChangeScript,
             xpath,
             value,
         );
@@ -1009,6 +957,12 @@ export class WebApplication extends PluggableModule {
         await this.client.setValue(xpath, '_');
         await this.waitForExist(xpath, timeout);
         return this.client.keys(['Backspace']);
+    }
+
+    public async clearValue(xpath, timeout: number = this.WAIT_TIMEOUT) {
+        await this.waitForExist(xpath, timeout);
+        const normalizedXpath = this.normalizeSelector(xpath);
+        return this.client.clearValue(normalizedXpath);
     }
 
     public async setValue(
@@ -1102,49 +1056,7 @@ export class WebApplication extends PluggableModule {
 
         xpath = this.normalizeSelector(xpath);
 
-        return this.client.executeAsync(
-            function (xpath, prop, done) {
-                function getElementByXPath(xpath) {
-                    const element = document.evaluate(
-                        xpath,
-                        document,
-                        null,
-                        XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-                        null,
-                    );
-
-                    if (element.snapshotLength > 0) {
-                        return element.snapshotItem(0) as any;
-                    }
-
-                    return null;
-                }
-
-                try {
-                    const element = getElementByXPath(xpath);
-
-                    if (element && element.tagName.toLowerCase() === 'select') {
-                        const texts: Array<any> = [];
-
-                        for (
-                            let i = 0, len = element.options.length;
-                            i < len;
-                            i++
-                        ) {
-                            texts.push(element.options[i][prop]);
-                        }
-
-                        done(texts);
-                    } else {
-                        throw Error('Element not found');
-                    }
-                } catch (e) {
-                    throw Error(`${e.message} ${xpath}`);
-                }
-            },
-            xpath,
-            prop,
-        );
+        return this.client.executeAsync(getOptionsPropertyScript, xpath, prop);
     }
 
     public async getSelectTexts(
@@ -1435,62 +1347,7 @@ export class WebApplication extends PluggableModule {
 
         if (topOffset || leftOffset) {
             const result = await this.client.executeAsync(
-                function (xpath, topOffset, leftOffset, done) {
-                    // eslint-disable-next-line sonarjs/no-identical-functions
-                    function getElementByXPath(xpath) {
-                        const element = document.evaluate(
-                            xpath,
-                            document,
-                            null,
-                            XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-                            null,
-                        );
-
-                        if (element.snapshotLength > 0) {
-                            return element.snapshotItem(0) as any;
-                        }
-
-                        return null;
-                    }
-
-                    function isScrollable(el) {
-                        const hasScrollableContent =
-                            el.scrollHeight > el.clientHeight;
-
-                        const overflowYStyle = window.getComputedStyle(el)
-                            .overflowY;
-                        const isOverflowHidden =
-                            overflowYStyle.indexOf('hidden') !== -1;
-
-                        return hasScrollableContent && !isOverflowHidden;
-                    }
-
-                    function getScrollableParent(el) {
-                        // eslint-disable-next-line no-nested-ternary
-                        return !el ||
-                            el === document.scrollingElement ||
-                            document.body
-                            ? document.scrollingElement || document.body
-                            : isScrollable(el)
-                            ? el
-                            : getScrollableParent(el.parentNode);
-                    }
-
-                    try {
-                        const element = getElementByXPath(xpath);
-                        const parent = getScrollableParent(element);
-
-                        if (element) {
-                            element.scrollIntoView();
-                            parent.scrollBy(leftOffset, topOffset);
-                            setTimeout(done, 200); // Gives browser some time to update values
-                        } else {
-                            done('Element not found');
-                        }
-                    } catch (err) {
-                        done(`${err.message} ${xpath}`);
-                    }
-                },
+                scrollIntoViewCallScript,
                 normalizedXpath,
                 topOffset,
                 leftOffset,
@@ -1524,119 +1381,7 @@ export class WebApplication extends PluggableModule {
         const normalizedXpath = this.normalizeSelector(xpath);
 
         const result: string = await this.client.executeAsync(
-            function (xpath, topOffset, leftOffset, done) {
-                // eslint-disable-next-line sonarjs/no-identical-functions
-                function getElementByXPath(xpath) {
-                    const element = document.evaluate(
-                        xpath,
-                        document,
-                        null,
-                        XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-                        null,
-                    );
-
-                    if (element.snapshotLength > 0) {
-                        return element.snapshotItem(0) as any;
-                    }
-
-                    return null;
-                }
-
-                // eslint-disable-next-line sonarjs/no-identical-functions
-                function isScrollable(el) {
-                    const hasScrollableContent =
-                        el.scrollHeight > el.clientHeight;
-
-                    const overflowYStyle = window.getComputedStyle(el)
-                        .overflowY;
-                    const isOverflowHidden =
-                        overflowYStyle.indexOf('hidden') !== -1;
-
-                    return hasScrollableContent && !isOverflowHidden;
-                }
-
-                // eslint-disable-next-line sonarjs/no-identical-functions
-                function getScrollableParent(el) {
-                    // eslint-disable-next-line no-nested-ternary
-                    return !el ||
-                        el === document.scrollingElement ||
-                        document.body
-                        ? document.scrollingElement || document.body
-                        : isScrollable(el)
-                        ? el
-                        : getScrollableParent(el.parentNode);
-                }
-
-                function scrollIntoViewIfNeeded(
-                    element,
-                    topOffset,
-                    leftOffset,
-                ) {
-                    const parent = element.parentNode;
-                    const scrollableParent = getScrollableParent(element);
-                    const parentComputedStyle = window.getComputedStyle(
-                        parent,
-                        null,
-                    );
-                    /* eslint-disable max-len */
-                    const parentBorderTopWidth =
-                        parseInt(
-                            parentComputedStyle.getPropertyValue(
-                                'border-top-width',
-                            ),
-                        ) + topOffset;
-                    const parentBorderLeftWidth =
-                        parseInt(
-                            parentComputedStyle.getPropertyValue(
-                                'border-left-width',
-                            ),
-                        ) + leftOffset;
-                    const overTop =
-                        element.offsetTop - parent.offsetTop < parent.scrollTop;
-                    const overBottom =
-                        element.offsetTop -
-                            parent.offsetTop +
-                            element.clientHeight -
-                            parentBorderTopWidth >
-                        parent.scrollTop + parent.clientHeight;
-                    const overLeft =
-                        element.offsetLeft - parent.offsetLeft <
-                        parent.scrollLeft;
-                    const overRight =
-                        element.offsetLeft -
-                            parent.offsetLeft +
-                            element.clientWidth -
-                            parentBorderLeftWidth >
-                        parent.scrollLeft + parent.clientWidth;
-                    /* eslint-enable max-len */
-
-                    if (overTop || overBottom || overLeft || overRight) {
-                        element.scrollIntoViewIfNeeded();
-                        scrollableParent.scrollBy(leftOffset, topOffset);
-                    }
-                }
-
-                try {
-                    const element = getElementByXPath(xpath);
-
-                    if (element) {
-                        if (topOffset || leftOffset) {
-                            scrollIntoViewIfNeeded(
-                                element,
-                                topOffset,
-                                leftOffset,
-                            );
-                        } else {
-                            element.scrollIntoViewIfNeeded();
-                        }
-                        setTimeout(done, 200);
-                    } else {
-                        throw new Error('Element not found');
-                    }
-                } catch (err) {
-                    done(`${err.message} ${xpath}`);
-                }
-            },
+            scrollIntoViewIfNeededCallScript,
             normalizedXpath,
             topOffset,
             leftOffset,
@@ -1816,7 +1561,7 @@ export class WebApplication extends PluggableModule {
 
         xpath = this.normalizeSelector(xpath);
 
-        return this.client.getHTML(xpath, true);
+        return this.client.getHTML(xpath, {prettify: false});
     }
 
     public async getCurrentTabId() {
@@ -1973,23 +1718,24 @@ export class WebApplication extends PluggableModule {
 
     private async unregisterAppInDevtool(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            const removeListener = this.transport.on<IWebApplicationRegisterCompleteMessage>(
-                WebApplicationDevtoolActions.unregisterComplete,
-                // eslint-disable-next-line sonarjs/no-identical-functions
-                (message) => {
-                    if (message.id === this.applicationId) {
-                        if (
-                            message.error === null ||
-                            message.error === undefined
-                        ) {
-                            resolve();
-                        } else {
-                            reject(message.error);
+            const removeListener =
+                this.transport.on<IWebApplicationRegisterCompleteMessage>(
+                    WebApplicationDevtoolActions.unregisterComplete,
+                    // eslint-disable-next-line sonarjs/no-identical-functions
+                    (message) => {
+                        if (message.id === this.applicationId) {
+                            if (
+                                message.error === null ||
+                                message.error === undefined
+                            ) {
+                                resolve();
+                            } else {
+                                reject(message.error);
+                            }
+                            removeListener();
                         }
-                        removeListener();
-                    }
-                },
-            );
+                    },
+                );
 
             const payload: IWebApplicationRegisterMessage = {
                 id: this.applicationId,
@@ -2159,5 +1905,77 @@ export class WebApplication extends PluggableModule {
             e.message = errorMessage;
             throw e;
         }
+    }
+
+    public async getLocation(xpath, timeout: number = this.WAIT_TIMEOUT) {
+        await this.waitForExist(xpath, timeout);
+
+        xpath = this.normalizeSelector(xpath);
+        return await this.client.getLocation(xpath);
+    }
+
+    public async getActiveElement() {
+        return await this.client.getActiveElement();
+    }
+
+    public async setTimeZone(timezone: string) {
+        return this.client.setTimeZone(timezone);
+    }
+
+    public async getWindowSize() {
+        return this.client.getWindowSize();
+    }
+
+    public async savePDF(options: SavePdfOptions) {
+        if (!options.filepath) {
+            throw new Error('Filepath is not defined');
+        }
+        return this.client.savePDF(options);
+    }
+
+    public async addValue(
+        xpath,
+        value: string | number,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
+        await this.waitForExist(xpath, timeout);
+        xpath = this.normalizeSelector(xpath);
+        return this.client.addValue(xpath, value);
+    }
+
+    public async doubleClick(xpath, timeout: number = this.WAIT_TIMEOUT) {
+        await this.waitForExist(xpath, timeout);
+        xpath = this.normalizeSelector(xpath);
+        return this.client.doubleClick(xpath);
+    }
+
+    public async waitForClickable(xpath, timeout: number = this.WAIT_TIMEOUT) {
+        xpath = this.normalizeSelector(xpath);
+        return this.client.waitForClickable(xpath, timeout);
+    }
+
+    public async isClickable(xpath, timeout: number = this.WAIT_TIMEOUT) {
+        xpath = this.normalizeSelector(xpath);
+        return this.client.isClickable(xpath);
+    }
+
+    public async waitForEnabled(xpath, timeout: number = this.WAIT_TIMEOUT) {
+        xpath = this.normalizeSelector(xpath);
+        return this.client.waitForEnabled(xpath, timeout);
+    }
+
+    public async waitForStable(xpath, timeout: number = this.WAIT_TIMEOUT) {
+        xpath = this.normalizeSelector(xpath);
+        return this.client.waitForStable(xpath, timeout);
+    }
+
+    public async isFocused(xpath) {
+        xpath = this.normalizeSelector(xpath);
+        return this.client.isFocused(xpath);
+    }
+
+    public async isStable(xpath) {
+        xpath = this.normalizeSelector(xpath);
+        return this.client.isStable(xpath);
     }
 }

@@ -1,4 +1,5 @@
 packages/**/dist
+packages/**/chrome-cache
 packages/**/node_modules
 
 core/**/dist

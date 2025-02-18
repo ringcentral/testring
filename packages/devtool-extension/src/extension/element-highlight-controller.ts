@@ -194,7 +194,8 @@ export class ElementHighlightController {
 
         for (const htmlElement of addedElements) {
             if (unlinkedHighlights.length > 0) {
-                const usedHighlight = unlinkedHighlights.shift() as HighlightElement;
+                const usedHighlight =
+                    unlinkedHighlights.shift() as HighlightElement;
 
                 this.highlightElements.set(htmlElement, usedHighlight);
 

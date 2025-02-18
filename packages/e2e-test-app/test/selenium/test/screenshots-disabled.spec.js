@@ -1,11 +1,10 @@
 import {run} from 'testring';
+import {getTargetUrl} from './utils';
 
 run(async (api) => {
-    await api.application.url('http://localhost:8080/screenshot.html');
-    const fName = await api.application.makeScreenshot();
+    let app = api.application;
+    await app.url(getTargetUrl(api, 'screenshot.html'));
+    const fName = await app.makeScreenshot();
 
-    await api.application.assert.ok(
-        fName === null,
-        'result of stat should be null',
-    );
+    await app.assert.ok(fName === null, 'result of stat should be null');
 });

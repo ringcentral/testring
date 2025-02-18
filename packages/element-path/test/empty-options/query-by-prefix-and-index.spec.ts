@@ -58,8 +58,7 @@ describe("empty options ElementPath root['foo*'][0]", () => {
                         index: 0,
                         prefix: 'foo',
                     },
-                    xpath:
-                        "/descendant::*[starts-with(@data-test-automation-id, 'foo')][position() = 1]",
+                    xpath: "/descendant::*[starts-with(@data-test-automation-id, 'foo')][position() = 1]",
                 },
             ]),
         });

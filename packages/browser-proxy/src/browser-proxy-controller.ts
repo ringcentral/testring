@@ -1,5 +1,4 @@
 import {ChildProcess} from 'child_process';
-
 import {
     BrowserProxyActions,
     BrowserProxyPlugins,
@@ -11,35 +10,31 @@ import {
 } from '@testring/types';
 import {PluggableModule} from '@testring/pluggable-module';
 import {loggerClient} from '@testring/logger';
-
 import {BrowserProxyWorker} from './browser-proxy-worker';
+import {BrowserProxyLocalWorker} from './browser-proxy-local-worker';
 
 const logger = loggerClient.withPrefix('[browser-proxy-controller]');
 
 export class BrowserProxyController
     extends PluggableModule
-    implements IBrowserProxyController {
+    implements IBrowserProxyController
+{
     private workersPool: Set<IBrowserProxyWorker> = new Set();
-
     private applicantWorkerMap: Map<string, IBrowserProxyWorker> = new Map();
-
     private defaultExternalPlugin: IBrowserProxyWorkerConfig = {
         plugin: 'unknown',
         config: null,
     };
-
     private externalPlugin: IBrowserProxyWorkerConfig;
-
     private lastWorkerIndex = -1;
-
-    private workerLimit = 1;
-
+    private workerLimit: number | 'local' = 1;
     private logger = logger;
+    private localWorker: BrowserProxyLocalWorker | null = null;
 
     constructor(
         private transport: ITransport,
         private workerCreator: (
-            onActionPluginPath: string,
+            pluginPath: string,
             config: any,
         ) => ChildProcess | Promise<ChildProcess>,
     ) {
@@ -60,19 +55,28 @@ export class BrowserProxyController
             BrowserProxyPlugins.getPlugin,
             this.defaultExternalPlugin,
         );
-
         const {config} = this.externalPlugin;
 
-        if (
-            config &&
-            typeof config.workerLimit === 'number' &&
-            !isNaN(config.workerLimit)
-        ) {
-            this.workerLimit = config.workerLimit;
+        if (config && config.workerLimit) {
+            this.workerLimit =
+                config.workerLimit === 'local'
+                    ? 'local'
+                    : Number(config.workerLimit);
+        }
+
+        if (this.workerLimit === 'local') {
+            this.localWorker = new BrowserProxyLocalWorker(
+                this.transport,
+                this.externalPlugin,
+            );
         }
     }
 
     private getWorker(applicant: string): IBrowserProxyWorker {
+        if (this.workerLimit === 'local' && this.localWorker) {
+            return this.localWorker;
+        }
+
         const mappedWorker = this.applicantWorkerMap.get(applicant);
         let worker;
 
@@ -80,7 +84,7 @@ export class BrowserProxyController
             return mappedWorker;
         }
 
-        if (this.workersPool.size < this.workerLimit) {
+        if (this.workersPool.size < (this.workerLimit as number)) {
             worker = new BrowserProxyWorker(
                 this.transport,
                 this.workerCreator,
@@ -97,7 +101,6 @@ export class BrowserProxyController
         }
 
         this.applicantWorkerMap.set(applicant, worker);
-
         return worker;
     }
 
@@ -105,36 +108,30 @@ export class BrowserProxyController
         applicant: string,
         command: IBrowserProxyCommand,
     ): Promise<any> {
-        let worker;
-
         if (command.action === BrowserProxyActions.end) {
-            if (this.applicantWorkerMap.has(applicant)) {
-                worker = this.getWorker(applicant);
-            } else {
-                return true;
+            if (this.localWorker) {
+                return this.localWorker.execute(applicant, command);
             }
 
-            this.applicantWorkerMap.delete(applicant);
-        } else {
-            worker = this.getWorker(applicant);
+            if (this.applicantWorkerMap.has(applicant)) {
+                const worker = this.getWorker(applicant);
+                this.applicantWorkerMap.delete(applicant);
+                return worker.execute(applicant, command);
+            }
+            return true;
         }
 
+        const worker = this.getWorker(applicant);
         return worker.execute(applicant, command);
     }
 
-    private reset() {
-        this.workersPool.clear();
-
-        this.applicantWorkerMap.clear();
-
-        this.externalPlugin = this.defaultExternalPlugin;
-
-        this.lastWorkerIndex = -1;
-
-        this.workerLimit = 1;
-    }
-
     public async kill(): Promise<void> {
+        if (this.workerLimit === 'local' && this.localWorker) {
+            await this.localWorker.kill();
+            this.localWorker = null;
+            return;
+        }
+
         const workersToKill = [...this.workersPool.values()].map((worker) =>
             worker.kill(),
         );
@@ -145,6 +142,10 @@ export class BrowserProxyController
             logger.error('Exit failed ', err);
         }
 
-        this.reset();
+        this.workersPool.clear();
+        this.applicantWorkerMap.clear();
+        this.externalPlugin = this.defaultExternalPlugin;
+        this.lastWorkerIndex = -1;
+        this.workerLimit = 1;
     }
 }

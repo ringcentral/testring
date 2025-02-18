@@ -21,6 +21,7 @@
     "@types/webpack": "5.28.5",
     "chrome-launcher": "1.1.2",
     "copy-webpack-plugin": "12.0.2",
+    "ignore-loader": "0.1.2",
     "os-browserify": "0.3.0",
     "path-browserify": "1.0.1",
     "ts-loader": "9.5.1",

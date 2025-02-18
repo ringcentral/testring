@@ -1,4 +1,4 @@
-import type { use as chaiUse } from 'chai';
+import type {use as chaiUse} from 'chai';
 
 type First<T> = T extends [infer A, ...any[]] ? A : never;
 type ChaiPlugin = First<Parameters<typeof chaiUse>>;

@@ -59,7 +59,6 @@ class RunCommand implements ICLICommand {
     }
 
     async execute() {
-
         const testWorker = new TestWorker(this.transport, {
             waitForRelease: false,
             localWorker: this.config.workerLimit === 'local',

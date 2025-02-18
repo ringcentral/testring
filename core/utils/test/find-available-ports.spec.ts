@@ -109,10 +109,11 @@ describe('find ports', () => {
         chai.expect(await isAvailablePort(45403, DEFAULT_HOST)).to.be.equal(
             true,
         );
-        const port = await getAvailableFollowingPort(45400, DEFAULT_HOST, [
-            45401,
-            45402,
-        ]);
+        const port = await getAvailableFollowingPort(
+            45400,
+            DEFAULT_HOST,
+            [45401, 45402],
+        );
 
         chai.expect(port).to.be.equal(45403);
         chai.expect(await isAvailablePort(port, DEFAULT_HOST)).to.equal(true);

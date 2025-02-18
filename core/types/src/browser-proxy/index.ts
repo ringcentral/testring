@@ -26,8 +26,6 @@ export interface IBrowserProxyPlugin {
 
     click(applicant: string, selector: string, options?: any): Promise<any>;
 
-    gridProxyDetails(applicant: string): Promise<any>;
-
     url(applicant: string, val: string): Promise<any>;
 
     newWindow(
@@ -68,7 +66,7 @@ export interface IBrowserProxyPlugin {
 
     getTitle(applicant: string): Promise<any>;
 
-    clearElement(applicant: string, xpath: string): Promise<any>;
+    clearValue(applicant: string, xpath: string): Promise<any>;
 
     keys(applicant: string, value: any): Promise<any>;
 
@@ -196,7 +194,7 @@ export interface IBrowserProxyPlugin {
         value: string,
     ): Promise<any>;
 
-    getGridNodeDetails(applicant: string): Promise<any>;
-
     gridTestSession(applicant: string): Promise<any>;
+
+    getHubConfig(applicant: string): Promise<any>;
 }

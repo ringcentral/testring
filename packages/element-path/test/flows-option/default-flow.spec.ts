@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {expect} from 'chai';
 import {createElementPath} from '../../src';
 
@@ -116,6 +117,7 @@ describe('flows option default behavior', () => {
         });
 
         it('function call', async () => {
+            // @ts-ignore
             expect(await childFoo.runFlow()).to.be.equal('test string');
         });
     });

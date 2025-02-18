@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {createElementPath} from '../../src';
+import {createElementPath, ElementPathProxy} from '../../src';
 
 describe('base methods', () => {
     describe('creation', () => {
@@ -18,13 +18,16 @@ describe('base methods', () => {
         it('set property', () => {
             const dummy = createElementPath();
 
-            const setter = () => (dummy.test = 123);
+            const setter = () =>
+                (dummy.test = 123 as unknown as ElementPathProxy);
             expect(setter).to.throw(TypeError, 'Immutable object');
         });
 
         it('set own property', () => {
             const dummy = createElementPath();
 
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             const setter = () => (dummy.__path = 123);
             expect(setter).to.throw(TypeError, 'Immutable object');
         });

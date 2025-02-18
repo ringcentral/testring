@@ -23,7 +23,8 @@ const delay = (milliseconds: number) =>
 
 export class TestRunController
     extends PluggableModule
-    implements ITestRunController {
+    implements ITestRunController
+{
     private workers: Array<ITestWorkerInstance> = [];
 
     private errors: Array<Error> = [];
@@ -189,13 +190,8 @@ export class TestRunController
     private getQueueItemWithRunData(queueItem): IQueuedTest {
         let screenshotsEnabled = false;
         const isRetryRun = queueItem.retryCount > 0;
-        const {
-            debug,
-            httpThrottle,
-            logLevel,
-            devtool,
-            screenshotPath,
-        } = this.config;
+        const {debug, httpThrottle, logLevel, devtool, screenshotPath} =
+            this.config;
 
         if (this.config.screenshots === 'enable') {
             screenshotsEnabled = true;

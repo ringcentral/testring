@@ -1,36 +1,68 @@
+const browsers = require('@puppeteer/browsers');
+const path = require('path');
+
 module.exports = async (config) => {
-    const devtool = config.debug || config.devtool;
+    const info = await browsers.getInstalledBrowsers({
+        cacheDir: path.join(__dirname, '..', '..', 'chrome-cache'),
+    });
+    const chrome = info.find((item) => item.browser === 'chrome');
+    if (!chrome) {
+        throw new Error('Chrome is not found');
+    }
+    const chromedriver = info.find((item) => item.browser === 'chromedriver');
+    if (!chromedriver) {
+        throw new Error('Chromedriver is not found');
+    }
+    const local = !config.headless;
+
+    const babelConfig = {
+        presets: [
+            [
+                '@babel/preset-env',
+                {
+                    targets: {
+                        node: 'current',
+                    },
+                },
+            ],
+        ],
+    };
+
+    if (config.debug) {
+        babelConfig.presets[0][1].debug = true;
+        babelConfig.sourceMaps = 'inline';
+    }
 
     return {
-        devtool,
         screenshotPath: './_tmp/',
-        workerLimit: devtool ? 'local' : 5,
+        workerLimit: local ? 'local' : 5,
         maxWriteThreadCount: 2,
         screenshots: 'disable',
         retryCount: 0,
-        testTimeout: devtool ? 0 : config.testTimeout,
-        tests: 'test/selenium/test/*.spec.js',
+        testTimeout: local ? 0 : config.testTimeout,
+        tests: 'test/selenium/test/**/*.spec.js',
         plugins: [
             [
                 'selenium-driver',
                 {
-                    clientTimeout: devtool ? 0 : config.testTimeout,
-                    recorderExtension: devtool,
+                    clientTimeout: local ? 0 : config.testTimeout,
                     path: '/wd/hub',
-                    capabilities: devtool
-                        ? {}
+                    chromeDriverPath: chromedriver.executablePath,
+                    capabilities: local
+                        ? {
+                              'goog:chromeOptions': {
+                                  binary: chrome.executablePath,
+                              },
+                          }
                         : {
                               'goog:chromeOptions': {
-                                  args: [
-                                      '--headless',
-                                      '--disable-gpu',
-                                      '--no-sandbox',
-                                  ],
+                                  binary: chrome.executablePath,
+                                  args: ['--headless=new', '--no-sandbox'],
                               },
                           },
                 },
             ],
-            ['babel'],
+            ['babel', babelConfig],
         ],
     };
 };

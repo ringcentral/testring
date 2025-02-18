@@ -19,9 +19,8 @@ const toString = (c) => c.toString();
 export abstract class AbstractHttpClient implements IHttpClient {
     protected abstract broadcast(options: IHttpRequestMessage): void;
 
-    protected loggerClient: LoggerClient = loggerClient.withPrefix(
-        '[http client]',
-    );
+    protected loggerClient: LoggerClient =
+        loggerClient.withPrefix('[http client]');
 
     private requestQueue: IQueue<Function>;
 

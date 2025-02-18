@@ -26,6 +26,8 @@ export class BrowserProxy {
 
     private logger = loggerClient.withPrefix('[browser-proxy]');
 
+    public removeHandlers: Array<() => void> = [];
+
     constructor(
         private transportInstance: ITransport,
         pluginPath: string,
@@ -48,7 +50,7 @@ export class BrowserProxy {
             try {
                 this.plugin = pluginFactory(pluginConfig);
             } catch (error) {
-                this.transportInstance.broadcast(
+                this.transportInstance.broadcastUniversally(
                     BrowserProxyMessageTypes.exception,
                     error,
                 );
@@ -57,15 +59,21 @@ export class BrowserProxy {
     }
 
     private registerCommandListener() {
-        this.transportInstance.on(BrowserProxyMessageTypes.execute, (message) =>
-            this.onMessage(message),
+        this.removeHandlers.push(
+            this.transportInstance.on(
+                BrowserProxyMessageTypes.execute,
+                (message) => this.onMessage(message),
+            ),
         );
     }
 
     private sendEmptyResponse(uid: string) {
-        this.transportInstance.broadcast(BrowserProxyMessageTypes.response, {
-            uid,
-        });
+        this.transportInstance.broadcastUniversally(
+            BrowserProxyMessageTypes.response,
+            {
+                uid,
+            },
+        );
     }
 
     private async onMessage(message: IBrowserProxyMessage) {
@@ -97,7 +105,7 @@ export class BrowserProxy {
                 ...command.args,
             );
 
-            this.transportInstance.broadcast<IBrowserProxyCommandResponse>(
+            this.transportInstance.broadcastUniversally<IBrowserProxyCommandResponse>(
                 BrowserProxyMessageTypes.response,
                 {
                     uid,
@@ -106,7 +114,7 @@ export class BrowserProxy {
                 },
             );
         } catch (error) {
-            this.transportInstance.broadcast<IBrowserProxyCommandResponse>(
+            this.transportInstance.broadcastUniversally<IBrowserProxyCommandResponse>(
                 BrowserProxyMessageTypes.response,
                 {
                     uid,

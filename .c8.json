@@ -1,0 +1,10 @@
+{
+  "reporter": ["html"],
+  "reports-dir": "./c8-cov",
+  "all": true,
+  "include": [
+    "packages/plugin-selenium-driver/*/plugin/index.*",
+    "packages/web-application/*/web-client.*",
+    "packages/web-application/*/web-application.*"
+  ]
+}

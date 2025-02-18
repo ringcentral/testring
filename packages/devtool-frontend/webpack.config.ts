@@ -12,12 +12,12 @@ const config: webpack.Configuration = {
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js', '.css'],
-        fallback:{
-            net:false,
+        fallback: {
+            net: false,
             fs: false,
-            "path": require.resolve("path-browserify"),
-            "events": require.resolve("events/"),
-            "os": require.resolve("os-browserify/browser"),
+            path: require.resolve('path-browserify'),
+            events: require.resolve('events/'),
+            os: require.resolve('os-browserify/browser'),
         },
     },
     plugins: [
@@ -27,6 +27,10 @@ const config: webpack.Configuration = {
     ],
     module: {
         rules: [
+            {
+                test: /\.js\.map$/,
+                use: 'ignore-loader',
+            },
             {
                 test: /\.tsx?$/,
                 use: 'ts-loader',

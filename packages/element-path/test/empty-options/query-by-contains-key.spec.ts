@@ -57,8 +57,7 @@ describe("empty options ElementPath root['*foo*']", () => {
                     query: {
                         containsKey: 'foo',
                     },
-                    xpath:
-                        "/descendant::*[contains(@data-test-automation-id,'foo')]",
+                    xpath: "/descendant::*[contains(@data-test-automation-id,'foo')]",
                 },
             ]),
         });

@@ -10,6 +10,7 @@ import {
     DependencyFileReader,
 } from '@testring/types';
 import {resolveAbsolutePath} from './absolute-path-resolver';
+import * as path from 'node:path';
 
 function getDependencies(absolutePath: string, content: string): Array<string> {
     const requests: Array<string> = [];
@@ -21,14 +22,14 @@ function getDependencies(absolutePath: string, content: string): Array<string> {
     });
 
     traverse(sourceAST, {
-        CallExpression(path: NodePath<CallExpression>) {
-            const callee = path.get('callee') as NodePath<Identifier>;
+        CallExpression(nodePath: NodePath<CallExpression>) {
+            const callee = nodePath.get('callee') as NodePath<Identifier>;
 
             if (callee.node.name !== 'require') {
                 return;
             }
 
-            const args = path.get('arguments');
+            const args = nodePath.get('arguments');
             const firstArgument = args[0];
             const dependencyPath: NodePath<string> = firstArgument.get(
                 'value',
@@ -42,24 +43,24 @@ function getDependencies(absolutePath: string, content: string): Array<string> {
 }
 
 function createTreeNode(
-    path: string,
+    nodePath: string,
     content: string,
     nodes: IDependencyDictionary<IDependencyTreeNode> | null,
 ): IDependencyTreeNode {
     return {
         content,
-        path,
+        path: nodePath,
         nodes,
     };
 }
 
 function createDictionaryNode(
-    path: string,
+    nodePath: string,
     content: string,
 ): IDependencyDictionaryNode {
     return {
         content,
-        path,
+        path: nodePath,
     };
 }
 
@@ -103,7 +104,7 @@ async function buildNodes(
             dependencyAbsolutePath.includes('node_modules') ||
             // Fix for local e2e tests running (lerna makes symlink and resolver eats it as path for real file)
             // require 'node_modules/testring' = require 'packages/testring/dist'
-            dependencyAbsolutePath.includes('testring/dist')
+            dependencyAbsolutePath.includes(path.join('testring', 'dist'))
         ) {
             continue;
         }

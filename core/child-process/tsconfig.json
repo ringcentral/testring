@@ -10,7 +10,7 @@
     "noEmitOnError": true,
     "declaration": false,
     "outDir": "dist",
-    "sourceMap": false,
+    "sourceMap": true,
     "lib": [
       "es5",
       "es2015",

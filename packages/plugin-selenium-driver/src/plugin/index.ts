@@ -1,21 +1,22 @@
 import {SeleniumPluginConfig} from '../types';
-import {IBrowserProxyPlugin, WindowFeaturesConfig} from '@testring/types';
+import {
+    IBrowserProxyPlugin,
+    SavePdfOptions,
+    WindowFeaturesConfig,
+} from '@testring/types';
 
 import {ChildProcess} from 'child_process';
 
 import {remote} from 'webdriverio';
 import * as deepmerge from 'deepmerge';
 
-import {spawn} from '@testring/child-process';
+import {spawnWithPipes} from '@testring/child-process';
 import {loggerClient} from '@testring/logger';
 import {getCrxBase64} from '@testring/dwnld-collector-crx';
 import {CDPCoverageCollector} from '@nullcc/code-coverage-client';
 
 import type {Cookie} from '@wdio/protocols';
-import type {
-    ClickOptions,
-    MockFilterOptions,
-} from 'webdriverio';
+import type {ClickOptions, MockFilterOptions} from 'webdriverio';
 import type {JsonCompatible} from '@wdio/types';
 import type {RespondWithOptions} from 'webdriverio/build/utils/interception/types';
 import webdriver from 'webdriver';
@@ -43,7 +44,7 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
             // for local ChromeDriver
             args: [] as string[],
         },
-        'wdio:enforceWebDriverClassic': true
+        'wdio:enforceWebDriverClassic': true,
     },
     cdpCoverage: false,
 };
@@ -106,7 +107,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             mergedConfig.hostname = mergedConfig.host;
         }
 
-        const googleChromeOptions = mergedConfig.capabilities?.['goog:chromeOptions'];
+        const googleChromeOptions =
+            mergedConfig.capabilities?.['goog:chromeOptions'];
         if (googleChromeOptions?.args?.includes('--headless=new')) {
             const extensions = googleChromeOptions.extensions;
             const dowldMonitorCrx = getCrxBase64();
@@ -121,19 +123,21 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     private initIntervals() {
-        if (this.config.clientCheckInterval > 0) {
-            this.clientCheckInterval = setInterval(
-                () => this.checkClientsTimeout(),
-                this.config.clientCheckInterval,
-            );
-        }
+        if (this.config.workerLimit !== 'local') {
+            if (this.config.clientCheckInterval > 0) {
+                this.clientCheckInterval = setInterval(
+                    () => this.checkClientsTimeout(),
+                    this.config.clientCheckInterval,
+                );
+            }
 
-        process.on('exit', () => {
-            clearInterval(this.clientCheckInterval as NodeJS.Timeout);
-            this.stopAllSessions().catch((err) => {
-                this.logger.error('Clean process exit failed', err);
+            process.on('exit', () => {
+                clearInterval(this.clientCheckInterval as NodeJS.Timeout);
+                this.stopAllSessions().catch((err) => {
+                    this.logger.error('Clean process exit failed', err);
+                });
             });
-        });
+        }
     }
 
     private stopAllSessions() {
@@ -174,7 +178,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         this.logger.debug('Init local selenium server');
 
         try {
-            this.localSelenium = spawn('java', [
+            this.localSelenium = spawnWithPipes('java', [
                 ...this.getChromeDriverArgs(),
                 '-jar',
                 seleniumJarPath,
@@ -421,6 +425,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     public async kill() {
         this.logger.debug('Kill command is called');
+
+        // Close all browser sessions
         for (const applicant of this.browserClients.keys()) {
             try {
                 await this.end(applicant);
@@ -429,8 +435,59 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             }
         }
 
+        // If using 'local' mode, stop all active sessions
+        if (this.config.workerLimit === 'local') {
+            await this.stopAllSessions();
+        }
+
         if (this.localSelenium) {
-            this.localSelenium.kill();
+            // remove listener
+            if (this.localSelenium.stderr) {
+                this.localSelenium.stderr.removeAllListeners('data');
+                this.localSelenium.stdout?.removeAllListeners();
+            }
+
+            // Ensure all pipes are closed
+            this.localSelenium.stdout?.destroy();
+            this.localSelenium.stderr?.destroy();
+            this.localSelenium.stdin?.destroy();
+
+            this.logger.debug(
+                `Stopping local Selenium server (PID: ${this.localSelenium.pid})`,
+            );
+
+            // Try SIGTERM first
+            this.localSelenium.kill('SIGTERM');
+
+            // Wait for exit event with a timeout (ensures it does not hang forever)
+            const waitForExit = new Promise<void>((resolve) => {
+                this.localSelenium.once('exit', () => {
+                    this.logger.debug('Selenium process exited.');
+                    resolve();
+                });
+            });
+
+            // Force kill if not exiting within 3 seconds
+            const forceKill = new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    if (!this.localSelenium.killed) {
+                        this.logger.warn(
+                            `Selenium did not exit in time. Sending SIGKILL.`,
+                        );
+                        this.localSelenium.kill('SIGKILL');
+                    }
+                    resolve();
+                }, 3000);
+            });
+
+            // Wait for either normal exit or force kill
+            await Promise.race([waitForExit, forceKill]);
+
+            this.localSelenium.removeAllListeners();
+
+            this.logger.debug(
+                'Selenium process and all associated pipes closed.',
+            );
         }
     }
 
@@ -450,7 +507,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         const element = await client.$(selector);
-        return options && Object.keys(options).length > 0 ? element.click(options) : element.click();
+        return options && Object.keys(options).length > 0
+            ? element.click(options)
+            : element.click();
     }
 
     public async getSize(applicant: string, selector: string) {
@@ -562,7 +621,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.getTitle();
     }
 
-    public async clearElement(applicant: string, xpath: string) {
+    public async clearValue(applicant: string, xpath: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
@@ -991,27 +1050,15 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return selector.selectByAttribute(attribute, value);
     }
 
-    // @deprecated WAT-1872
-    public async gridProxyDetails(applicant: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        if (this.localSelenium) {
-            return {
-                localSelenium: true,
-            };
-        }
-
-        return client.gridProxyDetails(client.sessionId);
-    }
-
-    // @deprecated WAT-1872
     public async gridTestSession(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
         if (this.localSelenium) {
             return {
+                sessionId: client.sessionId,
+                host: this.config.host,
+                port: this.config.port,
                 localSelenium: true,
             };
         }
@@ -1019,27 +1066,20 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.gridTestSession(client.sessionId);
     }
 
-    // @deprecated WAT-1872
-    public async getGridNodeDetails(applicant: string) {
+    public async getHubConfig(applicant: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        const testSession = await this.gridTestSession(applicant);
-
-        if (testSession && !testSession.localSelenium) {
-            const proxyDetails = await client.gridProxyDetails(applicant);
-
-            delete testSession.msg;
-            delete testSession.success;
-
-            delete proxyDetails.msg;
-            delete proxyDetails.success;
-            delete proxyDetails.id;
-
-            return {...testSession, ...proxyDetails};
+        if (this.localSelenium) {
+            return {
+                sessionId: client.sessionId,
+                host: this.config.host,
+                port: this.config.port,
+                localSelenium: true,
+            };
         }
 
-        return testSession;
+        return client.getHubConfig();
     }
 
     /**
@@ -1074,6 +1114,142 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 },
             },
         } as any);
+    }
+
+    public async status(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        return client.status();
+    }
+
+    public async back(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        return client.back();
+    }
+
+    public async forward(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        return client.forward();
+    }
+
+    public async getActiveElement(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        return client.getActiveElement();
+    }
+
+    public async getLocation(applicant: string, xpath: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+        const element = client.$(xpath);
+        return element.getLocation();
+    }
+
+    public async setTimeZone(applicant: string, timeZone: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+        return client.setTimeZone(timeZone);
+    }
+
+    public async getWindowSize(applicant: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+        return client.getWindowSize();
+    }
+
+    public async savePDF(applicant: string, options: SavePdfOptions) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const {filepath, ...restOptions} = options;
+
+        return client.savePDF(filepath, restOptions);
+    }
+
+    public async addValue(
+        applicant: string,
+        xpath: string,
+        value: string | number,
+    ) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const selector = await client.$(xpath);
+        return selector.addValue(value);
+    }
+
+    public async doubleClick(applicant: string, xpath: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const selector = await client.$(xpath);
+        return selector.doubleClick();
+    }
+
+    public async isClickable(applicant: string, xpath: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const selector = await client.$(xpath);
+        return selector.isClickable();
+    }
+
+    public async waitForClickable(
+        applicant: string,
+        xpath: string,
+        timeout: number,
+    ) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const selector = await client.$(xpath);
+        return selector.waitForClickable({timeout});
+    }
+
+    public async isFocused(applicant: string, xpath: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const selector = await client.$(xpath);
+        return selector.isFocused();
+    }
+
+    public async isStable(applicant: string, xpath: string) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const selector = await client.$(xpath);
+        return selector.isStable();
+    }
+
+    public async waitForEnabled(
+        applicant: string,
+        xpath: string,
+        timeout: number,
+    ) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const selector = await client.$(xpath);
+        return selector.waitForEnabled({timeout});
+    }
+
+    public async waitForStable(
+        applicant: string,
+        xpath: string,
+        timeout: number,
+    ) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        const selector = await client.$(xpath);
+        return selector.waitForStable({timeout});
     }
 }
 

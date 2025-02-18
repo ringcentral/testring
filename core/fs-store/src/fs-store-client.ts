@@ -68,9 +68,8 @@ export class FSStoreClient {
                         delete this.reqHash[requestId];
                     } else {
                         this.reqHash[requestId].fullPath = fullPath;
-                        this.reqHash[requestId].meta.fileName = path.basename(
-                            fullPath,
-                        );
+                        this.reqHash[requestId].meta.fileName =
+                            path.basename(fullPath);
                     }
                 }
 

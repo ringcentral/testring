@@ -16,7 +16,8 @@ type MakeRequest = (request: IHttpRequest) => Promise<IHttpResponse>;
 
 export class HttpServer
     extends PluggableModule
-    implements IHttpServerController {
+    implements IHttpServerController
+{
     private unsubscribeTransport: Function;
 
     private logger: LoggerClient = loggerClient.withPrefix('[http-server]');
@@ -117,7 +118,9 @@ export class HttpServer
                     },
                 );
 
-                this.logger.debug(`Request failed ${errorAfterHook?.name} - ${errorAfterHook?.message}`);
+                this.logger.debug(
+                    `Request failed ${errorAfterHook?.name} - ${errorAfterHook?.message}`,
+                );
             }
         };
 

@@ -1,34 +1,39 @@
-import { run } from 'testring';
+import {run} from 'testring';
+import {getTargetUrl} from './utils';
 
 run(async (api) => {
-    await api.application.url('http://localhost:8080/cookie.html');
-    const cookieValue = await api.application.getCookie('test');
-    await api.application.assert.equal(cookieValue, 'TestData');
+    let app = api.application;
+    await app.url(getTargetUrl(api, 'cookie.html'));
+    const cookieValue = await app.getCookie('test');
+    await app.assert.equal(cookieValue, 'TestData');
 
-    await api.application.deleteCookie('test');
-    await api.application.click(api.application.root.cookie_clear_button);
+    await app.deleteCookie('test');
+    await app.click(app.root.cookie_clear_button);
 
-    const cookieTextAfterDelete = await api.application.getText(api.application.root.cookie_found_text);
-    await api.application.assert.equal(cookieTextAfterDelete, '');
+    const cookieTextAfterDelete = await app.getText(app.root.cookie_found_text);
+    await app.assert.equal(cookieTextAfterDelete, '');
 
-    const cookieTextGetter = await api.application.getCookie('test');
-    await api.application.assert.equal(cookieTextGetter, undefined);
+    const cookieTextGetter = await app.getCookie('test');
+    await app.assert.equal(cookieTextGetter, undefined);
 
-    await api.application.setCookie({ 'name': 'foo', 'value': '1111' });
-    const cookieValueAfterAdd = await api.application.getCookie('foo');
-    await api.application.assert.equal(cookieValueAfterAdd, '1111');
+    await app.setCookie({name: 'foo', value: '1111'});
+    const cookieValueAfterAdd = await app.getCookie('foo');
+    await app.assert.equal(cookieValueAfterAdd, '1111');
 
-    const allCookies = await api.application.getCookie();
-    const expected = [{
-        'domain':'localhost',
-        'httpOnly':false,
-        'name':'foo',
-        'path':'/',
-        'secure':false,
-        'value':'1111',
-    }];
-    await api.application.assert.deepEqual(allCookies, expected);
-    await api.application.deleteCookie();
-    const allCookiesAfterDelete = await api.application.getCookie();
-    await api.application.assert.deepEqual(allCookiesAfterDelete, []);
+    const allCookies = await app.getCookie();
+    const expected = [
+        {
+            domain: 'localhost',
+            httpOnly: false,
+            name: 'foo',
+            path: '/',
+            secure: false,
+            value: '1111',
+            sameSite: 'Lax',
+        },
+    ];
+    await app.assert.deepEqual(allCookies, expected);
+    await app.deleteCookie();
+    const allCookiesAfterDelete = await app.getCookie();
+    await app.assert.deepEqual(allCookiesAfterDelete, []);
 });

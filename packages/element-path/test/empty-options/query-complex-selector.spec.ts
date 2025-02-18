@@ -17,16 +17,17 @@ describe('Heavy selectors', () => {
     });
 
     it('__findChildren call', () => {
-        const findChildren = root.extensionsSelectorPopup.popupContent.extensionsSelectorGrid.__findChildren(
-            {
-                prefix: 'extension',
-                index: 0,
-                subQuery: {
-                    exactKey: 'pin',
-                    containsText: '101',
+        const findChildren =
+            root.extensionsSelectorPopup.popupContent.extensionsSelectorGrid.__findChildren(
+                {
+                    prefix: 'extension',
+                    index: 0,
+                    subQuery: {
+                        exactKey: 'pin',
+                        containsText: '101',
+                    },
                 },
-            },
-        );
+            );
 
         expect(findChildren.toString()).to.be.equal(
             "(//*[@data-test-automation-id='root']" +
@@ -39,16 +40,17 @@ describe('Heavy selectors', () => {
     });
 
     it('__findChildren call after indexed element', () => {
-        const findChildren = root.extensionsSelectorPopup.popupContent.extensionsSelectorGrid.row[0].__findChildren(
-            {
-                prefix: 'extension',
-                index: 0,
-                subQuery: {
-                    exactKey: 'pin',
-                    containsText: '101',
+        const findChildren =
+            root.extensionsSelectorPopup.popupContent.extensionsSelectorGrid.row[0].__findChildren(
+                {
+                    prefix: 'extension',
+                    index: 0,
+                    subQuery: {
+                        exactKey: 'pin',
+                        containsText: '101',
+                    },
                 },
-            },
-        );
+            );
 
         expect(findChildren.toString()).to.be.equal(
             "(//*[@data-test-automation-id='root']" +

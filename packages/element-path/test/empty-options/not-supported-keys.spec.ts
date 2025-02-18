@@ -6,6 +6,8 @@ describe('not supported keys', () => {
 
     it('get [Symbol]', () => {
         const symbol = Symbol('test');
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         expect(empty[symbol]).to.be.equal(undefined);
     });
 

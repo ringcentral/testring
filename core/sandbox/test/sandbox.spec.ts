@@ -80,16 +80,8 @@ describe('Sandbox', () => {
         it('should correctly pass "instanceof" check for all primitives', async () => {
             const source = await fixturesFileReader('primitives.js');
             const sandbox = new Sandbox(source, 'primitives.js', {});
-            const {
-                array,
-                map,
-                set,
-                weakMap,
-                weakSet,
-                promise,
-                buffer,
-                error,
-            } = sandbox.execute();
+            const {array, map, set, weakMap, weakSet, promise, buffer, error} =
+                sandbox.execute();
 
             chai.expect(array instanceof Array).to.be.equal(true);
             chai.expect(map instanceof Map).to.be.equal(true);

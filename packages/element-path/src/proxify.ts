@@ -15,10 +15,11 @@ type PropertyDescriptor =
       }
     | undefined;
 
-type XpathLocatorProxified = {
+export type XpathLocatorProxified = {
     id: string;
     locator: string;
     parent?: string;
+    jira?: string;
 };
 
 const PROXY_OWN_PROPS = ['__flows', '__path'];
@@ -31,7 +32,7 @@ const PROXY_PROPS = [
 ];
 
 export function proxify(instance: ElementPath, strictMode = true) {
-    const revocable = Proxy.revocable<any>(instance, {
+    const revocable = Proxy.revocable<ElementPath>(instance, {
         /* eslint-disable no-use-before-define */
         get: getTrap,
         set: setTrap,
