@@ -3,7 +3,8 @@ import {
     ITransport,
     IWebApplicationClient,
     IWebApplicationExecuteMessage,
-    IWebApplicationResponseMessage, SavePdfOptions,
+    IWebApplicationResponseMessage,
+    SavePdfOptions,
     WebApplicationMessageType,
     WindowFeaturesConfig,
 } from '@testring/types';
@@ -391,7 +392,9 @@ export class WebClient implements IWebApplicationClient {
     }
 
     public emulateDevice(deviceName = 'iPhone X') {
-        return this.makeRequest(BrowserProxyActions.emulateDevice, [deviceName]);
+        return this.makeRequest(BrowserProxyActions.emulateDevice, [
+            deviceName,
+        ]);
     }
 
     public status() {
@@ -439,7 +442,10 @@ export class WebClient implements IWebApplicationClient {
     }
 
     public waitForClickable(xpath: string, timeout: number) {
-        return this.makeRequest(BrowserProxyActions.waitForClickable, [xpath, timeout]);
+        return this.makeRequest(BrowserProxyActions.waitForClickable, [
+            xpath,
+            timeout,
+        ]);
     }
 
     public isFocused(xpath: string) {
@@ -451,10 +457,16 @@ export class WebClient implements IWebApplicationClient {
     }
 
     public waitForEnabled(xpath: string, timeout: number) {
-        return this.makeRequest(BrowserProxyActions.waitForEnabled, [xpath, timeout]);
+        return this.makeRequest(BrowserProxyActions.waitForEnabled, [
+            xpath,
+            timeout,
+        ]);
     }
 
     public waitForStable(xpath: string, timeout: number) {
-        return this.makeRequest(BrowserProxyActions.waitForStable, [xpath, timeout]);
+        return this.makeRequest(BrowserProxyActions.waitForStable, [
+            xpath,
+            timeout,
+        ]);
     }
 }

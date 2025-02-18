@@ -16,10 +16,8 @@ import {loggerClient} from '@testring/logger';
 export class BrowserProxyWorker implements IBrowserProxyWorker {
     private pendingCommandsQueue: Set<IBrowserProxyPendingCommand> = new Set();
 
-    private pendingCommandsPool: Map<
-        string,
-        IBrowserProxyPendingCommand
-    > = new Map();
+    private pendingCommandsPool: Map<string, IBrowserProxyPendingCommand> =
+        new Map();
 
     private spawnPromise: Promise<void> | null = null;
 

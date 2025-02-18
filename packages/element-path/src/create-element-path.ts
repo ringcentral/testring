@@ -16,7 +16,7 @@ export type ElementPathProxy = ElementPath & {
     __getReversedChain: ElementPath['getReversedChain'];
     __getChildType: ElementPath['getElementType'];
 } & {
-    [key: string] : ElementPathProxy
+    [key: string]: ElementPathProxy;
 };
 
 export function createElementPath(options: createElementPathOptions = {}) {

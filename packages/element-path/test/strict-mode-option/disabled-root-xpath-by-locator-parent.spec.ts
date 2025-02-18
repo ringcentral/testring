@@ -59,7 +59,6 @@ describe('.xpathByLocator() with parent', () => {
         });
 
         it('call with not string', () => {
-
             const child = root.xpathByLocator({
                 // @ts-ignore
                 id: 0,

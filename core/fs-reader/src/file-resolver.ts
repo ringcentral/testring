@@ -37,7 +37,7 @@ export async function resolveFiles(files: Array<string>): Promise<IFile[]> {
 
     // Limit concurrent file reads
     const readFilePromises = files.map((file) =>
-        limit(() => readFile(file).catch(() => null))
+        limit(() => readFile(file).catch(() => null)),
     );
 
     const filesContent = await Promise.all(readFilePromises);
@@ -49,4 +49,3 @@ export async function resolveFiles(files: Array<string>): Promise<IFile[]> {
 
     return compacted;
 }
-

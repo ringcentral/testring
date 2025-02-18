@@ -32,12 +32,12 @@ const config: webpack.Configuration = {
 
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
-        fallback:{
-            net:false,
+        fallback: {
+            net: false,
             fs: false,
-            "path": require.resolve("path-browserify"),
-            "events": require.resolve("events/"),
-            "os": require.resolve("os-browserify/browser"),
+            path: require.resolve('path-browserify'),
+            events: require.resolve('events/'),
+            os: require.resolve('os-browserify/browser'),
         },
     },
 
@@ -45,7 +45,7 @@ const config: webpack.Configuration = {
         rules: [
             {
                 test: /\.js\.map$/,
-                use: 'ignore-loader'
+                use: 'ignore-loader',
             },
             {
                 test: /\.tsx?$/,
@@ -70,8 +70,11 @@ const config: webpack.Configuration = {
                 {
                     from: staticRelativeDir,
                     to: outputDir,
-                    transform(content, absolutePath){
-                        const relativePath = path.relative(__dirname, absolutePath);
+                    transform(content, absolutePath) {
+                        const relativePath = path.relative(
+                            __dirname,
+                            absolutePath,
+                        );
 
                         if (relativePath === manifestRelativePath) {
                             const data = JSON.parse(content.toString());

@@ -10,10 +10,7 @@ const workerPath = path.resolve(__dirname, './fixtures/worker.ts');
 const asyncPlugin = path.resolve(__dirname, './fixtures/async-plugin.ts');
 const syncPlugin = path.resolve(__dirname, './fixtures/sync-plugin.ts');
 
-
-
 describe('Browser Proxy Controller functional test for local worker', () => {
-
     it('should not call workerCreator if workerLimit is set to local', async () => {
         const workerCreatorMock = sinon.spy();
         const transport = new Transport();
@@ -28,7 +25,7 @@ describe('Browser Proxy Controller functional test for local worker', () => {
                 return {
                     plugin: syncPlugin,
                     config: {
-                        workerLimit: 'local'
+                        workerLimit: 'local',
                     },
                 };
             });
@@ -44,7 +41,6 @@ describe('Browser Proxy Controller functional test for local worker', () => {
         chai.expect(workerCreatorMock.notCalled).to.be.equal(true);
 
         await controller.kill();
-
     });
 
     it('should throw exception if proxy response contains non-empty "exception" field', async () => {
@@ -61,7 +57,7 @@ describe('Browser Proxy Controller functional test for local worker', () => {
                 return {
                     plugin: syncPlugin,
                     config: {
-                        workerLimit: 'local'
+                        workerLimit: 'local',
                     },
                 };
             });
@@ -96,7 +92,7 @@ describe('Browser Proxy Controller functional test for local worker', () => {
                 return {
                     plugin: syncPlugin,
                     config: {
-                        workerLimit: 'local'
+                        workerLimit: 'local',
                     },
                 };
             });
@@ -121,7 +117,7 @@ describe('Browser Proxy Controller functional test for local worker', () => {
         });
 
         chai.expect(testResult2).to.be.deep.equal({
-            key: 'value'
+            key: 'value',
         });
 
         const testResult3 = await controller.execute('test3', {
@@ -153,7 +149,7 @@ describe('Browser Proxy Controller functional test for local worker', () => {
                 return {
                     plugin: asyncPlugin,
                     config: {
-                        workerLimit: 'local'
+                        workerLimit: 'local',
                     },
                 };
             });
@@ -164,17 +160,18 @@ describe('Browser Proxy Controller functional test for local worker', () => {
         const executePromises = Array.from({length: 100}, (_, i) => {
             return controller.execute(`test${i}`, {
                 action: BrowserProxyActions.click,
-                args: [Array.from({length: i*10}, (__, j) => j)],
+                args: [Array.from({length: i * 10}, (__, j) => j)],
             });
         });
 
         const results = await Promise.all(executePromises);
 
         for (let i = 0; i < 100; i++) {
-            chai.expect(results[i]).to.be.deep.equal(Array.from({length: i*10}, (__, j) => j));
+            chai.expect(results[i]).to.be.deep.equal(
+                Array.from({length: i * 10}, (__, j) => j),
+            );
         }
 
         await controller.kill();
-
     });
 });

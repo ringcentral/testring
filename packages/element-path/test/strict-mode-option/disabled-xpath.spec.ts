@@ -40,7 +40,8 @@ describe('.xpath()', () => {
             const child = root.foo.xpath(
                 // @ts-ignore
                 undefined,
-                "//*[@class='selected']");
+                "//*[@class='selected']",
+            );
             expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
 
@@ -53,7 +54,8 @@ describe('.xpath()', () => {
             const child = root.foo.xpath(
                 // @ts-ignore
                 0,
-                "//*[@class='selected']");
+                "//*[@class='selected']",
+            );
             expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
     });

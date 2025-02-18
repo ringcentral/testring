@@ -59,15 +59,21 @@ export class BrowserProxy {
     }
 
     private registerCommandListener() {
-        this.removeHandlers.push(this.transportInstance.on(BrowserProxyMessageTypes.execute, (message) =>
-            this.onMessage(message),
-        ));
+        this.removeHandlers.push(
+            this.transportInstance.on(
+                BrowserProxyMessageTypes.execute,
+                (message) => this.onMessage(message),
+            ),
+        );
     }
 
     private sendEmptyResponse(uid: string) {
-        this.transportInstance.broadcastUniversally(BrowserProxyMessageTypes.response, {
-            uid,
-        });
+        this.transportInstance.broadcastUniversally(
+            BrowserProxyMessageTypes.response,
+            {
+                uid,
+            },
+        );
     }
 
     private async onMessage(message: IBrowserProxyMessage) {

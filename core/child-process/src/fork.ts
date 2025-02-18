@@ -21,7 +21,7 @@ const PREFERRED_DEBUG_PORTS: Array<number> = [
 const IS_WIN = process.platform === 'win32';
 const EMPTY_PARAMETERS = [];
 const REQUIRE_TS_NODE = ['-r', 'ts-node/register'];
-const Module = require("module").Module;
+const Module = require('module').Module;
 
 const DEFAULT_FORK_OPTIONS: IChildProcessForkOptions = {
     debug: false,

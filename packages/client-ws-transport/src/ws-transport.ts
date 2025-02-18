@@ -18,7 +18,8 @@ interface IQueuedMessage {
 
 export class ClientWsTransport
     extends EventEmitter
-    implements IClientWsTransport {
+    implements IClientWsTransport
+{
     private url: string;
 
     constructor(

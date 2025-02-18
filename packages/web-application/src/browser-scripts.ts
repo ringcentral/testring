@@ -46,12 +46,12 @@ export const simulateJSFieldChangeScript = (xpath, value, done) => {
 
         // Chromium Hack
         Object.defineProperty(oEvent, 'keyCode', {
-            get () {
+            get() {
                 return this.keyCodeVal;
             },
         });
         Object.defineProperty(oEvent, 'which', {
-            get () {
+            get() {
                 return this.keyCodeVal;
             },
         });
@@ -123,11 +123,7 @@ export const getOptionsPropertyScript = (xpath, prop, done) => {
         if (element && element.tagName.toLowerCase() === 'select') {
             const texts: Array<any> = [];
 
-            for (
-                let i = 0, len = element.options.length;
-                i < len;
-                i++
-            ) {
+            for (let i = 0, len = element.options.length; i < len; i++) {
                 texts.push(element.options[i][prop]);
             }
 
@@ -140,7 +136,12 @@ export const getOptionsPropertyScript = (xpath, prop, done) => {
     }
 };
 
-export const scrollIntoViewCallScript = (xpath, topOffset, leftOffset, done) => {
+export const scrollIntoViewCallScript = (
+    xpath,
+    topOffset,
+    leftOffset,
+    done,
+) => {
     // eslint-disable-next-line sonarjs/no-identical-functions
     function getElementByXPath(xpath) {
         const element = document.evaluate(
@@ -159,26 +160,21 @@ export const scrollIntoViewCallScript = (xpath, topOffset, leftOffset, done) => 
     }
 
     function isScrollable(el) {
-        const hasScrollableContent =
-            el.scrollHeight > el.clientHeight;
+        const hasScrollableContent = el.scrollHeight > el.clientHeight;
 
-        const overflowYStyle = window.getComputedStyle(el)
-            .overflowY;
-        const isOverflowHidden =
-            overflowYStyle.indexOf('hidden') !== -1;
+        const overflowYStyle = window.getComputedStyle(el).overflowY;
+        const isOverflowHidden = overflowYStyle.indexOf('hidden') !== -1;
 
         return hasScrollableContent && !isOverflowHidden;
     }
 
     function getScrollableParent(el) {
         // eslint-disable-next-line no-nested-ternary
-        return !el ||
-        el === document.scrollingElement ||
-        document.body
+        return !el || el === document.scrollingElement || document.body
             ? document.scrollingElement || document.body
             : isScrollable(el)
-                ? el
-                : getScrollableParent(el.parentNode);
+            ? el
+            : getScrollableParent(el.parentNode);
     }
 
     try {
@@ -197,7 +193,12 @@ export const scrollIntoViewCallScript = (xpath, topOffset, leftOffset, done) => 
     }
 };
 
-export const scrollIntoViewIfNeededCallScript = (xpath, topOffset, leftOffset, done) => {
+export const scrollIntoViewIfNeededCallScript = (
+    xpath,
+    topOffset,
+    leftOffset,
+    done,
+) => {
     // eslint-disable-next-line sonarjs/no-identical-functions
     function getElementByXPath(xpath) {
         const element = document.evaluate(
@@ -217,13 +218,10 @@ export const scrollIntoViewIfNeededCallScript = (xpath, topOffset, leftOffset, d
 
     // eslint-disable-next-line sonarjs/no-identical-functions
     function isScrollable(el) {
-        const hasScrollableContent =
-            el.scrollHeight > el.clientHeight;
+        const hasScrollableContent = el.scrollHeight > el.clientHeight;
 
-        const overflowYStyle = window.getComputedStyle(el)
-            .overflowY;
-        const isOverflowHidden =
-            overflowYStyle.indexOf('hidden') !== -1;
+        const overflowYStyle = window.getComputedStyle(el).overflowY;
+        const isOverflowHidden = overflowYStyle.indexOf('hidden') !== -1;
 
         return hasScrollableContent && !isOverflowHidden;
     }
@@ -231,55 +229,39 @@ export const scrollIntoViewIfNeededCallScript = (xpath, topOffset, leftOffset, d
     // eslint-disable-next-line sonarjs/no-identical-functions
     function getScrollableParent(el) {
         // eslint-disable-next-line no-nested-ternary
-        return !el ||
-        el === document.scrollingElement ||
-        document.body
+        return !el || el === document.scrollingElement || document.body
             ? document.scrollingElement || document.body
             : isScrollable(el)
-                ? el
-                : getScrollableParent(el.parentNode);
+            ? el
+            : getScrollableParent(el.parentNode);
     }
 
-    function scrollIntoViewIfNeeded(
-        element,
-        topOffset,
-        leftOffset,
-    ) {
+    function scrollIntoViewIfNeeded(element, topOffset, leftOffset) {
         const parent = element.parentNode;
         const scrollableParent = getScrollableParent(element);
-        const parentComputedStyle = window.getComputedStyle(
-            parent,
-            null,
-        );
+        const parentComputedStyle = window.getComputedStyle(parent, null);
         /* eslint-disable max-len */
         const parentBorderTopWidth =
-            parseInt(
-                parentComputedStyle.getPropertyValue(
-                    'border-top-width',
-                ),
-            ) + topOffset;
+            parseInt(parentComputedStyle.getPropertyValue('border-top-width')) +
+            topOffset;
         const parentBorderLeftWidth =
             parseInt(
-                parentComputedStyle.getPropertyValue(
-                    'border-left-width',
-                ),
+                parentComputedStyle.getPropertyValue('border-left-width'),
             ) + leftOffset;
-        const overTop =
-            element.offsetTop - parent.offsetTop < parent.scrollTop;
+        const overTop = element.offsetTop - parent.offsetTop < parent.scrollTop;
         const overBottom =
             element.offsetTop -
-            parent.offsetTop +
-            element.clientHeight -
-            parentBorderTopWidth >
+                parent.offsetTop +
+                element.clientHeight -
+                parentBorderTopWidth >
             parent.scrollTop + parent.clientHeight;
         const overLeft =
-            element.offsetLeft - parent.offsetLeft <
-            parent.scrollLeft;
+            element.offsetLeft - parent.offsetLeft < parent.scrollLeft;
         const overRight =
             element.offsetLeft -
-            parent.offsetLeft +
-            element.clientWidth -
-            parentBorderLeftWidth >
+                parent.offsetLeft +
+                element.clientWidth -
+                parentBorderLeftWidth >
             parent.scrollLeft + parent.clientWidth;
         /* eslint-enable max-len */
 
@@ -294,11 +276,7 @@ export const scrollIntoViewIfNeededCallScript = (xpath, topOffset, leftOffset, d
 
         if (element) {
             if (topOffset || leftOffset) {
-                scrollIntoViewIfNeeded(
-                    element,
-                    topOffset,
-                    leftOffset,
-                );
+                scrollIntoViewIfNeeded(element, topOffset, leftOffset);
             } else {
                 element.scrollIntoViewIfNeeded();
             }

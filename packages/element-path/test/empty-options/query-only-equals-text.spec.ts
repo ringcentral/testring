@@ -58,8 +58,7 @@ describe("empty options ElementPath root['={Text element}']", () => {
                         anyKey: true,
                         equalsText: 'Text element',
                     },
-                    xpath:
-                        '/descendant::*[@data-test-automation-id and . = "Text element"]',
+                    xpath: '/descendant::*[@data-test-automation-id and . = "Text element"]',
                 },
             ]),
         });

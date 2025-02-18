@@ -57,10 +57,8 @@ export class FSStoreServer extends PluggableModule {
     private unHookCleanWorkerTransport: (() => void) | null = null;
     private defaultFsPermisionPool: LockPool;
 
-    private files: Record<
-        string,
-        [FilePermissionResolver, cleanUpCBRecord]
-    > = {};
+    private files: Record<string, [FilePermissionResolver, cleanUpCBRecord]> =
+        {};
     private inWorkRequests: Record<
         string,
         Record<string, [fsReqType, string]>

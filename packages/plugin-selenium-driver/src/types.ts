@@ -1,4 +1,4 @@
-import { Capabilities } from '@wdio/types';
+import {Capabilities} from '@wdio/types';
 
 export type SeleniumPluginConfig = Capabilities.WebdriverIOConfig & {
     chromeDriverPath?: string;

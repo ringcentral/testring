@@ -24,7 +24,8 @@ import {extensionId} from '@testring/devtool-extension';
 
 export class DevtoolServerController
     extends PluggableModule
-    implements IDevtoolServerController {
+    implements IDevtoolServerController
+{
     private workerID: string;
 
     private worker: IChildProcessFork;

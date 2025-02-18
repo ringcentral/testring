@@ -5,9 +5,7 @@ import {ITestRunController} from './test-run-controller';
 import {IPluggableModule} from './pluggable-module';
 import {IBrowserProxyController} from './browser-proxy';
 import {IHttpClient} from './http-api';
-import {
-    IHttpServerController,
-} from './devtool-backend';
+import {IHttpServerController} from './devtool-backend';
 
 export type PluginConfig = object | null;
 

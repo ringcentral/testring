@@ -8,7 +8,9 @@ import {FSReader} from '../src/fs-reader';
 import * as process from 'node:process';
 import * as fs from 'node:fs';
 
-const runPerformanceTests = process.env.PERFORMANCE_TESTS === 'true' || process.argv.includes('--performance');
+const runPerformanceTests =
+    process.env.PERFORMANCE_TESTS === 'true' ||
+    process.argv.includes('--performance');
 const glob = path.resolve(__dirname, './fixtures/testfiles/**/**/*.test.js');
 
 const writeTestFiles = async (count: number) => {
@@ -28,10 +30,9 @@ const removeTestFiles = async () => {
     const dir = path.resolve(__dirname, './fixtures/testfiles/performance');
 
     if (fs.existsSync(dir)) {
-        await fs.promises.rm(dir, { recursive: true, force: true });
+        await fs.promises.rm(dir, {recursive: true, force: true});
     }
 };
-
 
 describe('Performance', function () {
     this.timeout(120000);
@@ -41,7 +42,6 @@ describe('Performance', function () {
         });
     } else {
         describe('FSReader', () => {
-
             before(async () => {
                 await writeTestFiles(15000);
             });

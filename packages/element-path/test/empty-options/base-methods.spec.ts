@@ -18,7 +18,8 @@ describe('base methods', () => {
         it('set property', () => {
             const dummy = createElementPath();
 
-            const setter = () => (dummy.test = 123 as unknown as ElementPathProxy);
+            const setter = () =>
+                (dummy.test = 123 as unknown as ElementPathProxy);
             expect(setter).to.throw(TypeError, 'Immutable object');
         });
 

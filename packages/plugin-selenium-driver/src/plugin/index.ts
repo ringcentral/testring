@@ -1,5 +1,9 @@
 import {SeleniumPluginConfig} from '../types';
-import {IBrowserProxyPlugin, SavePdfOptions, WindowFeaturesConfig} from '@testring/types';
+import {
+    IBrowserProxyPlugin,
+    SavePdfOptions,
+    WindowFeaturesConfig,
+} from '@testring/types';
 
 import {ChildProcess} from 'child_process';
 
@@ -12,10 +16,7 @@ import {getCrxBase64} from '@testring/dwnld-collector-crx';
 import {CDPCoverageCollector} from '@nullcc/code-coverage-client';
 
 import type {Cookie} from '@wdio/protocols';
-import type {
-    ClickOptions,
-    MockFilterOptions,
-} from 'webdriverio';
+import type {ClickOptions, MockFilterOptions} from 'webdriverio';
 import type {JsonCompatible} from '@wdio/types';
 import type {RespondWithOptions} from 'webdriverio/build/utils/interception/types';
 import webdriver from 'webdriver';
@@ -43,7 +44,7 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
             // for local ChromeDriver
             args: [] as string[],
         },
-        'wdio:enforceWebDriverClassic': true
+        'wdio:enforceWebDriverClassic': true,
     },
     cdpCoverage: false,
 };
@@ -106,7 +107,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             mergedConfig.hostname = mergedConfig.host;
         }
 
-        const googleChromeOptions = mergedConfig.capabilities?.['goog:chromeOptions'];
+        const googleChromeOptions =
+            mergedConfig.capabilities?.['goog:chromeOptions'];
         if (googleChromeOptions?.args?.includes('--headless=new')) {
             const extensions = googleChromeOptions.extensions;
             const dowldMonitorCrx = getCrxBase64();
@@ -439,7 +441,6 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
 
         if (this.localSelenium) {
-
             // remove listener
             if (this.localSelenium.stderr) {
                 this.localSelenium.stderr.removeAllListeners('data');
@@ -451,7 +452,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             this.localSelenium.stderr?.destroy();
             this.localSelenium.stdin?.destroy();
 
-            this.logger.debug(`Stopping local Selenium server (PID: ${this.localSelenium.pid})`);
+            this.logger.debug(
+                `Stopping local Selenium server (PID: ${this.localSelenium.pid})`,
+            );
 
             // Try SIGTERM first
             this.localSelenium.kill('SIGTERM');
@@ -468,7 +471,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             const forceKill = new Promise<void>((resolve) => {
                 setTimeout(() => {
                     if (!this.localSelenium.killed) {
-                        this.logger.warn(`Selenium did not exit in time. Sending SIGKILL.`);
+                        this.logger.warn(
+                            `Selenium did not exit in time. Sending SIGKILL.`,
+                        );
                         this.localSelenium.kill('SIGKILL');
                     }
                     resolve();
@@ -480,10 +485,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
             this.localSelenium.removeAllListeners();
 
-            this.logger.debug('Selenium process and all associated pipes closed.');
+            this.logger.debug(
+                'Selenium process and all associated pipes closed.',
+            );
         }
     }
-
 
     public async refresh(applicant: string) {
         await this.createClient(applicant);
@@ -501,7 +507,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         const element = await client.$(selector);
-        return options && Object.keys(options).length > 0 ? element.click(options) : element.click();
+        return options && Object.keys(options).length > 0
+            ? element.click(options)
+            : element.click();
     }
 
     public async getSize(applicant: string, selector: string) {
@@ -1164,7 +1172,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.savePDF(filepath, restOptions);
     }
 
-    public async addValue(applicant: string, xpath: string, value: string|number) {
+    public async addValue(
+        applicant: string,
+        xpath: string,
+        value: string | number,
+    ) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
@@ -1188,7 +1200,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return selector.isClickable();
     }
 
-    public async waitForClickable(applicant: string, xpath: string, timeout: number) {
+    public async waitForClickable(
+        applicant: string,
+        xpath: string,
+        timeout: number,
+    ) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
@@ -1212,7 +1228,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return selector.isStable();
     }
 
-    public async waitForEnabled(applicant: string, xpath: string, timeout: number) {
+    public async waitForEnabled(
+        applicant: string,
+        xpath: string,
+        timeout: number,
+    ) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
@@ -1220,7 +1240,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return selector.waitForEnabled({timeout});
     }
 
-    public async waitForStable(applicant: string, xpath: string, timeout: number) {
+    public async waitForStable(
+        applicant: string,
+        xpath: string,
+        timeout: number,
+    ) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 

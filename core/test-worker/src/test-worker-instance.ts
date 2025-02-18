@@ -260,11 +260,12 @@ export class TestWorkerInstance implements ITestWorkerInstance {
                 completeHandler,
             );
         } else {
-            removeListener = this.transport.onceFrom<ITestExecutionCompleteMessage>(
-                this.getWorkerID(),
-                TestWorkerAction.executionComplete,
-                completeHandler,
-            );
+            removeListener =
+                this.transport.onceFrom<ITestExecutionCompleteMessage>(
+                    this.getWorkerID(),
+                    TestWorkerAction.executionComplete,
+                    completeHandler,
+                );
         }
 
         this.successTestExecution = () => {

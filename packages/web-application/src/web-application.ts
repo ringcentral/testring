@@ -14,7 +14,8 @@ import {
     IWebApplicationRegisterCompleteMessage,
     WebApplicationDevtoolCallback,
     ExtensionPostMessageTypes,
-    FSFileLogType, SavePdfOptions,
+    FSFileLogType,
+    SavePdfOptions,
 } from '@testring/types';
 
 import {asyncBreakpoints} from '@testring/async-breakpoints';
@@ -28,9 +29,10 @@ import {WebClient} from './web-client';
 import * as utils from './utils';
 import {
     getOptionsPropertyScript,
-    scrollIntoViewCallScript, scrollIntoViewIfNeededCallScript,
-    simulateJSFieldChangeScript
-} from "./browser-scripts";
+    scrollIntoViewCallScript,
+    scrollIntoViewIfNeededCallScript,
+    simulateJSFieldChangeScript,
+} from './browser-scripts';
 
 type valueType = string | number | null | undefined;
 
@@ -279,14 +281,16 @@ export class WebApplication extends PluggableModule {
         savePDF(options: SavePdfOptions) {
             return `Save PDF to ${options.filepath}`;
         },
-        addValue(xpath, value: string|number) {
+        addValue(xpath, value: string | number) {
             return `Add value ${value} to ${this.formatXpath(xpath)}`;
         },
         doubleClick(xpath) {
             return `Double click on ${this.formatXpath(xpath)}`;
         },
         waitForClickable(xpath, timeout = this.WAIT_TIMEOUT) {
-            return `Wait for clickable ${this.formatXpath(xpath)} for ${timeout}`;
+            return `Wait for clickable ${this.formatXpath(
+                xpath,
+            )} for ${timeout}`;
         },
         isClickable(xpath) {
             return `Is clickable ${this.formatXpath(xpath)}`;
@@ -339,10 +343,8 @@ export class WebApplication extends PluggableModule {
         }
 
         const promiseGetter = (self, logFn, errorFn, originMethod, args) => {
-            let errorLogInterceptor: (
-                err: Error,
-                ...args: any
-            ) => string = errorFn;
+            let errorLogInterceptor: (err: Error, ...args: any) => string =
+                errorFn;
 
             // eslint-disable-next-line no-async-promise-executor
             const promise = new Promise(async (resolve, reject) => {
@@ -575,7 +577,9 @@ export class WebApplication extends PluggableModule {
             return this.getRootSelector().toString();
         }
 
-        return (selector as ElementPathProxy).toString(allowMultipleNodesInResult);
+        return (selector as ElementPathProxy).toString(
+            allowMultipleNodesInResult,
+        );
     }
 
     protected async asyncErrorHandler(error) {
@@ -606,8 +610,7 @@ export class WebApplication extends PluggableModule {
                     if (addHighlightXpath) {
                         window.postMessage(
                             {
-                                type:
-                                    ExtensionPostMessageTypes.ADD_XPATH_HIGHLIGHT,
+                                type: ExtensionPostMessageTypes.ADD_XPATH_HIGHLIGHT,
                                 xpath: addHighlightXpath,
                             },
                             '*',
@@ -864,7 +867,9 @@ export class WebApplication extends PluggableModule {
         let vPos = 0;
 
         if (typeof options?.x === 'string' || typeof options?.y === 'string') {
-            const {width, height} = await this.client.getSize(normalizedSelector);
+            const {width, height} = await this.client.getSize(
+                normalizedSelector,
+            );
 
             switch (options?.x) {
                 case 'left':
@@ -1051,11 +1056,7 @@ export class WebApplication extends PluggableModule {
 
         xpath = this.normalizeSelector(xpath);
 
-        return this.client.executeAsync(
-            getOptionsPropertyScript,
-            xpath,
-            prop,
-        );
+        return this.client.executeAsync(getOptionsPropertyScript, xpath, prop);
     }
 
     public async getSelectTexts(
@@ -1717,23 +1718,24 @@ export class WebApplication extends PluggableModule {
 
     private async unregisterAppInDevtool(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            const removeListener = this.transport.on<IWebApplicationRegisterCompleteMessage>(
-                WebApplicationDevtoolActions.unregisterComplete,
-                // eslint-disable-next-line sonarjs/no-identical-functions
-                (message) => {
-                    if (message.id === this.applicationId) {
-                        if (
-                            message.error === null ||
-                            message.error === undefined
-                        ) {
-                            resolve();
-                        } else {
-                            reject(message.error);
+            const removeListener =
+                this.transport.on<IWebApplicationRegisterCompleteMessage>(
+                    WebApplicationDevtoolActions.unregisterComplete,
+                    // eslint-disable-next-line sonarjs/no-identical-functions
+                    (message) => {
+                        if (message.id === this.applicationId) {
+                            if (
+                                message.error === null ||
+                                message.error === undefined
+                            ) {
+                                resolve();
+                            } else {
+                                reject(message.error);
+                            }
+                            removeListener();
                         }
-                        removeListener();
-                    }
-                },
-            );
+                    },
+                );
 
             const payload: IWebApplicationRegisterMessage = {
                 id: this.applicationId,
@@ -1931,7 +1933,11 @@ export class WebApplication extends PluggableModule {
         return this.client.savePDF(options);
     }
 
-    public async addValue(xpath, value: string|number, timeout: number = this.WAIT_TIMEOUT) {
+    public async addValue(
+        xpath,
+        value: string | number,
+        timeout: number = this.WAIT_TIMEOUT,
+    ) {
         await this.waitForExist(xpath, timeout);
         xpath = this.normalizeSelector(xpath);
         return this.client.addValue(xpath, value);

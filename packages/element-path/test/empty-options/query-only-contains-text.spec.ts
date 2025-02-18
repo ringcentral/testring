@@ -58,8 +58,7 @@ describe("empty options ElementPath root['{Text element}']", () => {
                         anyKey: true,
                         containsText: 'Text element',
                     },
-                    xpath:
-                        '/descendant::*[@data-test-automation-id and contains(., "Text element")]',
+                    xpath: '/descendant::*[@data-test-automation-id and contains(., "Text element")]',
                 },
             ]),
         });
