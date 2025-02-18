@@ -1,5 +1,7 @@
 import {Capabilities} from '@wdio/types';
 
+export type SeleniumVersion = 'v3' | 'v4';
+
 export type SeleniumPluginConfig = Capabilities.WebdriverIOConfig & {
     chromeDriverPath?: string;
     recorderExtension: boolean;
@@ -9,4 +11,5 @@ export type SeleniumPluginConfig = Capabilities.WebdriverIOConfig & {
     desiredCapabilities?: Capabilities.RequestedStandaloneCapabilities[]; // fallback for configuration. In WebdriverIO 5 field renamed
     cdpCoverage: boolean;
     workerLimit?: number | 'local';
+    version?: SeleniumVersion;
 };
