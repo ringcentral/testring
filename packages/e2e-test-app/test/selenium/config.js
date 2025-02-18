@@ -41,6 +41,7 @@ module.exports = async (config) => {
         retryCount: 0,
         testTimeout: local ? 0 : config.testTimeout,
         tests: 'test/selenium/test/**/*.spec.js',
+        logLevel: 'verbose',
         plugins: [
             [
                 'selenium-driver',
@@ -48,6 +49,7 @@ module.exports = async (config) => {
                     clientTimeout: local ? 0 : config.testTimeout,
                     path: '/wd/hub',
                     chromeDriverPath: chromedriver.executablePath,
+                    version: 'v4',
                     capabilities: local
                         ? {
                               'goog:chromeOptions': {

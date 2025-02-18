@@ -1,4 +1,4 @@
-import {SeleniumPluginConfig} from '../types';
+import {SeleniumPluginConfig, SeleniumVersion} from '../types';
 import {
     IBrowserProxyPlugin,
     SavePdfOptions,
@@ -20,6 +20,7 @@ import type {ClickOptions, MockFilterOptions} from 'webdriverio';
 import type {JsonCompatible} from '@wdio/types';
 import type {RespondWithOptions} from 'webdriverio/build/utils/interception/types';
 import webdriver from 'webdriver';
+import * as path from 'path';
 
 type BrowserObjectCustom = WebdriverIO.Browser & {
     sessionId: string;
@@ -47,6 +48,7 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
         'wdio:enforceWebDriverClassic': true,
     },
     cdpCoverage: false,
+    version: 'v3' as SeleniumVersion,
 };
 
 function delay(timeout) {
@@ -172,37 +174,92 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return [`-Dwebdriver.chrome.driver=${chromeDriverPath}`];
     }
 
-    private async runLocalSelenium() {
-        const seleniumServer = require('selenium-server');
-        const seleniumJarPath = seleniumServer.path;
-        this.logger.debug('Init local selenium server');
+    private getSeleniumJarPath(): string {
+        if (this.config.version === 'v4') {
+            const jarPath = path.resolve(
+                __dirname,
+                '../../selenium-4/selenium-server-4.28.1.jar'
+            );
+            
+            // Check if file exists synchronously before attempting to use it
+            if (!require('fs').existsSync(jarPath)) {
+                throw new Error('Selenium v4 jar file not found. Please ensure the file exists at the specified path.');
+            }
+            
+            return jarPath;
+        }
+        
+        return require('selenium-server').path;
+    }
 
+    private buildSeleniumArgs(seleniumJarPath: string): string[] {
+        const args = [
+            ...this.getChromeDriverArgs(),
+            '-jar',
+            seleniumJarPath,
+        ];
+
+        if (this.config.version === 'v4') {
+            args.push(
+                'standalone',
+                '--port', this.config.port?.toString() || '4444',
+                '--bind-host', 'false'
+            );
+        } else {
+            args.push('-port', this.config.port?.toString() || '4444');
+        }
+
+        return args;
+    }
+
+    private setupProcessListeners(resolve: () => void, reject: (error: Error) => void): void {
+        if (!this.localSelenium.stderr) {
+            reject(new Error('There is no STDERR on selenium worker'));
+            return;
+        }
+
+        this.localSelenium.stderr.on('data', (data) => {
+            const message = data.toString();
+            this.logger.verbose(message);
+
+            if (message.includes('SeleniumServer.boot') || message.includes('Started Selenium Standalone')) {
+                delay(500).then(resolve);
+            }
+        });
+
+        // Add error handler
+        this.localSelenium.on('error', (error) => {
+            this.logger.error('Selenium process error:', error);
+            reject(error);
+        });
+    }
+
+    private async runLocalSelenium(): Promise<void> {
         try {
-            this.localSelenium = spawnWithPipes('java', [
-                ...this.getChromeDriverArgs(),
-                '-jar',
-                seleniumJarPath,
-                '-port',
-                this.config.port,
-            ]);
+            const seleniumJarPath = this.getSeleniumJarPath();
+            const args = this.buildSeleniumArgs(seleniumJarPath);
+
+            this.logger.debug('Init local selenium server');
+            this.logger.debug(`Command: ${['java', ...args].join(' ')}`);
+
+            this.localSelenium = spawnWithPipes('java', args);
 
             this.waitForReadyState = new Promise((resolve, reject) => {
-                if (this.localSelenium.stderr) {
-                    this.localSelenium.stderr.on('data', (data) => {
-                        const message = data.toString();
+                this.setupProcessListeners(resolve, reject);
 
-                        this.logger.verbose(message);
+                // Add timeout to prevent hanging
+                const timeout = setTimeout(() => {
+                    reject(new Error('Selenium server failed to start within 30 seconds'));
+                }, 30000);
 
-                        if (message.includes('SeleniumServer.boot')) {
-                            delay(500).then(resolve);
-                        }
-                    });
-                } else {
-                    reject(new Error('There is no STDERR on selenium worker'));
-                }
+                // Clear timeout on success
+                this.localSelenium.stderr?.once('data', () => clearTimeout(timeout));
             });
+
+            await this.waitForReadyState;
         } catch (err) {
             this.logger.error('Local selenium server init failed', err);
+            throw err; // Re-throw to allow proper error handling upstream
         }
     }
 
