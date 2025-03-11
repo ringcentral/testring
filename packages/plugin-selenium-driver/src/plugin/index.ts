@@ -5,7 +5,7 @@ import {
     WindowFeaturesConfig,
 } from '@testring/types';
 
-import {ChildProcess} from 'child_process';
+import {ChildProcess, exec} from 'child_process';
 
 import {remote} from 'webdriverio';
 import * as deepmerge from 'deepmerge';
@@ -475,6 +475,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                             `Selenium did not exit in time. Sending SIGKILL.`,
                         );
                         this.localSelenium.kill('SIGKILL');
+                        this.killProcess();
                     }
                     resolve();
                 }, 3000);
@@ -489,6 +490,38 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 'Selenium process and all associated pipes closed.',
             );
         }
+    }
+
+    public async killProcess() {
+        const command = "ps aux | grep '[c]hromedriver' | awk '{print $2}'";
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                this.logger.error(`Error executing command: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                this.logger.error(`Error output: ${stderr}`);
+                return;
+            }
+            const pids = stdout.trim().split('\n').filter((pid) => pid);
+            if (pids.length === 0) {
+                this.logger.debug('No ChromeDriver processes found.');
+            } else {
+                this.logger.debug(`Killing ChromeDriver processes with PIDs: ${pids.join(', ')}`);
+                const killCommand = `kill -9 ${pids.join(' ')}`;
+                exec(killCommand, (killError, killStdout, killStderr) => {
+                    if (killError) {
+                        this.logger.error(`Error killing processes: ${killError.message}`);
+                        return;
+                    }
+                    if (killStderr) {
+                        this.logger.error(`Error output while killing: ${killStderr}`);
+                        return;
+                    }
+                    this.logger.debug('Successfully killed ChromeDriver processes.');
+                });
+            }
+        });
     }
 
     public async refresh(applicant: string) {
