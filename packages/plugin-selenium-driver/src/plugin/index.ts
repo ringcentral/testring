@@ -495,7 +495,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     public killProcess() {
         let result = execSync("ps aux | grep '[c]hromedriver' | awk '{print $2}'");
-        let pids = result.toString().trim().split('\n').filter((pid) => pid).join(' ');
+        const pids = result.toString().trim().split('\n').filter((pid) => pid).join(' ');
         if (pids && pids.length > 0) {
             this.logger.debug(`Killing ChromeDriver processes with PIDs: ${pids}...`);
             result = execSync(`kill -9 ${pids}`);
