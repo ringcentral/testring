@@ -5,7 +5,7 @@ import {
     WindowFeaturesConfig,
 } from '@testring/types';
 
-import {ChildProcess, exec} from 'child_process';
+import {ChildProcess, execSync} from 'child_process';
 
 import {remote} from 'webdriverio';
 import * as deepmerge from 'deepmerge';
