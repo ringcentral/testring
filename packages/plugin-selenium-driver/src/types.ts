@@ -9,4 +9,5 @@ export type SeleniumPluginConfig = Capabilities.WebdriverIOConfig & {
     desiredCapabilities?: Capabilities.RequestedStandaloneCapabilities[]; // fallback for configuration. In WebdriverIO 5 field renamed
     cdpCoverage: boolean;
     workerLimit?: number | 'local';
+    disableClientPing?: boolean;
 };
