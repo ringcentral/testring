@@ -47,6 +47,7 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
         'wdio:enforceWebDriverClassic': true,
     },
     cdpCoverage: false,
+    disableClientPing: false,
 };
 
 function delay(timeout) {
@@ -123,7 +124,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     private initIntervals() {
-        if (this.config.workerLimit !== 'local') {
+        if (this.config.workerLimit !== 'local' && !this.config.disableClientPing) {
             if (this.config.clientCheckInterval > 0) {
                 this.clientCheckInterval = setInterval(
                     () => this.checkClientsTimeout(),

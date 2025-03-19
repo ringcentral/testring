@@ -20,6 +20,7 @@
     "@types/request-promise-native": "1.0.21",
     "@types/tough-cookie": "4.0.5",
     "request-promise-native": "1.0.9",
-    "tough-cookie": "4.1.4"
+    "tough-cookie": "4.1.4",
+    "request": "2.88.2"
   }
 }
