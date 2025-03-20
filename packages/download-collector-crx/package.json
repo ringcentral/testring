@@ -1,6 +1,6 @@
 {
     "name": "@testring/dwnld-collector-crx",
-    "version": "0.7.3",
+    "version": "0.7.4",
     "main": "./dist/index.js",
     "types": "./index.d.ts",
     "repository": {
