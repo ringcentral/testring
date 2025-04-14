@@ -420,7 +420,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 },
             );
         }
-
+        // Empirically: pause after close() to let Selenium kill ChromeDriver cleanly (no zombie process).
+        if (this.config.delayAfterSessionClose) {
+            await delay(this.config.delayAfterSessionClose);
+        }
         this.browserClients.delete(applicant);
     }
 

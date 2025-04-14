@@ -10,4 +10,5 @@ export type SeleniumPluginConfig = Capabilities.WebdriverIOConfig & {
     cdpCoverage: boolean;
     workerLimit?: number | 'local';
     disableClientPing?: boolean;
+    delayAfterSessionClose?: number;
 };
