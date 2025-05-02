@@ -14,7 +14,9 @@ describe('foo.xpathByElement()', () => {
     const root = createElementPath({
         strictMode: false,
     });
-    const xpathSelectorCall = root.foo.xpathByElement({
+    const fooElement = root['foo'];
+    if (!fooElement) throw new Error('Element not found');
+    const xpathSelectorCall = fooElement.xpathByElement({
         id: 'selected',
         locator: "//*[@class='selected']",
         parent: 'bar',

@@ -97,15 +97,21 @@ describe('find children method', () => {
         });
 
         it('query from already index', () => {
-            const error = () => root.foo[0].__findChildren({index: 1});
+            const error = () => {
+                const element = root['foo']?.[0];
+                if (!element) throw new Error('Element not found');
+                return element.__findChildren({index: 1});
+            };
             expect(error).to.throw(
                 'Can not select index element from already sliced element',
             );
         });
 
         it('query from already index', () => {
+            const element = root['foo'];
+            if (!element) throw new Error('Element not found');
             expect(
-                root.foo.__findChildren({index: 1}).__getReversedChain(),
+                element.__findChildren({index: 1}).__getReversedChain(),
             ).to.be.equal('root.foo[1]');
         });
     });

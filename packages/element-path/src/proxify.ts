@@ -1,6 +1,6 @@
 /* eslint-disable prefer-spread,prefer-rest-params */
 import {hasOwn, isGenKeyType} from './utils';
-import {ElementPath} from './element-path';
+import {ElementPath, SearchObject} from './element-path';
 
 type KeyType = string | number | symbol;
 
@@ -61,12 +61,12 @@ export function proxify(instance: ElementPath, strictMode = true) {
         );
     }
 
-    function getReflectedProperty(key, ctx = instance) {
+    function getReflectedProperty(key: KeyType, ctx = instance) {
         const item = Reflect.get(instance, key);
 
         if (typeof item === 'function') {
             return new Proxy(item, {
-                apply: (target, thisArg, argumentsList) => {
+                apply: (_target, thisArg, argumentsList) => {
                     if (thisArg === proxy) {
                         return Reflect.get(ctx, key).apply(
                             instance,
@@ -90,7 +90,7 @@ export function proxify(instance: ElementPath, strictMode = true) {
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    function getTrap(target: ElementPath, key: KeyType): any {
+    function getTrap(target: ElementPath, key: string | symbol, receiver: any): any {
         if (key === '') {
             throw new TypeError('Key can not me empty');
         }
@@ -98,80 +98,74 @@ export function proxify(instance: ElementPath, strictMode = true) {
         if (
             typeof key === 'string' &&
             PROXY_PROPS.includes(key) &&
-            instance.hasFlow(key)
+            target.hasFlow(key)
         ) {
             throw new TypeError(
                 `flow function and property ${key} are conflicts`,
             );
         }
 
-        if (hasOwn(instance, key) && typeof key !== 'symbol') {
-            return proxify(instance.generateChildElementsPath(key), strictMode);
+        if (hasOwn(target, key) && typeof key !== 'symbol') {
+            return proxify(target.generateChildElementsPath(key), strictMode);
         }
 
         if (key === '__flows') {
-            return instance.getFlows();
+            return target.getFlows();
         }
 
         if (key === '__path') {
-            return instance.getElementPathChain();
+            return target.getElementPathChain();
         }
 
         if (key === '__parentPath') {
-            return instance.getParentElementPathChain();
+            return target.getParentElementPathChain();
         }
 
         if (key === '__searchOptions') {
-            return instance.getSearchOptions();
+            return target.getSearchOptions();
         }
 
         if (key === '__proxy') {
-            return proxy;
+            return receiver;
         }
 
         if (key === '__getInstance') {
-            return function __getInstance() {
-                if (this === proxy) {
-                    return instance;
+            return function __getInstance(this: ElementPath) {
+                if (this === receiver) {
+                    return target;
                 }
                 return this;
             };
         }
 
         if (key === '__getChildType') {
-            return function __getChildType() {
-                if (this === proxy) {
-                    return instance.getElementType.apply(instance, arguments);
+            return function __getChildType(this: ElementPath) {
+                if (this === receiver) {
+                    return target.getElementType();
                 }
-                return instance.getElementType.apply(this, arguments);
+                return target.getElementType();
             };
         }
 
         if (key === '__getReversedChain') {
-            return function __getReversedChain() {
-                if (this === proxy) {
-                    return instance.getReversedChain.apply(instance, arguments);
+            return function __getReversedChain(this: ElementPath, withRoot?: boolean) {
+                if (this === receiver) {
+                    return target.getReversedChain(withRoot);
                 }
-                return instance.getReversedChain.apply(this, arguments);
+                return target.getReversedChain(withRoot);
             };
         }
 
         if (key === '__findChildren') {
-            return function __findChildren() {
-                if (this === proxy) {
+            return function __findChildren(this: ElementPath, searchOptions: SearchObject, withoutParent?: boolean) {
+                if (this === receiver) {
                     return proxify(
-                        instance.generateChildElementPathByOptions.apply(
-                            instance,
-                            arguments,
-                        ),
+                        target.generateChildElementPathByOptions(searchOptions, withoutParent),
                         strictMode,
                     );
                 }
                 return proxify(
-                    instance.generateChildElementPathByOptions.apply(
-                        this,
-                        arguments,
-                    ),
+                    target.generateChildElementPathByOptions(searchOptions, withoutParent),
                     strictMode,
                 );
             };
@@ -195,7 +189,7 @@ export function proxify(instance: ElementPath, strictMode = true) {
                 }
 
                 return proxify(
-                    instance.generateChildByLocator({
+                    target.generateChildByLocator({
                         xpath: element.locator,
                         id: element.id,
                         parent: element.parent,
@@ -209,7 +203,7 @@ export function proxify(instance: ElementPath, strictMode = true) {
         if (key === 'xpathByElement') {
             return (element: XpathLocatorProxified) => {
                 return proxify(
-                    instance.generateChildByLocator({
+                    target.generateChildByLocator({
                         id: element.id,
                         xpath: element.locator,
                         parent: element.parent,
@@ -222,57 +216,57 @@ export function proxify(instance: ElementPath, strictMode = true) {
         if (key === 'xpath') {
             return (id: string, xpath: string) => {
                 return proxify(
-                    instance.generateChildByXpath({id, xpath}),
+                    target.generateChildByXpath({id, xpath}),
                     strictMode,
                 );
             };
         }
 
-        if (typeof key !== 'symbol' && instance.hasFlow(key)) {
-            return instance.getFlow(key);
+        if (typeof key !== 'symbol' && target.hasFlow(key)) {
+            return target.getFlow(key);
         }
 
-        if (key in instance) {
+        if (key in target) {
             return getReflectedProperty(key);
         }
 
         if (isGenKeyType(key) && typeof key !== 'symbol') {
-            return proxify(instance.generateChildElementsPath(key), strictMode);
+            return proxify(target.generateChildElementsPath(key), strictMode);
         }
     }
 
-    function hasTrap(target: ElementPath, key: KeyType): boolean {
+    function hasTrap(target: ElementPath, key: string | symbol): boolean {
         if (isGenKeyType(key)) {
             return true;
         }
 
-        return Reflect.has(instance, key);
+        return Reflect.has(target, key);
     }
 
-    function setTrap(target: ElementPath, key: KeyType, value: any): any {
+    function setTrap(_target: ElementPath, _key: string | symbol, _value: any, _receiver: any): boolean {
         throw new TypeError('Immutable object');
     }
 
-    function deleteTrap(target: ElementPath, key: KeyType): any {
+    function deleteTrap(_target: ElementPath, _key: string | symbol): boolean {
         throw new TypeError('Immutable object');
     }
 
     function ownKeysTrap(target: ElementPath): Array<string | symbol> {
-        return PROXY_OWN_PROPS.concat(Object.keys(instance.getFlows() || {}));
+        return PROXY_OWN_PROPS.concat(Object.keys(target.getFlows() || {}));
     }
 
     function defineOwnPropertyTrap(
-        target: ElementPath,
-        key: KeyType,
-        descriptor: PropertyDescriptor,
+        _target: ElementPath,
+        _key: string | symbol,
+        _descriptor: PropertyDescriptor,
     ): boolean {
         return false;
     }
 
     function getOwnPropertyDescriptorTrap(
         target: ElementPath,
-        key: KeyType,
-    ): PropertyDescriptor {
+        key: string | symbol,
+    ): PropertyDescriptor | undefined {
         const defaultDescriptor = {
             enumerable: false,
             writable: false,
@@ -282,20 +276,20 @@ export function proxify(instance: ElementPath, strictMode = true) {
         if (typeof key === 'string' && PROXY_PROPS.includes(key)) {
             return Object.assign(defaultDescriptor, {
                 enumerable: !isPrivateProperty(key),
-                value: getTrap(target, key),
+                value: getTrap(target, key, target),
             });
         }
 
-        if (typeof key !== 'symbol' && instance.hasFlow(key)) {
+        if (typeof key !== 'symbol' && target.hasFlow(key)) {
             return Object.assign(defaultDescriptor, {
                 enumerable: true,
-                value: instance.getFlow(key),
+                value: target.getFlow(key),
             });
         }
 
         if (isGenKeyType(key)) {
             return Object.assign(defaultDescriptor, {
-                value: getTrap(target, key),
+                value: getTrap(target, key, target),
             });
         }
 
@@ -303,18 +297,18 @@ export function proxify(instance: ElementPath, strictMode = true) {
     }
 
     function getPrototypeOfTrap(target: ElementPath): object | null {
-        return Reflect.getPrototypeOf(instance);
+        return Reflect.getPrototypeOf(target);
     }
 
-    function setPrototypeOfTrap(target: ElementPath, proto: object): any {
+    function setPrototypeOfTrap(_target: ElementPath, _proto: object): boolean {
         throw new TypeError('Immutable object');
     }
 
-    function isExtensibleTrap(target: ElementPath): boolean {
+    function isExtensibleTrap(_target: ElementPath): boolean {
         return false;
     }
 
-    function preventExtensionsTrap(target: ElementPath): boolean {
+    function preventExtensionsTrap(_target: ElementPath): boolean {
         return true;
     }
 

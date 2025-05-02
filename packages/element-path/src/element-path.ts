@@ -72,7 +72,7 @@ export class ElementPath {
             searchMask?: SearchMaskPrimitive | null;
             searchOptions?: SearchObject;
             attributeName?: string;
-            parent?: ElementPath;
+            parent?: ElementPath | null;
         } = {},
     ) {
         this.flows = options.flows || {};
@@ -81,7 +81,7 @@ export class ElementPath {
 
         this.parent = options.parent || null;
 
-        if (options.searchOptions && this.searchMask !== undefined) {
+        if (options.searchOptions && options.searchMask !== undefined) {
             throw Error('Only one search parameter allowed');
         } else if (
             (options.searchMask === undefined || options.searchMask === null) &&
@@ -114,7 +114,7 @@ export class ElementPath {
 
     // noinspection JSMethodCanBeStatic
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    protected parseMask(mask: string): SearchMaskObject {
+    protected parseMask(mask: string | undefined): SearchMaskObject {
         const maskFilter: SearchMaskObject = {};
 
         if (mask === '*' || mask === '' || mask === undefined) {
@@ -203,8 +203,11 @@ export class ElementPath {
         };
     }
 
-    protected parseQueryKey(key): SearchObject {
-        const parts = key.match(this.REGEXP.QUERY_RE);
+    protected parseQueryKey(key: SearchMaskPrimitive): SearchObject {
+        const parts = key.toString().match(this.REGEXP.QUERY_RE);
+        if (!parts) {
+            throw new TypeError('Invalid query key');
+        }
         const mask = parts[1];
         const textSearch = parts[2];
         const subQueryPart = parts[4];
@@ -266,6 +269,10 @@ export class ElementPath {
             // foo*bar
             const start = searchOptions.parts[0];
             const end = searchOptions.parts[1];
+
+            if (start === undefined || end === undefined) {
+                throw new TypeError('Both start and end parts must be defined');
+            }
 
             // Emulate ends-with method for xpath 1.0
             conditions.push(
@@ -348,7 +355,7 @@ export class ElementPath {
     /*
         Public methods
      */
-    private queryToString(query): string {
+    private queryToString(query: SearchObject): string {
         let key = '';
 
         if (query.prefix) {
@@ -503,7 +510,7 @@ export class ElementPath {
             return new ElementPath({
                 searchOptions: {...searchOptions},
                 flows: this.flows,
-                parent: withoutParent ? undefined : this,
+                parent: withoutParent ? null : this,
             });
         }
         return new ElementPath({
@@ -578,7 +585,10 @@ export class ElementPath {
         return (
             this.searchMask !== null &&
             hasOwn(this.flows, this.searchMask) &&
-            hasOwn(this.flows[this.searchMask], key)
+            (() => {
+                const flows = this.flows[this.searchMask];
+                return flows !== undefined && hasOwn(flows, key);
+            })()
         );
     }
 
@@ -603,7 +613,7 @@ export class ElementPath {
 
     public getFlows(): FlowsFnObject {
         if (this.searchMask && hasOwn(this.flows, this.searchMask)) {
-            return this.flows[this.searchMask];
+            return this.flows[this.searchMask] as FlowsFnObject;
         }
         return {};
     }

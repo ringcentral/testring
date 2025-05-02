@@ -22,7 +22,7 @@ export type ElementPathProxy = ElementPath & {
 export function createElementPath(options: createElementPathOptions = {}) {
     const {strictMode, flows} = options;
 
-    const obj = new ElementPath({flows});
+    const obj = new ElementPath({flows: flows || {}});
 
     return proxify(obj, strictMode) as ElementPathProxy;
 }

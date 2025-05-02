@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import {ElementPath} from '../src/element-path';
 
-export function getDescriptor(value) {
+export function getDescriptor(value: unknown) {
     return {
         configurable: true,
         enumerable: true,
@@ -10,7 +10,7 @@ export function getDescriptor(value) {
     };
 }
 
-export function getPrivateDescriptor(value) {
+export function getPrivateDescriptor(value: unknown) {
     return {
         configurable: true,
         enumerable: false,
@@ -19,7 +19,7 @@ export function getPrivateDescriptor(value) {
     };
 }
 
-export function checkProperty({object, key, valueDescriptor}) {
+export function checkProperty({object, key, valueDescriptor}: {object: any; key: string | symbol; valueDescriptor: PropertyDescriptor}) {
     const value = valueDescriptor.value;
 
     it('get', () => {
@@ -55,7 +55,7 @@ export function checkProperty({object, key, valueDescriptor}) {
     });
 }
 
-export function checkAccessMethods(object, options: any = {}) {
+export function checkAccessMethods(object: ElementPath, options: {keys?: string[]} = {}) {
     const {keys} = options;
 
     it('.ownKey() trap', () => {

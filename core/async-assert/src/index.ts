@@ -8,7 +8,7 @@ type AssertionAPI = typeof chai['assert'] & {
 };
 type WrappedPromisedAssertionApi = PromisedAssert & {
     [errorMessagesField]: Array<string>;
-};
+} & AssertionAPI;
 
 export function createAssertion(options: IAssertionOptions = {}) {
     const isSoft = options.isSoft === true;
@@ -16,15 +16,15 @@ export function createAssertion(options: IAssertionOptions = {}) {
         chai.use(plugin);
     }
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    const proxyGetter = (target, fieldName: string) => {
+    const proxyGetter = (target: AssertionAPI, fieldName: string) => {
         if (fieldName === errorMessagesField) {
             return target[errorMessagesField];
         }
 
         const typeOfAssert = isSoft ? 'softAssert' : 'assert';
 
-        const originalMethod = chai.assert[fieldName];
-        const methodAsString = target[fieldName]
+        const originalMethod = (chai.assert as any)[fieldName];
+        const methodAsString = (target as any)[fieldName]
             .toString()
             .replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/))/gm, '');
         const stringStart = methodAsString.indexOf('(') + 1;
@@ -33,7 +33,7 @@ export function createAssertion(options: IAssertionOptions = {}) {
             methodAsString.slice(stringStart, stringEnd).match(/([^\s,]+)/g) ||
             [];
 
-        return async (...args) => {
+        return async (...args: any[]) => {
             const successMessage =
                 originalMethod.length === args.length ? args.pop() : '';
             const assertArguments: Array<any> = [];
@@ -45,7 +45,7 @@ export function createAssertion(options: IAssertionOptions = {}) {
                     break;
                 }
 
-                const replacer = (k, v) =>
+                const replacer = (_k: any, v: any) =>
                     Object.prototype.toString.call(v) === '[object RegExp]'
                         ? v.toString()
                         : v;
@@ -72,10 +72,10 @@ export function createAssertion(options: IAssertionOptions = {}) {
                     });
                 }
             } catch (error) {
-                const errorMessage = error.message;
+                const errorMessage = (error as Error).message;
                 let handleError: void | Error | null = null;
 
-                error.message = successMessage || assertMessage || errorMessage;
+                (error as Error).message = successMessage || assertMessage || errorMessage;
 
                 if (options.onError) {
                     handleError = await options.onError({
@@ -90,7 +90,7 @@ export function createAssertion(options: IAssertionOptions = {}) {
                 }
 
                 if (!handleError) {
-                    handleError = error;
+                    handleError = error as Error;
                 }
 
                 if (isSoft) {

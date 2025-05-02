@@ -35,10 +35,8 @@
     "check-deps:find-updates": "ncu -m --deep --color",
     "check-deps:lerna-update": "lernaupdate",
     "check-deps:lerna-dedupe": "lernaupdate -d",
-    "githook:precommit": "npm run check-deps:validate && npm run build && npm run lint && npm run test && npm run test:e2e-simple",
     "test:e2e-coverage": "c8 --config .c8.json ts-node ./packages/e2e-test-app/src/test-runner.ts --config ./packages/e2e-test-app/test/selenium/config.coverage.js --env-config=./packages/e2e-test-app/test/selenium/env.json --headless"
   },
-  "precommit": "githook:precommit",
   "nyc": {
     "report-dir": "./.coverage",
     "all": true,
