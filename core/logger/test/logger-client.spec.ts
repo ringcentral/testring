@@ -177,7 +177,7 @@ describe('Logger client', () => {
             });
         } catch (err) {
             chai.expect(err).to.be.instanceOf(TypeError);
-            chai.expect(err.message).to.be.equal('Preventing');
+            chai.expect((err as Error).message).to.be.equal('Preventing');
         }
 
         loggerClient.log(...report);
@@ -207,7 +207,7 @@ describe('Logger client', () => {
             });
         } catch (err) {
             chai.expect(err).to.be.instanceOf(TypeError);
-            chai.expect(err.message).to.be.equal('Preventing');
+            chai.expect((err as Error).message).to.be.equal('Preventing');
         }
 
         loggerClient.log(...report);

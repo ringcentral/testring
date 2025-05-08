@@ -16,12 +16,12 @@ import {FSStoreServer} from '@testring/fs-store';
 class RunCommand implements ICLICommand {
     private logger = loggerClient;
 
-    private fsWriterQueueServer;
+    private fsWriterQueueServer!: FSStoreServer | null;
 
-    private webApplicationController: WebApplicationController;
-    private browserProxyController: BrowserProxyController;
-    private testRunController: TestRunController;
-    private httpServer: HttpServer;
+    private webApplicationController!: WebApplicationController;
+    private browserProxyController!: BrowserProxyController;
+    private testRunController!: TestRunController;
+    private httpServer!: HttpServer;
 
     private fsStoreServer: FSStoreServer;
 
@@ -33,7 +33,7 @@ class RunCommand implements ICLICommand {
         this.fsStoreServer = new FSStoreServer(config.maxWriteThreadCount);
     }
 
-    formatJSON(obj: object) {
+    formatJSON(obj: Record<string, any>) {
         const separator = '⋅';
         const padding = 20;
 
@@ -157,7 +157,15 @@ class RunCommand implements ICLICommand {
     }
 }
 
-export function runTests(config, transport, stdout) {
+interface RunTestsConfig extends IConfig {
+    tests: string;
+}
+
+export function runTests(
+    config: RunTestsConfig,
+    transport: ITransport,
+    stdout: NodeJS.WritableStream,
+): RunCommand {
     if (typeof config.tests !== 'string') {
         throw new Error('required field --tests in arguments or config');
     }

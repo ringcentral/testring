@@ -17,10 +17,10 @@ import {IFSStoreReq, IFSStoreResp, fsReqType} from '@testring/types';
 
 const msgNamePrefix = 'fs-st_test';
 
-const reqName = msgNamePrefix + FS_CONSTANTS.FS_REQ_NAME_POSTFIX;
-const respName = msgNamePrefix + FS_CONSTANTS.FS_RESP_NAME_POSTFIX;
-const releaseReqName = msgNamePrefix + FS_CONSTANTS.FS_RELEASE_NAME_POSTFIX;
-const cleanReqName = msgNamePrefix + FS_CONSTANTS.FS_CLEAN_REQ_NAME_POSTFIX;
+const reqName = msgNamePrefix + FS_CONSTANTS['FS_REQ_NAME_POSTFIX'];
+const respName = msgNamePrefix + FS_CONSTANTS['FS_RESP_NAME_POSTFIX'];
+const releaseReqName = msgNamePrefix + FS_CONSTANTS['FS_RELEASE_NAME_POSTFIX'];
+const cleanReqName = msgNamePrefix + FS_CONSTANTS['FS_CLEAN_REQ_NAME_POSTFIX'];
 
 describe('fs-store-server', () => {
     it('should init fss and test the transport lock', (done) => {
@@ -79,7 +79,7 @@ describe('fs-store-server', () => {
         onRelease &&
             onRelease.readHook(
                 'testRelease',
-                ({requestId, fileName, action}) => {
+                ({requestId, fileName, action}: { requestId: string; fileName: string; action: fsReqType }) => {
                     chai.expect(requestId).to.be.oneOf([
                         lockRequestID,
                         accessRequestID,

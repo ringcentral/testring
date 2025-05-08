@@ -110,31 +110,31 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
         return logEntry;
     }
 
-    public log(...args): void {
+    public log(...args: Array<any>): void {
         this.createLog(LogTypes.log, LogLevel.info, args);
     }
 
-    public info(...args): void {
+    public info(...args: Array<any>): void {
         this.createLog(LogTypes.info, LogLevel.info, args);
     }
 
-    public success(...args): void {
+    public success(...args: Array<any>): void {
         this.createLog(LogTypes.success, LogLevel.info, args);
     }
 
-    public warn(...args): void {
+    public warn(...args: Array<any>): void {
         this.createLog(LogTypes.warning, LogLevel.warning, args);
     }
 
-    public error(...args): void {
+    public error(...args: Array<any>): void {
         this.createLog(LogTypes.error, LogLevel.error, args);
     }
 
-    public debug(...args): void {
+    public debug(...args: Array<any>): void {
         this.createLog(LogTypes.debug, LogLevel.debug, args);
     }
 
-    public verbose(...args): void {
+    public verbose(...args: Array<any>): void {
         this.createLog(LogTypes.debug, LogLevel.verbose, args);
     }
 
@@ -146,7 +146,7 @@ export abstract class AbstractLoggerClient implements AbstractLoggerType {
         this.createLog(LogTypes.file, LogLevel.info, [filename, meta]);
     }
 
-    public media(...args): void {
+    public media(...args: Array<any>): void {
         this.createLog(LogTypes.media, LogLevel.info, args);
     }
 

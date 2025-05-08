@@ -3,7 +3,7 @@ import {IConfig} from '@testring/types';
 
 const RESTRICTED_FIELDS = ['_', '$0', 'version', 'help'];
 
-const firstLetterToUpperCase = (matches): string => matches[1].toUpperCase();
+const firstLetterToUpperCase = (matches: string): string => matches[1] ? matches[1].toUpperCase() : '';
 const toCamelCase = (string: string): string =>
     string.replace(/(-\w)/g, firstLetterToUpperCase);
 
@@ -22,7 +22,7 @@ function normalizeArg(arg: any): any {
 }
 
 function normalize(args: yargs.Arguments, isRoot: boolean): Partial<IConfig> {
-    const normalizedArgs = {};
+    const normalizedArgs: Record<string, any> = {};
 
     let arg;
 

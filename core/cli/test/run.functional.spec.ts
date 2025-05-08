@@ -5,6 +5,7 @@ import {Writable} from 'stream';
 import {getConfig} from '@testring/cli-config';
 import {Transport} from '@testring/transport';
 import {runTests} from '../src/commands/runCommand';
+import {IConfig} from '@testring/types';
 
 const fixturesPath = path.resolve(__dirname, './fixtures');
 const stdout = new Writable({
@@ -56,7 +57,7 @@ describe('testring CLI', () => {
         const transport = new Transport();
 
         try {
-            runTests({}, transport, stdout);
+            runTests({} as IConfig, transport, stdout);
             callback('Tests finished somehow');
         } catch {
             callback();

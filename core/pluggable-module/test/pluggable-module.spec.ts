@@ -10,7 +10,7 @@ class TestModule extends PluggableModule {
         super([TestModule.hookName]);
     }
 
-    call(...args) {
+    call(...args: { main?: number; mainExtra?: number; }[]) {
         return this.callHook(TestModule.hookName, ...args);
     }
 }
@@ -22,7 +22,7 @@ describe('PluggableModule', () => {
         const hook = testModule.getHook(TestModule.hookName);
 
         if (hook) {
-            hook.readHook('testPlugin', (data) => {
+            hook.readHook('testPlugin', (data: any) => {
                 chai.expect(data).to.be.equal(testData);
                 callback();
             });
@@ -37,7 +37,7 @@ describe('PluggableModule', () => {
         const hook = testModule.getHook(TestModule.hookName);
 
         if (hook) {
-            hook.writeHook('testPlugin', async (data) => {
+            hook.writeHook('testPlugin', async (data: any) => {
                 return {
                     ...data,
                     additional: 1,
@@ -71,7 +71,7 @@ describe('PluggableModule', () => {
         chai.expect(!!hook).to.be.true;
 
         if (hook) {
-            hook.writeHook('testPlugin1', async (data, dataExtra) => {
+            hook.writeHook('testPlugin1', async (data: any, dataExtra: any) => {
                 chai.expect(data).to.be.deep.equal(testData);
                 chai.expect(dataExtra).to.be.deep.equal(testDataExtra);
                 return {
@@ -80,7 +80,7 @@ describe('PluggableModule', () => {
                     ...additional,
                 };
             });
-            hook.writeHook('testPlugin2', async (data, dataExtra) => {
+            hook.writeHook('testPlugin2', async (data: any, dataExtra: any) => {
                 chai.expect(data).to.be.deep.equal(expectedResult);
                 chai.expect(dataExtra).to.be.deep.equal(testDataExtra);
                 return {

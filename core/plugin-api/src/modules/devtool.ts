@@ -2,7 +2,7 @@ import {AbstractAPI} from './abstract';
 import {DevtoolPluginHooks, IDevtoolServerConfig} from '@testring/types';
 
 export class DevtoolAPI extends AbstractAPI {
-    beforeStart(handler: (IRecorderServerConfig) => IDevtoolServerConfig) {
+    beforeStart(handler: (IRecorderServerConfig: any) => IDevtoolServerConfig) {
         this.registryWritePlugin(DevtoolPluginHooks.beforeStart, handler);
     }
 

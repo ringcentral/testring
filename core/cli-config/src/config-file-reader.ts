@@ -3,10 +3,13 @@ import * as path from 'path';
 import * as process from 'process';
 import {loggerClient} from '@testring/logger';
 import {requirePackage} from '@testring/utils';
-import {IConfig} from '@testring/types';
-
+import {IConfig as BaseConfig} from '@testring/types';
 import {mergeConfigs} from './merge-configs';
 import ProcessEnv = NodeJS.ProcessEnv;
+interface IConfig extends BaseConfig {
+    '@extend'?: string;
+}
+
 
 function findFile(configPath: string) {
     const filePath = path.resolve(configPath);
@@ -36,10 +39,12 @@ async function readJSConfig(
     } catch (exception) {
         const error = new SyntaxError(`
             Config file ${configPath} can't be parsed.
-            ${exception.message}
+            ${exception instanceof Error ? exception.message : 'Unknown error'}
         `);
 
-        error.stack = exception.stack;
+        if (exception instanceof Error && exception.stack) {
+            error.stack = exception.stack;
+        }
 
         throw error;
     }
@@ -57,7 +62,7 @@ async function readJSONConfig(configPath: string): Promise<IConfig | null> {
     } catch (exception) {
         throw new SyntaxError(`
             Config file ${configPath} can't be parsed: invalid JSON.
-            ${exception.message}
+            ${exception instanceof Error ? exception.message : 'Unknown error'}
         `);
     }
 }
@@ -96,7 +101,7 @@ async function readConfig(
     ) {
         const extendConfigPath = path.resolve(
             path.dirname(configPath),
-            configData['@extend'],
+            configData['@extend'] || '',
         );
         const extendConfig = (await readConfig(
             extendConfigPath,
@@ -107,7 +112,7 @@ async function readConfig(
             throw Error(`Config ${extendConfigPath} not found`);
         }
 
-        configData = mergeConfigs(extendConfig, configData);
+        configData = mergeConfigs(extendConfig, configData) as IConfig;
     }
 
     return configData;

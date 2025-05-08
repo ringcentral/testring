@@ -11,6 +11,11 @@ import {FSStoreFile} from '../src/fs-store-file';
 
 import {fsReqType, FSStoreType} from '@testring/types';
 
+interface ReadOptions {
+    action: fsReqType;
+    ffName: string;
+}
+
 const {readFile} = fs.promises;
 
 const prefix = 'fsf-test';
@@ -39,7 +44,7 @@ describe('fs-store-file', () => {
         onRelease &&
             onRelease.readHook(
                 'testRelease',
-                ({fileName, action, requestId, workerId}) => {
+                ({fileName}: { fileName: string; }) => {
                     chai.expect(fileName).to.be.a('string');
                 },
             );
@@ -94,7 +99,7 @@ describe('fs-store-file', () => {
         );
 
         onFileName &&
-            onFileName.writeHook('testFileName', (value: string, opts: any) => {
+            onFileName.writeHook('testFileName', (_: string, opts: any) => {
                 const {
                     meta: {fileName, ext},
                 } = opts;
@@ -133,23 +138,23 @@ describe('fs-store-file', () => {
         );
 
         onRelease &&
-            onRelease.readHook('testRelease', (readOptions) => {
-                const {action, ffName} = readOptions;
-                switch (action) {
-                    case fsReqType.lock:
-                        if (state.lock) {
-                            state.lock -= 1;
-                        }
-                        break;
-                    case fsReqType.access:
-                        state.access -= 1;
-                        break;
-                    case fsReqType.unlink:
-                        state.unlink -= 1;
-                        break;
+            onRelease.readHook('testRelease', (readOptions: ReadOptions) => {
+            const {action, ffName} = readOptions;
+            switch (action) {
+                case fsReqType.lock:
+                if (state.lock) {
+                    state.lock -= 1;
                 }
-                chai.expect(ffName).to.be.a('string');
-                log.debug({ffName, state}, 'release hook done');
+                break;
+                case fsReqType.access:
+                state.access -= 1;
+                break;
+                case fsReqType.unlink:
+                state.unlink -= 1;
+                break;
+            }
+            chai.expect(ffName).to.be.a('string');
+            log.debug({ffName, state}, 'release hook done');
             });
 
         try {

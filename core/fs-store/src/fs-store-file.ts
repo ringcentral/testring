@@ -34,14 +34,14 @@ export class FSStoreFile implements IFSStoreFile {
     private fileMeta: Record<string, any>;
 
     private initPromise: Promise<void>;
-    private transactionQueue: Array<(any?) => void> = [];
+    private transactionQueue: Array<(arg0?: any) => void> = [];
     private lockQueue: Array<string> = [];
 
     private options: FSStoreOptions;
 
     constructor(options: FSStoreOptions) {
         this.options = {...defaultOptions, ...options};
-        this.state.valid = true;
+        this.state['valid'] = true;
         this.fsWriterClient = FSClientGet(options.fsStorePrefix);
         this.fileMeta = options.meta; // meta:{fileName, ...}
         this.initPromise = this.init();
@@ -93,7 +93,7 @@ export class FSStoreFile implements IFSStoreFile {
                 },
                 async (fullPath, lockId) => {
                     this.fullPath = fullPath;
-                    this.fileMeta.fileName = path.basename(fullPath);
+                    this.fileMeta['fileName'] = path.basename(fullPath);
                     if (lockId) {
                         this.fsWriterClient.release(lockId, () => {
                             res();
@@ -108,11 +108,11 @@ export class FSStoreFile implements IFSStoreFile {
         if (this.fullPath === null) {
             throw new Error('try to ensure null file');
         }
-        if (this.state.fileEnsured !== this.fullPath) {
+        if (this.state['fileEnsured'] !== this.fullPath) {
             const fileSavePath = path.dirname(this.fullPath);
             await fsTool.ensureDir(fileSavePath);
             await fsTool.touchFile(this.fullPath);
-            this.state.fileEnsured = this.fullPath;
+            this.state['fileEnsured'] = this.fullPath;
             return true;
         }
         return false;
@@ -122,7 +122,7 @@ export class FSStoreFile implements IFSStoreFile {
     public getFullPath = () => this.fullPath;
 
     async lock() {
-        if (this.state.inTransaction) {
+        if (this.state['inTransaction']) {
             return;
         }
         await this.initPromise;
@@ -134,7 +134,7 @@ export class FSStoreFile implements IFSStoreFile {
                 },
                 async (fullPath, lockId) => {
                     this.fullPath = fullPath;
-                    this.fileMeta.fileName = path.basename(fullPath);
+                    this.fileMeta['fileName'] = path.basename(fullPath);
                     if (lockId) {
                         this.lockQueue.push(lockId);
                     }
@@ -150,7 +150,7 @@ export class FSStoreFile implements IFSStoreFile {
      * @returns
      */
     async unlock(): Promise<boolean> {
-        if (this.state.inTransaction) {
+        if (this.state['inTransaction']) {
             return false;
         }
         if (!this.lockQueue.length) {
@@ -165,7 +165,7 @@ export class FSStoreFile implements IFSStoreFile {
     }
 
     async unlockAll(): Promise<boolean> {
-        if (this.state.inTransaction) {
+        if (this.state['inTransaction']) {
             return false;
         }
         await Promise.all(this.lockQueue.map((lockId) => this.release(lockId)));
@@ -178,7 +178,7 @@ export class FSStoreFile implements IFSStoreFile {
      * @returns
      */
     async getAccess() {
-        if (this.state.inTransaction) {
+        if (this.state['inTransaction']) {
             return;
         }
         await this.initPromise;
@@ -189,8 +189,8 @@ export class FSStoreFile implements IFSStoreFile {
                 },
                 async (fullPath, accessId) => {
                     this.fullPath = fullPath;
-                    this.fileMeta.fileName = path.basename(fullPath);
-                    this.state.accessId = accessId;
+                    this.fileMeta['fileName'] = path.basename(fullPath);
+                    this.state['accessId'] = accessId;
                     await this.ensureFile();
                     res();
                 },
@@ -203,7 +203,7 @@ export class FSStoreFile implements IFSStoreFile {
      * @returns
      */
     private async release(id: string): Promise<boolean> {
-        if (this.state.inTransaction) {
+        if (this.state['inTransaction']) {
             return false;
         }
         if (!id) {
@@ -218,9 +218,9 @@ export class FSStoreFile implements IFSStoreFile {
     }
 
     async releaseAccess() {
-        const res = await this.release(this.state.accessId);
+        const res = await this.release(this.state['accessId']);
         if (res) {
-            this.state.accessId = null;
+            this.state['accessId'] = null;
         }
         return res;
     }
@@ -258,10 +258,10 @@ export class FSStoreFile implements IFSStoreFile {
 
     // returns bool variable, true if nobody locks current file
     isLocked(): boolean {
-        return !!this.state.lockId;
+        return !!this.state['lockId'];
     }
 
-    isValid = () => this.state.valid;
+    isValid = () => this.state['valid'];
 
     /**
      */
@@ -281,7 +281,7 @@ export class FSStoreFile implements IFSStoreFile {
 
     // async remove method - need to call writeLock before call remove
     unlink(): Promise<boolean> {
-        if (this.state.enterTransaction) {
+        if (this.state['enterTransaction']) {
             throw new Error('Cannot unlink during transaction');
         }
 
@@ -296,7 +296,7 @@ export class FSStoreFile implements IFSStoreFile {
                     if (requestId) {
                         this.fsWriterClient.release(requestId);
                     }
-                    this.state.valid = false;
+                    this.state['valid'] = false;
                     res(true);
                 },
             );
@@ -314,23 +314,23 @@ export class FSStoreFile implements IFSStoreFile {
     }
 
     async startTransaction() {
-        if (this.state.enterTransaction) {
+        if (this.state['enterTransaction']) {
             const waitFor = new Promise((res) => {
                 this.transactionQueue.push(res);
             });
             await waitFor;
         }
-        this.state.enterTransaction = true;
+        this.state['enterTransaction'] = true;
         await this.getAccess();
         await this.lock();
-        this.state.inTransaction = true;
+        this.state['inTransaction'] = true;
     }
 
     async endTransaction() {
-        this.state.inTransaction = false;
+        this.state['inTransaction'] = false;
         await this.releaseAccess();
         await this.unlock();
-        this.state.enterTransaction = false;
+        this.state['enterTransaction'] = false;
         // start next transaction in queue
         if (this.transactionQueue.length) {
             const res = this.transactionQueue.shift();

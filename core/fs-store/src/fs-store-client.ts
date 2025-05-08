@@ -20,9 +20,9 @@ const log = loggerClient.withPrefix('fsc');
 
 type requestsTableItem = {
     action: fsReqType;
-    cb?: (f: string, r: string | null | undefined) => void;
+    cb?: (f: string, r: string | undefined) => void;
     meta: requestMeta;
-    fullPath?: string; // fullFileName
+    fullPath?: string | undefined; // fullFileName
 };
 type requestsTable = Record<string, requestsTableItem>;
 
@@ -33,13 +33,13 @@ export class FSStoreClient {
     private cleanReqName: string;
     private reqHash: requestsTable = {};
 
-    constructor(msgNamePrefix: string = FS_CONSTANTS.FS_DEFAULT_MSG_PREFIX) {
-        this.reqName = msgNamePrefix + FS_CONSTANTS.FS_REQ_NAME_POSTFIX;
-        this.respName = msgNamePrefix + FS_CONSTANTS.FS_RESP_NAME_POSTFIX;
+    constructor(msgNamePrefix: string = FS_CONSTANTS['FS_DEFAULT_MSG_PREFIX'] || 'defaultPrefix') {
+        this.reqName = msgNamePrefix + FS_CONSTANTS['FS_REQ_NAME_POSTFIX'];
+        this.respName = msgNamePrefix + FS_CONSTANTS['FS_RESP_NAME_POSTFIX'];
         this.releaseReqName =
-            msgNamePrefix + FS_CONSTANTS.FS_RELEASE_NAME_POSTFIX;
+            msgNamePrefix + FS_CONSTANTS['FS_RELEASE_NAME_POSTFIX'];
         this.cleanReqName =
-            msgNamePrefix + FS_CONSTANTS.FS_CLEAN_REQ_NAME_POSTFIX;
+            msgNamePrefix + FS_CONSTANTS['FS_CLEAN_REQ_NAME_POSTFIX'];
 
         this.init();
     }
@@ -67,9 +67,8 @@ export class FSStoreClient {
                     if (reqObj.action === fsReqType.release) {
                         delete this.reqHash[requestId];
                     } else {
-                        this.reqHash[requestId].fullPath = fullPath;
-                        this.reqHash[requestId].meta.fileName =
-                            path.basename(fullPath);
+                        reqObj.fullPath = fullPath;
+                        reqObj.meta.fileName = path.basename(fullPath);
                     }
                 }
 

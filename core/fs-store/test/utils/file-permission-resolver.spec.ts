@@ -45,6 +45,9 @@ describe('fs-permission', () => {
             {workerId: 'w2', requestId: 'r2'},
             {workerId: 'w3', requestId: 'r3'},
         ];
+        if (!pData[0] || !pData[1] || !pData[2]) {
+            throw new Error('pData[x] is undefined');
+        }
         FPR.lock(pData[0].workerId, pData[0].requestId, ({dataId, status}) => {
             chai.expect(status).to.be.equals(actionState.locked);
             chai.expect(dataId).to.be.equals(fileName);
@@ -196,6 +199,10 @@ describe('fs-permission', () => {
                 {queue: 2},
                 'on after unlink hook TO',
             );
+
+            if (!pData[0] || !pData[1] || !pData[2]) {
+                throw new Error('pData[x] is undefined');
+            }
 
             FPR.unlock(pData[1].workerId, pData[1].requestId);
             stateCheck(

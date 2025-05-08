@@ -32,8 +32,8 @@ export class RequestMeta {
     get fileName() {
         return this.data.fileName;
     }
-    set fileName(fileName) {
-        this.data.fileName = fileName;
+    set fileName(fileName: string | undefined) {
+        this.data.fileName = fileName ?? '';
     }
 
     isGlobal() {

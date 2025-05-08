@@ -90,7 +90,7 @@ export const runCLI = async (argv: Array<string>): Promise<unknown> => {
 
         default:
             yargs.showHelp();
-            return;
+            return Promise.resolve();
     }
 
     let isExitHandling = false;
@@ -118,7 +118,7 @@ export const runCLI = async (argv: Array<string>): Promise<unknown> => {
     process.on('SIGABRT', processExitHandler);
     process.on('SIGTERM', processExitHandler);
 
-    commandExecution.execute().catch(async (exception) => {
+    return commandExecution.execute().catch(async (exception) => {
         if (isExitHandling) {
             return;
         }

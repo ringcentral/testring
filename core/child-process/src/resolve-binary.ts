@@ -16,7 +16,7 @@ function findNodeModulesDir(modulePath: string) {
     return findNodeModulesDir(path.dirname(modulePath));
 }
 
-function windowsQuotes(str) {
+function windowsQuotes(str: string): string {
     if (!/ /.test(str)) {
         return str;
     }

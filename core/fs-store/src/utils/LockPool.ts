@@ -11,7 +11,7 @@ import {ILockPool} from '@testring/types';
 
 type queueItem = {
     workerId: string;
-    requestId?: string;
+    requestId?: string | undefined;
     notifier?: (b: boolean) => void;
 };
 
@@ -70,7 +70,9 @@ export class LockPool implements ILockPool {
         });
         if (removed.length > 0) {
             const r = removed[0];
-            r.notifier && r.notifier(false);
+            if (r && r.notifier) {
+                r.notifier(false);
+            }
             return true;
         }
 

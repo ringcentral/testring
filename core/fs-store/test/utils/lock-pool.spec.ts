@@ -21,19 +21,26 @@ describe('lock-pool', () => {
             {workerId: 'w3', requestId: 'r3'},
         ];
 
+        if (!pData[0] || !pData[1] || !pData[2]) {
+            throw new Error('pData[x] is undefined');
+        }
+
         await pool.acquire(pData[0].workerId, pData[0].requestId);
         state = pool.getState();
-        expect(state.curLocks).to.be.eqls(1);
-        expect(state.locks.get(pData[0].workerId)).to.be.eqls(1);
+        expect(state['curLocks']).to.be.eqls(1);
+        expect(state['locks'].get(pData[0].workerId)).to.be.eqls(1);
 
         await pool.acquire(pData[0].workerId, pData[1].requestId);
         state = pool.getState();
-        expect(state.curLocks).to.be.eqls(2);
-        expect(state.locks.get(pData[0].workerId)).to.be.eqls(2);
+        expect(state['curLocks']).to.be.eqls(2);
+        expect(state['locks'].get(pData[0].workerId)).to.be.eqls(2);
 
         const to = 250;
         const st = Date.now();
         setTimeout(() => {
+            if (!pData[0] || !pData[1] || !pData[2]) {
+                throw new Error('pData[x] is undefined');
+            }
             const releaseResult = pool.release(
                 pData[0].workerId,
                 pData[0].requestId,
@@ -46,9 +53,9 @@ describe('lock-pool', () => {
         await pool.acquire(pData[2].workerId, pData[2].requestId);
         expect(Date.now() - st).to.be.gte(to);
         state = pool.getState();
-        expect(state.curLocks).to.be.eqls(2);
-        expect(state.locks.get(pData[0].workerId)).to.be.eqls(1);
-        expect(state.locks.get(pData[2].workerId)).to.be.eqls(1);
+        expect(state['curLocks']).to.be.eqls(2);
+        expect(state['locks'].get(pData[0].workerId)).to.be.eqls(1);
+        expect(state['locks'].get(pData[2].workerId)).to.be.eqls(1);
 
         return Promise.resolve();
     });

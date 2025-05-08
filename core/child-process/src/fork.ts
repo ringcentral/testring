@@ -4,11 +4,16 @@ import {getAvailablePort} from '@testring/utils';
 import {IChildProcessForkOptions, IChildProcessFork} from '@testring/types';
 import {resolveBinary} from './resolve-binary';
 import {spawn} from './spawn';
+import {ChildProcess} from 'child_process';
+
+interface ChildProcessExtension extends ChildProcess {
+    debugPort: number | null;
+}
 
 function getNumberRange(start: number, end: number): Array<number> {
     const length = start - end;
 
-    return Array.from({length}, (x, i) => i + start);
+    return Array.from({length}, (_, i) => i + start);
 }
 
 const PREFERRED_DEBUG_PORTS: Array<number> = [
@@ -19,7 +24,7 @@ const PREFERRED_DEBUG_PORTS: Array<number> = [
     ...getNumberRange(9230, 9240),
 ];
 const IS_WIN = process.platform === 'win32';
-const EMPTY_PARAMETERS = [];
+const EMPTY_PARAMETERS: Array<string> = [];
 const REQUIRE_TS_NODE = ['-r', 'ts-node/register'];
 const Module = require('module').Module;
 
@@ -92,7 +97,7 @@ export async function fork(
         processArgs.push(`--inspect-brk=${debugPort}`);
     }
 
-    let childProcess;
+    let childProcess: ChildProcess;
     if (IS_WIN) {
         childProcess = spawn('node', [
             ...processArgs,
@@ -110,7 +115,9 @@ export async function fork(
         ]);
     }
 
-    childProcess.debugPort = debugPort;
+    const childProcessExtended = childProcess as ChildProcessExtension;
 
-    return childProcess;
+    childProcessExtended.debugPort = debugPort;
+
+    return childProcessExtended;
 }

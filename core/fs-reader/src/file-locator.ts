@@ -1,4 +1,4 @@
-import * as fg from 'fast-glob';
+import fg, { convertPathToPattern } from 'fast-glob';
 import * as process from 'node:process';
 
 export async function locateFiles(searchpath: string): Promise<string[]> {
@@ -6,7 +6,7 @@ export async function locateFiles(searchpath: string): Promise<string[]> {
         return [];
     }
     if (process.platform === 'win32') {
-        searchpath = fg.convertPathToPattern(searchpath);
+        searchpath = convertPathToPattern(searchpath);
     }
     return await fg(searchpath, {});
 }
