@@ -20,6 +20,7 @@ run(async (api) => {
         url: 'http://localhost:8080/selenium-headers',
     });
     const parsedResponse = JSON.parse(response);
+    await app.assert.isAbove(parsedResponse.length, 0);
     for (let capturedHeaders of parsedResponse) {
         await app.assert.equal(
             capturedHeaders['x-testring-custom-header'],
