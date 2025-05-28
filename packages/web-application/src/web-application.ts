@@ -308,6 +308,7 @@ export class WebApplication extends PluggableModule {
             return `Wait for stable ${this.formatXpath(xpath)} for ${timeout}`;
         },
     };
+    private initPromise: Promise<any> = Promise.resolve();
 
     constructor(
         protected testUID: string,
@@ -317,6 +318,9 @@ export class WebApplication extends PluggableModule {
         super();
         this.config = this.getConfig(config);
         this.decorateMethods();
+        if (config.seleniumConfig) {
+            this.initPromise = this.client.setCustomBrowserClientConfig(this.config.seleniumConfig);
+        }
     }
 
     protected getConfig(
@@ -348,6 +352,7 @@ export class WebApplication extends PluggableModule {
 
             // eslint-disable-next-line no-async-promise-executor
             const promise = new Promise(async (resolve, reject) => {
+                await this.initPromise;
                 const logger = self.logger;
                 const message = logFn.apply(self, args);
                 let result;

@@ -24,6 +24,7 @@
   "dependencies": {
     "@puppeteer/browsers": "2.7.0",
     "@testring/cli": "0.7.5",
+    "@testring/api": "0.7.5",
     "@testring/plugin-babel": "0.7.5",
     "@testring/plugin-fs-store": "0.7.5",
     "@testring/plugin-selenium-driver": "0.7.5",

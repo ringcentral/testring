@@ -31,6 +31,7 @@ export interface IWebApplicationConfig {
     screenshotsEnabled: boolean;
     screenshotPath: string;
     devtool: null | IDevtoolRuntimeConfiguration;
+    seleniumConfig?: any;
 }
 
 export type WindowFeatureBoolean = 'yes' | 'no';
