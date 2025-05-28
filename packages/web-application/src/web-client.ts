@@ -68,7 +68,7 @@ export class WebClient implements IWebApplicationClient {
     }
 
     public getCustomBrowserClientConfig() {
-        return this.makeRequest(BrowserProxyActions.setCustomBrowserClientConfig, []);
+        return this.makeRequest(BrowserProxyActions.getCustomBrowserClientConfig, []);
     }
 
     public getHubConfig() {
