@@ -20,7 +20,7 @@ import type {ClickOptions, MockFilterOptions} from 'webdriverio';
 import type {JsonCompatible} from '@wdio/types';
 import type {RespondWithOptions} from 'webdriverio/build/utils/interception/types';
 import webdriver from 'webdriver';
-import {WebdriverIOConfig} from "@wdio/types/build/Capabilities";
+import {WebdriverIOConfig} from '@wdio/types/build/Capabilities';
 
 type BrowserObjectCustom = WebdriverIO.Browser & {
     sessionId: string;
