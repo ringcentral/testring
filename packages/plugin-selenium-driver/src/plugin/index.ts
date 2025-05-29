@@ -445,6 +445,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             await delay(this.config.delayAfterSessionClose);
         }
         this.browserClients.delete(applicant);
+        this.customBrowserClientsConfigs.delete(applicant);
     }
 
     public async kill() {
@@ -1129,6 +1130,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         await client.deleteSession();
         this.browserClients.delete(applicant);
+        this.customBrowserClientsConfigs.delete(applicant);
         await this.createClient(applicant, {
             capabilities: {
                 'goog:chromeOptions': {
