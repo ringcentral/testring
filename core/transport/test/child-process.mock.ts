@@ -9,7 +9,7 @@ class ChildProcessMock extends EventEmitter {
         super();
     }
 
-    send(message: ITransportDirectMessage, callback) {
+    send(message: ITransportDirectMessage, callback: (arg0: Error | null) => void) {
         if (this.shouldFail) {
             callback(new Error('Some error happened'));
             return false;
@@ -22,6 +22,7 @@ class ChildProcessMock extends EventEmitter {
         });
 
         callback(null);
+        return undefined;
     }
 
     $triggerListener<T = any>(payload: T) {

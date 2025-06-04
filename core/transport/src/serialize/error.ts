@@ -52,7 +52,9 @@ export function deserializeError(serializedError: ISerializedError): Error {
 
     const error = new Constructor(serializedError.message);
 
-    error.stack = serializedError.stack;
+    if (typeof serializedError.stack === 'string') {
+        error.stack = serializedError.stack;
+    }
 
     return error;
 }

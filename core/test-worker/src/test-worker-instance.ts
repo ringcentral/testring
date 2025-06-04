@@ -54,7 +54,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private fsWriterClient: FSStoreClient;
 
-    private workerExitHandler = (exitCode) => {
+    private workerExitHandler = (exitCode: any) => {
         this.clearWorkerHandlers();
         this.fsWriterClient.releaseAllWorkerActions();
         this.worker = null;
@@ -71,7 +71,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         }
     };
 
-    private workerErrorHandler = (error) => {
+    private workerErrorHandler = (error: any) => {
         this.fsWriterClient.releaseAllWorkerActions();
         if (this.abortTestExecution !== null) {
             this.abortTestExecution(error);
@@ -188,20 +188,23 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         );
 
         for (let i = 0, len = additionalFiles.length; i < len; i++) {
-            const additionalFile = await this.fsReader.readFile(
-                additionalFiles[i],
-            );
-
-            if (additionalFile) {
-                const additionalDependencies = await buildDependencyDictionary(
-                    additionalFile,
-                    this.readDependency.bind(this),
+            const additionalFilePath = additionalFiles[i];
+            if (typeof additionalFilePath === 'string') {
+                const additionalFile = await this.fsReader.readFile(
+                    additionalFilePath,
                 );
 
-                dependencies = await mergeDependencyDictionaries(
-                    dependencies,
-                    additionalDependencies,
-                );
+                if (additionalFile) {
+                    const additionalDependencies = await buildDependencyDictionary(
+                        additionalFile,
+                        this.readDependency.bind(this),
+                    );
+
+                    dependencies = await mergeDependencyDictionaries(
+                        dependencies,
+                        additionalDependencies,
+                    );
+                }
             }
         }
 
@@ -232,20 +235,20 @@ export class TestWorkerInstance implements ITestWorkerInstance {
                 envParameters,
             );
         } catch (err) {
-            callback(err);
+            callback(err as Error);
             return;
         }
 
         this.logger.debug(`Sending test for execution: ${relativePath}`);
 
-        const completeHandler = (message) => {
+        const completeHandler = (message: ITestExecutionCompleteMessage) => {
             switch (message.status) {
                 case TestStatus.done:
                     callback();
                     break;
 
                 case TestStatus.failed:
-                    callback(message.error);
+                    callback(message.error || new Error("Unknown error"));
                     break;
             }
 
@@ -273,7 +276,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             callback();
         };
 
-        this.abortTestExecution = (error) => {
+        this.abortTestExecution = (error: Error | undefined) => {
             removeListener();
             callback(error);
         };

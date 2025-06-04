@@ -78,7 +78,7 @@ class DirectTransport {
         );
     }
 
-    private handleChildClose(processID) {
+    private handleChildClose(processID: string) {
         this.childRegistry.delete(processID);
 
         // Removing unfired handlers to avoid memory leak

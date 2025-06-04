@@ -11,7 +11,7 @@ const fixturesFileResolver = fileResolverFactory(
     'sandbox',
 );
 
-const createExportFromGlobal = (key) => {
+const createExportFromGlobal = (key: string) => {
     return `module.exports = global["${key}"];`;
 };
 
@@ -102,7 +102,7 @@ describe('Sandbox', () => {
 
             chai.expect(module).to.be.equal(true);
             chai.expect(context['amaGlobal']).to.be.equal(true);
-            chai.expect(global['amaGlobal']).to.be.equal(undefined);
+            chai.expect((global as any)['amaGlobal']).to.be.equal(undefined);
         });
 
         it('should correctly handle function declarations', async () => {
@@ -122,15 +122,15 @@ describe('Sandbox', () => {
                 {},
             );
 
-            global[key] = {};
+            (global as any)[key] = {};
 
             sandbox.execute();
 
             const context = sandbox.getContext();
 
-            chai.expect(context[key]).to.be.equal(global[key]);
+            chai.expect(context[key]).to.be.equal((global as any)[key]);
 
-            delete global[key];
+            delete (global as any)[key];
         });
     });
 

@@ -90,7 +90,7 @@ class Sandbox {
 
     private static modulesCache: Map<string, Sandbox> = new Map();
 
-    private require(requestPath) {
+    private require(requestPath: string) {
         const dependencies = this.dependencies[this.filename];
 
         if (dependencies && dependencies[requestPath]) {
@@ -112,13 +112,13 @@ class Sandbox {
                 Sandbox.modulesCache.set(depPath, dependencySandbox);
             }
 
-            return dependencySandbox.execute();
+            return dependencySandbox ? dependencySandbox.execute() : undefined;
         }
 
         return requirePackage(requestPath, this.filename);
     }
 
-    private createContext(filename: string, dependencies) {
+    private createContext(filename: string, _dependencies: DependencyDict) {
         const moduleObject = {
             filename,
             id: filename,

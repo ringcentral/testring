@@ -6,16 +6,16 @@ import {
 
 export interface ISerializedObject extends ITransportSerializedStruct {
     $key: string;
-    dictionary: object;
+    dictionary: Record<string, unknown>;
 }
 
 export const OBJECT_KEY = 'Object';
 
 export function serializeObject(
-    object: object,
+    object: Record<string, unknown>,
     serialize: TransportSerializer,
 ): ISerializedObject {
-    const dictionary = {};
+    const dictionary: Record<string, unknown> = {};
 
     for (const key in object) {
         if (key in object) {
@@ -32,16 +32,16 @@ export function serializeObject(
 export function deserializeObject(
     serializedObject: ISerializedObject,
     deserialize: TransportDeserializer,
-): object {
+): Record<string, unknown> {
     const dictionary = serializedObject.dictionary;
-    const object = {};
+    const object: Record<string, unknown> = {};
 
     for (const key in dictionary) {
         if (!Object.prototype.hasOwnProperty.call(dictionary, key)) {
             continue;
         }
 
-        object[key] = deserialize(dictionary[key]);
+        object[key] = deserialize(dictionary[key] as ITransportSerializedStruct);
     }
 
     return object;

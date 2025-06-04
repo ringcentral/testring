@@ -26,7 +26,7 @@ export class TestWorkerLocal extends EventEmitter implements IWorkerEmitter {
 
     public send(
         message: ITransportDirectMessage,
-        callback: (error: Error) => void,
+        _callback?: (error: Error | null) => void
     ): boolean {
         const {payload, type} = message;
 
