@@ -30,7 +30,7 @@ export class Stack<T> implements IStack<T> {
             return null;
         }
 
-        return this.array[elementIndex];
+        return this.array[elementIndex] ?? null;
     }
 
     public get length(): number {

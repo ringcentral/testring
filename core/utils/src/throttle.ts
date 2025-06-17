@@ -3,28 +3,27 @@
 export function throttle<T extends (...args: any[]) => any>(
     func: T,
     limit: number,
-): () => void {
-    let lastFunc;
-    let lastRan;
+): (...args: Parameters<T>) => void {
+    let lastFunc: ReturnType<typeof setTimeout> | undefined;
+    let lastRan: number | undefined;
 
-    return function () {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
+    return function (this: unknown, ...args: Parameters<T>) {
         const context = this;
-        // eslint-disable-next-line prefer-rest-params
-        const args = arguments;
 
-        if (!lastRan) {
+        if (lastRan === undefined) {
             func.apply(context, args);
             lastRan = Date.now();
         } else {
-            clearTimeout(lastFunc);
+            if (lastFunc !== undefined) {
+                clearTimeout(lastFunc);
+            }
 
             lastFunc = setTimeout(function () {
-                if (Date.now() - lastRan >= limit) {
+                if (Date.now() - (lastRan as number) >= limit) {
                     func.apply(context, args);
                     lastRan = Date.now();
                 }
-            }, limit - (Date.now() - lastRan));
+            }, limit - (Date.now() - (lastRan as number)));
         }
     };
 }

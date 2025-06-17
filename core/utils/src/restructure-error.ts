@@ -1,4 +1,4 @@
-export function restructureError(error) {
+export function restructureError(error: { message: any; stack: string; } | Error) {
     if (error instanceof Error) {
         return error;
     }

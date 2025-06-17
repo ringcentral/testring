@@ -24,8 +24,8 @@ export interface IFSStoreFile {
     lock(): Promise<void>; // locks file for read, ID key is used as identifier for unlock in future
     unlock(options: FSActionOptions): Promise<boolean>; // unlocks file to read operation for process ID
     read(): Promise<Buffer>; // the same part but with promise wrapper
-    write(Buffer): Promise<string>; // the same part but with promise wrapper, returns fullPath
-    append(Buffer): Promise<string>; // the same part but with promise wrapper, returns fullPath
+    write(arg0: Buffer): Promise<string>; // the same part but with promise wrapper, returns fullPath
+    append(arg0: Buffer): Promise<string>; // the same part but with promise wrapper, returns fullPath
     isLocked(): boolean; // returns bool variable, true if nobody locks current file
     unlink(): Promise<boolean>; // async remove method
     waitForUnlock(): Promise<void>; //

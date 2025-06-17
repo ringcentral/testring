@@ -44,9 +44,7 @@ export async function getAvailablePort(
     ports: Array<number> = [],
     host = 'localhost',
 ): Promise<number> {
-    for (let i = 0, len = ports.length; i < len; i++) {
-        const port = ports[i];
-
+    for (const port of ports) {
         if (await isAvailablePort(port, host)) {
             return port;
         }

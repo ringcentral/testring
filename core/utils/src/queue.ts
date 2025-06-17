@@ -25,10 +25,10 @@ export class Queue<T> implements IQueue<T> {
 
     /**
      *
-     * @param {(T, number?)=>boolean} fn - function to filter elements for removal
+     * @param {(item: T, index: number) => boolean} fn - function to filter elements for removal
      * @returns - number of elements removed
      */
-    public remove(fn: <T>(T, number?) => boolean): number {
+    public remove(fn: (item: T, index: number) => boolean): number {
         const len = this.array.length;
         this.array = this.array.filter((item, index) => !fn(item, index));
         return len - this.array.length;
@@ -37,10 +37,10 @@ export class Queue<T> implements IQueue<T> {
     /**
      * extract - filter items, return filtered, leave the rest
      *
-     * @param {(T, number?)=>boolean} fn - function to filter elements for removal
+     * @param {(item: T, index: number) => boolean} fn - function to filter elements for removal
      * @returns - number of elements removed
      */
-    public extract(fn: <T>(T, number?) => boolean): T[] {
+    public extract(fn: (item: T, index: number) => boolean): T[] {
         const result: T[] = [];
         const rest: T[] = [];
         this.array.forEach((item, index) => {
@@ -61,7 +61,7 @@ export class Queue<T> implements IQueue<T> {
             return null;
         }
 
-        return this.array[elementIndex];
+        return this.array[elementIndex] ?? null;
     }
 
     public get length(): number {
