@@ -8,6 +8,7 @@ const upload = multer({storage: multer.memoryStorage()});
 
 export class MockWebServer {
     private httpServerInstance: Http.Server;
+    private static seleniumHubHeaders: Http.IncomingHttpHeaders[] = [];
 
     start(): Promise<void> {
         return new Promise<void>((resolve) => {
@@ -37,6 +38,29 @@ export class MockWebServer {
                 message: 'File received successfully',
                 filename: req.file.originalname,
             });
+        });
+
+        // mock any request that contains /wd/hub
+        app.all('/wd/hub/*', (req, res) => {
+            // get request headers
+            const headers = req.headers;
+            // store headers for later use
+            MockWebServer.seleniumHubHeaders.push(headers);
+            res.status(200).json({
+                status: 0,
+                value: {
+                    sessionId: 'mock-session-id',
+                    capabilities: {
+                        browserName: 'mock-browser',
+                        platformName: 'mock-platform',
+                    },
+                },
+            });
+        });
+
+        // endpoint to retrieve stored headers
+        app.get('/selenium-headers', (req, res) => {
+            res.status(200).json(MockWebServer.seleniumHubHeaders);
         });
 
         return app;

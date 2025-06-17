@@ -20,6 +20,7 @@ import type {ClickOptions, MockFilterOptions} from 'webdriverio';
 import type {JsonCompatible} from '@wdio/types';
 import type {RespondWithOptions} from 'webdriverio/build/utils/interception/types';
 import webdriver from 'webdriver';
+import {WebdriverIOConfig} from '@wdio/types/build/Capabilities';
 
 type BrowserObjectCustom = WebdriverIO.Browser & {
     sessionId: string;
@@ -74,6 +75,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     private expiredBrowserClients: Set<string> = new Set();
 
     private browserClients: Map<string, browserClientItem> = new Map();
+
+    private customBrowserClientsConfigs: Map<string, WebdriverIOConfig> = new Map();
 
     private waitForReadyState: Promise<void> = Promise.resolve();
 
@@ -268,6 +271,22 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
+    public setCustomBrowserClientConfig(
+        applicant: string,
+        config: WebdriverIOConfig,
+    ) {
+        this.customBrowserClientsConfigs.set(
+            applicant,
+            config
+        );
+    }
+
+    public getCustomBrowserClientConfig(
+        applicant: string,
+    ) {
+        return this.customBrowserClientsConfigs.get(applicant);
+    }
+
     private async createClient(
         applicant: string,
         config?: Partial<WebdriverIO.Config>,
@@ -294,6 +313,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             {},
             this.config,
             (config as any) || {},
+            this.customBrowserClientsConfigs.get(applicant) || {},
         ]);
         const client = await remote(_config);
 
@@ -425,6 +445,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             await delay(this.config.delayAfterSessionClose);
         }
         this.browserClients.delete(applicant);
+        this.customBrowserClientsConfigs.delete(applicant);
     }
 
     public async kill() {
@@ -1109,6 +1130,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         await client.deleteSession();
         this.browserClients.delete(applicant);
+        this.customBrowserClientsConfigs.delete(applicant);
         await this.createClient(applicant, {
             capabilities: {
                 'goog:chromeOptions': {
