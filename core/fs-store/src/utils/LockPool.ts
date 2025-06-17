@@ -107,7 +107,7 @@ export class LockPool implements ILockPool {
         } else {
             this.poolLock.clean(workerId);
             this.requestQue
-                .extract(([itemWorkerId]) => itemWorkerId === workerId)
+                .extract((item) => item.workerId === workerId)
                 .forEach((item) => item.notifier && item.notifier(false));
         }
     }
