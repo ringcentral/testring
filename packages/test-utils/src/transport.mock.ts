@@ -37,7 +37,7 @@ export class TransportMock extends EventEmitter implements ITransport {
     }
 
     public send<T = any>(
-        src: string,
+        _src: string,
         messageType: string,
         payload: T,
     ): Promise<void> {
@@ -46,7 +46,7 @@ export class TransportMock extends EventEmitter implements ITransport {
         return Promise.resolve();
     }
 
-    public on<T = any>(
+    public override on<T = any>(
         messageType: string,
         callback: (m: T, source?: string) => void,
     ): any {
@@ -56,7 +56,7 @@ export class TransportMock extends EventEmitter implements ITransport {
     }
 
     // eslint-disable-next-line sonarjs/no-identical-functions
-    public once<T = any>(
+    public override once<T = any>(
         messageType: string,
         callback: (m: T, source?: string) => void,
     ): any {
@@ -70,7 +70,7 @@ export class TransportMock extends EventEmitter implements ITransport {
         messageType: string,
         callback: (m: T, source?: string) => void,
     ): any {
-        const handler = (message, source) => {
+        const handler = (message: T, source?: string) => {
             if (processID === source) {
                 callback(message);
                 this.removeListener(messageType, handler);

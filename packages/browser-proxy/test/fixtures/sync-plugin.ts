@@ -1,5 +1,5 @@
 class SyncPlugin {
-    click(applicant, argument) {
+    click(_applicant: string, argument: any) {
         return argument;
     }
 
@@ -8,4 +8,4 @@ class SyncPlugin {
     }
 }
 
-export default (config) => new SyncPlugin();
+export default (_config: any) => new SyncPlugin();

@@ -102,7 +102,7 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
         this.worker = null;
     }
 
-    private onExit = (code, error): void => {
+    private onExit = (code: number, error: Error): void => {
         this.cleanWorkerMeta();
 
         this.logger.debug(
@@ -138,10 +138,10 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
     public async spawn(): Promise<void> {
         const {plugin, config} = this.spawnConfig;
 
-        let spawnResolver;
-        this.spawnPromise = new Promise<void>(
-            (resolve) => (spawnResolver = resolve),
-        );
+        let spawnResolver: (() => void) | undefined;
+        this.spawnPromise = new Promise<void>((resolve) => {
+            spawnResolver = resolve;
+        });
 
         this.worker = await this.workerCreator(plugin, config);
         this.workerID = `proxy-${this.worker.pid}`;
@@ -175,9 +175,10 @@ export class BrowserProxyWorker implements IBrowserProxyWorker {
         this.logger.debug(
             `Browser Proxy controller: register child process [id = ${this.workerID}]`,
         );
-
         this.spawnPromise = null;
-        spawnResolver && spawnResolver();
+        if (spawnResolver) {
+            spawnResolver();
+        }
     }
 
     public async execute(

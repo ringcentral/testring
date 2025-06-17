@@ -94,11 +94,17 @@ export class TestWorkerMock implements ITestWorker {
     }
 
     $getInstanceName() {
-        return this.spawnedInstances[0].getWorkerID();
+        if (this.spawnedInstances.length === 0) {
+            throw new Error('No worker instances have been spawned');
+        }
+        return this.spawnedInstances[0]!.getWorkerID();
     }
 
     $getErrorInstance() {
-        return this.spawnedInstances[0].$getErrorInstance();
+        if (this.spawnedInstances.length === 0) {
+            throw new Error('No worker instances have been spawned');
+        }
+        return this.spawnedInstances[0]!.$getErrorInstance();
     }
 
     $getSpawnedCount() {

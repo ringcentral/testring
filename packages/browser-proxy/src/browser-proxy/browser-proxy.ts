@@ -20,7 +20,7 @@ function resolvePlugin(pluginPath: string): IBrowserProxyPlugin {
 }
 
 export class BrowserProxy {
-    private plugin: IBrowserProxyPlugin;
+    private plugin: IBrowserProxyPlugin | undefined;
 
     private killed = false;
 
@@ -38,7 +38,7 @@ export class BrowserProxy {
     }
 
     private loadPlugin(pluginPath: string, pluginConfig: any) {
-        let pluginFactory;
+        let pluginFactory: any;
 
         try {
             pluginFactory = resolvePlugin(pluginPath);
@@ -52,7 +52,7 @@ export class BrowserProxy {
             } catch (error) {
                 this.transportInstance.broadcastUniversally(
                     BrowserProxyMessageTypes.exception,
-                    error,
+                    error instanceof Error ? error : new Error(String(error)),
                 );
             }
         }
@@ -100,10 +100,8 @@ export class BrowserProxy {
                 this.killed = true;
             }
 
-            const response = await this.plugin[command.action](
-                applicant,
-                ...command.args,
-            );
+            const method = (this.plugin as any)[command.action] as ((applicant: string, ...args: any[]) => Promise<any>);
+            const response = await method(applicant, ...command.args);
 
             this.transportInstance.broadcastUniversally<IBrowserProxyCommandResponse>(
                 BrowserProxyMessageTypes.response,
@@ -118,7 +116,7 @@ export class BrowserProxy {
                 BrowserProxyMessageTypes.response,
                 {
                     uid,
-                    error,
+                    error: error instanceof Error ? error : new Error(String(error)),
                     response: null,
                 },
             );
