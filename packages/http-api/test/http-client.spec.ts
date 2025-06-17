@@ -2,7 +2,7 @@
 
 import * as chai from 'chai';
 import * as sinon from 'sinon';
-import {IHttpRequestMessage, HttpMessageType} from '@testring/types';
+import {IHttpRequestMessage, HttpMessageType, IHttpResponse} from '@testring/types';
 import {TransportMock} from '@testring/test-utils';
 import {HttpClient} from '../src/http-client';
 
@@ -13,10 +13,11 @@ const DEFAULT_RESPONSE = {
     body: {},
 };
 
-const imitateServer = (transport: TransportMock, response) => {
+const imitateServer = (transport: TransportMock, response: Partial<IHttpResponse>) => {
     transport.on(
         HttpMessageType.send,
-        (data: IHttpRequestMessage, src: string) => {
+        (data: IHttpRequestMessage, src?: string) => {
+            if (!src) return;
             transport.send(src, HttpMessageType.response, {
                 uid: data.uid,
                 response,
@@ -28,7 +29,8 @@ const imitateServer = (transport: TransportMock, response) => {
 const imitateFailedServer = (transport: TransportMock, error: Error) => {
     transport.on(
         HttpMessageType.send,
-        (data: IHttpRequestMessage, src: string) => {
+        (data: IHttpRequestMessage, src?: string) => {
+            if (!src) return;
             transport.send(src, HttpMessageType.reject, {
                 uid: data.uid,
                 error,
@@ -118,7 +120,8 @@ describe('HttpClient', () => {
         //imitate a server
         transport.on(
             HttpMessageType.send,
-            (data: IHttpRequestMessage, src: string) => {
+            (_data: IHttpRequestMessage, src?: string) => {
+                if (!src) return;
                 transport.send(src, HttpMessageType.response, {});
             },
         );
@@ -146,7 +149,8 @@ describe('HttpClient', () => {
         // imitate server
         transport.on(
             HttpMessageType.send,
-            (data: IHttpRequestMessage, src: string) => {
+            (data: IHttpRequestMessage, src?: string) => {
+                if (!src) return;
                 transport.send(src, HttpMessageType.response, {
                     uid: data.uid,
                     response: {
@@ -181,14 +185,15 @@ describe('HttpClient', () => {
         const httpClient = new HttpClient(transport, {httpThrottle});
 
         const stub = sinon
-            .stub(httpClient, 'throttleDelay')
+            .stub(httpClient as any, 'throttleDelay')
             .callsFake(function fakeThrottle() {
                 return new Promise<void>((resolve) => queue.push(resolve));
             });
 
         transport.on(
             HttpMessageType.send,
-            async (data: IHttpRequestMessage, src: string) => {
+            async (data: IHttpRequestMessage, src?: string) => {
+                if (!src) return;
                 transport.send(src, HttpMessageType.response, {
                     uid: data.uid,
                     response: DEFAULT_RESPONSE,
@@ -206,10 +211,10 @@ describe('HttpClient', () => {
         const thirdRequest = runRequest();
 
         chai.expect(finishedRequests).to.be.eq(1);
-        queue[0]();
+        queue[0]?.();
         await secondRequest;
         chai.expect(finishedRequests).to.be.eq(2);
-        queue[1]();
+        queue[1]?.();
         await thirdRequest;
         chai.expect(finishedRequests).to.be.eq(3);
 

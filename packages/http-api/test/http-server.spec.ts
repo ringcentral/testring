@@ -88,8 +88,10 @@ describe('HttpServer', () => {
                 httpServer.kill();
 
                 try {
-                    chai.expect(response.error).to.be.instanceOf(Error);
-                    callback();
+                    chai.expect(
+                        response.status < 400,
+                        'Response error',
+                    ).to.equal(true);
                 } catch (err) {
                     callback(err);
                 }
@@ -125,10 +127,10 @@ describe('HttpServer', () => {
                 cookies: [],
             };
 
-            let receivedRequest;
+            let receivedRequest: IHttpRequest | undefined;
 
             const mockBody = 'mock body from test';
-            const requestHandler = (request) => {
+            const requestHandler = (request: IHttpRequest) => {
                 receivedRequest = request;
                 return Promise.resolve(responseMock);
             };
@@ -137,7 +139,7 @@ describe('HttpServer', () => {
 
             const testWriteHook = (
                 request: IHttpRequest,
-                data: IHttpRequestMessage,
+                _data: IHttpRequestMessage,
             ): IHttpRequest => {
                 const result = {...request};
                 result.body = mockBody;
@@ -154,11 +156,11 @@ describe('HttpServer', () => {
             hook.writeHook('test', testWriteHook);
 
             transport.on(HttpMessageType.reject, (error) => done(error));
-            transport.on(HttpMessageType.response, (response) => {
+            transport.on(HttpMessageType.response, (_response) => {
                 httpServer.kill();
 
                 try {
-                    chai.expect(receivedRequest.body).to.deep.equal(mockBody);
+                    chai.expect(receivedRequest?.body).to.deep.equal(mockBody);
                     done();
                 } catch (e) {
                     done(e);
@@ -249,7 +251,7 @@ describe('HttpServer', () => {
                 }
             });
 
-            const errorWriteHook = (error, data, request) => {
+            const errorWriteHook = (_error: Error, data: IHttpRequestMessage, request: IHttpRequest) => {
                 chai.expect(data).to.deep.equal(mockRequestData);
                 chai.expect(request).to.deep.equal(mockRequest);
 

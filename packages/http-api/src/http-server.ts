@@ -36,12 +36,12 @@ export class HttpServer
 
         this.unsubscribeTransport = this.transportInstance.on(
             HttpMessageType.send,
-            (data: IHttpRequestMessage, src: string) => {
+            (data: IHttpRequestMessage, src?: string) => {
                 if (this.isKilled) {
                     return;
                 }
 
-                this.makeRequest(data, src);
+                this.makeRequest(data, src || 'unknown');
             },
         );
     }
@@ -57,12 +57,10 @@ export class HttpServer
         }
 
         const send = async (rData: IHttpRequestMessage, rSrc: string) => {
-            let uid;
+            let uid: string = rData.uid;
             const request = rData.request;
 
             try {
-                uid = rData.uid;
-
                 this.logger.verbose(`Sending http request to ${request.url}`);
 
                 const requestAfterHook = await this.callHook(
@@ -97,14 +95,14 @@ export class HttpServer
                         response: responseAfterHook,
                     },
                 );
-            } catch (error) {
+            } catch (err: unknown) {
                 if (this.isKilled) {
                     return;
                 }
 
                 const errorAfterHook = await this.callHook(
                     HttpServerPlugins.beforeError,
-                    error,
+                    err,
                     rData,
                     request,
                 );
@@ -144,8 +142,9 @@ export class HttpServer
             } else {
                 this.transportInstance.broadcastLocal<T>(messageType, payload);
             }
-        } catch (err) {
-            this.logger.debug(`Send response failed - ${err?.message}`);
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : String(err);
+            this.logger.debug(`Send response failed - ${errorMessage}`);
         }
     }
 }

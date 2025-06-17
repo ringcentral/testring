@@ -2,7 +2,7 @@ import {IHttpRequest, IHttpResponse} from '@testring/types';
 import * as requestLib from 'request';
 import * as requestPromise from 'request-promise-native';
 
-const toString = (c) => c.toString();
+const toString = (c: requestLib.Cookie) => c.toString();
 
 function createCookieStore(cookies: Array<string> | void, url: string) {
     const cookieJar = requestLib.jar();
@@ -16,15 +16,7 @@ function createCookieStore(cookies: Array<string> | void, url: string) {
     return cookieJar;
 }
 
-const filterRequestField = (rawRequest) => (request, key) => {
-    if (typeof rawRequest[key] !== 'undefined') {
-        request[key] = rawRequest[key];
-    }
-
-    return request;
-};
-
-const mapResponse = (response: requestLib.Response, cookies) => ({
+const mapResponse = (response: requestLib.Response, cookies: string[]) => ({
     statusCode: response.statusCode,
     statusMessage: response.statusMessage,
     headers: response.headers,
@@ -37,7 +29,7 @@ export async function requestFunction(
 ): Promise<IHttpResponse> {
     const cookieJar = createCookieStore(request.cookies, request.url);
 
-    const rawRequest: any = {
+    const rawRequest: requestPromise.RequestPromiseOptions & { url: string } = {
         url: request.url,
         qs: request.query,
         body: request.body,
@@ -46,16 +38,11 @@ export async function requestFunction(
         headers: request.headers,
         json: request.json,
         gzip: request.gzip,
-        simple: request.simple !== false,
         jar: cookieJar,
         resolveWithFullResponse: true,
     };
 
-    const normalizedRequest = Object.keys(rawRequest).reduce(
-        filterRequestField(rawRequest),
-        {},
-    );
-    const response = await requestPromise(normalizedRequest);
+    const response = await requestPromise.default(rawRequest);
     const cookies = cookieJar.getCookies(request.url).map(toString);
 
     return mapResponse(response, cookies);
