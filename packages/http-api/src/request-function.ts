@@ -1,6 +1,6 @@
 import {IHttpRequest, IHttpResponse} from '@testring/types';
-import * as requestLib from 'request';
-import * as requestPromise from 'request-promise-native';
+import requestLib from 'request';
+import requestPromise from 'request-promise-native';
 
 const toString = (c: requestLib.Cookie) => c.toString();
 
@@ -42,7 +42,7 @@ export async function requestFunction(
         resolveWithFullResponse: true,
     };
 
-    const response = await requestPromise.default(rawRequest);
+    const response = await requestPromise(rawRequest);
     const cookies = cookieJar.getCookies(request.url).map(toString);
 
     return mapResponse(response, cookies);

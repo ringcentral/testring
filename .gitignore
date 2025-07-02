@@ -16,3 +16,5 @@ lerna-debug.log
 
 .DS_Store
 .tsbuildinfo
+
+c8-cov/

@@ -41,7 +41,7 @@ export class HttpServer
                     return;
                 }
 
-                this.makeRequest(data, src || 'unknown');
+                this.makeRequest(data, src);
             },
         );
     }
@@ -51,12 +51,12 @@ export class HttpServer
         this.unsubscribeTransport();
     }
 
-    private makeRequest(data: IHttpRequestMessage, src: string): void {
+    private makeRequest(data: IHttpRequestMessage, src?: string): void {
         if (this.isKilled) {
             return;
         }
 
-        const send = async (rData: IHttpRequestMessage, rSrc: string) => {
+        const send = async (rData: IHttpRequestMessage, rSrc?: string) => {
             let uid: string = rData.uid;
             const request = rData.request;
 
@@ -128,7 +128,7 @@ export class HttpServer
     }
 
     private async sendResponse<T>(
-        source: string | null,
+        source: string | undefined | null,
         messageType: string,
         payload: T,
     ) {
