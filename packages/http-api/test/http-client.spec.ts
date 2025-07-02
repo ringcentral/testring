@@ -17,8 +17,7 @@ const imitateServer = (transport: TransportMock, response: Partial<IHttpResponse
     transport.on(
         HttpMessageType.send,
         (data: IHttpRequestMessage, src?: string) => {
-            if (!src) {return;}
-            transport.send(src, HttpMessageType.response, {
+            transport.send(src as string, HttpMessageType.response, {
                 uid: data.uid,
                 response,
             });
@@ -30,8 +29,7 @@ const imitateFailedServer = (transport: TransportMock, error: Error) => {
     transport.on(
         HttpMessageType.send,
         (data: IHttpRequestMessage, src?: string) => {
-            if (!src) {return;}
-            transport.send(src, HttpMessageType.reject, {
+                transport.send(src as string, HttpMessageType.reject, {
                 uid: data.uid,
                 error,
             });
@@ -121,8 +119,7 @@ describe('HttpClient', () => {
         transport.on(
             HttpMessageType.send,
             (_data: IHttpRequestMessage, src?: string) => {
-                if (!src) {return;}
-                transport.send(src, HttpMessageType.response, {});
+                transport.send(src as string, HttpMessageType.response, {});
             },
         );
 
@@ -150,8 +147,7 @@ describe('HttpClient', () => {
         transport.on(
             HttpMessageType.send,
             (data: IHttpRequestMessage, src?: string) => {
-                if (!src) {return;}
-                transport.send(src, HttpMessageType.response, {
+                transport.send(src as string, HttpMessageType.response, {
                     uid: data.uid,
                     response: {
                         body: responses[data.request.body.requestId],
@@ -193,8 +189,7 @@ describe('HttpClient', () => {
         transport.on(
             HttpMessageType.send,
             async (data: IHttpRequestMessage, src?: string) => {
-                if (!src) {return;}
-                transport.send(src, HttpMessageType.response, {
+                transport.send(src as string, HttpMessageType.response, {
                     uid: data.uid,
                     response: DEFAULT_RESPONSE,
                 });

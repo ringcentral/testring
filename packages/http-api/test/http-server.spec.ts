@@ -88,10 +88,8 @@ describe('HttpServer', () => {
                 httpServer.kill();
 
                 try {
-                    chai.expect(
-                        response.status < 400,
-                        'Response error',
-                    ).to.equal(true);
+                    chai.expect(response.error).to.be.instanceOf(Error);
+                    callback();
                 } catch (err) {
                     callback(err);
                 }
