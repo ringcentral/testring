@@ -40,7 +40,7 @@ module.exports = async (config) => {
         screenshots: 'disable',
         retryCount: 0,
         testTimeout: local ? 0 : config.testTimeout,
-        tests: 'test/selenium/test/**/click.spec.js',
+        tests: 'test/selenium/test/**/*.spec.js',
         plugins: [
             [
                 'selenium-driver',

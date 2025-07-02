@@ -1,4 +1,4 @@
-import * as process from 'process';
+import process from 'node:process';
 import * as path from 'path';
 
 import {
@@ -266,7 +266,7 @@ export class WorkerController {
         try {
             await sandbox.execute();
         } catch (err) {
-            throw restructureError(err);
+            throw restructureError(err as Error);
         }
 
         if (isAsync) {

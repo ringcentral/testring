@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as process from 'process';
+import process from 'node:process';
 
 const IS_WIN = process.platform === 'win32';
 

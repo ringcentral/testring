@@ -1,13 +1,13 @@
-import * as express from 'express';
+import express from 'express';
 import * as Http from 'http';
 import * as path from 'node:path';
-import * as multer from 'multer';
+import multer from 'multer';
 
 const port = 8080;
 const upload = multer({storage: multer.memoryStorage()});
 
 export class MockWebServer {
-    private httpServerInstance: Http.Server;
+    private httpServerInstance!: Http.Server;
     private static seleniumHubHeaders: Http.IncomingHttpHeaders[] = [];
 
     start(): Promise<void> {
@@ -29,7 +29,7 @@ export class MockWebServer {
         app.use(express.static(path.join(__dirname, '..', 'static-fixtures')));
 
         // POST upload endpoint
-        app.post('/upload', upload.single('file'), (req, res) => {
+        app.post('/upload', upload.single('file'), (req: express.Request, res: express.Response) => {
             if (!req.file) {
                 res.status(400).json({error: 'No file uploaded'});
                 return;
@@ -41,7 +41,7 @@ export class MockWebServer {
         });
 
         // mock any request that contains /wd/hub
-        app.all('/wd/hub/*', (req, res) => {
+        app.all('/wd/hub/*', (req: express.Request, res: express.Response) => {
             // get request headers
             const headers = req.headers;
             // store headers for later use
@@ -59,7 +59,7 @@ export class MockWebServer {
         });
 
         // endpoint to retrieve stored headers
-        app.get('/selenium-headers', (req, res) => {
+        app.get('/selenium-headers', (_req: express.Request, res: express.Response) => {
             res.status(200).json(MockWebServer.seleniumHubHeaders);
         });
 

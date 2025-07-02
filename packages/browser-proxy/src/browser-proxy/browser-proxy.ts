@@ -100,8 +100,8 @@ export class BrowserProxy {
                 this.killed = true;
             }
 
-            const method = (this.plugin as any)[command.action] as ((applicant: string, ...args: any[]) => Promise<any>);
-            const response = await method(applicant, ...command.args);
+            const method = (this.plugin as any)[command.action];
+            const response = await method.call(this.plugin, applicant, ...command.args);
 
             this.transportInstance.broadcastUniversally<IBrowserProxyCommandResponse>(
                 BrowserProxyMessageTypes.response,

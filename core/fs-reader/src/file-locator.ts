@@ -1,5 +1,5 @@
 import fg, { convertPathToPattern } from 'fast-glob';
-import * as process from 'node:process';
+import process from 'node:process';
 
 export async function locateFiles(searchpath: string): Promise<string[]> {
     if (!searchpath) {

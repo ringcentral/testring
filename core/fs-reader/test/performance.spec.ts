@@ -5,7 +5,7 @@
 import * as path from 'path';
 import * as chai from 'chai';
 import {FSReader} from '../src/fs-reader';
-import * as process from 'node:process';
+import process from 'node:process';
 import * as fs from 'node:fs';
 
 const runPerformanceTests =

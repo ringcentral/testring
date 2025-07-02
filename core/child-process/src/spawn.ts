@@ -1,5 +1,5 @@
 import * as childProcess from 'child_process';
-import * as process from 'process';
+import process from 'node:process';
 
 export function spawn(
     command: string,

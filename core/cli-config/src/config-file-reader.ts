@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as process from 'process';
+import process from 'node:process';
 import {loggerClient} from '@testring/logger';
 import {requirePackage} from '@testring/utils';
 import {IConfig as BaseConfig} from '@testring/types';

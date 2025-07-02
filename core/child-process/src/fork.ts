@@ -1,5 +1,5 @@
 import * as path from 'path';
-import * as process from 'process';
+import process from 'node:process';
 import {getAvailablePort} from '@testring/utils';
 import {IChildProcessForkOptions, IChildProcessFork} from '@testring/types';
 import {resolveBinary} from './resolve-binary';

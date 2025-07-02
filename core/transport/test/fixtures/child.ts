@@ -1,4 +1,4 @@
-import * as process from 'process';
+import process from 'node:process';
 import {Transport} from '../../src/transport';
 import {PAYLOAD, REQUEST_NAME, RESPONSE_NAME} from './constants';
 

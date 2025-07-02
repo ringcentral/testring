@@ -1,4 +1,4 @@
-import * as process from 'process';
+import process from 'node:process';
 
 import {isChildProcess} from '@testring/child-process';
 import {

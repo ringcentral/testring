@@ -133,7 +133,7 @@ describe('assertion functional', () => {
                 const tmpErr = new Error();
                 originalError = meta.error;
                 tmpErr.message = overloadMessage;
-                tmpErr.stack = meta.error.stack;
+                tmpErr.stack = meta.error?.stack ?? '';
 
                 return tmpErr;
             },

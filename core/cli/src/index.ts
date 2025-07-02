@@ -1,4 +1,4 @@
-import * as process from 'process';
+import process from 'node:process';
 import * as yargs from 'yargs';
 import {loggerClient, LoggerServer} from '@testring/logger';
 import {getConfig} from '@testring/cli-config';

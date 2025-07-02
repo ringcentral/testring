@@ -15,7 +15,7 @@ async function runTests() {
     const testringProcess = childProcess.exec(
         `node ${testringFile} ${args.join(' ')}`,
         {},
-        (error, stdout, stderr) => {
+        (error, _stdout, _stderr) => {
             mockWebServer.stop();
 
             if (error) {
