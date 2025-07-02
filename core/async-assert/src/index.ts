@@ -83,7 +83,7 @@ export function createAssertion(options: IAssertionOptions = {}) {
                         successMessage,
                         assertMessage,
                         errorMessage,
-                        error,
+                        error: (error instanceof Error) ? error : new Error(String(error)),
                         args,
                         originalMethod: fieldName,
                     });
