@@ -15,7 +15,7 @@ describe('.xpath()', () => {
         strictMode: false,
     });
     const fooElement = root['foo'];
-    if (!fooElement) throw new Error('Element not found');
+    if (!fooElement) {throw new Error('Element not found');}
     const xpathSelectorCall = fooElement.xpath(
         'selected',
         "//*[@class='selected']",
@@ -44,13 +44,13 @@ describe('.xpath()', () => {
                 undefined,
                 "//*[@class='selected']",
             );
-            if (!child) throw new Error('Element not found');
+            if (!child) {throw new Error('Element not found');}
             expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
 
         it('call with empty string id', () => {
             const child = root['foo']?.xpath('', "//*[@class='selected']");
-            if (!child) throw new Error('Element not found');
+            if (!child) {throw new Error('Element not found');}
             expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
 
@@ -60,7 +60,7 @@ describe('.xpath()', () => {
                 0,
                 "//*[@class='selected']",
             );
-            if (!child) throw new Error('Element not found');
+            if (!child) {throw new Error('Element not found');}
             expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
     });

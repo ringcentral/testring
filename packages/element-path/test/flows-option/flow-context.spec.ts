@@ -15,7 +15,7 @@ describe('flows option function context behavior', () => {
         },
     });
     const childFoo = root['foo'];
-    if (!childFoo) throw new Error('Element not found');
+    if (!childFoo) {throw new Error('Element not found');}
 
     it('Call chidlFoo.getContext()', () => {
         // @ts-ignore

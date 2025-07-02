@@ -15,7 +15,7 @@ describe('foo.xpathByElement()', () => {
         strictMode: false,
     });
     const fooElement = root['foo'];
-    if (!fooElement) throw new Error('Element not found');
+    if (!fooElement) {throw new Error('Element not found');}
     const xpathSelectorCall = fooElement.xpathByElement({
         id: 'selected',
         locator: "//*[@class='selected']",

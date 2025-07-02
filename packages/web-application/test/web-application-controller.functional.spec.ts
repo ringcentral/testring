@@ -37,7 +37,6 @@ describe('WebApplicationController functional', () => {
                         chai.expect(requests).to.have.lengthOf(1);
 
                         const request = requests[0];
-                        chai.expect(request).to.not.be.undefined;
                         chai.expect(request!.args[0]).includes(ELEMENT_NAME);
                         chai.expect(message.command).to.be.equal(request);
                         chai.expect(message.applicant).includes(TEST_NAME);

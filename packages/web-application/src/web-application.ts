@@ -590,7 +590,7 @@ export class WebApplication extends PluggableModule {
         }
     }
 
-    @stepLog(function (this: WebApplication, xpath: ElementPath, _emulateViaJs: boolean = false, timeout: number = this.WAIT_TIMEOUT) {
+    @stepLog(function (this: WebApplication, xpath: ElementPath, _emulateViaJs = false, timeout: number = this.WAIT_TIMEOUT) {
         return `Clearing element ${this.formatXpath(xpath)} for ${timeout}`;
     })
     public async clearElement(
@@ -619,7 +619,7 @@ export class WebApplication extends PluggableModule {
         return this.client.clearValue(normalizedXpath);
     }
 
-    @stepLog(function (this: WebApplication, xpath: ElementPath, value: valueType, _emulateViaJS: boolean = false, timeout: number = this.WAIT_TIMEOUT) {
+    @stepLog(function (this: WebApplication, xpath: ElementPath, value: valueType, _emulateViaJS = false, timeout: number = this.WAIT_TIMEOUT) {
         return `Setting value ${value} for ${this.formatXpath(xpath)} for ${timeout}`;
     })
     public async setValue(
@@ -655,7 +655,7 @@ export class WebApplication extends PluggableModule {
         await this.makeScreenshot();
     }
 
-    @stepLog(function (this: WebApplication, xpath: ElementPath, _trim: boolean = true, timeout: number = this.WAIT_TIMEOUT) {
+    @stepLog(function (this: WebApplication, xpath: ElementPath, _trim = true, timeout: number = this.WAIT_TIMEOUT) {
         return `Getting text for ${this.formatXpath(xpath)} for ${timeout}`;
     })
     public async getText(
@@ -693,7 +693,7 @@ export class WebApplication extends PluggableModule {
         return text;
     }
 
-    @stepLog(function (this: WebApplication, xpath: ElementPath, _trim: boolean = true, timeout: number = this.WAIT_TIMEOUT) {
+    @stepLog(function (this: WebApplication, xpath: ElementPath, _trim = true, timeout: number = this.WAIT_TIMEOUT) {
         return `Getting texts for ${this.formatXpath(xpath)} for ${timeout}`;
     })
     public async getTexts(
@@ -728,7 +728,7 @@ export class WebApplication extends PluggableModule {
         return this.client.executeAsync(getOptionsPropertyScript, xpath, prop);
     }
 
-    @stepLog(function (this: WebApplication, xpath: ElementPath, _trim: boolean = true, timeout: number = this.WAIT_TIMEOUT) {
+    @stepLog(function (this: WebApplication, xpath: ElementPath, _trim = true, timeout: number = this.WAIT_TIMEOUT) {
         return `Getting select texts for ${this.formatXpath(xpath)} for ${timeout}`;
     })
     public async getSelectTexts(
@@ -914,7 +914,7 @@ export class WebApplication extends PluggableModule {
         return !!isSelected;
     }
 
-    @stepLog(function (this: WebApplication, xpath: ElementPath, checked: boolean = true, timeout: number = this.WAIT_TIMEOUT) {
+    @stepLog(function (this: WebApplication, xpath: ElementPath, checked = true, timeout: number = this.WAIT_TIMEOUT) {
         return `Setting checked state of ${this.formatXpath(xpath)} to ${checked} for ${timeout}`;
     })
     public async setChecked(
@@ -1039,7 +1039,7 @@ export class WebApplication extends PluggableModule {
         }
     }
 
-    @stepLog(function (this: WebApplication, xpath: ElementPath, x: number = 1, y: number = 1, _timeout: number = this.WAIT_TIMEOUT) {
+    @stepLog(function (this: WebApplication, xpath: ElementPath, x = 1, y = 1, _timeout: number = this.WAIT_TIMEOUT) {
         return `Moving to object ${this.formatXpath(xpath)} at ${x}, ${y}`;
     })
     public async moveToObject(
@@ -1054,7 +1054,7 @@ export class WebApplication extends PluggableModule {
         return this.client.moveToObject(normalizedXpath, x, y);
     }
 
-    @stepLog(function (this: WebApplication, xpath: ElementPath, x: number = 0, y: number = 0, timeout: number = this.WAIT_TIMEOUT) {
+    @stepLog(function (this: WebApplication, xpath: ElementPath, x = 0, y = 0, timeout: number = this.WAIT_TIMEOUT) {
         return `Scrolling ${this.formatXpath(xpath)} to ${x}, ${y} for ${timeout}`;
     })
     public async scroll(
@@ -1090,7 +1090,7 @@ export class WebApplication extends PluggableModule {
         }
     }
 
-    @stepLog(function (this: WebApplication, xpath: ElementPath, topOffset: number = 0, leftOffset: number = 0, timeout: number = this.WAIT_TIMEOUT) {
+    @stepLog(function (this: WebApplication, xpath: ElementPath, topOffset = 0, leftOffset = 0, timeout: number = this.WAIT_TIMEOUT) {
         return `Scrolling into view for ${this.formatXpath(xpath)} with top offset ${topOffset} and left offset ${leftOffset} for ${timeout}`;
     })
     public async scrollIntoView(
@@ -1124,7 +1124,7 @@ export class WebApplication extends PluggableModule {
         }
     }
 
-    @stepLog(function (this: WebApplication, xpath: ElementPath, topOffset: number = 0, leftOffset: number = 0, timeout: number = this.WAIT_TIMEOUT) {
+    @stepLog(function (this: WebApplication, xpath: ElementPath, topOffset = 0, leftOffset = 0, timeout: number = this.WAIT_TIMEOUT) {
         return `Scrolling into view if needed for ${this.formatXpath(xpath)} with top offset ${topOffset} and left offset ${leftOffset} for ${timeout}`;
     })
     public async scrollIntoViewIfNeeded(
@@ -1712,7 +1712,7 @@ export class WebApplication extends PluggableModule {
         return await this.client.isExisting(xpath);
     }
 
-    @stepLog(function (this: WebApplication, xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean = false) {
+    @stepLog(function (this: WebApplication, xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT, reverse = false) {
         return `Waiting for ${this.formatXpath(xpath)} to be selected for ${timeout} with reverse ${reverse}`;
     })
     public async waitForValue(
@@ -1724,7 +1724,7 @@ export class WebApplication extends PluggableModule {
         return await this.client.waitForValue(xpath, timeout, reverse);
     }
 
-    @stepLog(function (this: WebApplication, xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT, reverse: boolean = false) {
+    @stepLog(function (this: WebApplication, xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT, reverse = false) {
         return `Waiting for ${this.formatXpath(xpath)} to be selected for ${timeout} with reverse ${reverse}`;
     })
     public async waitForSelected(
@@ -1736,7 +1736,7 @@ export class WebApplication extends PluggableModule {
         return await this.client.waitForSelected(xpath, timeout, reverse);
     }
 
-    @stepLog(function (this: WebApplication, condition: () => boolean | Promise<boolean>, timeout: number = this.WAIT_TIMEOUT, timeoutMsg: string = 'Wait by condition failed!', interval: number = 500) {
+    @stepLog(function (this: WebApplication, condition: () => boolean | Promise<boolean>, timeout: number = this.WAIT_TIMEOUT, timeoutMsg = 'Wait by condition failed!', interval = 500) {
         return `Waiting until ${condition} for ${timeout} with timeout message "${timeoutMsg}" and interval ${interval}`;
     })
     public async waitUntil(

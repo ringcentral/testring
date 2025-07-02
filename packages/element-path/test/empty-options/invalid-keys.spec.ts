@@ -71,7 +71,7 @@ describe('invalid keys', () => {
         it("['foo*'][0][0]", () => {
             const error = () => {
                 const element = empty['foo*']?.[0];
-                if (!element) throw new Error('Element not found');
+                if (!element) {throw new Error('Element not found');}
                 return element[0];
             };
             expect(error).to.throw(
@@ -82,7 +82,7 @@ describe('invalid keys', () => {
         it("['foo*']['0'][0]", () => {
             const error = () => {
                 const element = empty['foo*']?.['0'];
-                if (!element) throw new Error('Element not found');
+                if (!element) {throw new Error('Element not found');}
                 return element[0];
             };
             expect(error).to.throw(
@@ -93,7 +93,7 @@ describe('invalid keys', () => {
         it("['foo*'][0]['0']", () => {
             const error = () => {
                 const element = empty['foo*']?.[0];
-                if (!element) throw new Error('Element not found');
+                if (!element) {throw new Error('Element not found');}
                 return element['0'];
             };
             expect(error).to.throw(

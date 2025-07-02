@@ -57,7 +57,7 @@ export class HttpServer
         }
 
         const send = async (rData: IHttpRequestMessage, rSrc?: string) => {
-            let uid: string = rData.uid;
+            const uid: string = rData.uid;
             const request = rData.request;
 
             try {

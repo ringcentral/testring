@@ -8,19 +8,17 @@ export function throttle<T extends (...args: any[]) => any>(
     let lastRan: number | undefined;
 
     return function (this: unknown, ...args: Parameters<T>) {
-        const context = this;
-
         if (lastRan === undefined) {
-            func.apply(context, args);
+            func.apply(this, args);
             lastRan = Date.now();
         } else {
             if (lastFunc !== undefined) {
                 clearTimeout(lastFunc);
             }
 
-            lastFunc = setTimeout(function () {
+            lastFunc = setTimeout(() => {
                 if (Date.now() - (lastRan as number) >= limit) {
-                    func.apply(context, args);
+                    func.apply(this, args);
                     lastRan = Date.now();
                 }
             }, limit - (Date.now() - (lastRan as number)));

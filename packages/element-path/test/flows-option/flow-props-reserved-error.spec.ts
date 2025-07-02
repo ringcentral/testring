@@ -18,7 +18,7 @@ describe('invalid keys', () => {
         },
     });
     const childFoo = root['foo'];
-    if (!childFoo) throw new Error('Element not found');
+    if (!childFoo) {throw new Error('Element not found');}
 
     it('.__path flow check', () => {
         const error = () => childFoo['__path'];

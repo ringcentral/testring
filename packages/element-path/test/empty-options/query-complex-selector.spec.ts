@@ -6,7 +6,7 @@ describe('Heavy selectors', () => {
 
     it('chain selector', () => {
         const chainChild = root['extensionsSelectorPopup']?.['popupContent']?.['extensionsSelectorGrid'];
-        if (!chainChild) throw new Error('Element not found');
+        if (!chainChild) {throw new Error('Element not found');}
 
         expect(chainChild.toString()).to.be.equal(
             "(//*[@data-test-automation-id='root']" +
@@ -18,7 +18,7 @@ describe('Heavy selectors', () => {
 
     it('__findChildren call', () => {
         const grid = root['extensionsSelectorPopup']?.['popupContent']?.['extensionsSelectorGrid'];
-        if (!grid) throw new Error('Element not found');
+        if (!grid) {throw new Error('Element not found');}
         const findChildren = grid.__findChildren({
             prefix: 'extension',
             index: 0,
@@ -40,7 +40,7 @@ describe('Heavy selectors', () => {
 
     it('__findChildren call after indexed element', () => {
         const row = root['extensionsSelectorPopup']?.['popupContent']?.['extensionsSelectorGrid']?.['row']?.[0];
-        if (!row) throw new Error('Element not found');
+        if (!row) {throw new Error('Element not found');}
         const findChildren = row.__findChildren({
             prefix: 'extension',
             index: 0,

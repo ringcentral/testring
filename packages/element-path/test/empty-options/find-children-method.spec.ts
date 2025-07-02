@@ -99,7 +99,7 @@ describe('find children method', () => {
         it('query from already index', () => {
             const error = () => {
                 const element = root['foo']?.[0];
-                if (!element) throw new Error('Element not found');
+                if (!element) {throw new Error('Element not found');}
                 return element.__findChildren({index: 1});
             };
             expect(error).to.throw(
@@ -109,7 +109,7 @@ describe('find children method', () => {
 
         it('query from already index', () => {
             const element = root['foo'];
-            if (!element) throw new Error('Element not found');
+            if (!element) {throw new Error('Element not found');}
             expect(
                 element.__findChildren({index: 1}).__getReversedChain(),
             ).to.be.equal('root.foo[1]');
