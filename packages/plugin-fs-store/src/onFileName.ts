@@ -107,15 +107,15 @@ export function cbGen(staticPaths: Record<string, string> = {}) {
         const {ext = 'tmp'} = meta;
 
         if (!fileName) {
-            tmpName = await ensureUniqName(tmpPath, ext, extraName);
+            tmpName = await ensureUniqName(tmpPath as string, ext, extraName as string);
         } else {
             if (extraName !== '') {
-                tmpName = exsureExtraName(fileName, extraName);
+                tmpName = exsureExtraName(fileName, extraName as string);
             } else {
                 tmpName = path.basename(fileName);
             }
         }
 
-        return path.join(tmpPath, tmpName);
+        return path.join(tmpPath as string, tmpName);
     };
 }

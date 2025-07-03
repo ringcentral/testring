@@ -6,7 +6,7 @@ describe('base methods', () => {
         const dummy = createElementPath();
 
         it('checking proxy object', () => {
-            expect(dummy.__proxy).to.be.equal(dummy);
+            expect(dummy['__proxy']).to.be.equal(dummy);
         });
 
         it('checking instance object', () => {
@@ -19,7 +19,7 @@ describe('base methods', () => {
             const dummy = createElementPath();
 
             const setter = () =>
-                (dummy.test = 123 as unknown as ElementPathProxy);
+                (dummy['test'] = 123 as unknown as ElementPathProxy);
             expect(setter).to.throw(TypeError, 'Immutable object');
         });
 
@@ -37,7 +37,7 @@ describe('base methods', () => {
         it('delete property', () => {
             const dummy = createElementPath();
 
-            const setter = () => delete dummy.test;
+            const setter = () => delete dummy['test'];
             expect(setter).to.throw(TypeError, 'Immutable object');
         });
 

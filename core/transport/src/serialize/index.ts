@@ -114,5 +114,7 @@ export const deserialize: TransportDeserializer = (
 
         case DATE_KEY:
             return deserializeDate(struct as ISerializedDate);
+        default:
+            return struct;
     }
 };

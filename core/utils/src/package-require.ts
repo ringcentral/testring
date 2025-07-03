@@ -1,16 +1,16 @@
 import * as path from 'path';
 import * as resolve from 'resolve';
 
-type webpackRequire = (...any) => any;
+type webpackRequire = (arg0: string, ...rest: any[]) => any;
 declare const __webpack_require__: webpackRequire | undefined;
 
 export const isWebpack = () => typeof __webpack_require__ !== 'undefined';
 
-const requireById = (id) => {
+const requireById = (id: string): any => {
     return module.require(`${id}`);
 };
 
-const requireResolveById = (id, options?: {paths?: string[]}) => {
+const requireResolveById = (id: string, options?: {paths?: string[]}) => {
     return require.resolve(id, options);
 };
 
@@ -45,6 +45,11 @@ export function resolvePackage(
     }
 }
 
+interface RequireError extends Error {
+    stack?: string;
+    message: string;
+}
+
 export function requirePackage(modulePath: string, parentModule?: string): any {
     if (isWebpack()) {
         throw Error("Can't use dynamic imports with webpack.");
@@ -54,12 +59,15 @@ export function requirePackage(modulePath: string, parentModule?: string): any {
 
     try {
         return requireById(fileName);
-    } catch (exception) {
+    } catch (exception: unknown) {
+        const requireError = exception as RequireError;
         const error = new ReferenceError(
-            `Error, while requiring '${modulePath}': ${exception.message}`,
+            `Error, while requiring '${modulePath}': ${requireError.message}`,
         );
 
-        error.stack = exception.stack;
+        if (requireError.stack) {
+            error.stack = requireError.stack;
+        }
 
         throw error;
     }

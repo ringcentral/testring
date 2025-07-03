@@ -68,7 +68,7 @@ describe('Transport', () => {
             transport.broadcast('message', payload);
 
             chai.expect(rootProcessMock.$callCount()).to.be.equal(1);
-            chai.expect(rootProcessMock.$lastCall().payload).to.be.deep.equal(
+            chai.expect(rootProcessMock.$lastCall()).to.have.property('payload').that.deep.equals(
                 serialize(payload),
             );
         });

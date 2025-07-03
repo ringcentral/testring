@@ -9,6 +9,11 @@ import {fsReqType} from '@testring/types';
 
 let FSS: FSStoreServer;
 
+interface ReadOptions {
+    action: fsReqType;
+    ffName: string;
+}
+
 describe('fs-store-client', () => {
     before(() => {
         FSS = new FSStoreServer(10);
@@ -26,19 +31,19 @@ describe('fs-store-client', () => {
         );
 
         onRelease &&
-            onRelease.readHook('testRelease', (readOptions) => {
-                const {action, ffName} = readOptions;
-                switch (action) {
-                    case fsReqType.lock:
-                        break;
-                    case fsReqType.access:
-                        state.access -= 1;
-                        break;
-                    case fsReqType.unlink:
-                        state.unlink -= 1;
-                        break;
-                }
-                chai.expect(ffName).to.be.a('string');
+            onRelease.readHook('testRelease', (readOptions: ReadOptions) => {
+            const {action, ffName} = readOptions;
+            switch (action) {
+                case fsReqType.lock:
+                break;
+                case fsReqType.access:
+                state.access -= 1;
+                break;
+                case fsReqType.unlink:
+                state.unlink -= 1;
+                break;
+            }
+            chai.expect(ffName).to.be.a('string');
             });
 
         const lockReqId = FSC.getLock({fileName}, (fName) => {

@@ -23,7 +23,7 @@ export class AsyncBreakpoints extends EventEmitter {
         }
 
         const breakpoint = new Promise<void>((resolve, reject) => {
-            const releaseHandler = (resolvedType) => {
+            const releaseHandler = (resolvedType: BreakpointsTypes) => {
                 if (resolvedType === type) {
                     this.clearBreakpoint(type);
                     // eslint-disable-next-line no-use-before-define

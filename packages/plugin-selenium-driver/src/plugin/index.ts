@@ -3,6 +3,7 @@ import {
     IBrowserProxyPlugin,
     SavePdfOptions,
     WindowFeaturesConfig,
+    IWindowFeatures
 } from '@testring/types';
 
 import {ChildProcess} from 'child_process';
@@ -16,7 +17,7 @@ import {getCrxBase64} from '@testring/dwnld-collector-crx';
 import {CDPCoverageCollector} from '@nullcc/code-coverage-client';
 
 import type {Cookie} from '@wdio/protocols';
-import type {ClickOptions, MockFilterOptions} from 'webdriverio';
+import type {ClickOptions, MockFilterOptions, WaitUntilOptions} from 'webdriverio';
 import type {JsonCompatible} from '@wdio/types';
 import type {RespondWithOptions} from 'webdriverio/build/utils/interception/types';
 import webdriver from 'webdriver';
@@ -30,7 +31,7 @@ type browserClientItem = {
     client: BrowserObjectCustom;
     sessionId: string;
     initTime: number;
-    cdpCoverageCollector: CDPCoverageCollector;
+    cdpCoverageCollector: CDPCoverageCollector | null;
 };
 
 const DEFAULT_CONFIG: SeleniumPluginConfig = {
@@ -42,16 +43,15 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
     capabilities: {
         browserName: 'chrome',
         'goog:chromeOptions': {
-            // for local ChromeDriver
             args: [] as string[],
         },
         'wdio:enforceWebDriverClassic': true,
-    },
+    } as any,
     cdpCoverage: false,
     disableClientPing: false,
 };
 
-function delay(timeout) {
+function delay(timeout: number) {
     return new Promise<void>((resolve) => setTimeout(() => resolve(), timeout));
 }
 
@@ -60,8 +60,9 @@ function stringifyWindowFeatures(windowFeatures: WindowFeaturesConfig) {
     if (typeof windowFeatures === 'string') {
         result = windowFeatures;
     } else {
-        result = Object.keys(windowFeatures)
-            .map((key) => `${key}=${windowFeatures[key]}`)
+        const features = windowFeatures as IWindowFeatures;
+        result = Object.keys(features)
+            .map((key) => `${key}=${features[key as keyof IWindowFeatures]}`)
             .join(',');
     }
     return result;
@@ -70,7 +71,7 @@ function stringifyWindowFeatures(windowFeatures: WindowFeaturesConfig) {
 export class SeleniumPlugin implements IBrowserProxyPlugin {
     private logger = loggerClient.withPrefix('[selenium-browser-process]');
 
-    private clientCheckInterval: NodeJS.Timer;
+    private clientCheckInterval: NodeJS.Timer | undefined;
 
     private expiredBrowserClients: Set<string> = new Set();
 
@@ -80,7 +81,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     private waitForReadyState: Promise<void> = Promise.resolve();
 
-    private localSelenium: ChildProcess;
+    private localSelenium: ChildProcess | undefined;
 
     private config: SeleniumPluginConfig;
 
@@ -111,8 +112,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             mergedConfig.hostname = mergedConfig.host;
         }
 
-        const googleChromeOptions =
-            mergedConfig.capabilities?.['goog:chromeOptions'];
+        const capabilities = mergedConfig.capabilities as any;
+        const googleChromeOptions = capabilities?.['goog:chromeOptions'];
         if (googleChromeOptions?.args?.includes('--headless=new')) {
             const extensions = googleChromeOptions.extensions;
             const dowldMonitorCrx = getCrxBase64();
@@ -191,7 +192,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             ]);
 
             this.waitForReadyState = new Promise((resolve, reject) => {
-                if (this.localSelenium.stderr) {
+                if (this.localSelenium?.stderr) {
                     this.localSelenium.stderr.on('data', (data) => {
                         const message = data.toString();
 
@@ -210,19 +211,16 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    private getApplicantSessionId(applicant): string | undefined {
+    private getApplicantSessionId(applicant: string): string | undefined {
         const item = this.browserClients.get(applicant);
-
-        if (item) {
-            return item.sessionId;
-        }
+        return item?.sessionId;
     }
 
-    private hasBrowserClient(applicant): boolean {
+    private hasBrowserClient(applicant: string): boolean {
         return this.browserClients.has(applicant);
     }
 
-    private getBrowserClient(applicant): BrowserObjectCustom {
+    private getBrowserClient(applicant: string): BrowserObjectCustom {
         const item = this.browserClients.get(applicant);
 
         if (item) {
@@ -348,7 +346,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         );
     }
 
-    private async enableCDPCoverageClient(client) {
+    private async enableCDPCoverageClient(client: BrowserObjectCustom) {
         if (this.config.host === undefined) {
             return null;
         }
@@ -486,7 +484,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
             // Wait for exit event with a timeout (ensures it does not hang forever)
             const waitForExit = new Promise<void>((resolve) => {
-                this.localSelenium.once('exit', () => {
+                this.localSelenium?.once('exit', () => {
                     this.logger.debug('Selenium process exited.');
                     resolve();
                 });
@@ -495,7 +493,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             // Force kill if not exiting within 3 seconds
             const forceKill = new Promise<void>((resolve) => {
                 setTimeout(() => {
-                    if (!this.localSelenium.killed) {
+                    if (this.localSelenium && !this.localSelenium.killed) {
                         this.logger.warn(
                             `Selenium did not exit in time. Sending SIGKILL.`,
                         );
@@ -675,7 +673,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const elements = (await client.findElements('xpath', xpath)) as unknown;
         return (elements as Array<Record<string, string>>).map((o) => {
             const keys = Object.keys(o);
-            return {ELEMENT: o[keys[0]]};
+            const firstKey = keys[0];
+            if (firstKey === undefined) {
+                return {ELEMENT: ''};
+            }
+            return {ELEMENT: o[firstKey]};
         });
     }
 
@@ -1059,7 +1061,19 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        return client.waitUntil(condition, {timeout, timeoutMsg, interval});
+        const options: Partial<WaitUntilOptions> = {
+            timeout: timeout || 5000,
+        };
+
+        if (timeoutMsg !== undefined) {
+            options.timeoutMsg = timeoutMsg;
+        }
+
+        if (interval !== undefined) {
+            options.interval = interval;
+        }
+
+        return client.waitUntil(condition, options);
     }
 
     public async selectByAttribute(
@@ -1124,7 +1138,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         mock.respond(overwrites, mockResponseParams);
     }
 
-    public async emulateDevice(applicant: string, deviceName) {
+    public async emulateDevice(applicant: string, deviceName: string) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
@@ -1183,7 +1197,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.setTimeZone(timeZone);
     }
 
-    public async getWindowSize(applicant: string) {
+    public async getWindowSize(applicant: string): Promise<{width: number; height: number}> {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
         return client.getWindowSize();

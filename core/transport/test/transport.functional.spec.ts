@@ -1,7 +1,7 @@
 /// <reference types="mocha" />
 
 import {fork} from '@testring/child-process';
-import * as process from 'process';
+import process from 'node:process';
 import * as path from 'path';
 import * as chai from 'chai';
 import {

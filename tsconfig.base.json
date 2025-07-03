@@ -1,0 +1,53 @@
+{
+    "compilerOptions": {
+      /* Language & emit */
+      "target": "ES2019",          // Node 18 baseline
+      "module": "commonjs",        // Can move to "nodenext" when ready
+      "moduleResolution": "node",
+      "lib": ["ES2019", "DOM"],
+      "allowJs": false,
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true,
+  
+      /* Strictness */
+      "strict": true,
+      "noImplicitAny": true,
+      "noImplicitThis": true,
+      "noImplicitReturns": true,
+      "exactOptionalPropertyTypes": true,
+      "noUncheckedIndexedAccess": true,
+      "noPropertyAccessFromIndexSignature": true,
+      "noImplicitOverride": true,
+      "alwaysStrict": true,
+      "strictNullChecks": true,
+      "strictFunctionTypes": true,
+      "strictBindCallApply": true,
+      "strictPropertyInitialization": true,
+      "useUnknownInCatchVariables": true,
+      "forceConsistentCasingInFileNames": true,
+  
+      /* Code‑quality */
+      "noFallthroughCasesInSwitch": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+  
+      /* Interop */
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true,
+  
+      /* Build performance */
+      "incremental": true,
+      "composite": true,
+      "tsBuildInfoFile": "./.tsbuildinfo",
+  
+      /* Emit */
+      "declaration": true,
+      "declarationMap": true,
+      "sourceMap": true,
+      "outDir": "dist",
+  
+      /* Misc */
+      "skipLibCheck": true            // leaving this true avoids d.ts noise – tighten later if devs want
+    },
+    "exclude": ["node_modules", "dist"]
+  }

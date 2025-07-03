@@ -1,5 +1,5 @@
 import * as childProcess from 'child_process';
-import * as process from 'process';
+import process from 'node:process';
 
 export function spawnWithPipes(
     command: string,
@@ -9,6 +9,7 @@ export function spawnWithPipes(
         stdio: ['pipe', 'pipe', 'pipe'], // Use pipes for proper control
         cwd: process.cwd(),
         detached: false, // Run attached to prevent orphan processes
+        windowsHide: true, // Hide the console window on Windows
     });
 
     // Ensure child does not keep the event loop active

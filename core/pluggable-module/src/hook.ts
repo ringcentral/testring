@@ -8,7 +8,7 @@ export class Hook {
             `Plugin ${pluginName} failed: ${error.message}`,
         );
 
-        generatedError.stack = error.stack;
+        generatedError.stack = error.stack ?? 'No stack trace available';
 
         return error;
     }
@@ -33,7 +33,7 @@ export class Hook {
                     ...dataArguments.slice(1),
                 ];
             } catch (error) {
-                throw this.generateError(key, error);
+                throw this.generateError(key, error as Error);
             }
         }
 
@@ -41,7 +41,7 @@ export class Hook {
             try {
                 await hook(...dataArguments);
             } catch (error) {
-                throw this.generateError(key, error);
+                throw this.generateError(key, error as Error);
             }
         }
 

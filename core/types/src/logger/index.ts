@@ -34,13 +34,13 @@ export interface ILoggerServer {
 }
 
 export interface ILoggerClient<Transport, Prefix, Marker, Stack> {
-    log(...args): void;
-    info(...args): void;
-    warn(...args): void;
-    error(...args): void;
-    debug(...args): void;
-    verbose(...args): void;
-    success(...args): void;
+    log(...args: any[]): void;
+    info(...args: any[]): void;
+    warn(...args: any[]): void;
+    error(...args: any[]): void;
+    debug(...args: any[]): void;
+    verbose(...args: any[]): void;
+    success(...args: any[]): void;
 
     startStep(message: any, stepType?: LogStepTypes): void;
 

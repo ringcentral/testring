@@ -1,4 +1,4 @@
-import {argv as processArgv} from 'process';
+import {argv as processArgv} from 'node:process';
 
 function checkArguments(argv: string[]) {
     return (

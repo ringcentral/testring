@@ -9,7 +9,7 @@ const fixtures = path.resolve(__dirname, './fixtures');
 describe('fork', () => {
     it('should fork .js files with node', (callback) => {
         fork(path.join(fixtures, 'javascript.js')).then((ps) => {
-            ps.on('exit', (code, signal) => {
+            ps.on('exit', (_, signal) => {
                 if (signal) {
                     callback(signal);
                 } else {

@@ -25,7 +25,7 @@ export class BrowserProxyController
         plugin: 'unknown',
         config: null,
     };
-    private externalPlugin: IBrowserProxyWorkerConfig;
+    private externalPlugin: IBrowserProxyWorkerConfig = this.defaultExternalPlugin;
     private lastWorkerIndex = -1;
     private workerLimit: number | 'local' = 1;
     private logger = logger;
@@ -78,7 +78,7 @@ export class BrowserProxyController
         }
 
         const mappedWorker = this.applicantWorkerMap.get(applicant);
-        let worker;
+        let worker: IBrowserProxyWorker | undefined;
 
         if (mappedWorker) {
             return mappedWorker;
@@ -100,6 +100,9 @@ export class BrowserProxyController
             worker = [...this.workersPool.values()][this.lastWorkerIndex];
         }
 
+        if (!worker) {
+            throw new Error('Failed to get or create a worker');
+        }
         this.applicantWorkerMap.set(applicant, worker);
         return worker;
     }

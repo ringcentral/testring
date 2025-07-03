@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const process = require('process');
+const process = require('node:process');
 const path = require('path');
 const fs = require('fs');
 

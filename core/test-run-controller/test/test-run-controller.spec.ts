@@ -15,7 +15,7 @@ const generateTestFile = (index: number) => ({
 });
 
 const generateTestFiles = (count: number) =>
-    Array.from({length: count}, (v, i) => generateTestFile(i));
+    Array.from({length: count}, (_v, i) => generateTestFile(i));
 
 describe('TestRunController', () => {
     it('should fail if zero workers are passed', async () => {
@@ -290,7 +290,7 @@ describe('TestRunController', () => {
         if (shouldNotRetry) {
             shouldNotRetry.writeHook(
                 'testPlugin',
-                (state, queueItem, {processID}) => {
+                (state: boolean, _queueItem: unknown, {processID}: {processID: string | number}) => {
                     chai.expect(processID).to.be.equal(
                         testWorkerMock.$getInstanceName(),
                     );
@@ -330,7 +330,7 @@ describe('TestRunController', () => {
         );
 
         if (shouldNotStart) {
-            shouldNotStart.writeHook('testPlugin', (state) => {
+            shouldNotStart.writeHook('testPlugin', (state: boolean) => {
                 chai.expect(state).to.be.equal(false);
                 return true;
             });
@@ -368,7 +368,7 @@ describe('TestRunController', () => {
         if (shouldNotStart) {
             shouldNotStart.writeHook(
                 'testPlugin',
-                (state, queueItem, {processID}) => {
+                (state: boolean, _queueItem: unknown, {processID}: {processID: string | number}) => {
                     chai.expect(processID).to.be.equal(
                         testWorkerMock.$getInstanceName(),
                     );
@@ -407,13 +407,13 @@ describe('TestRunController', () => {
         );
 
         if (beforeTest && afterTest) {
-            beforeTest.readHook('testPlugin', (entry, {processID}) => {
+            beforeTest.readHook('testPlugin', (_entry: unknown, {processID}: {processID: string | number}) => {
                 chai.expect(processID).to.be.equal(
                     testWorkerMock.$getInstanceName(),
                 );
             });
 
-            afterTest.writeHook('testPlugin', (entry, error, {processID}) => {
+            afterTest.writeHook('testPlugin', (_entry: unknown, _error: Error | null, {processID}: {processID: string | number}) => {
                 chai.expect(processID).to.be.equal(
                     testWorkerMock.$getInstanceName(),
                 );
@@ -447,13 +447,13 @@ describe('TestRunController', () => {
         );
 
         if (beforeTest && afterTest) {
-            beforeTest.readHook('testPlugin', (entry, {processID}) => {
+            beforeTest.readHook('testPlugin', (_entry: unknown, {processID}: {processID: string | number}) => {
                 chai.expect(processID).to.be.equal(
                     testWorkerMock.$getInstanceName(),
                 );
             });
 
-            afterTest.writeHook('testPlugin', (entry, error, {processID}) => {
+            afterTest.writeHook('testPlugin', (_entry: unknown, error: Error | null, {processID}: {processID: string | number}) => {
                 chai.expect(processID).to.be.equal(
                     testWorkerMock.$getInstanceName(),
                 );

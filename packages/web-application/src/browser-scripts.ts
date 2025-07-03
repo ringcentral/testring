@@ -1,6 +1,6 @@
 /* eslint-disable */
-export const simulateJSFieldChangeScript = (xpath, value, done) => {
-    const supportedInputTypes = {
+export const simulateJSFieldChangeScript = (xpath: string, value: string, done: (err?: string) => void) => {
+    const supportedInputTypes: Record<string, boolean> = {
         color: true,
         date: true,
         datetime: true,
@@ -18,17 +18,17 @@ export const simulateJSFieldChangeScript = (xpath, value, done) => {
         week: true,
     };
 
-    function isTextNode(el) {
+    function isTextNode(el: any): boolean {
         const nodeName = el.nodeName.toLowerCase();
 
         return (
             nodeName === 'textarea' ||
             (nodeName === 'input' &&
-                supportedInputTypes[el.getAttribute('type')])
+                !!supportedInputTypes[el.getAttribute('type') as string])
         );
     }
 
-    function simulateEvent(el, type) {
+    function simulateEvent(el: any, type: string) {
         const oEvent = new CustomEvent(type, {
             bubbles: true,
             cancelable: true,
@@ -37,7 +37,7 @@ export const simulateJSFieldChangeScript = (xpath, value, done) => {
         el.dispatchEvent(oEvent);
     }
 
-    function simulateKey(el, type, keyCode, key) {
+    function simulateKey(el: any, type: string, keyCode: number, key: string) {
         const oEvent = new KeyboardEvent(type, {
             bubbles: true,
             cancelable: true,
@@ -47,12 +47,12 @@ export const simulateJSFieldChangeScript = (xpath, value, done) => {
         // Chromium Hack
         Object.defineProperty(oEvent, 'keyCode', {
             get() {
-                return this.keyCodeVal;
+                return (this as any).keyCodeVal;
             },
         });
         Object.defineProperty(oEvent, 'which', {
             get() {
-                return this.keyCodeVal;
+                return (this as any).keyCodeVal;
             },
         });
 
@@ -61,7 +61,7 @@ export const simulateJSFieldChangeScript = (xpath, value, done) => {
         el.dispatchEvent(oEvent);
     }
 
-    function getElementByXPath(xpath) {
+    function getElementByXPath(xpath: string): any {
         const element = document.evaluate(
             xpath,
             document,
@@ -77,7 +77,7 @@ export const simulateJSFieldChangeScript = (xpath, value, done) => {
     }
 
     try {
-        (function (el) {
+        (function (el: any) {
             if (el) {
                 el.focus();
 
@@ -95,13 +95,13 @@ export const simulateJSFieldChangeScript = (xpath, value, done) => {
                 throw Error(`Element ${xpath} not found.`);
             }
         })(getElementByXPath(xpath));
-    } catch (e) {
+    } catch (e: any) {
         done(`${e.message} ${xpath}`);
     }
 };
 
-export const getOptionsPropertyScript = (xpath, prop, done) => {
-    function getElementByXPath(xpath) {
+export const getOptionsPropertyScript = (xpath: string, prop: string, done: (result?: any) => void) => {
+    function getElementByXPath(xpath: string): any {
         const element = document.evaluate(
             xpath,
             document,
@@ -131,19 +131,18 @@ export const getOptionsPropertyScript = (xpath, prop, done) => {
         } else {
             throw Error('Element not found');
         }
-    } catch (e) {
+    } catch (e: any) {
         throw Error(`${e.message} ${xpath}`);
     }
 };
 
 export const scrollIntoViewCallScript = (
-    xpath,
-    topOffset,
-    leftOffset,
-    done,
+    xpath: string,
+    topOffset: number,
+    leftOffset: number,
+    done: (err?: string) => void,
 ) => {
-    // eslint-disable-next-line sonarjs/no-identical-functions
-    function getElementByXPath(xpath) {
+    function getElementByXPath(xpath: string): any {
         const element = document.evaluate(
             xpath,
             document,
@@ -159,7 +158,7 @@ export const scrollIntoViewCallScript = (
         return null;
     }
 
-    function isScrollable(el) {
+    function isScrollable(el: any): boolean {
         const hasScrollableContent = el.scrollHeight > el.clientHeight;
 
         const overflowYStyle = window.getComputedStyle(el).overflowY;
@@ -168,8 +167,7 @@ export const scrollIntoViewCallScript = (
         return hasScrollableContent && !isOverflowHidden;
     }
 
-    function getScrollableParent(el) {
-        // eslint-disable-next-line no-nested-ternary
+    function getScrollableParent(el: any): any {
         return !el || el === document.scrollingElement || document.body
             ? document.scrollingElement || document.body
             : isScrollable(el)
@@ -188,19 +186,18 @@ export const scrollIntoViewCallScript = (
         } else {
             done('Element not found');
         }
-    } catch (err) {
+    } catch (err: any) {
         done(`${err.message} ${xpath}`);
     }
 };
 
 export const scrollIntoViewIfNeededCallScript = (
-    xpath,
-    topOffset,
-    leftOffset,
-    done,
+    xpath: string,
+    topOffset: number,
+    leftOffset: number,
+    done: (err?: string) => void,
 ) => {
-    // eslint-disable-next-line sonarjs/no-identical-functions
-    function getElementByXPath(xpath) {
+    function getElementByXPath(xpath: string): any {
         const element = document.evaluate(
             xpath,
             document,
@@ -216,8 +213,7 @@ export const scrollIntoViewIfNeededCallScript = (
         return null;
     }
 
-    // eslint-disable-next-line sonarjs/no-identical-functions
-    function isScrollable(el) {
+    function isScrollable(el: any): boolean {
         const hasScrollableContent = el.scrollHeight > el.clientHeight;
 
         const overflowYStyle = window.getComputedStyle(el).overflowY;
@@ -226,9 +222,7 @@ export const scrollIntoViewIfNeededCallScript = (
         return hasScrollableContent && !isOverflowHidden;
     }
 
-    // eslint-disable-next-line sonarjs/no-identical-functions
-    function getScrollableParent(el) {
-        // eslint-disable-next-line no-nested-ternary
+    function getScrollableParent(el: any): any {
         return !el || el === document.scrollingElement || document.body
             ? document.scrollingElement || document.body
             : isScrollable(el)
@@ -236,11 +230,10 @@ export const scrollIntoViewIfNeededCallScript = (
             : getScrollableParent(el.parentNode);
     }
 
-    function scrollIntoViewIfNeeded(element, topOffset, leftOffset) {
+    function scrollIntoViewIfNeeded(element: any, topOffset: number, leftOffset: number) {
         const parent = element.parentNode;
         const scrollableParent = getScrollableParent(element);
         const parentComputedStyle = window.getComputedStyle(parent, null);
-        /* eslint-disable max-len */
         const parentBorderTopWidth =
             parseInt(parentComputedStyle.getPropertyValue('border-top-width')) +
             topOffset;
@@ -263,10 +256,9 @@ export const scrollIntoViewIfNeededCallScript = (
                 element.clientWidth -
                 parentBorderLeftWidth >
             parent.scrollLeft + parent.clientWidth;
-        /* eslint-enable max-len */
 
         if (overTop || overBottom || overLeft || overRight) {
-            element.scrollIntoViewIfNeeded();
+            (element as any).scrollIntoViewIfNeeded();
             scrollableParent.scrollBy(leftOffset, topOffset);
         }
     }
@@ -278,13 +270,13 @@ export const scrollIntoViewIfNeededCallScript = (
             if (topOffset || leftOffset) {
                 scrollIntoViewIfNeeded(element, topOffset, leftOffset);
             } else {
-                element.scrollIntoViewIfNeeded();
+                (element as any).scrollIntoViewIfNeeded();
             }
             setTimeout(done, 200);
         } else {
             throw new Error('Element not found');
         }
-    } catch (err) {
+    } catch (err: any) {
         done(`${err.message} ${xpath}`);
     }
 };

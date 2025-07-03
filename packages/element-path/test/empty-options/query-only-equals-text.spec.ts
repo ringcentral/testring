@@ -11,6 +11,7 @@ import {
 describe("empty options ElementPath root['={Text element}']", () => {
     const root = createElementPath();
     const childFoo = root['={Text element}'];
+    if (!childFoo) {throw new Error('Element not found');}
 
     describe('basic Object methods', () => {
         it('.toString()', () => {

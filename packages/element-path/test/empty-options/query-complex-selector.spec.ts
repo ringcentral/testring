@@ -5,8 +5,8 @@ describe('Heavy selectors', () => {
     const root = createElementPath();
 
     it('chain selector', () => {
-        const chainChild =
-            root.extensionsSelectorPopup.popupContent.extensionsSelectorGrid;
+        const chainChild = root['extensionsSelectorPopup']?.['popupContent']?.['extensionsSelectorGrid'];
+        if (!chainChild) {throw new Error('Element not found');}
 
         expect(chainChild.toString()).to.be.equal(
             "(//*[@data-test-automation-id='root']" +
@@ -17,17 +17,16 @@ describe('Heavy selectors', () => {
     });
 
     it('__findChildren call', () => {
-        const findChildren =
-            root.extensionsSelectorPopup.popupContent.extensionsSelectorGrid.__findChildren(
-                {
-                    prefix: 'extension',
-                    index: 0,
-                    subQuery: {
-                        exactKey: 'pin',
-                        containsText: '101',
-                    },
-                },
-            );
+        const grid = root['extensionsSelectorPopup']?.['popupContent']?.['extensionsSelectorGrid'];
+        if (!grid) {throw new Error('Element not found');}
+        const findChildren = grid.__findChildren({
+            prefix: 'extension',
+            index: 0,
+            subQuery: {
+                exactKey: 'pin',
+                containsText: '101',
+            },
+        });
 
         expect(findChildren.toString()).to.be.equal(
             "(//*[@data-test-automation-id='root']" +
@@ -40,17 +39,16 @@ describe('Heavy selectors', () => {
     });
 
     it('__findChildren call after indexed element', () => {
-        const findChildren =
-            root.extensionsSelectorPopup.popupContent.extensionsSelectorGrid.row[0].__findChildren(
-                {
-                    prefix: 'extension',
-                    index: 0,
-                    subQuery: {
-                        exactKey: 'pin',
-                        containsText: '101',
-                    },
-                },
-            );
+        const row = root['extensionsSelectorPopup']?.['popupContent']?.['extensionsSelectorGrid']?.['row']?.[0];
+        if (!row) {throw new Error('Element not found');}
+        const findChildren = row.__findChildren({
+            prefix: 'extension',
+            index: 0,
+            subQuery: {
+                exactKey: 'pin',
+                containsText: '101',
+            },
+        });
 
         expect(findChildren.toString()).to.be.equal(
             "(//*[@data-test-automation-id='root']" +

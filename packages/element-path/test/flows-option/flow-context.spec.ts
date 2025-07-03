@@ -3,7 +3,7 @@ import {expect} from 'chai';
 import {createElementPath} from '../../src';
 
 describe('flows option function context behavior', () => {
-    function getContext() {
+    function getContext(this: any) {
         return this;
     }
 
@@ -14,7 +14,8 @@ describe('flows option function context behavior', () => {
             },
         },
     });
-    const childFoo = root.foo;
+    const childFoo = root['foo'];
+    if (!childFoo) {throw new Error('Element not found');}
 
     it('Call chidlFoo.getContext()', () => {
         // @ts-ignore

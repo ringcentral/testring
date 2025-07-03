@@ -10,7 +10,8 @@ import {
 
 describe("empty options ElementPath root['*foo'][0]", () => {
     const root = createElementPath();
-    const childFoo = root['*foo'][0];
+    const childFoo = root['*foo']?.[0];
+    if (!childFoo) {throw new Error('Element not found');}
 
     describe('basic Object methods', () => {
         it('.toString()', () => {

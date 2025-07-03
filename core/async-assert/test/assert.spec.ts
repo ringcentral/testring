@@ -109,7 +109,7 @@ describe('assertion functional', () => {
 
     it('should call onError assertion callback without changed error object', async () => {
         const assert = createAssertion({
-            onError: (meta) => {
+            onError: (_meta) => {
                 /* empty */
             },
         });
@@ -118,7 +118,7 @@ describe('assertion functional', () => {
             await assert.equal(1, 2);
         } catch (error) {
             chai.expect(error).to.be.an.instanceof(Error);
-            chai.expect(error.message).to.be.eq(
+            chai.expect((error as Error).message).to.be.eq(
                 '[assert] equal(act = 1, exp = 2)',
             );
         }
@@ -126,14 +126,14 @@ describe('assertion functional', () => {
 
     it('should call onError assertion callback with different Error', async () => {
         const overloadMessage = 'Overloaded message';
-        let originalError;
+        let originalError: Error | undefined;
 
         const assert = createAssertion({
             onError: (meta) => {
                 const tmpErr = new Error();
                 originalError = meta.error;
                 tmpErr.message = overloadMessage;
-                tmpErr.stack = meta.error.stack;
+                tmpErr.stack = meta.error?.stack ?? '';
 
                 return tmpErr;
             },
@@ -143,8 +143,8 @@ describe('assertion functional', () => {
             await assert.equal(1, 2);
         } catch (error) {
             chai.expect(error).to.be.an.instanceof(Error);
-            chai.expect(error.message).to.be.eq(overloadMessage);
-            chai.expect(error.stack).to.be.eq(originalError.stack);
+            chai.expect((error as Error).message).to.be.eq(overloadMessage);
+            chai.expect((error as Error).stack).to.be.eq(originalError?.stack);
         }
     });
 });

@@ -17,6 +17,11 @@ let FSS: FSStoreServer;
 
 const tmpDir = 'tmp';
 
+interface ReadOptions {
+    action: fsReqType;
+    ffName: string;
+}
+
 describe('fs-store-presets', () => {
     before(() => {
         FSS = new FSStoreServer(10, prefix);
@@ -34,7 +39,7 @@ describe('fs-store-presets', () => {
         );
 
         onFileName &&
-            onFileName.writeHook('testFileName', (value: string, opts: any) => {
+            onFileName.writeHook('testFileName', (_: string, opts: any) => {
                 const {
                     meta: {fileName, ext},
                 } = opts;
@@ -76,24 +81,26 @@ describe('fs-store-presets', () => {
             'Hook ON_RELEASE in undefined',
         );
 
+        
+
         onRelease &&
-            onRelease.readHook('testRelease', (readOptions) => {
-                const {action, ffName} = readOptions;
-                switch (action) {
-                    case fsReqType.lock:
-                        if (state.lock) {
-                            state.lock -= 1;
-                        }
-                        break;
-                    case fsReqType.access:
-                        state.access -= 1;
-                        break;
-                    case fsReqType.unlink:
-                        state.unlink -= 1;
-                        break;
+            onRelease.readHook('testRelease', (readOptions: ReadOptions) => {
+            const {action, ffName} = readOptions;
+            switch (action) {
+                case fsReqType.lock:
+                if (state.lock) {
+                    state.lock -= 1;
                 }
-                chai.expect(ffName).to.be.a('string');
-                log.debug({ffName, state}, 'release hook done');
+                break;
+                case fsReqType.access:
+                state.access -= 1;
+                break;
+                case fsReqType.unlink:
+                state.unlink -= 1;
+                break;
+            }
+            chai.expect(ffName).to.be.a('string');
+            log.debug({ffName, state}, 'release hook done');
             });
 
         try {

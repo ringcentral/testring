@@ -6,11 +6,11 @@ import {testAPIController} from './test-api-controller';
 
 type TestFunction = (api: TestContext) => void | Promise<any>;
 
-export function beforeRun(callback) {
+export function beforeRun(callback: (...args: any[]) => any) {
     testAPIController.registerBeforeRunCallback(callback);
 }
 
-export function afterRun(callback) {
+export function afterRun(callback: (...args: any[]) => any) {
     testAPIController.registerAfterRunCallback(callback);
 }
 
@@ -44,7 +44,7 @@ export async function run(...tests: Array<TestFunction>) {
 
         passed = true;
     } catch (error) {
-        catchedError = restructureError(error);
+        catchedError = restructureError(error as Error);
     } finally {
         if (passed) {
             loggerClient.endStep(testID, 'Test passed');
@@ -53,7 +53,7 @@ export async function run(...tests: Array<TestFunction>) {
         } else {
             loggerClient.endStep(testID, 'Test failed', catchedError);
 
-            await bus.failedTest(catchedError);
+            await bus.failedTest(catchedError as Error);
         }
     }
 }

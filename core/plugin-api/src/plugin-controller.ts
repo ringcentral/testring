@@ -11,7 +11,10 @@ export class PluginController {
         }
 
         for (let index = 0; index < plugins.length; index++) {
-            this.processPlugin(plugins[index], index);
+            const plugin = plugins[index];
+            if (plugin !== undefined) {
+                this.processPlugin(plugin, index);
+            }
         }
     }
 

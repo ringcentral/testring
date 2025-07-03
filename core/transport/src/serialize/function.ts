@@ -8,7 +8,7 @@ export interface ISerializedFunction extends ITransportSerializedStruct {
 
 export const FUNCTION_KEY = 'Function';
 
-const trimString = (str) => str.trim();
+const trimString = (str: string) => str.trim();
 
 function getBody(fn: string) {
     const blockBodyRegExp = /{([^]*)}$/;
@@ -21,7 +21,7 @@ function getBody(fn: string) {
 
         let normalizedBody = blockBody ? blockBody[1] : '';
 
-        if (normalizedBody.includes('[native code]')) {
+        if (normalizedBody && normalizedBody.includes('[native code]')) {
             normalizedBody = '';
         }
 
@@ -36,7 +36,7 @@ function getArguments(fn: string) {
     const argumentsRegExp = /^(function)?([^(]*\(([^)]*)\)|[A-z]+)/;
     const args = fn.match(argumentsRegExp);
 
-    const matchedArgs = args ? args[3] || args[2] : '';
+    const matchedArgs = (args ? args[3] || args[2] : '') || '';
 
     if (matchedArgs.includes('()')) {
         return [];
@@ -47,7 +47,7 @@ function getArguments(fn: string) {
 
 export function serializeFunction(func: Function): ISerializedFunction {
     const content = func.toString();
-    const body = getBody(content);
+    const body = getBody(content) || '';
     const args = getArguments(content);
 
     return {

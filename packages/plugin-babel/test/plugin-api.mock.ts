@@ -1,17 +1,17 @@
 class TestWorkerAPIMock {
-    private compilePlugin: Function;
+    private compilePlugin: (source: string, filename: string) => string = () => '';
 
-    compile(fn) {
+    compile(fn: (source: string, filename: string) => string) {
         this.compilePlugin = fn;
     }
 
-    $compile(source, filename) {
+    $compile(source: string, filename: string) {
         return this.compilePlugin(source, filename);
     }
 }
 
 export class PluginAPIMock {
-    private lastTestWorker: TestWorkerAPIMock;
+    private lastTestWorker: TestWorkerAPIMock = new TestWorkerAPIMock();
 
     getTestWorker(): TestWorkerAPIMock {
         this.lastTestWorker = new TestWorkerAPIMock();

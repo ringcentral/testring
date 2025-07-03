@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as process from 'process';
+import process from 'node:process';
 
 const IS_WIN = process.platform === 'win32';
 
@@ -16,7 +16,7 @@ function findNodeModulesDir(modulePath: string) {
     return findNodeModulesDir(path.dirname(modulePath));
 }
 
-function windowsQuotes(str) {
+function windowsQuotes(str: string): string {
     if (!/ /.test(str)) {
         return str;
     }

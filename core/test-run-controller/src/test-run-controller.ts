@@ -109,7 +109,7 @@ export class TestRunController
             await this.callHook(TestRunControllerPlugins.afterRun, null);
         } catch (error) {
             await this.callHook(TestRunControllerPlugins.afterRun, error);
-            this.errors.push(error);
+            this.errors.push(error as Error);
         }
 
         if (this.errors.length > 0) {
@@ -128,6 +128,10 @@ export class TestRunController
 
         this.workers = this.createWorkers(1);
         const worker = this.workers[0];
+
+        if (!worker) {
+            throw new Error('Failed to create a test worker instance.');
+        }
 
         while (testQueue.length > 0) {
             await this.executeWorker(worker, testQueue);
@@ -187,7 +191,7 @@ export class TestRunController
         };
     }
 
-    private getQueueItemWithRunData(queueItem): IQueuedTest {
+    private getQueueItemWithRunData(queueItem: IQueuedTest): IQueuedTest {
         let screenshotsEnabled = false;
         const isRetryRun = queueItem.retryCount > 0;
         const {debug, httpThrottle, logLevel, devtool, screenshotPath} =
@@ -227,7 +231,10 @@ export class TestRunController
         const testQueue = new Array(testFiles.length);
 
         for (let index = 0; index < testFiles.length; index++) {
-            testQueue[index] = this.prepareTest(testFiles[index]);
+            const testFile = testFiles[index];
+            if (testFile !== undefined) {
+                testQueue[index] = this.prepareTest(testFile);
+            }
         }
 
         const modifierQueue = await this.callHook(
@@ -236,7 +243,7 @@ export class TestRunController
         );
 
         return new Queue(
-            (modifierQueue || []).map((item) =>
+            (modifierQueue || []).map((item: IQueuedTest) =>
                 this.getQueueItemWithRunData(item),
             ),
         );
@@ -340,7 +347,7 @@ export class TestRunController
 
             if (timeout > 0) {
                 raceQueue.push(
-                    new Promise((resolve, reject) => {
+                    new Promise((_resolve, reject) => {
                         timer = setTimeout(() => {
                             isRejectedByTimeout = true;
                             reject(
@@ -371,7 +378,7 @@ export class TestRunController
             // noinspection JSUnusedAssignment
             clearTimeout(timer);
 
-            await this.onTestFailed(error, worker, queuedTest, queue);
+            await this.onTestFailed(error as Error, worker, queuedTest, queue);
         }
     }
 }

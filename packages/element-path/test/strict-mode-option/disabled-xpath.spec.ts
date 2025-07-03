@@ -14,7 +14,9 @@ describe('.xpath()', () => {
     const root = createElementPath({
         strictMode: false,
     });
-    const xpathSelectorCall = root.foo.xpath(
+    const fooElement = root['foo'];
+    if (!fooElement) {throw new Error('Element not found');}
+    const xpathSelectorCall = fooElement.xpath(
         'selected',
         "//*[@class='selected']",
     );
@@ -22,7 +24,7 @@ describe('.xpath()', () => {
     describe('arguments validation', () => {
         it('call without xpath and id', () => {
             // @ts-ignore
-            const error = () => root.foo.xpath();
+            const error = () => root['foo']?.xpath();
             expect(error).to.throw(
                 'Invalid options, "xpath" string is required',
             );
@@ -30,32 +32,35 @@ describe('.xpath()', () => {
 
         it('call without xpath', () => {
             // @ts-ignore
-            const error = () => root.foo.xpath('test');
+            const error = () => root['foo']?.xpath('test');
             expect(error).to.throw(
                 'Invalid options, "xpath" string is required',
             );
         });
 
         it('call without id', () => {
-            const child = root.foo.xpath(
+            const child = root['foo']?.xpath(
                 // @ts-ignore
                 undefined,
                 "//*[@class='selected']",
             );
+            if (!child) {throw new Error('Element not found');}
             expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
 
         it('call with empty string id', () => {
-            const child = root.foo.xpath('', "//*[@class='selected']");
+            const child = root['foo']?.xpath('', "//*[@class='selected']");
+            if (!child) {throw new Error('Element not found');}
             expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
 
         it('call with not string', () => {
-            const child = root.foo.xpath(
+            const child = root['foo']?.xpath(
                 // @ts-ignore
                 0,
                 "//*[@class='selected']",
             );
+            if (!child) {throw new Error('Element not found');}
             expect(child.toString()).to.be.equal(xpathSelectorCall.toString());
         });
     });

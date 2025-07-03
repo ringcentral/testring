@@ -19,8 +19,8 @@ describe('flows option on deep child', () => {
             },
         },
     });
-    const deepChildFoo =
-        root.foo.bar.baz[1].let[0].it[0].be[0].let[1].it[1].be[1].deepChild;
+    const deepChildFoo = root['foo']?.['bar']?.['baz']?.[1]?.['let']?.[0]?.['it']?.[0]?.['be']?.[0]?.['let']?.[1]?.['it']?.[1]?.['be']?.[1]?.['deepChild'];
+    if (!deepChildFoo) {throw new Error('Element not found');}
 
     describe('.__flows property traps', () => {
         checkProperty({

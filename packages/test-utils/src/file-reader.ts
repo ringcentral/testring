@@ -13,7 +13,7 @@ export const fileReaderFactory = (...root: Array<string>) => {
             fs.readFile(
                 resolver(source),
                 'utf8',
-                (err: Error, file: string) => {
+                (err: NodeJS.ErrnoException | null, file: string) => {
                     if (err) {
                         reject(err);
                     } else {

@@ -13,7 +13,7 @@ describe('own properties', () => {
     });
 
     it('.regexp is hidden', () => {
-        expect(empty.regexp.toString()).to.be.equal(
+        expect(empty['regexp']?.toString()).to.be.equal(
             "(//*[@data-test-automation-id='root']//*[@data-test-automation-id='regexp'])[1]",
         );
     });

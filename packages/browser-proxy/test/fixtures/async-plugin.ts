@@ -1,5 +1,5 @@
 class AsyncPlugin {
-    async click(applicant, argument) {
+    async click(_applicant: string, argument: any) {
         return argument;
     }
 
@@ -8,4 +8,4 @@ class AsyncPlugin {
     }
 }
 
-export default (config) => new AsyncPlugin();
+export default (_config: any) => new AsyncPlugin();

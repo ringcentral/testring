@@ -13,7 +13,7 @@ export class WebApplicationController extends EventEmitter {
 
     private onExecuteRequest = async (
         message: IWebApplicationExecuteMessage,
-        source: string,
+        source?: string,
     ) => {
         this.emit(WebApplicationControllerEventType.execute, message);
 
@@ -28,7 +28,7 @@ export class WebApplicationController extends EventEmitter {
             }
 
             this.emit(WebApplicationControllerEventType.response, response);
-            const payload = {
+            const payload: IWebApplicationResponseMessage = {
                 uid: message.uid,
                 response,
                 error: null,
@@ -56,10 +56,10 @@ export class WebApplicationController extends EventEmitter {
             if (this.isKilled) {
                 return;
             }
-            const payload = {
+            const payload: IWebApplicationResponseMessage = {
                 uid: message.uid,
                 response: null,
-                error,
+                error: error instanceof Error ? error : new Error(String(error)),
             };
 
             if (source) {

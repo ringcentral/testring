@@ -14,7 +14,7 @@ import {LoggerClient, loggerClient} from '@testring/logger';
 import {Queue, generateUniqId} from '@testring/utils';
 import {HttpCookieJar} from './cookie-jar';
 
-const toString = (c) => c.toString();
+const toString = (c: any) => c.toString();
 
 export abstract class AbstractHttpClient implements IHttpClient {
     protected abstract broadcast(options: IHttpRequestMessage): void;

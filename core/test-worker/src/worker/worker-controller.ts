@@ -1,4 +1,4 @@
-import * as process from 'process';
+import process from 'node:process';
 import * as path from 'path';
 
 import {
@@ -176,7 +176,7 @@ export class WorkerController {
                 if (error instanceof BreakStackError) {
                     await this.completeExecutionSuccessfully();
                 } else {
-                    await this.completeExecutionFailed(error);
+                    await this.completeExecutionFailed(error as Error);
                 }
             }
         }
@@ -243,13 +243,13 @@ export class WorkerController {
         let finishCallback = () => {
             /* empty */
         };
-        let failCallback = (error: Error) => {
+        let failCallback = (_error: Error) => {
             /* empty */
         };
 
         const startHandler = () => (isAsync = true);
         const finishHandler = () => finishCallback();
-        const failHandler = (error) => failCallback(error);
+        const failHandler = (error: Error) => failCallback(error);
 
         const removeListeners = () => {
             bus.removeListener(TestEvents.started, startHandler);
@@ -266,7 +266,7 @@ export class WorkerController {
         try {
             await sandbox.execute();
         } catch (err) {
-            throw restructureError(err);
+            throw restructureError(err as Error);
         }
 
         if (isAsync) {

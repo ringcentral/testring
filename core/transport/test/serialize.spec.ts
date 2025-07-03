@@ -33,7 +33,7 @@ describe('serialize', () => {
         ];
 
         for (const errorType of errorTypes) {
-            const error = new global[errorType]('test');
+            const error = new (global as Record<string, any>)[errorType]('test');
 
             const serializedError = serialize(error);
             const deserializedError = deserialize(serializedError);
@@ -58,7 +58,7 @@ describe('serialize', () => {
     });
 
     it('should serialize arrow function', () => {
-        const arrowFunction = (a, b) => {
+        const arrowFunction = (a: any, b: any) => {
             return a + b + 2;
         };
 
@@ -88,7 +88,7 @@ describe('serialize', () => {
     });
 
     it('should serialize arrow function without body', () => {
-        const arrowFunction = (a) => a + 2;
+        const arrowFunction = (a: number) => a + 2;
 
         const serializedFunction = serialize(arrowFunction);
         const deserializedFunction = deserialize(serializedFunction);
@@ -102,7 +102,7 @@ describe('serialize', () => {
     });
 
     it('should serialize anonymous function', () => {
-        const anonymousFunction = (a, b) => {
+        const anonymousFunction = (a: any, b: any) => {
             return a + b + 2;
         };
 
@@ -134,7 +134,7 @@ describe('serialize', () => {
     });
 
     it('should serialize named function', () => {
-        function namedFunction(a, b) {
+        function namedFunction(a: any, b: any) {
             return a + b + 2;
         }
 

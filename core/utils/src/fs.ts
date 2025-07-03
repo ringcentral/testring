@@ -23,7 +23,7 @@ function ensureNewFile(fName: string) {
     return open(fName, 'ax')
         .then((fHandle) => fHandle.close())
         .then(() => true)
-        .catch((e) => false);
+        .catch((_e) => false);
 }
 
 async function exists(path: string) {

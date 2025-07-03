@@ -1,4 +1,4 @@
-import * as process from 'process';
+import process from 'node:process';
 import {Transport} from './transport';
 import {serialize, deserialize} from './serialize';
 

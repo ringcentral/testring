@@ -20,7 +20,8 @@ describe('flows option default behavior', () => {
             },
         },
     });
-    const childFoo = root.foo;
+    const childFoo = root['foo'];
+    if (!childFoo) {throw new Error('Element not found');}
 
     describe('basic Object methods', () => {
         it('.toString()', () => {

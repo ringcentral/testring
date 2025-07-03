@@ -1,6 +1,6 @@
-import * as process from 'process';
+import process from 'node:process';
 import * as util from 'util';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import {ILogEntity, LogLevel, LogTypes} from '@testring/types';
 
 const HAS_EMOJI_SUPPORT = !!(

@@ -3,7 +3,7 @@ import {requirePackage, resolvePackage} from './package-require';
 
 const PREFIXES = ['@testring/plugin-', 'testring-plugin-', '@testring/'];
 
-function normalizeExport(module) {
+function normalizeExport(module: any) {
     // filtering null and other falsy values
     if (!module) {
         return module;

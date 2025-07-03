@@ -1,4 +1,4 @@
-import * as process from 'process';
+import process from 'node:process';
 
 import {isChildProcess} from '@testring/child-process';
 import {
@@ -93,7 +93,7 @@ export class Transport implements ITransport {
         messageType: string,
         callback: TransportMessageHandler<T>,
     ) {
-        const handler = (message, source) => {
+        const handler = (message: T, source: string) => {
             if (processID === source) {
                 callback(message);
                 this.emitter.removeListener(messageType, handler);

@@ -92,7 +92,7 @@ describe('TestWorkerInstance', () => {
             const hook = testWorker.getHook(TestWorkerPlugin.compile);
 
             if (hook) {
-                hook.writeHook('testPlugin', (source, writeFile) => {
+                hook.writeHook('testPlugin', (source: any, writeFile: any) => {
                     chai.expect(source).to.be.equal(defaultSyncTestContent);
                     chai.expect(writeFile).to.be.equal(defaultFilename);
                     callback();

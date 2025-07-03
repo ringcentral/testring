@@ -15,7 +15,7 @@ import {PluggableModule} from '@testring/pluggable-module';
 import {LockPool, FilePermissionResolver, FS_CONSTANTS} from './utils';
 
 const log = loggerClient.withPrefix('fss');
-const {DW_ID, FS_DEFAULT_MSG_PREFIX} = FS_CONSTANTS;
+const {DW_ID = '*', FS_DEFAULT_MSG_PREFIX} = FS_CONSTANTS;
 
 export enum serverState {
     'new' = 0,
@@ -74,18 +74,18 @@ export class FSStoreServer extends PluggableModule {
      */
     constructor(
         threadCount = 10,
-        msgNamePrefix: string = FS_DEFAULT_MSG_PREFIX,
+        msgNamePrefix: string = FS_DEFAULT_MSG_PREFIX || 'defaultPrefix',
     ) {
         super(Object.values(hooks));
 
         this.defaultFsPermisionPool = new LockPool(threadCount);
 
-        this.reqName = msgNamePrefix + FS_CONSTANTS.FS_REQ_NAME_POSTFIX;
-        this.respName = msgNamePrefix + FS_CONSTANTS.FS_RESP_NAME_POSTFIX;
+        this.reqName = msgNamePrefix + FS_CONSTANTS['FS_REQ_NAME_POSTFIX'];
+        this.respName = msgNamePrefix + FS_CONSTANTS['FS_RESP_NAME_POSTFIX'];
         this.releaseReqName =
-            msgNamePrefix + FS_CONSTANTS.FS_RELEASE_NAME_POSTFIX;
+            msgNamePrefix + FS_CONSTANTS['FS_RELEASE_NAME_POSTFIX'];
         this.cleanReqName =
-            msgNamePrefix + FS_CONSTANTS.FS_CLEAN_REQ_NAME_POSTFIX;
+            msgNamePrefix + FS_CONSTANTS['FS_CLEAN_REQ_NAME_POSTFIX'];
 
         this.init();
     }
@@ -123,7 +123,7 @@ export class FSStoreServer extends PluggableModule {
                     meta.fileName = this.generateUniqFileName(meta.ext);
                 }
 
-                this.RequestAction({requestId, action, meta}, workerId);
+                this.RequestAction({requestId, action, meta}, workerId || DW_ID);
             },
         );
 
@@ -142,6 +142,8 @@ export class FSStoreServer extends PluggableModule {
         );
 
         this.state = serverState.initialized;
+
+        return this.state;
     }
 
     private send<T>(workerId: string | undefined, msgId: string, data: T) {
@@ -201,7 +203,11 @@ export class FSStoreServer extends PluggableModule {
             meta,
         );
         this.ensurePermissionQueue({requestId, fullPath, action}, workerId);
-        const [FPR, releaseCBRec] = this.files[fullPath];
+        const fileEntry = this.files[fullPath];
+        if (!fileEntry) {
+            throw new Error(`File entry for path "${fullPath}" is undefined.`);
+        }
+        const [FPR, releaseCBRec] = fileEntry;
         this.ensureCleanUpCBRecord(releaseCBRec, workerId);
 
         switch (action) {
@@ -209,7 +215,8 @@ export class FSStoreServer extends PluggableModule {
                 const canBeLocked = FPR.lock(
                     workerId,
                     requestId,
-                    (dataObj, releaseCb) => {
+                    (_, releaseCb) => {
+                        releaseCBRec[workerId] = releaseCBRec[workerId] || {};   
                         releaseCBRec[workerId][requestId] = releaseCb;
                         this.send<IFSStoreResp>(workerId, this.respName, {
                             requestId,
@@ -234,6 +241,7 @@ export class FSStoreServer extends PluggableModule {
                     requestId,
                     async (_, releaseCb) => {
                         // access granted (releaseCb - to call for release access)
+                        releaseCBRec[workerId] = releaseCBRec[workerId] || {};
                         releaseCBRec[workerId][requestId] = releaseCb;
 
                         const permision = await this.getPermissionQueue(
@@ -245,6 +253,7 @@ export class FSStoreServer extends PluggableModule {
                             workerId,
                             requestId,
                         );
+                        this.inWorkRequests[workerId] = this.inWorkRequests[workerId] || {};
                         this.inWorkRequests[workerId][requestId] = [
                             action,
                             fullPath,
@@ -270,6 +279,7 @@ export class FSStoreServer extends PluggableModule {
                 // eslint-disable-next-line sonarjs/no-identical-functions
                 FPR.hookUnlink(workerId, requestId, async (_, releaseCb) => {
                     // unlink access granted (releaseCb - to call for release access)
+                    releaseCBRec[workerId] = releaseCBRec[workerId] || {};
                     releaseCBRec[workerId][requestId] = releaseCb;
 
                     const permision = await this.getPermissionQueue(
@@ -281,6 +291,7 @@ export class FSStoreServer extends PluggableModule {
                         workerId,
                         requestId,
                     );
+                    this.inWorkRequests[workerId] = this.inWorkRequests[workerId] || {};
                     this.inWorkRequests[workerId][requestId] = [
                         action,
                         fullPath,
@@ -340,9 +351,14 @@ export class FSStoreServer extends PluggableModule {
             return false;
         }
 
-        const [FPR, releaseCBRec] = this.files[fullPath];
+        const fileEntry = this.files[fullPath];
+        if (!fileEntry) {
+            throw new Error(`File entry for path "${fullPath}" is undefined.`);
+        }
+        const [FPR, releaseCBRec] = fileEntry;
 
         if (asyncActions.has(action)) {
+            this.inWorkRequests[workerId] = this.inWorkRequests[workerId] || {};
             const inProgress = this.inWorkRequests[workerId][requestId];
             this.inWorkRequests[workerId][requestId] = [action, fullPath];
 
@@ -400,26 +416,26 @@ export class FSStoreServer extends PluggableModule {
 
         if (!action) {
             Object.keys(this.files).forEach((fName) => {
-                this.files[fName][0].cleanAccess(workerId);
-                this.files[fName][0].cleanLock(workerId);
-                this.files[fName][0].cleanUnlink(workerId);
+                this.files[fName]?.[0]?.cleanAccess(workerId);
+                this.files[fName]?.[0]?.cleanLock(workerId);
+                this.files[fName]?.[0]?.cleanUnlink(workerId);
             });
             return;
         }
         switch (action) {
             case fsReqType.access:
                 Object.keys(this.files).forEach((fName) => {
-                    this.files[fName][0].cleanAccess(workerId);
+                    this.files[fName]?.[0].cleanAccess(workerId);
                 });
                 break;
             case fsReqType.lock:
                 Object.keys(this.files).forEach((fName) => {
-                    this.files[fName][0].cleanLock(workerId);
+                    this.files[fName]?.[0].cleanLock(workerId);
                 });
                 break;
             case fsReqType.unlink:
                 Object.keys(this.files).forEach((fName) => {
-                    this.files[fName][0].cleanUnlink(workerId);
+                    this.files[fName]?.[0]?.cleanUnlink(workerId);
                 });
         }
     }

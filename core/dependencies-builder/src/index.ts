@@ -12,7 +12,7 @@ import {
 import {resolveAbsolutePath} from './absolute-path-resolver';
 import * as path from 'node:path';
 
-function getDependencies(absolutePath: string, content: string): Array<string> {
+function getDependencies(_: string, content: string): Array<string> {
     const requests: Array<string> = [];
 
     const sourceAST = parse(content, {
@@ -31,6 +31,10 @@ function getDependencies(absolutePath: string, content: string): Array<string> {
 
             const args = nodePath.get('arguments');
             const firstArgument = args[0];
+            if (!firstArgument) {
+                return;
+            }
+
             const dependencyPath: NodePath<string> = firstArgument.get(
                 'value',
             ) as never;
@@ -78,10 +82,14 @@ async function buildNodes(
 
     const resultNodes: IDependencyTreeNode['nodes'] = {};
 
-    let dependency: string;
+    let dependency: string | undefined;
     let node: IDependencyTreeNode;
     for (let index = 0; index < dependencies.length; index++) {
         dependency = dependencies[index];
+
+        if (!dependency) {
+            continue;
+        }
 
         const dependencyAbsolutePath = resolveAbsolutePath(
             dependency,
@@ -129,13 +137,16 @@ async function buildNodes(
 }
 
 function getNodeDependencies(node: IDependencyTreeNode) {
-    const nodes = {};
+    const nodes = {} as Record<string, IDependencyDictionaryNode>;
 
     if (node.nodes === null) {
         return nodes;
     }
 
     for (const request in node.nodes) {
+        if (!node.nodes[request]) {
+            continue;
+        }
         nodes[request] = createDictionaryNode(
             node.nodes[request].path,
             node.nodes[request].content,
@@ -169,7 +180,9 @@ export async function buildDependencyDictionary(
     );
 
     for (const key in nodesCache) {
-        dictionary[key] = getNodeDependencies(nodesCache[key]);
+        if (nodesCache[key]) {
+            dictionary[key] = getNodeDependencies(nodesCache[key]);
+        }
     }
 
     return dictionary;

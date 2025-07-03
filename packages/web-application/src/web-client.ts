@@ -63,7 +63,7 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.refresh, []);
     }
 
-    public setCustomBrowserClientConfig(config) {
+    public setCustomBrowserClientConfig(config: any) {
         return this.makeRequest(BrowserProxyActions.setCustomBrowserClientConfig, [config]);
     }
 
@@ -75,15 +75,15 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.getHubConfig, []);
     }
 
-    public click(xpath, options?) {
+    public click(xpath: string, options?: any) {
         return this.makeRequest(BrowserProxyActions.click, [xpath, options]);
     }
 
-    public getSize(xpath) {
+    public getSize(xpath: string) {
         return this.makeRequest(BrowserProxyActions.getSize, [xpath]);
     }
 
-    public url(val) {
+    public url(val: any) {
         return this.makeRequest(BrowserProxyActions.url, [val]);
     }
 
@@ -99,25 +99,25 @@ export class WebClient implements IWebApplicationClient {
         ]);
     }
 
-    public waitForExist(xpath, timeout) {
+    public waitForExist(xpath: string, timeout: number) {
         return this.makeRequest(BrowserProxyActions.waitForExist, [
             xpath,
             timeout,
         ]);
     }
 
-    public waitForVisible(xpath, timeout) {
+    public waitForVisible(xpath: string, timeout: number) {
         return this.makeRequest(BrowserProxyActions.waitForVisible, [
             xpath,
             timeout,
         ]);
     }
 
-    public isVisible(xpath) {
+    public isVisible(xpath: string) {
         return this.makeRequest(BrowserProxyActions.isVisible, [xpath]);
     }
 
-    public moveToObject(xpath, x, y) {
+    public moveToObject(xpath: string, x: number, y: number) {
         return this.makeRequest(BrowserProxyActions.moveToObject, [
             xpath,
             x,
@@ -125,11 +125,11 @@ export class WebClient implements IWebApplicationClient {
         ]);
     }
 
-    public execute(fn, ...args) {
+    public execute(fn: any, ...args: any[]) {
         return this.makeRequest(BrowserProxyActions.execute, [fn, args]);
     }
 
-    public executeAsync(fn, ...args) {
+    public executeAsync(fn: any, ...args: any[]) {
         return this.makeRequest(BrowserProxyActions.executeAsync, [fn, args]);
     }
 
@@ -137,59 +137,59 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.getTitle, []);
     }
 
-    public clearValue(xpath) {
+    public clearValue(xpath: string) {
         return this.makeRequest(BrowserProxyActions.clearValue, [xpath]);
     }
 
-    public keys(value) {
+    public keys(value: any) {
         return this.makeRequest(BrowserProxyActions.keys, [value]);
     }
 
-    public elementIdText(elementId) {
+    public elementIdText(elementId: string) {
         return this.makeRequest(BrowserProxyActions.elementIdText, [elementId]);
     }
 
-    public elements(xpath) {
+    public elements(xpath: string) {
         return this.makeRequest(BrowserProxyActions.elements, [xpath]);
     }
 
-    public getValue(xpath) {
+    public getValue(xpath: string) {
         return this.makeRequest(BrowserProxyActions.getValue, [xpath]);
     }
 
-    public setValue(xpath, value) {
+    public setValue(xpath: string, value: any) {
         return this.makeRequest(BrowserProxyActions.setValue, [xpath, value]);
     }
 
-    public keysOnElement(xpath, value) {
+    public keysOnElement(xpath: string, value: any) {
         return this.makeRequest(BrowserProxyActions.keysOnElement, [
             xpath,
             value,
         ]);
     }
 
-    public selectByIndex(xpath, value) {
+    public selectByIndex(xpath: string, value: any) {
         return this.makeRequest(BrowserProxyActions.selectByIndex, [
             xpath,
             value,
         ]);
     }
 
-    public selectByValue(xpath, value) {
+    public selectByValue(xpath: string, value: any) {
         return this.makeRequest(BrowserProxyActions.selectByValue, [
             xpath,
             value,
         ]);
     }
 
-    public selectByVisibleText(xpath, str) {
+    public selectByVisibleText(xpath: string, str: any) {
         return this.makeRequest(BrowserProxyActions.selectByVisibleText, [
             xpath,
             str,
         ]);
     }
 
-    public getAttribute(xpath, attr) {
+    public getAttribute(xpath: string, attr: string) {
         return this.makeRequest(BrowserProxyActions.getAttribute, [
             xpath,
             attr,
@@ -200,15 +200,15 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.windowHandleMaximize, []);
     }
 
-    public isEnabled(xpath) {
+    public isEnabled(xpath: string) {
         return this.makeRequest(BrowserProxyActions.isEnabled, [xpath]);
     }
 
-    public scroll(xpath, x, y) {
+    public scroll(xpath: string, x: number, y: number) {
         return this.makeRequest(BrowserProxyActions.scroll, [xpath, x, y]);
     }
 
-    public scrollIntoView(xpath, scrollIntoViewOptions?: boolean) {
+    public scrollIntoView(xpath: string, scrollIntoViewOptions?: boolean) {
         return this.makeRequest(BrowserProxyActions.scrollIntoView, [
             xpath,
             scrollIntoViewOptions,
@@ -231,14 +231,14 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.alertText, []);
     }
 
-    public dragAndDrop(xpathSource, xpathDestination) {
+    public dragAndDrop(xpathSource: string, xpathDestination: string) {
         return this.makeRequest(BrowserProxyActions.dragAndDrop, [
             xpathSource,
             xpathDestination,
         ]);
     }
 
-    public frame(name) {
+    public frame(name: string) {
         return this.makeRequest(BrowserProxyActions.frame, [name]);
     }
 
@@ -246,19 +246,19 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.frameParent, []);
     }
 
-    public setCookie(cookieObj) {
+    public setCookie(cookieObj: any) {
         return this.makeRequest(BrowserProxyActions.setCookie, [cookieObj]);
     }
 
-    public getCookie(cookieName) {
+    public getCookie(cookieName: string) {
         return this.makeRequest(BrowserProxyActions.getCookie, [cookieName]);
     }
 
-    public deleteCookie(cookieName) {
+    public deleteCookie(cookieName: string) {
         return this.makeRequest(BrowserProxyActions.deleteCookie, [cookieName]);
     }
 
-    public getHTML(xpath, b) {
+    public getHTML(xpath: string, b: any) {
         return this.makeRequest(BrowserProxyActions.getHTML, [xpath, b]);
     }
 
@@ -266,11 +266,11 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.getCurrentTabId, []);
     }
 
-    public switchTab(tabId) {
+    public switchTab(tabId: string) {
         return this.makeRequest(BrowserProxyActions.switchTab, [tabId]);
     }
 
-    public close(tabId) {
+    public close(tabId: string) {
         return this.makeRequest(BrowserProxyActions.close, [tabId]);
     }
 
@@ -278,7 +278,7 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.getTabIds, []);
     }
 
-    public window(fn) {
+    public window(fn: any) {
         return this.makeRequest(BrowserProxyActions.window, [fn]);
     }
 
@@ -286,19 +286,19 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.windowHandles, []);
     }
 
-    public getTagName(xpath) {
+    public getTagName(xpath: string) {
         return this.makeRequest(BrowserProxyActions.getTagName, [xpath]);
     }
 
-    public isSelected(xpath) {
+    public isSelected(xpath: string) {
         return this.makeRequest(BrowserProxyActions.isSelected, [xpath]);
     }
 
-    public getText(xpath) {
+    public getText(xpath: string) {
         return this.makeRequest(BrowserProxyActions.getText, [xpath]);
     }
 
-    public elementIdSelected(id) {
+    public elementIdSelected(id: string) {
         return this.makeRequest(BrowserProxyActions.elementIdSelected, [id]);
     }
 
@@ -306,7 +306,7 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.makeScreenshot, []);
     }
 
-    public uploadFile(path) {
+    public uploadFile(path: string) {
         return this.makeRequest(BrowserProxyActions.uploadFile, [path]);
     }
 
@@ -314,7 +314,7 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.kill);
     }
 
-    public getCssProperty(xpath, cssProperty) {
+    public getCssProperty(xpath: string, cssProperty: string) {
         return this.makeRequest(BrowserProxyActions.getCssProperty, [
             xpath,
             cssProperty,
@@ -325,11 +325,11 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.getSource, []);
     }
 
-    public isExisting(xpath) {
+    public isExisting(xpath: string) {
         return this.makeRequest(BrowserProxyActions.isExisting, [xpath]);
     }
 
-    public waitForValue(xpath, timeout, reverse) {
+    public waitForValue(xpath: string, timeout: number, reverse: boolean) {
         return this.makeRequest(BrowserProxyActions.waitForValue, [
             xpath,
             timeout,
@@ -337,7 +337,7 @@ export class WebClient implements IWebApplicationClient {
         ]);
     }
 
-    public waitForSelected(xpath, timeout, reverse) {
+    public waitForSelected(xpath: string, timeout: number, reverse: boolean) {
         return this.makeRequest(BrowserProxyActions.waitForSelected, [
             xpath,
             timeout,
@@ -345,7 +345,7 @@ export class WebClient implements IWebApplicationClient {
         ]);
     }
 
-    public waitUntil(condition, timeout, timeoutMsg, interval) {
+    public waitUntil(condition: unknown, timeout: number, timeoutMsg: string, interval: number) {
         return this.makeRequest(BrowserProxyActions.waitUntil, [
             condition,
             timeout,
@@ -354,7 +354,7 @@ export class WebClient implements IWebApplicationClient {
         ]);
     }
 
-    public selectByAttribute(xpath, attribute, value) {
+    public selectByAttribute(xpath: string, attribute: string, value: any) {
         return this.makeRequest(BrowserProxyActions.selectByAttribute, [
             xpath,
             attribute,

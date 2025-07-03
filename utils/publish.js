@@ -7,6 +7,15 @@ const {npmPublish} = require('@jsdevtools/npm-publish');
 
 const token = process.env.NPM_TOKEN;
 
+// Parse --exclude argument
+const argv = process.argv.slice(2);
+let excludeList = [];
+for (let i = 0; i < argv.length; i++) {
+    if (argv[i].startsWith('--exclude=')) {
+        excludeList = argv[i].replace('--exclude=', '').split(',').map(s => s.trim());
+    }
+}
+
 if (!token) {
     throw new Error('NPM_TOKEN required');
 }
@@ -36,7 +45,7 @@ async function task(pkg) {
 
 async function main() {
     const packages = await getPackages(__dirname);
-    const filtered = filterPackages(packages, [], [], false);
+    const filtered = filterPackages(packages, [], excludeList, false);
     const batchedPackages = batchPackages(filtered);
 
     try {

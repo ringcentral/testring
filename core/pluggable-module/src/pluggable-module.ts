@@ -16,11 +16,13 @@ export class PluggableModule implements IPluggableModule<Hook> {
         for (let index = 0; index < hooks.length; index++) {
             hookName = hooks[index];
 
-            this.pluginHooks.set(hookName, new Hook());
+            if (hookName !== undefined) {
+                this.pluginHooks.set(hookName, new Hook());
+            }
         }
     }
 
-    protected async callHook<T = any>(name: string, ...args): Promise<T> {
+    protected async callHook<T = any>(name: string, ...args: any[]): Promise<T> {
         const pluginHook = this.pluginHooks.get(name);
 
         if (pluginHook === undefined) {

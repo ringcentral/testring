@@ -18,7 +18,7 @@ export interface IAssertionErrorMeta extends IAssertionSuccessMeta {
 
 export interface IAssertionOptions {
     isSoft?: boolean;
-    onSuccess?: (IAssertionSuccessMeta) => void | Promise<void>;
-    onError?: (IAssertionErrorMeta) => void | Error | Promise<void | Error>;
+    onSuccess?: (arg0: IAssertionSuccessMeta) => void | Promise<void>;
+    onError?: (arg0: IAssertionErrorMeta) => void | Error | Promise<void | Error>;
     plugins?: ChaiPlugin[];
 }
