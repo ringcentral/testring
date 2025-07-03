@@ -26,6 +26,7 @@ jobs:
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
 
       - run: npm ci
+      - run: npm run build:main
       - run: npm run publish:version ${{ github.event.inputs.version }}
       - run: npm run publish:ci
         env:
