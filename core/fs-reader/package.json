@@ -1,6 +1,6 @@
 {
   "name": "@testring/fs-reader",
-  "version": "0.7.6",
+  "version": "0.8.0",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -13,9 +13,9 @@
     "test:performance": "mocha --performance --reporter spec"
   },
   "dependencies": {
-    "@testring/logger": "0.7.6",
-    "@testring/pluggable-module": "0.7.6",
-    "@testring/types": "0.7.6",
+    "@testring/logger": "0.8.0",
+    "@testring/pluggable-module": "0.8.0",
+    "@testring/types": "0.8.0",
     "fast-glob": "3.3.2",
     "p-limit": "3.1.0"
   }
