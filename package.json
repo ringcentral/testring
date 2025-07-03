@@ -30,7 +30,7 @@
     "build:devtool": "lerna run --stream --scope @testring/devtool-frontend build",
     "build:extension": "lerna run --stream --scope @testring/devtool-extension build",
     "publish:version": "lerna version --exact --yes",
-    "publish:ci": "node ./utils/publish.js",
+    "publish:ci": "node ./utils/publish.js --exclude=@testring/devtool-frontend,@testring/devtool-backend,@testring/devtool-extension",
     "check-deps": "npm run check-deps:precommit",
     "check-deps:validate": "lerna exec -- node ../../utils/check-packages-versions",
     "check-deps:find-updates": "ncu -m --deep --color",
