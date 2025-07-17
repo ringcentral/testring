@@ -120,13 +120,21 @@ async function runTest() {
         // Click download button
         await driver.findElement(By.id('download-button')).click();
 
-        // Wait for download to complete (you might need a custom wait)
-        await driver.sleep(2000);
+        // Wait for download to complete by polling localStorage
+        let downloadsStr;
+        let downloads;
+        const timeout = Date.now() + 15000; // 15 seconds timeout
+        do {
+            downloadsStr = await driver.executeScript(
+                'return localStorage.getItem("_DOWNLOADS_");'
+            );
+            downloads = downloadsStr ? JSON.parse(downloadsStr) : [];
+            if (downloads.length > 0 && downloads[0].state === 'complete') break;
+            await driver.sleep(500);
+        } while (Date.now() < timeout);
 
         // Get download information
-        const downloadsStr = await driver.executeScript(
-            'return localStorage.getItem("_DOWNLOADS_");'
-        );
+        // downloadsStr already fetched above
 
         const downloads = JSON.parse(downloadsStr);
         console.log('Downloads:', downloads);
