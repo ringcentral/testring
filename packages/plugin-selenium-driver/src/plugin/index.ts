@@ -6,7 +6,7 @@ import {
     IWindowFeatures
 } from '@testring/types';
 
-import {ChildProcess} from 'child_process';
+import {ChildProcess, execSync} from 'child_process';
 
 import {remote} from 'webdriverio';
 import * as deepmerge from 'deepmerge';
@@ -508,10 +508,25 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
             this.localSelenium.removeAllListeners();
 
+            this.killProcess();
+
             this.logger.debug(
                 'Selenium process and all associated pipes closed.',
             );
         }
+    }
+
+    public killProcess() {
+        let result = execSync("ps aux | grep '[c]hromedriver' | awk '{print $2}'");
+        const pids = result.toString().trim().split('\n').filter((pid) => pid).join(' ');
+        if (pids && pids.length > 0) {
+            this.logger.debug(`Killing ChromeDriver processes with PIDs: ${pids}...`);
+            result = execSync(`kill -9 ${pids}`);
+            this.logger.debug(`Killed ChromeDriver processes with PIDs: ${pids}.`);
+        } else {
+            this.logger.debug('No ChromeDriver processes found.');
+        }
+        return result;
     }
 
     public async refresh(applicant: string) {
