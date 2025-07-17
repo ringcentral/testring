@@ -29,6 +29,243 @@ const DEFAULT_CONFIG: PlaywrightPluginConfig = {
     trace: false,
 };
 
+// 优化的清理工具 - 优先使用 Playwright 原生方法
+class PlaywrightCleanupUtil {
+    private static readonly PLAYWRIGHT_PATTERN = 'playwright.*chrom';
+    private static readonly TEMP_PROFILE_PATTERN = 'playwright_chromiumdev_profile-*';
+
+    // 临时文件清理优化
+    private static lastTempCleanup = 0;
+    private static readonly TEMP_CLEANUP_INTERVAL = 30000; // 30秒间隔
+    private static readonly TEMP_CLEANUP_BATCH_SIZE = 50; // 批量清理大小
+    private static tempCleanupInProgress = false;
+
+    // 优先使用 Playwright 原生清理，仅在必要时使用进程级清理
+    static async cleanupPlaywrightResources(options: {
+        browsers?: any[];
+        contexts?: any[];
+        pages?: any[];
+        logPrefix?: string;
+        fallbackToProcessKill?: boolean;
+    } = {}): Promise<void> {
+        const { browsers = [], contexts = [], pages = [], logPrefix = '[Cleanup]', fallbackToProcessKill = true } = options;
+
+        try {
+            // 1. 优先使用 Playwright 原生清理
+            console.log(`${logPrefix} Starting Playwright native cleanup...`);
+
+            // 关闭页面
+            for (const page of pages) {
+                try {
+                    if (page && !page.isClosed()) {
+                        await page.close();
+                    }
+                } catch (error) {
+                    console.warn(`${logPrefix} Failed to close page:`, error);
+                }
+            }
+
+            // 关闭上下文
+            for (const context of contexts) {
+                try {
+                    await context.close();
+                } catch (error) {
+                    console.warn(`${logPrefix} Failed to close context:`, error);
+                }
+            }
+
+            // 关闭浏览器
+            for (const browser of browsers) {
+                try {
+                    if (browser && browser.isConnected()) {
+                        await browser.close({ reason: 'Cleanup requested' });
+                    }
+                } catch (error) {
+                    console.warn(`${logPrefix} Failed to close browser:`, error);
+                }
+            }
+
+            // 2. 等待一下让 Playwright 完成清理
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // 3. 仅在需要时进行进程级清理
+            if (fallbackToProcessKill) {
+                const remainingPids = await this.findPlaywrightProcesses();
+                if (remainingPids.length > 0) {
+                    console.log(`${logPrefix} Found ${remainingPids.length} remaining processes, performing fallback cleanup`);
+                    await this.forceCleanupProcesses(remainingPids, logPrefix);
+                }
+            }
+
+            // 4. 智能清理临时文件（避免频繁 I/O）
+            await this.smartCleanupTempFiles(logPrefix);
+
+        } catch (error) {
+            console.error(`${logPrefix} Error during cleanup:`, error);
+        }
+    }
+
+    // 同步版本 - 仅用于进程退出时的紧急清理
+    static emergencyCleanupSync(logPrefix = '[Emergency Cleanup]'): void {
+        try {
+            const { execSync } = require('child_process');
+
+            const pids = this.findPlaywrightProcessesSync();
+            if (pids.length > 0) {
+                console.log(`${logPrefix} Emergency cleanup of ${pids.length} processes`);
+                execSync(`kill -9 ${pids.join(' ')} 2>/dev/null || true`);
+            }
+
+            // 紧急情况下使用同步清理，但仅清理最近的文件
+            this.emergencyTempCleanupSync();
+        } catch (error) {
+            // Ignore emergency cleanup errors
+        }
+    }
+
+    private static async forceCleanupProcesses(pids: string[], logPrefix: string): Promise<void> {
+        try {
+            const { exec } = require('child_process');
+            const { promisify } = require('util');
+            const execAsync = promisify(exec);
+
+            // 先尝试优雅关闭
+            await execAsync(`kill ${pids.join(' ')}`).catch(() => {});
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // 检查剩余进程并强制关闭
+            const remainingPids = await this.findPlaywrightProcesses();
+            if (remainingPids.length > 0) {
+                console.log(`${logPrefix} Force killing ${remainingPids.length} remaining processes`);
+                await execAsync(`kill -9 ${remainingPids.join(' ')}`).catch(() => {});
+            }
+        } catch (error) {
+            console.error(`${logPrefix} Error in force cleanup:`, error);
+        }
+    }
+
+    private static async findPlaywrightProcesses(): Promise<string[]> {
+        try {
+            const { exec } = require('child_process');
+            const { promisify } = require('util');
+            const execAsync = promisify(exec);
+
+            const { stdout } = await execAsync(`pgrep -f "${this.PLAYWRIGHT_PATTERN}"`);
+            return stdout.trim().split('\n').filter((pid: string) => pid && !isNaN(parseInt(pid)));
+        } catch (error) {
+            return [];
+        }
+    }
+
+    private static findPlaywrightProcessesSync(): string[] {
+        try {
+            const { execSync } = require('child_process');
+            const stdout = execSync(`pgrep -f "${this.PLAYWRIGHT_PATTERN}"`, { encoding: 'utf8' });
+            return stdout.trim().split('\n').filter((pid: string) => pid && !isNaN(parseInt(pid)));
+        } catch (error) {
+            return [];
+        }
+    }
+
+    // 智能临时文件清理 - 避免频繁 I/O
+    private static async smartCleanupTempFiles(logPrefix: string): Promise<void> {
+        const now = Date.now();
+
+        // 1. 时间间隔控制：避免频繁清理
+        if (now - this.lastTempCleanup < this.TEMP_CLEANUP_INTERVAL) {
+            return; // 跳过清理，减少 I/O
+        }
+
+        // 2. 并发控制：避免多个清理同时进行
+        if (this.tempCleanupInProgress) {
+            return;
+        }
+
+        this.tempCleanupInProgress = true;
+        this.lastTempCleanup = now;
+
+        try {
+            // 3. 使用更高效的清理策略
+            await this.efficientTempCleanup(logPrefix);
+        } catch (error) {
+            console.warn(`${logPrefix} Temp file cleanup failed:`, error);
+        } finally {
+            this.tempCleanupInProgress = false;
+        }
+    }
+
+    // 高效的临时文件清理实现
+    private static async efficientTempCleanup(logPrefix: string): Promise<void> {
+        try {
+            const { exec } = require('child_process');
+            const { promisify } = require('util');
+            const execAsync = promisify(exec);
+
+            // 策略1: 优先清理已知的 Playwright 临时目录
+            const commonTempDirs = [
+                '/tmp',
+                '/var/folders', // macOS
+                process.env['TMPDIR'] || '/tmp',
+                process.env['TEMP'] || '/tmp'
+            ].filter((dir: string | undefined): dir is string => Boolean(dir));
+
+            for (const dir of commonTempDirs) {
+                try {
+                    // 使用更精确的查找，限制深度和数量
+                    const findCmd = `find "${dir}" -maxdepth 3 -name "${this.TEMP_PROFILE_PATTERN}" -type d -mtime +0 2>/dev/null | head -${this.TEMP_CLEANUP_BATCH_SIZE}`;
+                    const { stdout } = await execAsync(findCmd);
+
+                    if (stdout.trim()) {
+                        const dirs = stdout.trim().split('\n').filter((d: string) => d);
+                        if (dirs.length > 0) {
+                            console.log(`${logPrefix} Cleaning ${dirs.length} temp directories in ${dir}`);
+                            // 批量删除，避免过多的 exec 调用
+                            await execAsync(`echo "${dirs.join('\n')}" | xargs -r rm -rf`);
+                        }
+                    }
+                } catch (dirError) {
+                    // 忽略单个目录的清理错误，继续处理其他目录
+                }
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    // 保留原有方法作为兜底（仅用于紧急清理）
+    private static async cleanupTempFiles(): Promise<void> {
+        try {
+            const { exec } = require('child_process');
+            const { promisify } = require('util');
+            const execAsync = promisify(exec);
+
+            await execAsync(`find /var/folders -name "${this.TEMP_PROFILE_PATTERN}" -type d -exec rm -rf {} + 2>/dev/null || true`);
+        } catch (error) {
+            // Ignore temp file cleanup errors
+        }
+    }
+
+    // 紧急临时文件清理 - 仅清理最近的文件，减少 I/O
+    private static emergencyTempCleanupSync(): void {
+        try {
+            const { execSync } = require('child_process');
+            // 只清理最近1小时内的临时文件，减少扫描范围
+            execSync(`find /var/folders -name "${this.TEMP_PROFILE_PATTERN}" -type d -mmin -60 -exec rm -rf {} + 2>/dev/null || true`);
+        } catch (error) {
+            // Ignore emergency temp file cleanup errors
+        }
+    }
+
+    private static cleanupTempFilesSync(): void {
+        try {
+            const { execSync } = require('child_process');
+            execSync(`find /var/folders -name "${this.TEMP_PROFILE_PATTERN}" -type d -exec rm -rf {} + 2>/dev/null || true`);
+        } catch (error) {
+            // Ignore temp file cleanup errors
+        }
+    }
+}
+
 // 全局清理管理器
 class PlaywrightCleanupManager {
     private static instance: PlaywrightCleanupManager;
@@ -175,147 +412,46 @@ class PlaywrightCleanupManager {
     }
 
     private async forceCleanupAllPlaywrightProcesses(): Promise<void> {
-        try {
-            const { exec } = require('child_process');
-            const { promisify } = require('util');
-            const execAsync = promisify(exec);
+        // CleanupManager 负责协调所有插件实例的清理
+        const browsers: any[] = [];
+        const contexts: any[] = [];
 
-            // 查找所有 Playwright 相关进程
+        // 收集所有插件实例的浏览器和上下文
+        for (const plugin of this.pluginInstances) {
             try {
-                const { stdout } = await execAsync('pgrep -f "playwright.*chrom"');
-                const pids = stdout.trim().split('\n').filter((pid: string) => pid && !isNaN(parseInt(pid)));
-                
-                if (pids.length > 0) {
-                    console.log(`[Playwright Cleanup] Found ${pids.length} Playwright processes to clean up`);
-                    
-                    // 先尝试优雅关闭
-                    await execAsync(`kill ${pids.join(' ')}`).catch(() => {});
-                    
-                    // 等待一下让进程关闭
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    
-                    // 检查是否还有残留，强制关闭
-                    try {
-                        const { stdout: remaining } = await execAsync('pgrep -f "playwright.*chrom"');
-                        const remainingPids = remaining.trim().split('\n').filter((pid: string) => pid && !isNaN(parseInt(pid)));
-                        if (remainingPids.length > 0) {
-                            console.log(`[Playwright Cleanup] Force killing ${remainingPids.length} remaining processes`);
-                            await execAsync(`kill -9 ${remainingPids.join(' ')}`).catch(() => {});
-                        }
-                    } catch (error) {
-                        // No remaining processes
-                    }
+                if ((plugin as any).browser) {
+                    browsers.push((plugin as any).browser);
+                }
+                if ((plugin as any).browserClients) {
+                    const pluginContexts = Array.from((plugin as any).browserClients.values())
+                        .map((client: any) => client.context);
+                    contexts.push(...pluginContexts);
                 }
             } catch (error) {
-                // No processes found or command failed
+                // Ignore errors when collecting instances
             }
-
-            // 清理临时文件
-            try {
-                await execAsync('find /var/folders -name "playwright_chromiumdev_profile-*" -type d -exec rm -rf {} + 2>/dev/null || true');
-            } catch (error) {
-                // Ignore temp file cleanup errors
-            }
-
-        } catch (error) {
-            console.error('[Playwright Cleanup] Error during force cleanup:', error);
         }
+
+        await PlaywrightCleanupUtil.cleanupPlaywrightResources({
+            browsers,
+            contexts,
+            logPrefix: '[Playwright Cleanup]',
+            fallbackToProcessKill: true
+        });
     }
 
     private forceCleanupAllPlaywrightProcessesSync(): void {
-        try {
-            const { execSync } = require('child_process');
-            
-            // 尝试查找并清理进程
-            try {
-                const stdout = execSync('pgrep -f "playwright.*chrom"', { encoding: 'utf8' });
-                const pids = stdout.trim().split('\n').filter((pid: string) => pid && !isNaN(parseInt(pid)));
-                
-                if (pids.length > 0) {
-                    console.log(`[Playwright Cleanup] Sync cleanup of ${pids.length} processes`);
-                    execSync(`kill -9 ${pids.join(' ')} 2>/dev/null || true`);
-                }
-            } catch (error) {
-                // No processes found or command failed
-            }
-
-            // 清理临时文件
-            try {
-                execSync('find /var/folders -name "playwright_chromiumdev_profile-*" -type d -exec rm -rf {} + 2>/dev/null || true');
-            } catch (error) {
-                // Ignore temp file cleanup errors
-            }
-        } catch (error) {
-            // Ignore all errors in sync cleanup
-        }
+        PlaywrightCleanupUtil.emergencyCleanupSync('[Playwright Cleanup]');
     }
 
     private cleanupOrphanProcessesOnStartup(): void {
         // 在后台异步执行启动时的孤儿进程清理
         setTimeout(async () => {
-            try {
-                const { exec } = require('child_process');
-                const { promisify } = require('util');
-                const execAsync = promisify(exec);
-
-                // 查找所有 Playwright 相关进程
-                try {
-                    const { stdout } = await execAsync('pgrep -f "playwright.*chrom"');
-                    const pids = stdout.trim().split('\n').filter((pid: string) => pid && !isNaN(parseInt(pid)));
-                    
-                    if (pids.length > 0) {
-                        const orphanPids = [];
-                        
-                        // 检查每个进程的父进程是否存在
-                        for (const pidStr of pids) {
-                            const pid = parseInt(pidStr);
-                            try {
-                                const { stdout: psOutput } = await execAsync(`ps -o ppid= -p ${pid}`);
-                                const ppid = parseInt(psOutput.trim());
-                                
-                                // 检查父进程是否存在
-                                try {
-                                    await execAsync(`ps -p ${ppid}`);
-                                } catch {
-                                    // 父进程不存在，这是孤儿进程
-                                    orphanPids.push(pid);
-                                }
-                            } catch {
-                                // 进程信息获取失败，可能已经终止
-                                continue;
-                            }
-                        }
-
-                        if (orphanPids.length > 0) {
-                            console.log(`[Playwright Cleanup] Found ${orphanPids.length} orphan processes on startup, cleaning up...`);
-                            
-                            // 清理孤儿进程
-                            for (const pid of orphanPids) {
-                                try {
-                                    await execAsync(`kill ${pid}`);
-                                    await new Promise(resolve => setTimeout(resolve, 1000));
-                                    
-                                    // 检查是否仍然存在，如果是则强制清理
-                                    try {
-                                        await execAsync(`ps -p ${pid}`);
-                                        await execAsync(`kill -9 ${pid}`);
-                                    } catch {
-                                        // 进程已经终止
-                                    }
-                                } catch (error) {
-                                    // 忽略清理错误
-                                }
-                            }
-                            
-                            console.log(`[Playwright Cleanup] Orphan processes cleanup completed`);
-                        }
-                    }
-                } catch {
-                    // 没有找到相关进程，忽略
-                }
-            } catch (error) {
-                // 忽略启动清理错误
-            }
+            // 启动时只进行进程级清理，因为可能没有活跃的浏览器实例
+            await PlaywrightCleanupUtil.cleanupPlaywrightResources({
+                logPrefix: '[Startup Cleanup]',
+                fallbackToProcessKill: true
+            });
         }, 1000); // 延迟1秒执行，避免影响插件初始化
     }
 }
@@ -377,13 +513,7 @@ export class PlaywrightPlugin implements IBrowserProxyPlugin {
     // 紧急清理方法 - 直接在进程级别注册，绕过框架层
     private registerEmergencyCleanup(): void {
         const emergencyCleanup = () => {
-            try {
-                console.log('[Playwright Emergency Cleanup] Force killing all chromium processes');
-                const { execSync } = require('child_process');
-                execSync('pkill -9 -f "playwright.*chrom" 2>/dev/null || true');
-            } catch (error) {
-                // Ignore errors in emergency cleanup
-            }
+            PlaywrightCleanupUtil.emergencyCleanupSync('[Emergency Cleanup]');
         };
 
         // 注册紧急清理到进程事件 - 这将在框架清理之外独立运行
@@ -993,16 +1123,7 @@ export class PlaywrightPlugin implements IBrowserProxyPlugin {
         // 立即注册一个强制清理定时器作为最后保障
         const forceCleanupTimer = setTimeout(() => {
             console.log('[Playwright Kill] Timeout reached, emergency force cleanup');
-            try {
-                const { execSync } = require('child_process');
-                const result = execSync('pgrep -f "playwright.*chrom" || true', { encoding: 'utf8' });
-                if (result.trim()) {
-                    console.log(`[Playwright Kill] Emergency killing ${result.trim().split('\n').length} processes`);
-                    execSync('pkill -9 -f "playwright.*chrom" 2>/dev/null || true');
-                }
-            } catch (error) {
-                // Ignore cleanup errors
-            }
+            PlaywrightCleanupUtil.emergencyCleanupSync('[Kill Timeout]');
         }, 3000); // 3秒超时，更激进的清理
 
         try {
@@ -1052,21 +1173,17 @@ export class PlaywrightPlugin implements IBrowserProxyPlugin {
                 // 额外等待一下确保浏览器完全关闭
                 await new Promise(resolve => setTimeout(resolve, 500));
                 
-                const { execSync } = require('child_process');
-                const result = execSync('pgrep -f "playwright.*chrom" || true', { encoding: 'utf8' });
-                if (result.trim()) {
-                    const processCount = result.trim().split('\n').length;
-                    this.logger.warn(`[Kill] Force killing ${processCount} remaining playwright processes`);
-                    execSync('pkill -9 -f "playwright.*chrom" 2>/dev/null || true');
-                    
-                    // 再次确认清理
-                    const afterResult = execSync('pgrep -f "playwright.*chrom" || true', { encoding: 'utf8' });
-                    if (afterResult.trim()) {
-                        this.logger.error(`[Kill] Still ${afterResult.trim().split('\n').length} processes remain after cleanup!`);
-                    } else {
-                        this.logger.debug(`[Kill] Successfully cleaned all playwright processes`);
-                    }
-                }
+                // 使用优化的清理方法，优先使用 Playwright 原生清理
+                const browsers = this.browser ? [this.browser] : [];
+                const contexts = Array.from(this.browserClients.values()).map(client => client.context);
+
+                await PlaywrightCleanupUtil.cleanupPlaywrightResources({
+                    browsers,
+                    contexts,
+                    logPrefix: '[Kill Final]',
+                    fallbackToProcessKill: true
+                });
+                this.logger.debug(`[Kill] Successfully cleaned all playwright processes`);
             } catch (killError) {
                 this.logger.error('Failed to force kill browser processes:', killError);
             }
@@ -1103,16 +1220,7 @@ export class PlaywrightPlugin implements IBrowserProxyPlugin {
             
             // 全局清理后再次强制检查
             setTimeout(() => {
-                try {
-                    const { execSync } = require('child_process');
-                    const result = execSync('pgrep -f "playwright.*chrom" || true', { encoding: 'utf8' });
-                    if (result.trim()) {
-                        console.log(`[Global Cleanup] Final cleanup: killing ${result.trim().split('\n').length} remaining processes`);
-                        execSync('pkill -9 -f "playwright.*chrom" 2>/dev/null || true');
-                    }
-                } catch (error) {
-                    // Ignore cleanup errors
-                }
+                PlaywrightCleanupUtil.emergencyCleanupSync('[Global Final]');
             }, 1000); // 1秒后的最终清理
             
         } catch (error) {
