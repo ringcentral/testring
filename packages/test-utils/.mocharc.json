@@ -1,5 +1,5 @@
 {
-  "require" : "../../utils/ts-mocha.js",
+  "require" : ["../../utils/ts-mocha.js", "test/setup.ts"],
   "watch-extensions":"ts",
   "timeout": 30000,
   "reporter": "dot",

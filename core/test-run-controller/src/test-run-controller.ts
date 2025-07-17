@@ -292,6 +292,8 @@ export class TestRunController
                 this.getWorkerMeta(worker),
             );
         } else {
+            // Ensure error is properly logged and tracked
+            this.logger.error(`Test failed: ${queueItem.test.path}`, error.message);
             this.errors.push(error);
 
             await this.callHook(

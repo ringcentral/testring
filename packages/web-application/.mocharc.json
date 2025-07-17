@@ -3,5 +3,6 @@
   "watch-extensions":"ts",
   "timeout": 30000,
   "reporter": "dot",
-  "spec": "test/**/*.spec.ts"
+  "spec": "test/**/*.spec.ts",
+  "_comment": "使用standard timeout (30秒) 适合一般的单元测试"
 }

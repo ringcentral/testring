@@ -123,7 +123,7 @@ export interface IBrowserProxyPlugin {
 
     setCookie(applicant: string, cookieName: any): Promise<any>;
 
-    getCookie(applicant: string, cookieName: string): Promise<any>;
+    getCookie(applicant: string, cookieName?: string): Promise<any>;
 
     deleteCookie(applicant: string, cookieName: string): Promise<any>;
 

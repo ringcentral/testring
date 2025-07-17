@@ -1,10 +1,10 @@
 {
-  "reporter": ["html"],
+  "reporter": ["html", "lcov", "text-summary"],
   "reports-dir": "./c8-cov",
   "all": true,
   "include": [
-    "packages/plugin-selenium-driver/*/plugin/index.*",
-    "packages/web-application/*/web-client.*",
-    "packages/web-application/*/web-application.*"
+    "packages/plugin-playwright-driver/src/**/*",
+    "packages/web-application/src/**/*",
+    "core/*/src/**/*"
   ]
 }

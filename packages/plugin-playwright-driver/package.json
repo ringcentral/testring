@@ -1,0 +1,34 @@
+{
+  "name": "@testring/plugin-playwright-driver",
+  "version": "0.8.0",
+  "main": "./dist/index.js",
+  "typings": "./src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ringcentral/testring.git"
+  },
+  "author": "RingCentral",
+  "license": "MIT",
+  "scripts": {
+    "test": "mocha test/**/*.spec.ts --require ts-node/register --recursive",
+    "test:debug": "PLAYWRIGHT_DEBUG=1 mocha --config .mocharc.debug.json",
+    "postinstall": "node scripts/install-browsers.js",
+    "install-browsers": "node scripts/install-browsers.js",
+    "uninstall-browsers": "npx playwright uninstall --all"
+  },
+  "dependencies": {
+    "@testring/logger": "0.8.0",
+    "@testring/plugin-api": "0.8.0",
+    "@testring/types": "0.8.0",
+    "@types/node": "22.8.5",
+    "playwright": "^1.48.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^10.0.1",
+    "@types/sinon": "^10.0.15",
+    "chai": "^4.3.7",
+    "sinon": "^15.2.0",
+    "ts-node": "10.9.2"
+  }
+}

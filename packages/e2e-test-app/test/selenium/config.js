@@ -1,6 +1,9 @@
 const browsers = require('@puppeteer/browsers');
 const path = require('path');
 
+// 导入统一的timeout配置
+const TIMEOUTS = require('../../timeout-config.js');
+
 module.exports = async (config) => {
     const info = await browsers.getInstalledBrowsers({
         cacheDir: path.join(__dirname, '..', '..', 'chrome-cache'),
@@ -39,13 +42,13 @@ module.exports = async (config) => {
         maxWriteThreadCount: 2,
         screenshots: 'disable',
         retryCount: 0,
-        testTimeout: local ? 0 : config.testTimeout,
+        testTimeout: local ? 0 : (config.testTimeout || TIMEOUTS.TEST_EXECUTION),
         tests: 'test/selenium/test/**/set-custom-config.spec.js',
         plugins: [
             [
                 'selenium-driver',
                 {
-                    clientTimeout: local ? 0 : config.testTimeout,
+                    clientTimeout: local ? 0 : (config.testTimeout || TIMEOUTS.CLIENT_SESSION),
                     path: '/wd/hub',
                     chromeDriverPath: chromedriver.executablePath,
                     capabilities: local

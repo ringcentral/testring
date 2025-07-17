@@ -13,32 +13,90 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false  # 不要让一个任务失败导致整个 matrix 停止
       matrix:
-        node-version: [16, 18, 22]
-        os: [ubuntu-latest, macos-latest]
+        node-version: [20, 22, 24]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci
     - run: npm run build:main
-    - run: npm run test:ci
 
-    - name: Coveralls
-      if: ${{ matrix.os=='ubuntu-latest' && matrix.node-version=='16'}}
+    # Install Playwright browsers for E2E tests
+    - name: Install Playwright Browsers
+      run: npx playwright install chromium firefox
+
+    # Run all tests with coverage
+    - run: npm run test:ci:coverage
+
+    # Display coverage summaries
+    - name: Display Coverage Reports
+      if: ${{ matrix.os=='ubuntu-latest' && matrix.node-version=='22'}}
+      run: |
+        echo "=== Unit Test Coverage Summary ==="
+        if [ -f "./.coverage/lcov.info" ]; then
+          echo "✅ Unit test coverage report generated"
+          # Display basic coverage info
+          grep -E "^(SF|LF|LH)" ./.coverage/lcov.info | head -20
+        else
+          echo "❌ Unit test coverage file not found"
+        fi
+
+        echo ""
+        echo "=== E2E Test Coverage Summary ==="
+        if [ -f "./c8-cov/lcov.info" ]; then
+          echo "✅ E2E test coverage report generated"
+          # Display basic coverage info
+          grep -E "^(SF|LF|LH)" ./c8-cov/lcov.info | head -20
+        else
+          echo "❌ E2E test coverage file not found"
+        fi
+
+    # Prepare coverage report for Coveralls
+    - name: Prepare Coverage Report
+      if: ${{ matrix.os=='ubuntu-latest' && matrix.node-version=='22'}}
+      run: |
+        # Create merged coverage directory
+        mkdir -p ./merged-coverage
+
+        # Check which coverage files exist and use the appropriate one
+        if [ -f "./.coverage/lcov.info" ] && [ -f "./c8-cov/lcov.info" ]; then
+          echo "Both coverage reports found. Using unit test coverage as primary..."
+          # For now, prioritize unit test coverage as it covers more of the codebase
+          cp ./.coverage/lcov.info ./merged-coverage/lcov.info
+          echo "✅ Unit test coverage report prepared for upload"
+        elif [ -f "./.coverage/lcov.info" ]; then
+          echo "Using unit test coverage report..."
+          cp ./.coverage/lcov.info ./merged-coverage/lcov.info
+          echo "✅ Unit test coverage report prepared for upload"
+        elif [ -f "./c8-cov/lcov.info" ]; then
+          echo "Using E2E test coverage report..."
+          cp ./c8-cov/lcov.info ./merged-coverage/lcov.info
+          echo "✅ E2E test coverage report prepared for upload"
+        else
+          echo "❌ No coverage reports found!"
+          ls -la ./.coverage/ || echo "No .coverage directory"
+          ls -la ./c8-cov/ || echo "No c8-cov directory"
+          exit 1
+        fi
+
+    - name: Upload Coverage to Coveralls
+      if: ${{ matrix.os=='ubuntu-latest' && matrix.node-version=='22'}}
       uses: coverallsapp/github-action@master
       with:
-        path-to-lcov: './.coverage/lcov.info'
+        path-to-lcov: './merged-coverage/lcov.info'
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: SonarCloud Scan
-      if: ${{ matrix.os=='ubuntu-latest' && matrix.node-version=='16' && github.event.pull_request.merged == true}}
+      if: ${{ matrix.os=='ubuntu-latest' && matrix.node-version=='22' && github.event.pull_request.merged == true}}
       uses: sonarsource/sonarcloud-github-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

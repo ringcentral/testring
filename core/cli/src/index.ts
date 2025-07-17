@@ -127,12 +127,24 @@ export const runCLI = async (argv: Array<string>): Promise<unknown> => {
 
         new LoggerServer(config, transport, process.stdout);
 
-        loggerClient.error(exception);
+        loggerClient.error('[CLI] Test execution failed:', exception.message);
+        if (exception.stack) {
+            loggerClient.error('[CLI] Stack trace:', exception.stack);
+        }
+
+        // Log additional error details if available
+        if (exception.testFailures && exception.totalTests) {
+            loggerClient.error(`[CLI] Test summary: ${exception.testFailures}/${exception.totalTests} tests failed`);
+        }
 
         await commandExecution.shutdown();
 
+        // Use the exit code from the exception if available, otherwise default to 1
+        const exitCode = exception.exitCode || exception.code || 1;
+
         setTimeout(() => {
-            process.exit(1);
+            loggerClient.error(`[CLI] Exiting with code: ${exitCode}`);
+            process.exit(exitCode);
         }, 500);
     });
 };

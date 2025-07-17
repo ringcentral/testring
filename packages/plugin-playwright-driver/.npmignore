@@ -1,0 +1,32 @@
+# 测试相关文件
+test/
+test-*.js
+*.spec.ts
+*.spec.js
+.mocharc.*
+
+# 开发文件
+setup-browsers.sh
+tsconfig.json
+tsconfig.build.json
+
+# 文档
+README.md
+MIGRATION.md
+DEBUG.md
+
+# 配置文件
+.gitignore
+.eslintrc*
+.prettierrc*
+
+# 构建文件
+src/
+dist/
+
+# 只保留必要的文件
+# 包含的文件：
+# - package.json
+# - LICENSE
+# - scripts/
+# - dist/ (构建后的文件) 

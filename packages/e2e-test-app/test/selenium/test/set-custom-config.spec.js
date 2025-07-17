@@ -14,7 +14,7 @@ run(async (api) => {
         config.headers['X-Testring-Custom-Header'],
         'TestringCustomValue',
     );
-    await app.url('https://example.com');
+    await app.url('https://captive.apple.com');
     // make api request to localhost:8080/selenium-headers to retrieve captured headers
     const response = await api.http.get({
         url: 'http://localhost:8080/selenium-headers',

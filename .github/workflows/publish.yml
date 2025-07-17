@@ -14,8 +14,10 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for commit info
+      - uses: actions/setup-node@v4
         with:
           node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
@@ -25,11 +27,51 @@ jobs:
           git config --global user.name "${{ github.actor }}"
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
 
+      - name: Get commit info
+        id: commit_info
+        run: |
+          echo "commit_id=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "github_username=${{ github.actor }}" >> $GITHUB_OUTPUT
+
+      - name: Check if should publish to dev
+        id: check_dev_publish
+        run: |
+          if [[ "${{ github.repository }}" != "ringcentral/testring" ]] || [[ "${{ github.ref }}" != "refs/heads/master" ]]; then
+            if [[ -n "${{ secrets.NPM_TOKEN }}" ]]; then
+              echo "should_publish_dev=true" >> $GITHUB_OUTPUT
+              echo "Publishing to dev packages because:"
+              echo "  Repository: ${{ github.repository }} (not ringcentral/testring)"
+              echo "  Branch: ${{ github.ref }} (not refs/heads/master)"
+              echo "  NPM_TOKEN is available"
+            else
+              echo "should_publish_dev=false" >> $GITHUB_OUTPUT
+              echo "Not publishing: NPM_TOKEN not available"
+            fi
+          else
+            echo "should_publish_dev=false" >> $GITHUB_OUTPUT
+            echo "Publishing to production packages (ringcentral/testring master branch)"
+          fi
+
       - run: npm ci
+      - run: npx playwright install chromium
       - run: npm run build:main
-      - run: npm run publish:version ${{ github.event.inputs.version }}
-      - run: npm run publish:ci
+
+      # Production publish (original logic)
+      - name: Publish to production
+        if: steps.check_dev_publish.outputs.should_publish_dev == 'false'
+        run: |
+          npm run publish:version ${{ github.event.inputs.version }}
+          npm run publish:ci
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Dev publish (new logic)
+      - name: Publish to dev packages
+        if: steps.check_dev_publish.outputs.should_publish_dev == 'true'
+        run: |
+          npm run publish:dev -- --github-username=${{ steps.commit_info.outputs.github_username }} --commit-id=${{ steps.commit_info.outputs.commit_id }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

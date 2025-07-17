@@ -34,7 +34,9 @@ describe('fs-store-plugin', () => {
                         workerId: metaData.workerId,
                     },
                 });
-                chai.expect(fullPath).to.be.equals(metaData.fullPath);
+                // Normalize path separators for cross-platform compatibility
+                const normalizedFullPath = fullPath.replace(/\\/g, '/');
+                chai.expect(normalizedFullPath).to.be.equals(metaData.fullPath);
             }),
         );
     });

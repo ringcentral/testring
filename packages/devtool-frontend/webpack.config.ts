@@ -28,11 +28,16 @@ const config: webpack.Configuration = {
     module: {
         rules: [
             {
-                test: /\.js\.map$/,
+                test: /\.(js|d\.ts)\.map$/,
+                use: 'ignore-loader',
+            },
+            {
+                test: /\.d\.ts$/,
                 use: 'ignore-loader',
             },
             {
                 test: /\.tsx?$/,
+                exclude: /\.d\.ts$/,
                 use: 'ts-loader',
             },
             {

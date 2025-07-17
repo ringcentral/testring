@@ -55,14 +55,18 @@ export class TransportMock extends EventEmitter implements ITransport {
         return () => this.removeListener(messageType, callback);
     }
 
-    // eslint-disable-next-line sonarjs/no-identical-functions
     public override once<T = any>(
         messageType: string,
         callback: (m: T, source?: string) => void,
     ): any {
-        super.on(messageType, callback);
+        const wrappedCallback = (message: T, source?: string) => {
+            this.removeListener(messageType, wrappedCallback);
+            callback(message, source);
+        };
 
-        return () => this.removeListener(messageType, callback);
+        super.on(messageType, wrappedCallback);
+
+        return () => this.removeListener(messageType, wrappedCallback);
     }
 
     public onceFrom<T = any>(

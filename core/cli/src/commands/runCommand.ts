@@ -124,13 +124,21 @@ class RunCommand implements ICLICommand {
         if (testRunResult) {
             this.logger.error('Founded errors:');
 
-            testRunResult.forEach((error) => {
-                this.logger.error(error);
+            testRunResult.forEach((error, index) => {
+                this.logger.error(`Error ${index + 1}:`, error.message);
+                this.logger.error('Stack:', error.stack);
             });
 
-            throw new Error(
-                `Failed ${testRunResult.length}/${tests.length} tests.`,
-            );
+            const errorMessage = `Failed ${testRunResult.length}/${tests.length} tests.`;
+            this.logger.error(errorMessage);
+
+            // Ensure proper exit code is set
+            const error = new Error(errorMessage);
+            (error as any).exitCode = 1;
+            (error as any).testFailures = testRunResult.length;
+            (error as any).totalTests = tests.length;
+
+            throw error;
         } else {
             this.logger.info(`Tests done: ${tests.length}/${tests.length}.`);
         }

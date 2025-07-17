@@ -1,3 +1,4 @@
+
 packages/**/dist
 packages/**/chrome-cache
 packages/**/node_modules
@@ -18,3 +19,7 @@ lerna-debug.log
 .tsbuildinfo
 
 c8-cov/
+coverage/
+
+# Test Generated File
+packages/e2e-test-app/test/playwright/test/**/*.pdf

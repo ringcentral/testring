@@ -12,7 +12,7 @@ import {
 } from '@testring/types';
 import {WorkerController} from '../src/worker/worker-controller';
 
-const TESTRING_API_ABSOLUTE_PATH = require.resolve('@testring/api');
+const TESTRING_API_ABSOLUTE_PATH = require.resolve('@testring/api').replace(/\\/g, '/');
 
 describe('WorkerController', () => {
     it('should run sync test', (callback) => {
@@ -89,7 +89,8 @@ describe('WorkerController', () => {
         );
     });
 
-    it('should run async test', (callback) => {
+    it('should run async test', function(callback) {
+        this.timeout(60000); // Increase timeout for Windows compatibility
         const transportMock = new TransportMock();
         const workerController = new WorkerController(
             transportMock,
@@ -144,7 +145,8 @@ describe('WorkerController', () => {
         );
     });
 
-    it('should fail async test', (callback) => {
+    it('should fail async test', function(callback) {
+        this.timeout(60000); // Increase timeout for Windows compatibility
         const ERROR_TEXT = 'look ama error';
 
         const transportMock = new TransportMock();
@@ -205,7 +207,8 @@ describe('WorkerController', () => {
         );
     });
 
-    it('should run async test with await pending in it', (callback) => {
+    it('should run async test with await pending in it', function(callback) {
+        this.timeout(60000); // Increase timeout for Windows compatibility
         const transportMock = new TransportMock();
         const workerController = new WorkerController(
             transportMock,

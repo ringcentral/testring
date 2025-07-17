@@ -1,0 +1,8 @@
+{
+  "spec": "test/**/*.spec.ts",
+  "require": ["ts-node/register", "test/setup.ts"],
+  "recursive": true,
+  "timeout": 8000,
+  "exit": true,
+  "_comment": "使用fast timeout (8秒) 适合快速的单元测试，包含全局设置文件"
+}

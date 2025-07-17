@@ -1,0 +1,208 @@
+name: Sync Documentation to Wiki
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'docs/**'
+  workflow_dispatch:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Checkout wiki
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ github.repository }}.wiki
+        path: wiki
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: |
+        npm install gray-matter
+    
+    - name: Create wiki sync script
+      run: |
+        cat > sync-to-wiki.js << 'EOF'
+        const fs = require('fs');
+        const path = require('path');
+        const matter = require('gray-matter');
+        
+        // Configuration
+        const DOCS_DIR = './docs';
+        const WIKI_DIR = './wiki';
+        const EXCLUDED_FILES = ['README.md']; // Files to exclude from wiki sync
+        
+        // Utility functions
+        function sanitizeFilename(filename) {
+          return filename
+            .replace(/[^a-zA-Z0-9\-_\.]/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+        }
+        
+        function convertRelativeLinks(content, currentPath) {
+          // Convert relative links to wiki links
+          return content.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
+            if (url.startsWith('http') || url.startsWith('#')) {
+              return match; // Keep external links and anchors as-is
+            }
+            
+            // Convert relative paths to wiki page names
+            if (url.endsWith('.md')) {
+              const pageName = path.basename(url, '.md');
+              return `[${text}](${sanitizeFilename(pageName)})`;
+            }
+            
+            return match;
+          });
+        }
+        
+        function processMarkdownFile(filePath, relativePath) {
+          const content = fs.readFileSync(filePath, 'utf8');
+          const { data: frontMatter, content: markdownContent } = matter(content);
+          
+          // Convert relative links
+          const processedContent = convertRelativeLinks(markdownContent, relativePath);
+          
+          // Add wiki metadata
+          const wikiContent = `<!-- Auto-generated from ${relativePath} -->
+        ${frontMatter.title ? `# ${frontMatter.title}\n\n` : ''}${processedContent}
+        
+        ---
+        *This page was automatically generated from the [testring documentation](https://github.com/${process.env.GITHUB_REPOSITORY}/tree/main/${relativePath}). Last updated: ${new Date().toISOString()}*`;
+          
+          return wikiContent;
+        }
+        
+        function syncDirectory(sourceDir, targetDir, basePath = '') {
+          if (!fs.existsSync(targetDir)) {
+            fs.mkdirSync(targetDir, { recursive: true });
+          }
+          
+          const items = fs.readdirSync(sourceDir);
+          
+          for (const item of items) {
+            const sourcePath = path.join(sourceDir, item);
+            const relativePath = path.join(basePath, item);
+            const stat = fs.statSync(sourcePath);
+            
+            if (stat.isDirectory()) {
+              // Recursively process subdirectories
+              syncDirectory(sourcePath, targetDir, relativePath);
+            } else if (item.endsWith('.md')) {
+              // Process markdown files
+              if (EXCLUDED_FILES.includes(item)) {
+                console.log(`Skipping excluded file: ${relativePath}`);
+                continue;
+              }
+              
+              const wikiFileName = item === 'README.md' 
+                ? `${sanitizeFilename(path.basename(basePath) || 'Home')}.md`
+                : sanitizeFilename(item);
+              
+              const targetPath = path.join(targetDir, wikiFileName);
+              
+              try {
+                const wikiContent = processMarkdownFile(sourcePath, relativePath);
+                fs.writeFileSync(targetPath, wikiContent);
+                console.log(`Synced: ${relativePath} -> ${wikiFileName}`);
+              } catch (error) {
+                console.error(`Error processing ${relativePath}:`, error.message);
+              }
+            }
+          }
+        }
+        
+        // Create Home page from main docs README
+        function createHomePage() {
+          const mainReadmePath = path.join(DOCS_DIR, 'README.md');
+          if (fs.existsSync(mainReadmePath)) {
+            const homeContent = processMarkdownFile(mainReadmePath, 'docs/README.md');
+            fs.writeFileSync(path.join(WIKI_DIR, 'Home.md'), homeContent);
+            console.log('Created Home.md from docs/README.md');
+          }
+        }
+        
+        // Main execution
+        console.log('Starting wiki sync...');
+        
+        // Clean existing wiki content (except .git)
+        const wikiItems = fs.readdirSync(WIKI_DIR);
+        for (const item of wikiItems) {
+          if (item !== '.git') {
+            const itemPath = path.join(WIKI_DIR, item);
+            if (fs.statSync(itemPath).isDirectory()) {
+              fs.rmSync(itemPath, { recursive: true });
+            } else {
+              fs.unlinkSync(itemPath);
+            }
+          }
+        }
+        
+        // Create Home page
+        createHomePage();
+        
+        // Sync all documentation
+        syncDirectory(DOCS_DIR, WIKI_DIR);
+        
+        console.log('Wiki sync completed!');
+        EOF
+    
+    - name: Run wiki sync
+      run: node sync-to-wiki.js
+    
+    - name: Check for changes
+      id: changes
+      run: |
+        cd wiki
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "changes=true" >> $GITHUB_OUTPUT
+        else
+          echo "changes=false" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Commit and push wiki changes
+      if: steps.changes.outputs.changes == 'true'
+      run: |
+        cd wiki
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -m "Auto-sync documentation from main repository
+        
+        Synced from commit: ${{ github.sha }}
+        Triggered by: ${{ github.event_name }}
+        "
+        git push
+    
+    - name: Create summary
+      run: |
+        echo "## Wiki Sync Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ steps.changes.outputs.changes }}" == "true" ]; then
+          echo "✅ Wiki updated successfully" >> $GITHUB_STEP_SUMMARY
+          echo "📝 Changes detected and synced to wiki" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "ℹ️ No changes detected" >> $GITHUB_STEP_SUMMARY
+          echo "📝 Wiki is already up to date" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "🔗 [View Wiki](https://github.com/${{ github.repository }}/wiki)" >> $GITHUB_STEP_SUMMARY
+        echo "📊 [View Action Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noUnusedParameters": false,
+    "noUnusedLocals": false
+  },
+  "references": [
+    {
+      "path": "../../core/logger"
+    },
+    {
+      "path": "../../core/plugin-api"
+    },
+    {
+      "path": "../../core/types"
+    }
+  ]
+}

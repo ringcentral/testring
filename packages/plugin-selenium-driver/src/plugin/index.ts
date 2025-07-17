@@ -23,6 +23,9 @@ import type {RespondWithOptions} from 'webdriverio/build/utils/interception/type
 import webdriver from 'webdriver';
 import {WebdriverIOConfig} from '@wdio/types/build/Capabilities';
 
+// 导入统一的timeout配置
+const TIMEOUTS = require('../../../e2e-test-app/timeout-config.js');
+
 type BrowserObjectCustom = WebdriverIO.Browser & {
     sessionId: string;
 };
@@ -37,7 +40,7 @@ type browserClientItem = {
 const DEFAULT_CONFIG: SeleniumPluginConfig = {
     recorderExtension: false,
     clientCheckInterval: 5 * 1000,
-    clientTimeout: 15 * 60 * 1000,
+    clientTimeout: TIMEOUTS.CLIENT_SESSION,
     port: 4444,
     logLevel: 'error',
     capabilities: {
@@ -920,7 +923,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         const result = await client.switchToWindow(tabId);
         const body = await client.$('body');
-        await client.waitUntil(async () => body.isExisting(), {timeout: 10000});
+        await client.waitUntil(async () => body.isExisting(), {timeout: TIMEOUTS.WAIT_FOR_ELEMENT});
 
         return result;
     }
@@ -1062,7 +1065,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         const options: Partial<WaitUntilOptions> = {
-            timeout: timeout || 5000,
+            timeout: timeout || TIMEOUTS.CONDITION,
         };
 
         if (timeoutMsg !== undefined) {

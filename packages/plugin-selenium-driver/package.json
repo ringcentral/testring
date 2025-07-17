@@ -9,6 +9,9 @@
   },
   "author": "RingCentral",
   "license": "MIT",
+  "scripts": {
+    "test": "mocha test/**/*.spec.ts --require ts-node/register --recursive"
+  },
   "dependencies": {
     "@nullcc/code-coverage-client": "1.4.2",
     "@testring/child-process": "0.8.0",
@@ -24,5 +27,13 @@
     "puppeteer-core": "22.3.0",
     "selenium-server": "3.141.59",
     "webdriverio": "9.2.6"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^10.0.1",
+    "@types/sinon": "^10.0.15",
+    "chai": "^4.3.7",
+    "sinon": "^15.2.0",
+    "ts-node": "10.9.2"
   }
 }
