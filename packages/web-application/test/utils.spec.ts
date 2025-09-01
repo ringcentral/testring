@@ -41,7 +41,11 @@ describe('utils', () => {
 
     it('should return toString method call result', () => {
         class Dummy {
-            constructor(private value: string) {}
+            private value: string;
+
+            constructor(value: string) {
+                this.value = value;
+            }
 
             toString() {
                 return this.value;
@@ -61,7 +65,11 @@ describe('utils', () => {
 
     it('should return toFormattedString method call result', () => {
         class Dummy {
-            constructor(private value: string) {}
+            private value: string;
+
+            constructor(value: string) {
+                this.value = value;
+            }
 
             toFormattedString() {
                 return `formatted ${this.value}`;
