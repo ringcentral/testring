@@ -10,7 +10,8 @@
     "author": "RingCentral",
     "license": "MIT",
     "scripts": {
-        "postinstall": "shx mkdir -p dist && crx pack src/extension -o dist/extension.crx"
+        "postinstall": "shx mkdir -p dist && crx pack src/extension -o dist/extension.crx",
+        "build": "tsc -p tsconfig.build.json"
     },
     "dependencies": {
         "crx": "5.0.1",

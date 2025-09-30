@@ -1,4 +1,4 @@
-import {SeleniumPluginConfig} from '../types';
+import {SeleniumPluginConfig, SeleniumVersion} from '../types';
 import {
     IBrowserProxyPlugin,
     SavePdfOptions,
@@ -7,6 +7,8 @@ import {
 } from '@testring/types';
 
 import {ChildProcess} from 'child_process';
+import * as path from 'path';
+import * as fs from 'fs';
 
 import {remote} from 'webdriverio';
 import * as deepmerge from 'deepmerge';
@@ -49,6 +51,8 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
     } as any,
     cdpCoverage: false,
     disableClientPing: false,
+    localVersion: 'v3' as SeleniumVersion,
+    seleniumArgs: [],
 };
 
 function delay(timeout: number) {
@@ -66,6 +70,97 @@ function stringifyWindowFeatures(windowFeatures: WindowFeaturesConfig) {
             .join(',');
     }
     return result;
+}
+
+function getSeleniumJarPath(version: SeleniumVersion): string {
+    if (version === 'v4') {
+        // For Selenium v4, we expect the JAR to be in a specific location
+        const seleniumV4Path = path.join(__dirname, '..', 'selenium-server-v4', 'selenium-server-4.34.0.jar');
+        
+        if (!fs.existsSync(seleniumV4Path)) {
+            throw new Error(
+                `Selenium v4 JAR not found at expected path: ${seleniumV4Path}. ` +
+                'Please ensure selenium-server-4.34.0.jar is available in the package directory.'
+            );
+        }
+        
+        return seleniumV4Path;
+    }
+    
+    // For v3 and other versions, use the original logic
+    const seleniumServer = require('selenium-server');
+    return seleniumServer.path;
+}
+
+
+function setupProcessListeners(
+    seleniumProcess: ChildProcess,
+    resolve: () => void,
+    reject: (error: Error) => void,
+    version: SeleniumVersion,
+    logger: { verbose: (message: string) => void }
+) {
+    if (!seleniumProcess.stderr && !seleniumProcess.stdout) {
+        reject(new Error('There is no STDERR or STDOUT on selenium worker'));
+        return;
+    }
+
+    let isReady = false;
+    const timeout = setTimeout(() => {
+        if (!isReady) {
+            reject(new Error(`Selenium server failed to start within 30 seconds (version: ${version})`));
+        }
+    }, 30000);
+
+    // Check for server readiness
+    const readyMessages: Record<SeleniumVersion, string> = {
+        v4: 'Started Selenium Standalone',
+        v3: 'SeleniumServer.boot',
+    };
+
+    const checkForReadyMessage = (message: string, stream: 'stdout' | 'stderr') => {
+        logger.verbose(`[Selenium ${version}] [${stream.toUpperCase()}] ${message.trim()}`);
+        
+        if (message.includes(readyMessages[version])) {
+            isReady = true;
+            clearTimeout(timeout);
+            setTimeout(resolve, 500); // Small delay to ensure server is fully ready
+        }
+    };
+
+    // For v4, ready message appears in stdout
+    if (version === 'v4') {
+        seleniumProcess.stdout?.on('data', (data) => {
+            checkForReadyMessage(data.toString(), 'stdout');
+        });
+        
+        // Also listen to stderr for error messages
+        seleniumProcess.stderr?.on('data', (data) => {
+            logger.verbose(`[Selenium ${version}] [STDERR] ${data.toString().trim()}`);
+        });
+    } else {
+        // For v3, ready message appears in stderr
+        seleniumProcess.stderr?.on('data', (data) => {
+            checkForReadyMessage(data.toString(), 'stderr');
+        });
+        
+        // Also listen to stdout for other messages
+        seleniumProcess.stdout?.on('data', (data) => {
+            logger.verbose(`[Selenium ${version}] [STDOUT] ${data.toString().trim()}`);
+        });
+    }
+
+    seleniumProcess.on('error', (error) => {
+        clearTimeout(timeout);
+        reject(new Error(`Selenium process error: ${error.message}`));
+    });
+
+    seleniumProcess.on('exit', (code) => {
+        if (!isReady) {
+            clearTimeout(timeout);
+            reject(new Error(`Selenium process exited with code ${code} before becoming ready`));
+        }
+    });
 }
 
 export class SeleniumPlugin implements IBrowserProxyPlugin {
@@ -165,49 +260,69 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return Promise.all(clientsRequests);
     }
 
-    private getChromeDriverArgs() {
-        let chromeDriverPath;
-
+    private getChromeDriverPath() {
         if (this.config.chromeDriverPath) {
-            chromeDriverPath = this.config.chromeDriverPath;
+            return this.config.chromeDriverPath;
         } else {
-            chromeDriverPath = require('chromedriver').path;
+            return require('chromedriver').path;
         }
+    }
+
+    private getChromeDriverArgs() {
+        const chromeDriverPath = this.getChromeDriverPath();
 
         return [`-Dwebdriver.chrome.driver=${chromeDriverPath}`];
     }
 
+    private buildSeleniumArgs(seleniumJarPath: string, version: SeleniumVersion, port: number, chromeDriverArgs: string[]): string[] {
+        const args = [...chromeDriverArgs];
+        
+        if (version === 'v4') {
+            args.push(
+                '-jar', 
+                seleniumJarPath, 
+                'standalone', 
+                '--port', 
+                port.toString(),
+                '--bind-host',
+                'false',
+            );
+        } else {
+            args.push('-jar', seleniumJarPath, '-port', port.toString());
+        }
+        
+        // Append custom selenium arguments if provided
+        if (this.config.seleniumArgs && this.config.seleniumArgs.length > 0) {
+            args.push(...this.config.seleniumArgs);
+        }
+        
+        return args;
+    }
+
     private async runLocalSelenium() {
-        const seleniumServer = require('selenium-server');
-        const seleniumJarPath = seleniumServer.path;
-        this.logger.debug('Init local selenium server');
+        const version = this.config.localVersion || 'v3';
+        this.logger.debug(`Init local selenium server (version: ${version})`);
 
         try {
-            this.localSelenium = spawnWithPipes('java', [
-                ...this.getChromeDriverArgs(),
-                '-jar',
-                seleniumJarPath,
-                '-port',
-                this.config.port,
-            ]);
+            const seleniumJarPath = getSeleniumJarPath(version);
+            const chromeDriverArgs = this.getChromeDriverArgs();
+            const seleniumArgs = this.buildSeleniumArgs(seleniumJarPath, version, this.config.port || 4444, chromeDriverArgs);
+            
+            this.logger.debug(`Starting Selenium with command: java ${seleniumArgs.join(' ')}`);
+            
+            this.localSelenium = spawnWithPipes('java', seleniumArgs);
 
             this.waitForReadyState = new Promise((resolve, reject) => {
-                if (this.localSelenium?.stderr) {
-                    this.localSelenium.stderr.on('data', (data) => {
-                        const message = data.toString();
-
-                        this.logger.verbose(message);
-
-                        if (message.includes('SeleniumServer.boot')) {
-                            delay(500).then(resolve);
-                        }
-                    });
-                } else {
-                    reject(new Error('There is no STDERR on selenium worker'));
-                }
+                setupProcessListeners(this.localSelenium!, resolve, reject, version, this.logger);
             });
+
+            // Wait for the server to be ready
+            await this.waitForReadyState;
+            this.logger.debug(`Selenium server (${version}) is ready`);
+            
         } catch (err) {
-            this.logger.error('Local selenium server init failed', err);
+            this.logger.error(`Local selenium server init failed (version: ${version})`, err);
+            throw err; // Re-throw to allow upstream error handling
         }
     }
 

@@ -45,6 +45,7 @@ module.exports = async (config) => {
                 {
                     clientTimeout: 60000,
                     path: '/wd/hub',
+                    localVersion: 'v4',
                     chromeDriverPath: process.env['CHROMEDRIVER_PATH'] || chromedriver.executablePath,
                     workerLimit: 'local',
                     capabilities: local

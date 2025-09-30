@@ -11,6 +11,9 @@
     "type": "git",
     "url": "https://github.com/ringcentral/testring.git"
   },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
