@@ -11,6 +11,9 @@
     "@testring/types": "0.8.1",
     "@testring/utils": "0.8.1"
   },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
   "author": "RingCentral",
   "license": "MIT"
 }

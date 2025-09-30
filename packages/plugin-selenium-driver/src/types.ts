@@ -1,5 +1,7 @@
 import {Capabilities} from '@wdio/types';
 
+export type SeleniumVersion = 'v3' | 'v4';
+
 export type SeleniumPluginConfig = Capabilities.WebdriverIOConfig & {
     chromeDriverPath?: string;
     recorderExtension: boolean;
@@ -11,4 +13,6 @@ export type SeleniumPluginConfig = Capabilities.WebdriverIOConfig & {
     workerLimit?: number | 'local';
     disableClientPing?: boolean;
     delayAfterSessionClose?: number;
+    localVersion?: SeleniumVersion;
+    seleniumArgs?: string[]; // Additional CLI arguments to pass to Selenium server
 };

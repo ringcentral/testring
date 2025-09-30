@@ -10,7 +10,8 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node src/test-server.ts",
-    "start:watch": "nodemon --watch 'src/**/*' -e ts,tsx --exec 'ts-node' ./src/index.ts"
+    "start:watch": "nodemon --watch 'src/**/*' -e ts,tsx --exec 'ts-node' ./src/index.ts",
+    "build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
     "@testring/child-process": "0.8.1",

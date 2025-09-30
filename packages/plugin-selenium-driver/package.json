@@ -7,6 +7,9 @@
     "type": "git",
     "url": "https://github.com/ringcentral/testring.git"
   },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node copy-selenium-server.js"
+  },
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {

@@ -25,7 +25,7 @@
     "test:ci": "npm run test:coverage && npm run test:e2e",
     "build": "npm run build:main && npm run build:devtool && npm run build:extension",
     "build:watch": "lerna exec --ignore=\"@testring/@(e2e-test-app|devtool-frontend|devtool-extension|ui-kit)\" --parallel -- tsc --watch --inlineSourceMap",
-    "build:main": "lerna exec --ignore=\"@testring/@(e2e-test-app|devtool-frontend|devtool-extension|ui-kit)\" -- tsc -p tsconfig.build.json",
+    "build:main": "lerna run build --ignore=\"@testring/@(e2e-test-app|devtool-frontend|devtool-extension|ui-kit)\"",
     "check-types:main": "lerna exec --ignore=\"@testring/@(e2e-test-app|devtool-frontend|devtool-extension|ui-kit)\" -- tsc",
     "build:devtool": "lerna run --stream --scope @testring/devtool-frontend build",
     "build:extension": "lerna run --stream --scope @testring/devtool-extension build",
