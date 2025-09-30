@@ -263,9 +263,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     private getChromeDriverPath() {
         if (this.config.chromeDriverPath) {
             return this.config.chromeDriverPath;
-        } else {
-            return require('chromedriver').path;
         }
+        
+        return require('chromedriver').path;
     }
 
     private getChromeDriverArgs() {
