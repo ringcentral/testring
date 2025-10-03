@@ -1,29 +1,32 @@
 {
-  "name": "@testring/http-api",
-  "version": "0.8.2",
-  "main": "./dist/index.js",
-  "types": "./src/index.ts",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ringcentral/testring.git"
-  },
-  "scripts": {
-    "build": "tsc -p tsconfig.build.json"
-  },
-  "author": "RingCentral",
-  "license": "MIT",
-  "dependencies": {
-    "@testring/logger": "0.8.2",
-    "@testring/pluggable-module": "0.8.2",
-    "@testring/test-utils": "0.8.2",
-    "@testring/transport": "0.8.2",
-    "@testring/types": "0.8.2",
-    "@testring/utils": "0.8.2",
-    "@types/node": "22.8.5",
-    "@types/request-promise-native": "1.0.21",
-    "@types/tough-cookie": "4.0.5",
-    "request": "2.88.2",
-    "request-promise-native": "1.0.9",
-    "tough-cookie": "4.1.4"
-  }
+    "name": "@testring/http-api",
+    "version": "0.8.2",
+    "main": "./dist/index.js",
+    "types": "./src/index.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ringcentral/testring.git"
+    },
+    "scripts": {
+        "build": "tsc -p tsconfig.build.json"
+    },
+    "author": "RingCentral",
+    "license": "MIT",
+    "dependencies": {
+        "@testring/logger": "0.8.2",
+        "@testring/pluggable-module": "0.8.2",
+        "@testring/test-utils": "0.8.2",
+        "@testring/transport": "0.8.2",
+        "@testring/types": "0.8.2",
+        "@testring/utils": "0.8.2",
+        "@types/node": "22.8.5",
+        "@types/tough-cookie": "4.0.5",
+        "lodash": "4.17.21",
+        "request": "2.88.2",
+        "request-promise-native": "1.0.9",
+        "tough-cookie": "4.1.4"
+    },
+    "devDependencies": {
+        "@types/lodash": "4.17.20"
+    }
 }
