@@ -1,6 +1,7 @@
 import {IHttpRequest, IHttpResponse} from '@testring/types';
 import requestLib from 'request';
 import requestPromise from 'request-promise-native';
+import _ from 'lodash';
 
 const toString = (c: requestLib.Cookie) => c.toString();
 
@@ -29,18 +30,11 @@ export async function requestFunction(
 ): Promise<IHttpResponse> {
     const cookieJar = createCookieStore(request.cookies, request.url);
 
-    const rawRequest: requestPromise.RequestPromiseOptions & { url: string } = {
-        url: request.url,
+    const rawRequest = _.merge({}, request, {
         qs: request.query,
-        body: request.body,
-        method: request.method,
-        timeout: request.timeout,
-        headers: request.headers,
-        json: request.json,
-        gzip: request.gzip,
         jar: cookieJar,
         resolveWithFullResponse: true,
-    };
+    });
 
     const response = await requestPromise(rawRequest);
     const cookies = cookieJar.getCookies(request.url).map(toString);

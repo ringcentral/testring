@@ -1,18 +1,19 @@
 {
-  "name": "@testring/types",
-  "version": "0.8.2",
-  "main": "./dist/index.js",
-  "types": "./src/index.ts",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ringcentral/testring.git"
-  },
-  "scripts": {
-    "build": "tsc -p tsconfig.build.json"
-  },
-  "author": "RingCentral",
-  "license": "MIT",
-  "dependencies": {
-    "@types/node": "22.8.5"
-  }
+    "name": "@testring/types",
+    "version": "0.8.2",
+    "main": "./dist/index.js",
+    "types": "./src/index.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ringcentral/testring.git"
+    },
+    "scripts": {
+        "build": "tsc -p tsconfig.build.json"
+    },
+    "author": "RingCentral",
+    "license": "MIT",
+    "dependencies": {
+        "@types/node": "22.8.5",
+        "@types/request-promise-native": "1.0.21"
+    }
 }

@@ -1,3 +1,5 @@
+import {RequestPromiseOptions} from 'request-promise-native';
+
 interface IHttpHeaders {
     [key: string]: any;
 }
@@ -14,18 +16,10 @@ export interface IHttpResponse {
     cookies: Array<any>;
 }
 
-export interface IHttpRequest {
+export interface IHttpRequest extends RequestPromiseOptions {
     url: string;
-    method?: 'POST' | 'GET' | 'PUT' | 'DELETE';
-    body?: any;
-    timeout?: number;
-    json?: any;
-    headers?: IHttpHeaders;
     query?: IHttpQueryParameters;
     cookies?: Array<any>;
-    simple?: boolean;
-    resolveWithFullResponse?: boolean;
-    gzip?: boolean;
 }
 
 export interface IHttpRequestMessage {
