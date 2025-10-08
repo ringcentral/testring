@@ -7,6 +7,7 @@ import {
     SavePdfOptions,
     WebApplicationMessageType,
     WindowFeaturesConfig,
+    Selector,
 } from '@testring/types';
 import {generateUniqId} from '@testring/utils';
 
@@ -75,12 +76,12 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.getHubConfig, []);
     }
 
-    public click(xpath: string, options?: any) {
-        return this.makeRequest(BrowserProxyActions.click, [xpath, options]);
+    public click(selector: Selector, options?: any) {
+        return this.makeRequest(BrowserProxyActions.click, [selector, options]);
     }
 
-    public getSize(xpath: string) {
-        return this.makeRequest(BrowserProxyActions.getSize, [xpath]);
+    public getSize(selector: Selector) {
+        return this.makeRequest(BrowserProxyActions.getSize, [selector]);
     }
 
     public url(val: any) {
@@ -99,27 +100,27 @@ export class WebClient implements IWebApplicationClient {
         ]);
     }
 
-    public waitForExist(xpath: string, timeout: number) {
+    public waitForExist(selector: Selector, timeout: number) {
         return this.makeRequest(BrowserProxyActions.waitForExist, [
-            xpath,
+            selector,
             timeout,
         ]);
     }
 
-    public waitForVisible(xpath: string, timeout: number) {
+    public waitForVisible(selector: Selector, timeout: number) {
         return this.makeRequest(BrowserProxyActions.waitForVisible, [
-            xpath,
+            selector,
             timeout,
         ]);
     }
 
-    public isVisible(xpath: string) {
-        return this.makeRequest(BrowserProxyActions.isVisible, [xpath]);
+    public isVisible(selector: Selector) {
+        return this.makeRequest(BrowserProxyActions.isVisible, [selector]);
     }
 
-    public moveToObject(xpath: string, x: number, y: number) {
+    public moveToObject(selector: Selector, x: number, y: number) {
         return this.makeRequest(BrowserProxyActions.moveToObject, [
-            xpath,
+            selector,
             x,
             y,
         ]);
@@ -137,8 +138,8 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.getTitle, []);
     }
 
-    public clearValue(xpath: string) {
-        return this.makeRequest(BrowserProxyActions.clearValue, [xpath]);
+    public clearValue(selector: Selector) {
+        return this.makeRequest(BrowserProxyActions.clearValue, [selector]);
     }
 
     public keys(value: any) {
@@ -149,49 +150,49 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.elementIdText, [elementId]);
     }
 
-    public elements(xpath: string) {
-        return this.makeRequest(BrowserProxyActions.elements, [xpath]);
+    public elements(selector: Selector) {
+        return this.makeRequest(BrowserProxyActions.elements, [selector]);
     }
 
-    public getValue(xpath: string) {
-        return this.makeRequest(BrowserProxyActions.getValue, [xpath]);
+    public getValue(selector: Selector) {
+        return this.makeRequest(BrowserProxyActions.getValue, [selector]);
     }
 
-    public setValue(xpath: string, value: any) {
-        return this.makeRequest(BrowserProxyActions.setValue, [xpath, value]);
+    public setValue(selector: Selector, value: any) {
+        return this.makeRequest(BrowserProxyActions.setValue, [selector, value]);
     }
 
-    public keysOnElement(xpath: string, value: any) {
+    public keysOnElement(selector: Selector, value: any) {
         return this.makeRequest(BrowserProxyActions.keysOnElement, [
-            xpath,
+            selector,
             value,
         ]);
     }
 
-    public selectByIndex(xpath: string, value: any) {
+    public selectByIndex(selector: Selector, value: any) {
         return this.makeRequest(BrowserProxyActions.selectByIndex, [
-            xpath,
+            selector,
             value,
         ]);
     }
 
-    public selectByValue(xpath: string, value: any) {
+    public selectByValue(selector: Selector, value: any) {
         return this.makeRequest(BrowserProxyActions.selectByValue, [
-            xpath,
+            selector,
             value,
         ]);
     }
 
-    public selectByVisibleText(xpath: string, str: any) {
+    public selectByVisibleText(selector: Selector, str: any) {
         return this.makeRequest(BrowserProxyActions.selectByVisibleText, [
-            xpath,
+            selector,
             str,
         ]);
     }
 
-    public getAttribute(xpath: string, attr: string) {
+    public getAttribute(selector: Selector, attr: string) {
         return this.makeRequest(BrowserProxyActions.getAttribute, [
-            xpath,
+            selector,
             attr,
         ]);
     }
@@ -200,17 +201,17 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.windowHandleMaximize, []);
     }
 
-    public isEnabled(xpath: string) {
-        return this.makeRequest(BrowserProxyActions.isEnabled, [xpath]);
+    public isEnabled(selector: Selector) {
+        return this.makeRequest(BrowserProxyActions.isEnabled, [selector]);
     }
 
-    public scroll(xpath: string, x: number, y: number) {
-        return this.makeRequest(BrowserProxyActions.scroll, [xpath, x, y]);
+    public scroll(selector: Selector, x: number, y: number) {
+        return this.makeRequest(BrowserProxyActions.scroll, [selector, x, y]);
     }
 
-    public scrollIntoView(xpath: string, scrollIntoViewOptions?: boolean) {
+    public scrollIntoView(selector: Selector, scrollIntoViewOptions?: boolean) {
         return this.makeRequest(BrowserProxyActions.scrollIntoView, [
-            xpath,
+            selector,
             scrollIntoViewOptions,
         ]);
     }
@@ -231,10 +232,10 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.alertText, []);
     }
 
-    public dragAndDrop(xpathSource: string, xpathDestination: string) {
+    public dragAndDrop(sourceSelector: Selector, destinationSelector: Selector) {
         return this.makeRequest(BrowserProxyActions.dragAndDrop, [
-            xpathSource,
-            xpathDestination,
+            sourceSelector,
+            destinationSelector,
         ]);
     }
 
@@ -258,8 +259,8 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.deleteCookie, [cookieName]);
     }
 
-    public getHTML(xpath: string, b: any) {
-        return this.makeRequest(BrowserProxyActions.getHTML, [xpath, b]);
+    public getHTML(selector: Selector, b: any) {
+        return this.makeRequest(BrowserProxyActions.getHTML, [selector, b]);
     }
 
     public getCurrentTabId() {
@@ -286,16 +287,16 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.windowHandles, []);
     }
 
-    public getTagName(xpath: string) {
-        return this.makeRequest(BrowserProxyActions.getTagName, [xpath]);
+    public getTagName(selector: Selector) {
+        return this.makeRequest(BrowserProxyActions.getTagName, [selector]);
     }
 
-    public isSelected(xpath: string) {
-        return this.makeRequest(BrowserProxyActions.isSelected, [xpath]);
+    public isSelected(selector: Selector) {
+        return this.makeRequest(BrowserProxyActions.isSelected, [selector]);
     }
 
-    public getText(xpath: string) {
-        return this.makeRequest(BrowserProxyActions.getText, [xpath]);
+    public getText(selector: Selector) {
+        return this.makeRequest(BrowserProxyActions.getText, [selector]);
     }
 
     public elementIdSelected(id: string) {
@@ -314,9 +315,9 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.kill);
     }
 
-    public getCssProperty(xpath: string, cssProperty: string) {
+    public getCssProperty(selector: Selector, cssProperty: string) {
         return this.makeRequest(BrowserProxyActions.getCssProperty, [
-            xpath,
+            selector,
             cssProperty,
         ]);
     }
@@ -325,21 +326,21 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.getSource, []);
     }
 
-    public isExisting(xpath: string) {
-        return this.makeRequest(BrowserProxyActions.isExisting, [xpath]);
+    public isExisting(selector: Selector) {
+        return this.makeRequest(BrowserProxyActions.isExisting, [selector]);
     }
 
-    public waitForValue(xpath: string, timeout: number, reverse: boolean) {
+    public waitForValue(selector: Selector, timeout: number, reverse: boolean) {
         return this.makeRequest(BrowserProxyActions.waitForValue, [
-            xpath,
+            selector,
             timeout,
             reverse,
         ]);
     }
 
-    public waitForSelected(xpath: string, timeout: number, reverse: boolean) {
+    public waitForSelected(selector: Selector, timeout: number, reverse: boolean) {
         return this.makeRequest(BrowserProxyActions.waitForSelected, [
-            xpath,
+            selector,
             timeout,
             reverse,
         ]);
@@ -354,9 +355,9 @@ export class WebClient implements IWebApplicationClient {
         ]);
     }
 
-    public selectByAttribute(xpath: string, attribute: string, value: any) {
+    public selectByAttribute(selector: Selector, attribute: string, value: any) {
         return this.makeRequest(BrowserProxyActions.selectByAttribute, [
-            xpath,
+            selector,
             attribute,
             value,
         ]);
@@ -421,8 +422,8 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.getActiveElement, []);
     }
 
-    public getLocation(xpath: string) {
-        return this.makeRequest(BrowserProxyActions.getLocation, [xpath]);
+    public getLocation(selector: Selector) {
+        return this.makeRequest(BrowserProxyActions.getLocation, [selector]);
     }
 
     public setTimeZone(timeZone: string) {
@@ -437,43 +438,43 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.savePDF, [options]);
     }
 
-    public addValue(xpath: string, value: string | number) {
-        return this.makeRequest(BrowserProxyActions.addValue, [xpath, value]);
+    public addValue(selector: Selector, value: string | number) {
+        return this.makeRequest(BrowserProxyActions.addValue, [selector, value]);
     }
 
-    public doubleClick(xpath: string) {
-        return this.makeRequest(BrowserProxyActions.doubleClick, [xpath]);
+    public doubleClick(selector: Selector) {
+        return this.makeRequest(BrowserProxyActions.doubleClick, [selector]);
     }
 
-    public isClickable(xpath: string) {
-        return this.makeRequest(BrowserProxyActions.isClickable, [xpath]);
+    public isClickable(selector: Selector) {
+        return this.makeRequest(BrowserProxyActions.isClickable, [selector]);
     }
 
-    public waitForClickable(xpath: string, timeout: number) {
+    public waitForClickable(selector: Selector, timeout: number) {
         return this.makeRequest(BrowserProxyActions.waitForClickable, [
-            xpath,
+            selector,
             timeout,
         ]);
     }
 
-    public isFocused(xpath: string) {
-        return this.makeRequest(BrowserProxyActions.isFocused, [xpath]);
+    public isFocused(selector: Selector) {
+        return this.makeRequest(BrowserProxyActions.isFocused, [selector]);
     }
 
-    public isStable(xpath: string) {
-        return this.makeRequest(BrowserProxyActions.isStable, [xpath]);
+    public isStable(selector: Selector) {
+        return this.makeRequest(BrowserProxyActions.isStable, [selector]);
     }
 
-    public waitForEnabled(xpath: string, timeout: number) {
+    public waitForEnabled(selector: Selector, timeout: number) {
         return this.makeRequest(BrowserProxyActions.waitForEnabled, [
-            xpath,
+            selector,
             timeout,
         ]);
     }
 
-    public waitForStable(xpath: string, timeout: number) {
+    public waitForStable(selector: Selector, timeout: number) {
         return this.makeRequest(BrowserProxyActions.waitForStable, [
-            xpath,
+            selector,
             timeout,
         ]);
     }

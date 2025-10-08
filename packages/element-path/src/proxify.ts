@@ -1,6 +1,7 @@
 /* eslint-disable prefer-spread,prefer-rest-params */
 import {hasOwn, isGenKeyType} from './utils';
 import {ElementPath, SearchObject} from './element-path';
+import {createShadowElementPathProxy} from './shadow-element-path';
 
 type KeyType = string | number | symbol;
 
@@ -29,6 +30,7 @@ const PROXY_PROPS = [
     '__flows',
     '__searchOptions',
     '__proxy',
+    'shadow$',
 ];
 
 export function proxify(instance: ElementPath, strictMode = true) {
@@ -127,6 +129,10 @@ export function proxify(instance: ElementPath, strictMode = true) {
 
         if (key === '__proxy') {
             return receiver;
+        }
+
+        if (key === 'shadow$') {
+            return createShadowElementPathProxy([target.toString()], target.getAttributeName());
         }
 
         if (key === '__getInstance') {

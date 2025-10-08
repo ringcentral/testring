@@ -233,7 +233,7 @@ export class ElementPath {
     /*
         Search get xpath mask
      */
-    protected getAttributeName(): string {
+    public getAttributeName(): string {
         return this.attributeName;
     }
 

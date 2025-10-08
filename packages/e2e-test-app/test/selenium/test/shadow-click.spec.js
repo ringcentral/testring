@@ -39,7 +39,7 @@ run(async (api) => {
     // shadow$.outerShadowContent - access to outer shadow content
     // shadow$.innerShadowHost - access to inner shadow host within outer shadow
     // shadow$.nestedShadowButton - access to button within nested shadow DOM
-    await app.click(app.root.nestedShadowHost.shadow$.outerShadowContent.shadow$.innerShadowHost.shadow$.nestedShadowButton);
+    await app.click(app.root.nestedShadowHost.shadow$.outerShadowContent.innerShadowHost.shadow$.nestedShadowButton);
     
     const nestedShadowResultText = await app.getText(app.root.nestedShadowSection.nestedShadowResult);
     await app.assert.equal(nestedShadowResultText, 'Nested shadow button clicked successfully!');

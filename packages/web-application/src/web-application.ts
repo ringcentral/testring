@@ -16,13 +16,16 @@ import {
     ExtensionPostMessageTypes,
     FSFileLogType,
     SavePdfOptions,
+    XpathSelector,
+    ShadowCssSelector,
+    Selector,
 } from '@testring/types';
 
 import {asyncBreakpoints} from '@testring/async-breakpoints';
 import {loggerClient, LoggerClient} from '@testring/logger';
 import {generateUniqId} from '@testring/utils';
 import {PluggableModule} from '@testring/pluggable-module';
-import {createElementPath, ElementPathProxy} from '@testring/element-path';
+import {createElementPath, ElementPathProxy, ShadowElementPathProxy} from '@testring/element-path';
 
 import {createAssertion} from '@testring/async-assert';
 import {WebClient} from './web-client';
@@ -41,7 +44,7 @@ type ClickOptions = {
     y?: number | 'top' | 'center' | 'bottom';
 };
 
-type ElementPath = string | ElementPathProxy;
+type ElementPath = string | ElementPathProxy | ShadowElementPathProxy;
 
 export class WebApplication extends PluggableModule {
     protected LOGGER_PREFIX = '[web-application]';
@@ -174,17 +177,30 @@ export class WebApplication extends PluggableModule {
         return this.root as ElementPathProxy;
     }
 
+    // type guard for ShadowElementPathProxy
+    protected isShadowElementPathProxy(elementPath: ElementPath): elementPath is ShadowElementPathProxy {
+        return (elementPath as any).isShadowElement === true;
+    }
+
     protected normalizeSelector(
         selector: ElementPath,
         allowMultipleNodesInResult = false,
-    ): string {
+    ): Selector {
         if (!selector) {
-            return this.getRootSelector().toString();
+            const rootXpath = this.getRootSelector().toString();
+            return { type: 'xpath', xpath: rootXpath } as XpathSelector;
         }
 
-        return (selector as ElementPathProxy).toString(
-            allowMultipleNodesInResult,
-        );
+        if (typeof selector === 'string') {
+            return { type: 'xpath', xpath: selector } as XpathSelector;
+        }
+        
+        if (this.isShadowElementPathProxy(selector)) {
+            return { type: 'shadow-css', css: selector.toShadowCSSSelector(), parentSelectors: selector.getParentSelectors(), isShadowElement: true } as ShadowCssSelector;
+        }
+
+        const xpath = selector.toString(allowMultipleNodesInResult);
+        return { type: 'xpath', xpath } as XpathSelector;
     }
 
     protected async asyncErrorHandler(_error: Error) {
@@ -204,6 +220,12 @@ export class WebApplication extends PluggableModule {
 
         if (this.config.devtool) {
             try {
+                if (normalizedXPath && normalizedXPath.type !== 'xpath') {
+                    throw new Error(
+                        `devtoolHighlight only supports xpath selectors. Received type: ${normalizedXPath.type}, value: ${JSON.stringify(normalizedXPath)}`
+                    );
+                }
+                const xpathString = normalizedXPath ? normalizedXPath.xpath : null;
                 await this.client.execute((addHighlightXpath: string) => {
                     window.postMessage(
                         {
@@ -221,7 +243,7 @@ export class WebApplication extends PluggableModule {
                             '*',
                         );
                     }
-                }, normalizedXPath);
+                }, xpathString);
             } catch (e) {
                 this.logger.error('Failed to highlight element:', e);
             }
@@ -262,8 +284,9 @@ export class WebApplication extends PluggableModule {
     })
     public async waitForRoot(timeout: number = this.WAIT_TIMEOUT) {
         const xpath = this.getRootSelector().toString();
+        const selector: XpathSelector = { type: 'xpath', xpath };
 
-        return this.client.waitForExist(xpath, timeout);
+        return this.client.waitForExist(selector, timeout);
     }
 
     // TODO (flops) remove it and make extension via initCustomApp
@@ -278,8 +301,8 @@ export class WebApplication extends PluggableModule {
         let exists = false;
 
         try {
-            xpath = this.normalizeSelector(xpath);
-            await this.client.waitForExist(xpath, timeout);
+            const normalizedXPath = this.normalizeSelector(xpath);
+            await this.client.waitForExist(normalizedXPath, timeout);
             exists = true;
         } catch (ignore) {
             /* ignore */
@@ -317,9 +340,9 @@ export class WebApplication extends PluggableModule {
             );
         }
 
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
 
-        return this.client.waitForVisible(xpath, waitTime);
+        return this.client.waitForVisible(normalizedXPath, waitTime);
     }
 
     @stepLog(function (this: WebApplication, xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
@@ -329,7 +352,7 @@ export class WebApplication extends PluggableModule {
         const path = this.formatXpath(xpath);
         const expires = Date.now() + timeout;
 
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
 
         try {
             await this.waitForRoot(timeout);
@@ -340,7 +363,7 @@ export class WebApplication extends PluggableModule {
         }
 
         while (expires - Date.now() >= 0) {
-            const visible = await this.client.isVisible(xpath);
+            const visible = await this.client.isVisible(normalizedXPath);
 
             if (!visible) {
                 return false;
@@ -471,7 +494,7 @@ export class WebApplication extends PluggableModule {
     public async click(xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
         const normalizedSelector = this.normalizeSelector(xpath);
 
-        await this.waitForExist(normalizedSelector, timeout);
+        await this.waitForExist(xpath, timeout);
         await this.makeScreenshot();
 
         return this.client.click(normalizedSelector, {x: 1, y: 1});
@@ -483,7 +506,7 @@ export class WebApplication extends PluggableModule {
     public async clickButton(xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
         const normalizedSelector = this.normalizeSelector(xpath);
 
-        await this.waitForExist(normalizedSelector, timeout);
+        await this.waitForExist(xpath, timeout);
         await this.makeScreenshot();
 
         return this.client.click(normalizedSelector, {button: 'left'});
@@ -499,7 +522,7 @@ export class WebApplication extends PluggableModule {
     ) {
         const normalizedSelector = this.normalizeSelector(xpath);
 
-        await this.waitForExist(normalizedSelector, timeout);
+        await this.waitForExist(xpath, timeout);
         await this.makeScreenshot();
 
         let hPos = 0;
@@ -579,9 +602,17 @@ export class WebApplication extends PluggableModule {
         return `Simulating JS field change for ${this.formatXpath(xpath)} with value ${value}`;
     })
     public async simulateJSFieldChange(xpath: ElementPath, value: string) {
+        const normalizedXPath = this.normalizeSelector(xpath);
+        if (normalizedXPath.type !== 'xpath') {
+            throw new Error(
+                `simulateJSFieldChange only supports xpath selectors. Received type: ${normalizedXPath.type}, value: ${JSON.stringify(normalizedXPath)}`
+            );
+        }
+        const xpathString = normalizedXPath.xpath;
+
         const result = await this.client.executeAsync(
             simulateJSFieldChangeScript,
-            xpath,
+            xpathString,
             value,
         );
 
@@ -600,12 +631,12 @@ export class WebApplication extends PluggableModule {
     ) {
         await this.waitForExist(xpath, timeout);
 
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
 
         if (emulateViaJs) {
             return this.simulateJSFieldClear(xpath);
         }
-        await this.client.setValue(xpath, '_');
+        await this.client.setValue(normalizedXPath, '_');
         await this.waitForExist(xpath, timeout);
         return this.client.keys(['Backspace']);
     }
@@ -632,7 +663,7 @@ export class WebApplication extends PluggableModule {
             await this.clearElement(xpath, emulateViaJS, timeout);
         } else {
             await this.waitForExist(xpath, timeout);
-            xpath = this.normalizeSelector(xpath);
+            const normalizedXPath = this.normalizeSelector(xpath);
 
             if (emulateViaJS) {
                 this.simulateJSFieldChange(xpath, value as string);
@@ -643,7 +674,7 @@ export class WebApplication extends PluggableModule {
                     )} using JS emulation`,
                 );
             } else {
-                await this.client.setValue(xpath, value);
+                await this.client.setValue(normalizedXPath, value);
                 this.logger.debug(
                     `Value ${value} was entered into ${this.formatXpath(
                         xpath,
@@ -723,9 +754,15 @@ export class WebApplication extends PluggableModule {
     ) {
         await this.waitForExist(xpath, timeout);
 
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
+        if (normalizedXPath.type !== 'xpath') {
+            throw new Error(
+                `getOptionsProperty only supports xpath selectors. Received type: ${normalizedXPath.type}, value: ${JSON.stringify(normalizedXPath)}`
+            );
+        }
+        const xpathString = normalizedXPath.xpath;
 
-        return this.client.executeAsync(getOptionsPropertyScript, xpath, prop);
+        return this.client.executeAsync(getOptionsPropertyScript, xpathString, prop);
     }
 
     @stepLog(function (this: WebApplication, xpath: ElementPath, _trim = true, timeout: number = this.WAIT_TIMEOUT) {
@@ -765,9 +802,8 @@ export class WebApplication extends PluggableModule {
     })
     public async selectNotCurrent(xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
         const options: any[] = await this.getSelectValues(xpath, timeout);
-        const value: any = await this.client.getValue(
-            this.normalizeSelector(xpath),
-        );
+        const normalizedXPath = this.normalizeSelector(xpath);
+        const value: any = await this.client.getValue(normalizedXPath);
         const index = options.indexOf(value);
         if (index > -1) {
             options.splice(index, 1);
@@ -786,12 +822,12 @@ export class WebApplication extends PluggableModule {
         const logXpath = this.formatXpath(xpath);
         const errorMessage = `Could not select by index "${value}": ${logXpath}`;
 
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
 
         await this.waitForExist(xpath, timeout);
 
         try {
-            return await this.client.selectByIndex(xpath, value);
+            return await this.client.selectByIndex(normalizedXPath, value);
         } catch (error) {
             (error as Error).message = errorMessage;
             throw error;
@@ -810,12 +846,12 @@ export class WebApplication extends PluggableModule {
             xpath,
         )}`;
 
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
 
         await this.waitForExist(xpath, timeout);
 
         try {
-            return await this.client.selectByValue(xpath, value);
+            return await this.client.selectByValue(normalizedXPath, value);
         } catch (error) {
             (error as Error).message = errorMessage;
             throw error;
@@ -833,12 +869,12 @@ export class WebApplication extends PluggableModule {
         const logXpath = this.formatXpath(xpath);
         const errorMessage = `Could not select by visible text "${value}": ${logXpath}`;
 
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
 
         await this.waitForExist(xpath, timeout);
 
         try {
-            return await this.client.selectByVisibleText(xpath, String(value));
+            return await this.client.selectByVisibleText(normalizedXPath, String(value));
         } catch (error) {
             (error as Error).message = errorMessage;
             throw error;
@@ -849,19 +885,25 @@ export class WebApplication extends PluggableModule {
         return `Getting selected text for ${this.formatXpath(xpath)} for ${timeout}`;
     })
     public async getSelectedText(xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
 
         await this.waitForExist(xpath, timeout);
 
-        const value = await this.client.getValue(xpath);
+        if (normalizedXPath.type !== 'xpath') {
+            throw new Error(
+                `getSelectedText only supports xpath selectors. Received type: ${normalizedXPath.type}, value: ${JSON.stringify(normalizedXPath)}`
+            );
+        }
+
+        const value = await this.client.getValue(normalizedXPath);
 
         if (typeof value === 'string' || typeof value === 'number') {
             // TODO (flops) rework this for supporting custom selectors
-            xpath += `//option[@value='${value}']`;
+            const optionXPath = { type: 'xpath' as const, xpath: normalizedXPath.xpath + `//option[@value='${value}']` };
 
             try {
-                const options = await this.client.getText(xpath);
-                if (options instanceof Array) {
+                const options = await this.client.getText(optionXPath);
+                if (Array.isArray(options)) {
                     return options[0] || '';
                 }
                 return options || '';
@@ -905,11 +947,11 @@ export class WebApplication extends PluggableModule {
         return `Checking if ${this.formatXpath(xpath)} is checked for ${timeout}`;
     })
     public async isChecked(xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
 
         await this.waitForExist(xpath, timeout);
 
-        const isSelected = await this.client.isSelected(xpath);
+        const isSelected = await this.client.isSelected(normalizedXPath);
 
         return !!isSelected;
     }
@@ -922,14 +964,14 @@ export class WebApplication extends PluggableModule {
         checked = true,
         timeout: number = this.WAIT_TIMEOUT,
     ) {
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
 
         await this.waitForExist(xpath, timeout);
 
-        const isChecked = await this.client.isSelected(xpath);
+        const isChecked = await this.client.isSelected(normalizedXPath);
 
         if (!!isChecked !== !!checked) {
-            return this.client.click(xpath);
+            return this.client.click(normalizedXPath);
         }
     }
 
@@ -939,9 +981,9 @@ export class WebApplication extends PluggableModule {
     public async isVisible(xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
         await this.waitForRoot(timeout);
 
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
 
-        return this.client.isVisible(xpath);
+        return this.client.isVisible(normalizedXPath);
     }
 
     @stepLog(function (this: WebApplication, xpath: ElementPath, ...suitableClasses: string[]) {
@@ -967,11 +1009,11 @@ export class WebApplication extends PluggableModule {
         attr: string,
         timeout: number = this.WAIT_TIMEOUT,
     ) {
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
 
         await this.waitForExist(xpath, timeout);
 
-        return this.client.getAttribute(xpath, attr);
+        return this.client.getAttribute(normalizedXPath, attr);
     }
 
     @stepLog(function (this: WebApplication, xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
@@ -980,15 +1022,15 @@ export class WebApplication extends PluggableModule {
     public async isReadOnly(xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
         const inputTags = ['input', 'select', 'textarea'];
 
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
 
         await this.waitForExist(xpath, timeout);
 
         const readonly: string = await this.client.getAttribute(
-            xpath,
+            normalizedXPath,
             'readonly',
         );
-        const str: string = await this.client.getTagName(xpath);
+        const str: string = await this.client.getTagName(normalizedXPath);
 
         if (
             readonly === 'true' ||
@@ -1000,7 +1042,7 @@ export class WebApplication extends PluggableModule {
         }
 
         const disabled: string = await this.client.getAttribute(
-            xpath,
+            normalizedXPath,
             'disabled',
         );
 
@@ -1013,9 +1055,9 @@ export class WebApplication extends PluggableModule {
     public async isEnabled(xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
         await this.waitForExist(xpath, timeout);
 
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
 
-        return this.client.isEnabled(xpath);
+        return this.client.isEnabled(normalizedXPath);
     }
 
     @stepLog(function (this: WebApplication, xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
@@ -1065,9 +1107,9 @@ export class WebApplication extends PluggableModule {
     ) {
         await this.waitForExist(xpath, timeout, true);
 
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
 
-        return this.client.scroll(xpath, x, y);
+        return this.client.scroll(normalizedXPath, x, y);
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -1075,9 +1117,16 @@ export class WebApplication extends PluggableModule {
         const normalizedXpath = this.normalizeSelector(xpath);
 
         if (topOffset || leftOffset) {
+            if (normalizedXpath.type !== 'xpath') {
+                throw new Error(
+                    `scrollIntoViewCall only supports xpath selectors. Received type: ${normalizedXpath.type}, value: ${JSON.stringify(normalizedXpath)}`
+                );
+            }
+            const xpathString = normalizedXpath.xpath;
+
             const result = await this.client.executeAsync(
                 scrollIntoViewCallScript,
-                normalizedXpath,
+                xpathString,
                 topOffset,
                 leftOffset,
             );
@@ -1112,9 +1161,16 @@ export class WebApplication extends PluggableModule {
     ) {
         const normalizedXpath = this.normalizeSelector(xpath);
 
+        if (normalizedXpath.type !== 'xpath') {
+            throw new Error(
+                `scrollIntoViewIfNeededCall only supports xpath selectors. Received type: ${normalizedXpath.type}, value: ${JSON.stringify(normalizedXpath)}`
+            );
+        }
+        const xpathString = normalizedXpath.xpath;
+
         const result: string = await this.client.executeAsync(
             scrollIntoViewIfNeededCallScript,
-            normalizedXpath,
+            xpathString,
             topOffset,
             leftOffset,
         );
@@ -1148,10 +1204,10 @@ export class WebApplication extends PluggableModule {
         await this.waitForExist(xpathSource, timeout);
         await this.waitForExist(xpathDestination, timeout);
 
-        xpathSource = this.normalizeSelector(xpathSource);
-        xpathDestination = this.normalizeSelector(xpathDestination);
+        const normalizedSource = this.normalizeSelector(xpathSource);
+        const normalizedDestination = this.normalizeSelector(xpathDestination);
 
-        return this.client.dragAndDrop(xpathSource, xpathDestination);
+        return this.client.dragAndDrop(normalizedSource, normalizedDestination);
     }
 
     @stepLog(function (this: WebApplication, xpath: ElementPath) {
@@ -1180,10 +1236,7 @@ export class WebApplication extends PluggableModule {
         return `Checking if elements do not exist for ${this.formatXpath(xpath)} for ${timeout}`;
     })
     public async notExists(xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
-        const elementsCount = await this.getElementsCount(
-            this.normalizeSelector(xpath),
-            timeout,
-        );
+        const elementsCount = await this.getElementsCount(xpath, timeout);
 
         return elementsCount === 0;
     }
@@ -1192,10 +1245,7 @@ export class WebApplication extends PluggableModule {
         return `Checking if elements exist for ${this.formatXpath(xpath)} for ${timeout}`;
     })
     public async isElementsExist(xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
-        const elementsCount = await this.getElementsCount(
-            this.normalizeSelector(xpath),
-            timeout,
-        );
+        const elementsCount = await this.getElementsCount(xpath, timeout);
 
         return elementsCount > 0;
     }
@@ -1348,9 +1398,9 @@ export class WebApplication extends PluggableModule {
     public async getHTML(xpath: ElementPath, timeout = this.WAIT_TIMEOUT) {
         await this.waitForExist(xpath, timeout);
 
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
 
-        return this.client.getHTML(xpath, {prettify: false});
+        return this.client.getHTML(normalizedXPath, {prettify: false});
     }
 
     @stepLog(function (this: WebApplication) {
@@ -1693,8 +1743,8 @@ export class WebApplication extends PluggableModule {
     ): Promise<any> {
         await this.waitForExist(xpath, timeout);
 
-        xpath = this.normalizeSelector(xpath);
-        return await this.client.getCssProperty(xpath, cssProperty);
+        const normalizedXPath = this.normalizeSelector(xpath);
+        return await this.client.getCssProperty(normalizedXPath, cssProperty);
     }
 
     @stepLog(function (this: WebApplication) {
@@ -1708,8 +1758,8 @@ export class WebApplication extends PluggableModule {
         return `Checking if ${this.formatXpath(xpath)} exists`;
     })
     public async isExisting(xpath: ElementPath) {
-        xpath = this.normalizeSelector(xpath);
-        return await this.client.isExisting(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
+        return await this.client.isExisting(normalizedXPath);
     }
 
     @stepLog(function (this: WebApplication, xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT, reverse = false) {
@@ -1720,8 +1770,8 @@ export class WebApplication extends PluggableModule {
         timeout: number = this.WAIT_TIMEOUT,
         reverse = false,
     ) {
-        xpath = this.normalizeSelector(xpath);
-        return await this.client.waitForValue(xpath, timeout, reverse);
+        const normalizedXPath = this.normalizeSelector(xpath);
+        return await this.client.waitForValue(normalizedXPath, timeout, reverse);
     }
 
     @stepLog(function (this: WebApplication, xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT, reverse = false) {
@@ -1732,8 +1782,8 @@ export class WebApplication extends PluggableModule {
         timeout: number = this.WAIT_TIMEOUT,
         reverse = false,
     ) {
-        xpath = this.normalizeSelector(xpath);
-        return await this.client.waitForSelected(xpath, timeout, reverse);
+        const normalizedXPath = this.normalizeSelector(xpath);
+        return await this.client.waitForSelected(normalizedXPath, timeout, reverse);
     }
 
     @stepLog(function (this: WebApplication, condition: () => boolean | Promise<boolean>, timeout: number = this.WAIT_TIMEOUT, timeoutMsg = 'Wait by condition failed!', interval = 500) {
@@ -1765,12 +1815,12 @@ export class WebApplication extends PluggableModule {
         const logXpath = this.formatXpath(xpath);
         const errorMessage = `Could not select by attribute "${attribute}" with value "${value}": ${logXpath}`;
 
-        xpath = this.normalizeSelector(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
 
         await this.waitForExist(xpath, timeout);
 
         try {
-            return await this.client.selectByAttribute(xpath, attribute, value);
+            return await this.client.selectByAttribute(normalizedXPath, attribute, value);
         } catch (error) {
             (error as Error).message = errorMessage;
             throw error;
@@ -1783,8 +1833,8 @@ export class WebApplication extends PluggableModule {
     public async getLocation(xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
         await this.waitForExist(xpath, timeout);
 
-        xpath = this.normalizeSelector(xpath);
-        return await this.client.getLocation(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
+        return await this.client.getLocation(normalizedXPath);
     }
 
     @stepLog(function (this: WebApplication) {
@@ -1824,8 +1874,8 @@ export class WebApplication extends PluggableModule {
         timeout: number = this.WAIT_TIMEOUT,
     ) {
         await this.waitForExist(xpath, timeout);
-        xpath = this.normalizeSelector(xpath);
-        return this.client.addValue(xpath, value);
+        const normalizedXPath = this.normalizeSelector(xpath);
+        return this.client.addValue(normalizedXPath, value);
     }
 
     @stepLog(function (this: WebApplication, xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
@@ -1833,56 +1883,56 @@ export class WebApplication extends PluggableModule {
     })
     public async doubleClick(xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
         await this.waitForExist(xpath, timeout);
-        xpath = this.normalizeSelector(xpath);
-        return this.client.doubleClick(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
+        return this.client.doubleClick(normalizedXPath);
     }
 
     @stepLog(function (this: WebApplication, xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
         return `Waiting for ${this.formatXpath(xpath)} to be clickable for ${timeout}`;
     })
     public async waitForClickable(xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
-        xpath = this.normalizeSelector(xpath);
-        return this.client.waitForClickable(xpath, timeout);
+        const normalizedXPath = this.normalizeSelector(xpath);
+        return this.client.waitForClickable(normalizedXPath, timeout);
     }
 
     @stepLog(function (this: WebApplication, xpath: ElementPath, _timeout: number = this.WAIT_TIMEOUT) {
         return `Checking if ${this.formatXpath(xpath)} is clickable`;
     })
     public async isClickable(xpath: ElementPath, _timeout: number = this.WAIT_TIMEOUT) {
-        xpath = this.normalizeSelector(xpath);
-        return this.client.isClickable(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
+        return this.client.isClickable(normalizedXPath);
     }
 
     @stepLog(function (this: WebApplication, xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
         return `Waiting for ${this.formatXpath(xpath)} to be enabled for ${timeout}`;
     })
     public async waitForEnabled(xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
-        xpath = this.normalizeSelector(xpath);
-        return this.client.waitForEnabled(xpath, timeout);
+        const normalizedXPath = this.normalizeSelector(xpath);
+        return this.client.waitForEnabled(normalizedXPath, timeout);
     }
 
     @stepLog(function (this: WebApplication, xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
         return `Waiting for ${this.formatXpath(xpath)} to be stable for ${timeout}`;
     })
     public async waitForStable(xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
-        xpath = this.normalizeSelector(xpath);
-        return this.client.waitForStable(xpath, timeout);
+        const normalizedXPath = this.normalizeSelector(xpath);
+        return this.client.waitForStable(normalizedXPath, timeout);
     }
 
     @stepLog(function (this: WebApplication, xpath: ElementPath) {
         return `Checking if ${this.formatXpath(xpath)} is focused`;
     })
     public async isFocused(xpath: ElementPath) {
-        xpath = this.normalizeSelector(xpath);
-        return this.client.isFocused(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
+        return this.client.isFocused(normalizedXPath);
     }
 
     @stepLog(function (this: WebApplication, xpath: ElementPath) {
         return `Checking if ${this.formatXpath(xpath)} is stable`;
     })
     public async isStable(xpath: ElementPath) {
-        xpath = this.normalizeSelector(xpath);
-        return this.client.isStable(xpath);
+        const normalizedXPath = this.normalizeSelector(xpath);
+        return this.client.isStable(normalizedXPath);
     }
 }
 

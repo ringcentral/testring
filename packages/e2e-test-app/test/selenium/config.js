@@ -40,7 +40,7 @@ module.exports = async (config) => {
         screenshots: 'disable',
         retryCount: 0,
         testTimeout: local ? 0 : config.testTimeout,
-        tests: 'test/selenium/test/**/shadow-click.spec.js',
+        tests: 'test/selenium/test/**/*.spec.js',
         plugins: [
             [
                 'selenium-driver',
@@ -54,14 +54,12 @@ module.exports = async (config) => {
                               'goog:chromeOptions': {
                                   binary: chrome.executablePath,
                               },
-                              'wdio:enforceWebDriverClassic': false,
                           }
                         : {
                               'goog:chromeOptions': {
                                   binary: chrome.executablePath,
                                   args: ['--headless=new', '--no-sandbox'],
                               },
-                              'wdio:enforceWebDriverClassic': false,
                           },
                 },
             ],
