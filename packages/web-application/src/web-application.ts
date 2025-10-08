@@ -170,6 +170,11 @@ export class WebApplication extends PluggableModule {
     }
 
     protected formatXpath(xpath: ElementPath): string {
+        if (this.isShadowElementPathProxy(xpath)) {
+            const parentSelectors = xpath.getParentSelectors();
+            const targetSelector = xpath.toShadowCSSSelector();
+            return [...parentSelectors, targetSelector].join(' >>> ');
+        }
         return utils.getFormattedString(xpath);
     }
 
