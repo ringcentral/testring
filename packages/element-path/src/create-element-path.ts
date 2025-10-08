@@ -1,5 +1,6 @@
 import {proxify, XpathLocatorProxified} from './proxify';
 import {ElementPath, FlowsObject} from './element-path';
+import {ShadowElementPathProxy} from './shadow-element-path';
 
 export type createElementPathOptions = {
     flows?: FlowsObject;
@@ -15,6 +16,7 @@ export type ElementPathProxy = ElementPath & {
     __findChildren: (options: any) => ElementPathProxy;
     __getReversedChain: ElementPath['getReversedChain'];
     __getChildType: ElementPath['getElementType'];
+    shadow$: ShadowElementPathProxy;
 } & {
     [key: string]: ElementPathProxy;
 };

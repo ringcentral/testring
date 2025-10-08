@@ -1,6 +1,28 @@
 import {IBrowserProxyCommand} from './structs';
 import {WindowFeaturesConfig} from '../web-application';
 
+export type XpathSelector = {
+    type: 'xpath';
+    xpath: string;
+};
+
+export type ShadowCssSelector = {
+    type: 'shadow-css';
+    css: string;
+    parentSelectors: string[];
+    isShadowElement: true;
+};
+
+export type Selector = 
+    | XpathSelector
+    | ShadowCssSelector;
+
+export const isXpathSelector = (selector: Selector): selector is XpathSelector => 
+    selector.type === 'xpath';
+
+export const isShadowCssSelector = (selector: Selector): selector is ShadowCssSelector => 
+    selector.type === 'shadow-css';
+
 export interface IBrowserProxyController {
     init(): Promise<void>;
 
@@ -24,7 +46,7 @@ export interface IBrowserProxyPlugin {
 
     refresh(applicant: string): Promise<any>;
 
-    click(applicant: string, selector: string, options?: any): Promise<any>;
+    click(applicant: string, selector: Selector, options?: any): Promise<any>;
 
     url(applicant: string, val: string): Promise<any>;
 
@@ -37,21 +59,21 @@ export interface IBrowserProxyPlugin {
 
     waitForExist(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         timeout: number,
     ): Promise<any>;
 
     waitForVisible(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         timeout: number,
     ): Promise<any>;
 
-    isVisible(applicant: string, xpath: string): Promise<any>;
+    isVisible(applicant: string, selector: Selector): Promise<any>;
 
     moveToObject(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         x: number,
         y: number,
     ): Promise<any>;
@@ -66,44 +88,44 @@ export interface IBrowserProxyPlugin {
 
     getTitle(applicant: string): Promise<any>;
 
-    clearValue(applicant: string, xpath: string): Promise<any>;
+    clearValue(applicant: string, selector: Selector): Promise<any>;
 
     keys(applicant: string, value: any): Promise<any>;
 
     elementIdText(applicant: string, elementId: string): Promise<any>;
 
-    elements(applicant: string, xpath: string): Promise<any>;
+    elements(applicant: string, selector: Selector): Promise<any>;
 
-    getValue(applicant: string, xpath: string): Promise<any>;
+    getValue(applicant: string, selector: Selector): Promise<any>;
 
-    setValue(applicant: string, xpath: string, value: any): Promise<any>;
+    setValue(applicant: string, selector: Selector, value: any): Promise<any>;
 
-    selectByIndex(applicant: string, xpath: string, value: any): Promise<any>;
+    selectByIndex(applicant: string, selector: Selector, value: any): Promise<any>;
 
-    selectByValue(applicant: string, xpath: string, value: any): Promise<any>;
+    selectByValue(applicant: string, selector: Selector, value: any): Promise<any>;
 
     selectByVisibleText(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         str: string,
     ): Promise<any>;
 
-    getAttribute(applicant: string, xpath: string, attr: any): Promise<any>;
+    getAttribute(applicant: string, selector: Selector, attr: any): Promise<any>;
 
     windowHandleMaximize(applicant: string): Promise<any>;
 
-    isEnabled(applicant: string, xpath: string): Promise<any>;
+    isEnabled(applicant: string, selector: Selector): Promise<any>;
 
     scroll(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         x: number,
         y: number,
     ): Promise<any>;
 
     scrollIntoView(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         scrollIntoViewOptions?: boolean,
     ): Promise<any>;
 
@@ -117,8 +139,8 @@ export interface IBrowserProxyPlugin {
 
     dragAndDrop(
         applicant: string,
-        xpathSource: string,
-        xpathDestination: string,
+        sourceSelector: Selector,
+        destinationSelector: Selector,
     ): Promise<any>;
 
     setCookie(applicant: string, cookieName: any): Promise<any>;
@@ -127,9 +149,9 @@ export interface IBrowserProxyPlugin {
 
     deleteCookie(applicant: string, cookieName: string): Promise<any>;
 
-    getHTML(applicant: string, xpath: string, b: any): Promise<any>;
+    getHTML(applicant: string, selector: Selector, b: any): Promise<any>;
 
-    getSize(applicant: string, xpath: string): Promise<any>;
+    getSize(applicant: string, selector: Selector): Promise<any>;
 
     getCurrentTabId(applicant: string): Promise<any>;
 
@@ -143,11 +165,11 @@ export interface IBrowserProxyPlugin {
 
     windowHandles(applicant: string): Promise<any>;
 
-    getTagName(applicant: string, xpath: string): Promise<any>;
+    getTagName(applicant: string, selector: Selector): Promise<any>;
 
-    isSelected(applicant: string, xpath: string): Promise<any>;
+    isSelected(applicant: string, selector: Selector): Promise<any>;
 
-    getText(applicant: string, xpath: string): Promise<any>;
+    getText(applicant: string, selector: Selector): Promise<any>;
 
     elementIdSelected(applicant: string, id: string): Promise<any>;
 
@@ -157,24 +179,24 @@ export interface IBrowserProxyPlugin {
 
     getCssProperty(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         cssProperty: string,
     ): Promise<any>;
 
     getSource(applicant: string): Promise<any>;
 
-    isExisting(applicant: string, xpath: string): Promise<any>;
+    isExisting(applicant: string, selector: Selector): Promise<any>;
 
     waitForValue(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         timeout: number,
         reverse: boolean,
     ): Promise<any>;
 
     waitForSelected(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         timeout: number,
         reverse: boolean,
     ): Promise<any>;
@@ -189,7 +211,7 @@ export interface IBrowserProxyPlugin {
 
     selectByAttribute(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         attribute: string,
         value: string,
     ): Promise<any>;

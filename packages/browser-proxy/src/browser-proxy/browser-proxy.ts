@@ -50,6 +50,7 @@ export class BrowserProxy {
             try {
                 this.plugin = pluginFactory(pluginConfig);
             } catch (error) {
+                this.logger.error(`Can't initialize plugin ${pluginPath}`, error);
                 this.transportInstance.broadcastUniversally(
                     BrowserProxyMessageTypes.exception,
                     error instanceof Error ? error : new Error(String(error)),

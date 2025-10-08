@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shadow DOM Click Test</title>
+    <style>
+        .shadow-host {
+            border: 2px solid #333;
+            padding: 20px;
+            margin: 10px;
+            background-color: #f5f5f5;
+        }
+        .nested-shadow-host {
+            border: 2px solid #666;
+            padding: 15px;
+            margin: 10px;
+            background-color: #e0e0e0;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .clicked {
+            background-color: #28a745 !important;
+        }
+        .result {
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            display: none;
+        }
+        .result.show {
+            display: block;
+        }
+    </style>
+</head>
+<body data-test-automation-id="root">
+    <h1>Shadow DOM Click Test</h1>
+    
+    <!-- Regular DOM button for comparison -->
+    <div data-test-automation-id="regularSection">
+        <h2>Regular DOM</h2>
+        <button data-test-automation-id="regularButton" onclick="handleRegularClick()">
+            Click Regular Button
+        </button>
+        <div data-test-automation-id="regularResult" class="result">Regular button clicked!</div>
+    </div>
+    
+    <!-- Shadow DOM host -->
+    <div data-test-automation-id="shadowSection">
+        <h2>Shadow DOM Level 1</h2>
+        <div data-test-automation-id="shadowHost" class="shadow-host">
+            <!-- Shadow DOM content will be attached here -->
+        </div>
+        <div data-test-automation-id="shadowResult" class="result">Shadow button clicked!</div>
+    </div>
+    
+    <!-- Nested Shadow DOM host -->
+    <div data-test-automation-id="nestedShadowSection">
+        <h2>Nested Shadow DOM</h2>
+        <div data-test-automation-id="nestedShadowHost" class="shadow-host">
+            <!-- Nested shadow DOM content will be attached here -->
+        </div>
+        <div data-test-automation-id="nestedShadowResult" class="result">Nested shadow button clicked!</div>
+    </div>
+
+    <script>
+        let clickResults = {
+            regular: false,
+            shadow: false,
+            nestedShadow: false
+        };
+
+        function handleRegularClick() {
+            clickResults.regular = true;
+            const button = document.querySelector('[data-test-automation-id="regularButton"]');
+            const result = document.querySelector('[data-test-automation-id="regularResult"]');
+            button.classList.add('clicked');
+            result.classList.add('show');
+            result.textContent = 'Regular button clicked successfully!';
+        }
+
+        function handleShadowClick() {
+            clickResults.shadow = true;
+            const result = document.querySelector('[data-test-automation-id="shadowResult"]');
+            result.classList.add('show');
+            result.textContent = 'Shadow button clicked successfully!';
+        }
+
+        function handleNestedShadowClick() {
+            clickResults.nestedShadow = true;
+            const result = document.querySelector('[data-test-automation-id="nestedShadowResult"]');
+            result.classList.add('show');
+            result.textContent = 'Nested shadow button clicked successfully!';
+        }
+
+        // Create shadow DOM content
+        function createShadowDOM() {
+            const shadowHost = document.querySelector('[data-test-automation-id="shadowHost"]');
+            const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
+            
+            shadowRoot.innerHTML = `
+                <style>
+                    button {
+                        padding: 10px 15px;
+                        margin: 5px;
+                        background-color: #dc3545;
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    }
+                    button:hover {
+                        background-color: #c82333;
+                    }
+                    .clicked {
+                        background-color: #28a745 !important;
+                    }
+                    .shadow-content {
+                        padding: 15px;
+                        background-color: #fff3cd;
+                        border: 1px solid #ffeaa7;
+                        border-radius: 4px;
+                    }
+                </style>
+                <div class="shadow-content" data-test-automation-id="shadowContent">
+                    <p data-test-automation-id="shadowText">This is inside shadow DOM</p>
+                    <button data-test-automation-id="shadowButton">Click Shadow Button</button>
+                    <div data-test-automation-id="shadowInnerResult" style="margin-top: 10px; display: none;">
+                        Shadow click registered!
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <label for="shadowInput" data-test-automation-id="shadowLabel">Shadow Input Field:</label>
+                        <input type="text" id="shadowInput" data-test-automation-id="shadowInput" placeholder="Enter text in shadow DOM" style="margin-left: 10px; padding: 5px; width: 200px;">
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <p data-test-automation-id="shadowDisplayText">Initial shadow text content</p>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listener to shadow button
+            const shadowButton = shadowRoot.querySelector('[data-test-automation-id="shadowButton"]');
+            const shadowInnerResult = shadowRoot.querySelector('[data-test-automation-id="shadowInnerResult"]');
+            
+            shadowButton.addEventListener('click', () => {
+                shadowButton.classList.add('clicked');
+                shadowInnerResult.style.display = 'block';
+                handleShadowClick();
+            });
+        }
+
+        // Create nested shadow DOM content
+        function createNestedShadowDOM() {
+            const nestedShadowHost = document.querySelector('[data-test-automation-id="nestedShadowHost"]');
+            const outerShadowRoot = nestedShadowHost.attachShadow({ mode: 'open' });
+            
+            outerShadowRoot.innerHTML = `
+                <style>
+                    .nested-shadow-host {
+                        border: 2px solid #666;
+                        padding: 15px;
+                        margin: 10px;
+                        background-color: #e0e0e0;
+                    }
+                    .outer-shadow-content {
+                        padding: 15px;
+                        background-color: #f8d7da;
+                        border: 1px solid #f5c6cb;
+                        border-radius: 4px;
+                    }
+                </style>
+                <div class="outer-shadow-content" data-test-automation-id="outerShadowContent">
+                    <p data-test-automation-id="outerShadowText">This is outer shadow DOM</p>
+                    <div data-test-automation-id="innerShadowHost" class="nested-shadow-host">
+                        <!-- Inner shadow will be attached here -->
+                    </div>
+                </div>
+            `;
+            
+            // Create inner shadow DOM
+            const innerShadowHost = outerShadowRoot.querySelector('[data-test-automation-id="innerShadowHost"]');
+            const innerShadowRoot = innerShadowHost.attachShadow({ mode: 'open' });
+            
+            innerShadowRoot.innerHTML = `
+                <style>
+                    button {
+                        padding: 10px 15px;
+                        margin: 5px;
+                        background-color: #6f42c1;
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    }
+                    button:hover {
+                        background-color: #5a32a3;
+                    }
+                    .clicked {
+                        background-color: #28a745 !important;
+                    }
+                    .inner-shadow-content {
+                        padding: 15px;
+                        background-color: #e2e3ff;
+                        border: 1px solid #b8daff;
+                        border-radius: 4px;
+                    }
+                </style>
+                <div class="inner-shadow-content" data-test-automation-id="innerShadowContent">
+                    <p data-test-automation-id="innerShadowText">This is nested inner shadow DOM</p>
+                    <button data-test-automation-id="nestedShadowButton">Click Nested Shadow Button</button>
+                    <div data-test-automation-id="nestedShadowInnerResult" style="margin-top: 10px; display: none;">
+                        Nested shadow click registered!
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <label for="nestedShadowInput" data-test-automation-id="nestedShadowLabel">Nested Shadow Input:</label>
+                        <input type="text" id="nestedShadowInput" data-test-automation-id="nestedShadowInput" placeholder="Enter text in nested shadow" style="margin-left: 10px; padding: 5px; width: 200px;">
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <p data-test-automation-id="nestedShadowDisplayText">Initial nested shadow text</p>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listener to nested shadow button
+            const nestedShadowButton = innerShadowRoot.querySelector('[data-test-automation-id="nestedShadowButton"]');
+            const nestedShadowInnerResult = innerShadowRoot.querySelector('[data-test-automation-id="nestedShadowInnerResult"]');
+            
+            nestedShadowButton.addEventListener('click', () => {
+                nestedShadowButton.classList.add('clicked');
+                nestedShadowInnerResult.style.display = 'block';
+                handleNestedShadowClick();
+            });
+        }
+
+        // Initialize shadow DOM when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            createShadowDOM();
+            createNestedShadowDOM();
+        });
+
+        // Expose click results for testing
+        window.getClickResults = () => clickResults;
+    </script>
+</body>
+</html>

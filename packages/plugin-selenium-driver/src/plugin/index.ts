@@ -3,7 +3,11 @@ import {
     IBrowserProxyPlugin,
     SavePdfOptions,
     WindowFeaturesConfig,
-    IWindowFeatures
+    IWindowFeatures,
+    Selector,
+    ShadowCssSelector,
+    isXpathSelector,
+    isShadowCssSelector
 } from '@testring/types';
 
 import {ChildProcess} from 'child_process';
@@ -187,6 +191,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         if (this.config.host === undefined) {
             this.runLocalSelenium();
+            this.setupProcessCleanup();
         }
 
         this.initIntervals();
@@ -237,6 +242,19 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                     this.logger.error('Clean process exit failed', err);
                 });
             });
+        }
+    }
+
+    private setupProcessCleanup() {
+        process.on('SIGINT', () => this.forceKillSelenium());
+        process.on('SIGTERM', () => this.forceKillSelenium());
+        // Note: SIGKILL cannot be caught or handled - it immediately terminates the process
+    }
+
+    private forceKillSelenium() {
+        if (this.localSelenium && !this.localSelenium.killed) {
+            this.logger.debug('Force killing Selenium process due to signal');
+            this.localSelenium.kill('SIGKILL');
         }
     }
 
@@ -313,7 +331,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             this.localSelenium = spawnWithPipes('java', seleniumArgs);
 
             this.waitForReadyState = new Promise((resolve, reject) => {
-                setupProcessListeners(this.localSelenium!, resolve, reject, version, this.logger);
+                if (this.localSelenium) {
+                    setupProcessListeners(this.localSelenium, resolve, reject, version, this.logger);
+                } else {
+                    reject(new Error('Failed to spawn Selenium process'));
+                }
             });
 
             // Wait for the server to be ready
@@ -499,6 +521,95 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client as BrowserObjectCustom;
     }
 
+    private async getElement(applicant: string, selector: Selector) {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+
+        if (isXpathSelector(selector)) {
+            return client.$(selector.xpath);
+        } else if (isShadowCssSelector(selector)) {
+            return this.getElementFromShadowCss(client, selector);
+        }
+        
+        throw new Error('Unknown selector type');
+    }
+
+    private async getElementFromShadowCss(client: BrowserObjectCustom, selector: ShadowCssSelector) {
+        const {css, parentSelectors} = selector;
+        
+        // Error first: validate selector structure
+        this.validateShadowCssSelector(selector);
+
+        try {
+            return await this.traverseShadowDom(client, css, parentSelectors);
+        } catch (error) {
+            // Provide more context in error messages
+            if (error instanceof Error) {
+                throw new Error(`Shadow DOM traversal failed: ${error.message}. Selector: ${JSON.stringify(selector)}`);
+            }
+            throw error;
+        }
+    }
+
+    private validateShadowCssSelector(selector: ShadowCssSelector): void {
+        const {css, parentSelectors} = selector;
+        
+        if (!css || typeof css !== 'string') {
+            throw new Error('Shadow CSS selector must have a valid CSS string');
+        }
+        
+        if (!Array.isArray(parentSelectors) || parentSelectors.length === 0) {
+            throw new Error('Shadow CSS selector must have at least one parent selector');
+        }
+        
+        // Validate all parent selectors are non-empty strings
+        for (const [index, parentSelector] of parentSelectors.entries()) {
+            if (!parentSelector || typeof parentSelector !== 'string') {
+                throw new Error(`Parent selector at index ${index} must be a non-empty string`);
+            }
+        }
+    }
+
+    private async traverseToLastParentSelector(client: BrowserObjectCustom, parentSelectors: string[]) {
+        const [firstParentSelector, ...restParentSelectors] = parentSelectors;
+        
+        // TypeScript assertion: we know firstParentSelector exists due to validation
+        if (!firstParentSelector) {
+            throw new Error('First parent selector is required');
+        }
+        
+        // Get the first parent element
+        let currentElement = await client.$(firstParentSelector);
+        
+        if (!currentElement) {
+            throw new Error(`Failed to find parent element with selector: ${firstParentSelector}`);
+        }
+
+        // Traverse through shadow DOM hierarchy
+        for (const parentSelector of restParentSelectors) {
+            const shadowElement = await currentElement.shadow$(parentSelector);
+            if (!shadowElement) {
+                throw new Error(`Failed to find shadow element with selector: ${parentSelector}`);
+            }
+            currentElement = shadowElement;
+        }
+
+        return currentElement;
+    }
+
+    private async traverseShadowDom(client: BrowserObjectCustom, css: string, parentSelectors: string[]) {
+        // Traverse to the last parent selector
+        const lastParentElement = await this.traverseToLastParentSelector(client, parentSelectors);
+
+        // Get the final target element within the shadow DOM
+        const targetElement = await lastParentElement.shadow$(css);
+        if (!targetElement) {
+            throw new Error(`Failed to find target element with CSS selector: ${css}`);
+        }
+
+        return targetElement;
+    }
+
     public async end(applicant: string) {
         await this.waitForReadyState;
 
@@ -638,24 +749,17 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     public async click(
         applicant: string,
-        selector: string,
+        selector: Selector,
         options?: ClickOptions,
     ) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const element = await client.$(selector);
+        const element = await this.getElement(applicant, selector);
         return options && Object.keys(options).length > 0
             ? element.click(options)
             : element.click();
     }
 
-    public async getSize(applicant: string, selector: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const element = await client.$(selector);
-
+    public async getSize(applicant: string, selector: Selector) {
+        const element = await this.getElement(applicant, selector);
         return element.getSize();
     }
 
@@ -695,47 +799,35 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     public async waitForExist(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         timeout: number,
     ) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.waitForExist({timeout});
+        const element = await this.getElement(applicant, selector);
+        return element.waitForExist({timeout});
     }
 
     public async waitForVisible(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         timeout: number,
     ) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.waitForDisplayed({timeout});
+        const element = await this.getElement(applicant, selector);
+        return element.waitForDisplayed({timeout});
     }
 
-    public async isVisible(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.isDisplayed();
+    public async isVisible(applicant: string, selector: Selector) {
+        const element = await this.getElement(applicant, selector);
+        return element.isDisplayed();
     }
 
     public async moveToObject(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         xOffset = 0,
         yOffset = 0,
     ) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.moveTo({xOffset, yOffset});
+        const element = await this.getElement(applicant, selector);
+        return element.moveTo({xOffset, yOffset});
     }
 
     public async execute(applicant: string, fn: any, args: Array<any>) {
@@ -759,12 +851,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.getTitle();
     }
 
-    public async clearValue(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.clearValue();
+    public async clearValue(applicant: string, selector: Selector) {
+        const element = await this.getElement(applicant, selector);
+        return element.clearValue();
     }
 
     public async keys(applicant: string, value: any) {
@@ -781,19 +870,29 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.getElementText(elementId);
     }
 
-    public async elements(applicant: string, xpath: string) {
+    public async elements(applicant: string, selector: Selector) {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
 
-        const elements = (await client.findElements('xpath', xpath)) as unknown;
-        return (elements as Array<Record<string, string>>).map((o) => {
-            const keys = Object.keys(o);
-            const firstKey = keys[0];
-            if (firstKey === undefined) {
-                return {ELEMENT: ''};
-            }
-            return {ELEMENT: o[firstKey]};
-        });
+        if (isXpathSelector(selector)) {
+            const elements = (await client.findElements('xpath', selector.xpath)) as unknown;
+            return (elements as Array<Record<string, string>>).map((o) => {
+                const keys = Object.keys(o);
+                const firstKey = keys[0];
+                if (firstKey === undefined) {
+                    return {ELEMENT: ''};
+                }
+                return {ELEMENT: o[firstKey]};
+            });
+        } else if (isShadowCssSelector(selector)) {
+            const lastParentElement = await this.traverseToLastParentSelector(client, selector.parentSelectors);
+            const elements = lastParentElement.shadow$$(selector.css);
+            return elements.map((element) => {
+                return {ELEMENT: element.elementId};
+            });
+        }
+        
+        throw new Error('Unknown selector type');
     }
 
     public async frame(applicant: string, frameID: any) {
@@ -809,60 +908,42 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.switchToParentFrame();
     }
 
-    public async getValue(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.getValue();
+    public async getValue(applicant: string, selector: Selector) {
+        const element = await this.getElement(applicant, selector);
+        return element.getValue();
     }
 
-    public async setValue(applicant: string, xpath: string, value: any) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.setValue(value);
+    public async setValue(applicant: string, selector: Selector, value: any) {
+        const element = await this.getElement(applicant, selector);
+        return element.setValue(value);
     }
 
-    public async selectByIndex(applicant: string, xpath: string, value: any) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.selectByIndex(value);
+    public async selectByIndex(applicant: string, selector: Selector, value: any) {
+        const element = await this.getElement(applicant, selector);
+        return element.selectByIndex(value);
     }
 
-    public async selectByValue(applicant: string, xpath: string, value: any) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.selectByAttribute('value', value);
+    public async selectByValue(applicant: string, selector: Selector, value: any) {
+        const element = await this.getElement(applicant, selector);
+        return element.selectByAttribute('value', value);
     }
 
     public async selectByVisibleText(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         str: string,
     ) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.selectByVisibleText(str);
+        const element = await this.getElement(applicant, selector);
+        return element.selectByVisibleText(str);
     }
 
     public async getAttribute(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         attr: string,
     ): Promise<any> {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.getAttribute(attr);
+        const element = await this.getElement(applicant, selector);
+        return element.getAttribute(attr);
     }
 
     public async windowHandleMaximize(applicant: string) {
@@ -872,37 +953,28 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.maximizeWindow();
     }
 
-    public async isEnabled(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.isEnabled();
+    public async isEnabled(applicant: string, selector: Selector) {
+        const element = await this.getElement(applicant, selector);
+        return element.isEnabled();
     }
 
     public async scroll(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         xOffset: number,
         yOffset: number,
     ) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const element = await client.$(xpath);
+        const element = await this.getElement(applicant, selector);
         await element.scrollIntoView();
         return element.moveTo({xOffset, yOffset});
     }
 
     public async scrollIntoView(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         scrollIntoViewOptions?: boolean | null,
     ) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const element = await client.$(xpath);
+        const element = await this.getElement(applicant, selector);
         await element.scrollIntoView(
             scrollIntoViewOptions !== null ? scrollIntoViewOptions : undefined,
         );
@@ -950,14 +1022,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     public async dragAndDrop(
         applicant: string,
-        xpathSource: string,
-        xpathDestination: string,
+        sourceSelector: Selector,
+        destinationSelector: Selector,
     ) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const sourceElement = await client.$(xpathSource);
-        const destinationElement = await client.$(xpathDestination);
+        const sourceElement = await this.getElement(applicant, sourceSelector);
+        const destinationElement = await this.getElement(applicant, destinationSelector);
         return sourceElement.dragAndDrop(destinationElement);
     }
 
@@ -995,12 +1064,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.deleteAllCookies();
     }
 
-    public async getHTML(applicant: string, xpath: string, b: any) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.getHTML(b);
+    public async getHTML(applicant: string, selector: Selector, b: any) {
+        const element = await this.getElement(applicant, selector);
+        return element.getHTML(b);
     }
 
     public async getCurrentTabId(applicant: string) {
@@ -1054,28 +1120,19 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.closeWindow();
     }
 
-    public async getTagName(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.getTagName();
+    public async getTagName(applicant: string, selector: Selector) {
+        const element = await this.getElement(applicant, selector);
+        return element.getTagName();
     }
 
-    public async isSelected(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.isSelected();
+    public async isSelected(applicant: string, selector: Selector) {
+        const element = await this.getElement(applicant, selector);
+        return element.isSelected();
     }
 
-    public async getText(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.getText();
+    public async getText(applicant: string, selector: Selector) {
+        const element = await this.getElement(applicant, selector);
+        return element.getText();
     }
 
     public async elementIdSelected(applicant: string, id: string) {
@@ -1104,13 +1161,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     public async getCssProperty(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         cssProperty: string,
     ): Promise<any> {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const element = await client.$(xpath);
+        const element = await this.getElement(applicant, selector);
         const property = await element.getCSSProperty(cssProperty);
         return property.value;
     }
@@ -1122,17 +1176,14 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.getPageSource();
     }
 
-    public async isExisting(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.isExisting();
+    public async isExisting(applicant: string, selector: Selector) {
+        const element = await this.getElement(applicant, selector);
+        return element.isExisting();
     }
 
     public async waitForValue(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         timeout: number,
         reverse: boolean,
     ) {
@@ -1141,7 +1192,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         return client.waitUntil(
             async () => {
-                const elemValue = await (await client.$(xpath)).getValue();
+                const element = await this.getElement(applicant, selector);
+                const elemValue = await element.getValue();
                 return reverse ? !elemValue : !!elemValue;
             },
             {timeout},
@@ -1150,7 +1202,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     public async waitForSelected(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         timeout: number,
         reverse: boolean,
     ) {
@@ -1159,7 +1211,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         return client.waitUntil(
             async () => {
-                const isSelected = await (await client.$(xpath)).isSelected();
+                const element = await this.getElement(applicant, selector);
+                const isSelected = await element.isSelected();
                 return reverse ? !isSelected : isSelected;
             },
             {timeout},
@@ -1193,15 +1246,12 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     public async selectByAttribute(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         attribute: string,
         value: string,
     ) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.selectByAttribute(attribute, value);
+        const element = await this.getElement(applicant, selector);
+        return element.selectByAttribute(attribute, value);
     }
 
     public async gridTestSession(applicant: string) {
@@ -1299,10 +1349,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.getActiveElement();
     }
 
-    public async getLocation(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-        const element = client.$(xpath);
+    public async getLocation(applicant: string, selector: Selector) {
+        const element = await this.getElement(applicant, selector);
         return element.getLocation();
     }
 
@@ -1329,82 +1377,58 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     public async addValue(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         value: string | number,
     ) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.addValue(value);
+        const element = await this.getElement(applicant, selector);
+        return element.addValue(value);
     }
 
-    public async doubleClick(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.doubleClick();
+    public async doubleClick(applicant: string, selector: Selector) {
+        const element = await this.getElement(applicant, selector);
+        return element.doubleClick();
     }
 
-    public async isClickable(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.isClickable();
+    public async isClickable(applicant: string, selector: Selector) {
+        const element = await this.getElement(applicant, selector);
+        return element.isClickable();
     }
 
     public async waitForClickable(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         timeout: number,
     ) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.waitForClickable({timeout});
+        const element = await this.getElement(applicant, selector);
+        return element.waitForClickable({timeout});
     }
 
-    public async isFocused(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.isFocused();
+    public async isFocused(applicant: string, selector: Selector) {
+        const element = await this.getElement(applicant, selector);
+        return element.isFocused();
     }
 
-    public async isStable(applicant: string, xpath: string) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.isStable();
+    public async isStable(applicant: string, selector: Selector) {
+        const element = await this.getElement(applicant, selector);
+        return element.isStable();
     }
 
     public async waitForEnabled(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         timeout: number,
     ) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.waitForEnabled({timeout});
+        const element = await this.getElement(applicant, selector);
+        return element.waitForEnabled({timeout});
     }
 
     public async waitForStable(
         applicant: string,
-        xpath: string,
+        selector: Selector,
         timeout: number,
     ) {
-        await this.createClient(applicant);
-        const client = this.getBrowserClient(applicant);
-
-        const selector = await client.$(xpath);
-        return selector.waitForStable({timeout});
+        const element = await this.getElement(applicant, selector);
+        return element.waitForStable({timeout});
     }
 }
 
