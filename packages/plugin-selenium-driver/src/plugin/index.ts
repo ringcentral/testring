@@ -191,6 +191,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
         if (this.config.host === undefined) {
             this.runLocalSelenium();
+            this.setupProcessCleanup();
         }
 
         this.initIntervals();
@@ -241,6 +242,19 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                     this.logger.error('Clean process exit failed', err);
                 });
             });
+        }
+    }
+
+    private setupProcessCleanup() {
+        process.on('SIGINT', () => this.forceKillSelenium());
+        process.on('SIGTERM', () => this.forceKillSelenium());
+        process.on('SIGKILL', () => this.forceKillSelenium());
+    }
+
+    private forceKillSelenium() {
+        if (this.localSelenium && !this.localSelenium.killed) {
+            this.logger.debug('Force killing Selenium process due to signal');
+            this.localSelenium.kill('SIGKILL');
         }
     }
 
