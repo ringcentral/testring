@@ -248,7 +248,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     private setupProcessCleanup() {
         process.on('SIGINT', () => this.forceKillSelenium());
         process.on('SIGTERM', () => this.forceKillSelenium());
-        process.on('SIGKILL', () => this.forceKillSelenium());
+        // Note: SIGKILL cannot be caught or handled - it immediately terminates the process
     }
 
     private forceKillSelenium() {
