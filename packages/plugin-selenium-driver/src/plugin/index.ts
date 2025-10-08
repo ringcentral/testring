@@ -570,7 +570,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
     }
 
-    private async traverseShadowDom(client: BrowserObjectCustom, css: string, parentSelectors: string[]) {
+    private async traverseToLastParentSelector(client: BrowserObjectCustom, parentSelectors: string[]) {
         const [firstParentSelector, ...restParentSelectors] = parentSelectors;
         
         // TypeScript assertion: we know firstParentSelector exists due to validation
@@ -594,8 +594,15 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             currentElement = shadowElement;
         }
 
+        return currentElement;
+    }
+
+    private async traverseShadowDom(client: BrowserObjectCustom, css: string, parentSelectors: string[]) {
+        // Traverse to the last parent selector
+        const lastParentElement = await this.traverseToLastParentSelector(client, parentSelectors);
+
         // Get the final target element within the shadow DOM
-        const targetElement = await currentElement.shadow$(css);
+        const targetElement = await lastParentElement.shadow$(css);
         if (!targetElement) {
             throw new Error(`Failed to find target element with CSS selector: ${css}`);
         }
@@ -878,8 +885,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 return {ELEMENT: o[firstKey]};
             });
         } else if (isShadowCssSelector(selector)) {
-            // TODO: Implement shadow DOM CSS selector logic
-            throw new Error('ShadowCssSelector not implemented yet');
+            const lastParentElement = await this.traverseToLastParentSelector(client, selector.parentSelectors);
+            const elements = lastParentElement.shadow$$(selector.css);
+            return elements.map((element) => {
+                return {ELEMENT: element.elementId};
+            });
         }
         
         throw new Error('Unknown selector type');

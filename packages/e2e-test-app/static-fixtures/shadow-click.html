@@ -139,6 +139,13 @@
                     <div data-test-automation-id="shadowInnerResult" style="margin-top: 10px; display: none;">
                         Shadow click registered!
                     </div>
+                    <div style="margin-top: 15px;">
+                        <label for="shadowInput" data-test-automation-id="shadowLabel">Shadow Input Field:</label>
+                        <input type="text" id="shadowInput" data-test-automation-id="shadowInput" placeholder="Enter text in shadow DOM" style="margin-left: 10px; padding: 5px; width: 200px;">
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <p data-test-automation-id="shadowDisplayText">Initial shadow text content</p>
+                    </div>
                 </div>
             `;
             
@@ -214,6 +221,13 @@
                     <button data-test-automation-id="nestedShadowButton">Click Nested Shadow Button</button>
                     <div data-test-automation-id="nestedShadowInnerResult" style="margin-top: 10px; display: none;">
                         Nested shadow click registered!
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <label for="nestedShadowInput" data-test-automation-id="nestedShadowLabel">Nested Shadow Input:</label>
+                        <input type="text" id="nestedShadowInput" data-test-automation-id="nestedShadowInput" placeholder="Enter text in nested shadow" style="margin-left: 10px; padding: 5px; width: 200px;">
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <p data-test-automation-id="nestedShadowDisplayText">Initial nested shadow text</p>
                     </div>
                 </div>
             `;
