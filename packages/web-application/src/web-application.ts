@@ -184,7 +184,7 @@ export class WebApplication extends PluggableModule {
 
     // type guard for ShadowElementPathProxy
     protected isShadowElementPathProxy(elementPath: ElementPath): elementPath is ShadowElementPathProxy {
-        return (elementPath as any).isShadowElement === true;
+        return (elementPath as any)?.isShadowElement === true;
     }
 
     protected normalizeSelector(
