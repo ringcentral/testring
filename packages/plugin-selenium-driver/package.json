@@ -13,7 +13,6 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@nullcc/code-coverage-client": "1.4.2",
     "@testring/child-process": "0.8.5",
     "@testring/dwnld-collector-crx": "0.8.5",
     "@testring/logger": "0.8.5",

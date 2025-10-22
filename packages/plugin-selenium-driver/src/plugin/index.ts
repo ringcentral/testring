@@ -20,7 +20,6 @@ import * as deepmerge from 'deepmerge';
 import {spawnWithPipes} from '@testring/child-process';
 import {loggerClient} from '@testring/logger';
 import {getCrxBase64} from '@testring/dwnld-collector-crx';
-import {CDPCoverageCollector} from '@nullcc/code-coverage-client';
 
 import type {Cookie} from '@wdio/protocols';
 import type {ClickOptions, MockFilterOptions, WaitUntilOptions} from 'webdriverio';
@@ -37,7 +36,6 @@ type browserClientItem = {
     client: BrowserObjectCustom;
     sessionId: string;
     initTime: number;
-    cdpCoverageCollector: CDPCoverageCollector | null;
 };
 
 const DEFAULT_CONFIG: SeleniumPluginConfig = {
@@ -53,7 +51,6 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
         },
         'wdio:enforceWebDriverClassic': true,
     } as any,
-    cdpCoverage: false,
     disableClientPing: false,
     localVersion: 'v3' as SeleniumVersion,
     seleniumArgs: [],
@@ -475,56 +472,15 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             client as BrowserObjectCustom,
         );
 
-        let cdpCoverageCollector;
-        if (this.config.cdpCoverage) {
-            this.logger.debug('Started to init cdp coverage....');
-            cdpCoverageCollector = await this.enableCDPCoverageClient(client);
-            this.logger.debug('ended to init cdp coverage....');
-        }
         this.browserClients.set(applicant, {
             client: customClient,
             sessionId,
             initTime: Date.now(),
-            cdpCoverageCollector: cdpCoverageCollector
-                ? cdpCoverageCollector
-                : null,
         });
 
         this.logger.debug(
             `Started session for applicant: ${applicant}. Session id: ${sessionId}`,
         );
-    }
-
-    private async enableCDPCoverageClient(client: BrowserObjectCustom) {
-        if (this.config.host === undefined) {
-            return null;
-        }
-        //accurate
-        if (!client.capabilities['se:cdp']) {
-            return null;
-        }
-        const cdpAddress = client.capabilities['se:cdp'];
-        const collector = new CDPCoverageCollector({
-            wsEndpoint: cdpAddress,
-        });
-        await collector.init();
-        await collector.start();
-        return collector;
-    }
-
-    public async getCdpCoverageFile(applicant: string) {
-        const clientData = this.browserClients.get(applicant);
-        this.logger.debug(`start upload coverage for applicant ${applicant}`);
-        if (!clientData) {
-            return;
-        }
-        const coverageCollector = clientData.cdpCoverageCollector;
-        if (!coverageCollector) {
-            return;
-        }
-        const {coverage} = await coverageCollector.collect();
-        await coverageCollector.stop();
-        return [Buffer.from(JSON.stringify(coverage))];
     }
 
     protected addCustromMethods(
