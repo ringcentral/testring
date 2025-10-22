@@ -1,6 +1,6 @@
 {
   "name": "@testring/devtool-backend",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "main": "./dist/index.js",
   "repository": {
     "type": "git",
@@ -14,14 +14,14 @@
     "build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "@testring/child-process": "0.8.5",
-    "@testring/devtool-extension": "0.8.5",
-    "@testring/devtool-frontend": "0.8.5",
-    "@testring/logger": "0.8.5",
-    "@testring/pluggable-module": "0.8.5",
-    "@testring/transport": "0.8.5",
-    "@testring/types": "0.8.5",
-    "@testring/utils": "0.8.5",
+    "@testring/child-process": "0.8.6",
+    "@testring/devtool-extension": "0.8.6",
+    "@testring/devtool-frontend": "0.8.6",
+    "@testring/logger": "0.8.6",
+    "@testring/pluggable-module": "0.8.6",
+    "@testring/transport": "0.8.6",
+    "@testring/types": "0.8.6",
+    "@testring/utils": "0.8.6",
     "babel-traverse": "6.26.0",
     "babel-types": "6.26.0",
     "express": "4.21.1",
@@ -29,7 +29,7 @@
     "ws": "8.18.0"
   },
   "devDependencies": {
-    "@testring/test-utils": "0.8.5",
+    "@testring/test-utils": "0.8.6",
     "@types/babel-traverse": "6.25.10",
     "@types/express-serve-static-core": "5.0.1",
     "@types/node": "22.8.5",
