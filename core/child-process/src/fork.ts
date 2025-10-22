@@ -3,7 +3,7 @@ import process from 'node:process';
 import {getAvailablePort} from '@testring/utils';
 import {IChildProcessForkOptions, IChildProcessFork} from '@testring/types';
 import {resolveBinary} from './resolve-binary';
-import {spawn} from './spawn';
+import {spawn, spawnDebug} from './spawn';
 import {ChildProcess} from 'child_process';
 
 interface ChildProcessExtension extends ChildProcess {
@@ -99,20 +99,35 @@ export async function fork(
 
     let childProcess: ChildProcess;
     if (IS_WIN) {
-        childProcess = spawn('node', [
-            ...processArgs,
-            ...getAdditionalParameters(filePath),
-            filePath,
-            childArg,
-            ...args,
-        ]);
+        childProcess = mergedOptions.debug 
+            ? spawnDebug('node', [
+                ...processArgs,
+                ...getAdditionalParameters(filePath),
+                filePath,
+                childArg,
+                ...args,
+            ])
+            : spawn('node', [
+                ...processArgs,
+                ...getAdditionalParameters(filePath),
+                filePath,
+                childArg,
+                ...args,
+            ]);
     } else {
-        childProcess = spawn(getExecutor(filePath), [
-            ...processArgs,
-            filePath,
-            childArg,
-            ...args,
-        ]);
+        childProcess = mergedOptions.debug
+            ? spawnDebug(getExecutor(filePath), [
+                ...processArgs,
+                filePath,
+                childArg,
+                ...args,
+            ])
+            : spawn(getExecutor(filePath), [
+                ...processArgs,
+                filePath,
+                childArg,
+                ...args,
+            ]);
     }
 
     const childProcessExtended = childProcess as ChildProcessExtension;

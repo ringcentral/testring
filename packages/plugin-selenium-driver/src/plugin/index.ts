@@ -20,7 +20,6 @@ import * as deepmerge from 'deepmerge';
 import {spawnWithPipes} from '@testring/child-process';
 import {loggerClient} from '@testring/logger';
 import {getCrxBase64} from '@testring/dwnld-collector-crx';
-import {CDPCoverageCollector} from '@nullcc/code-coverage-client';
 
 import type {Cookie} from '@wdio/protocols';
 import type {ClickOptions, MockFilterOptions, WaitUntilOptions} from 'webdriverio';
@@ -37,7 +36,6 @@ type browserClientItem = {
     client: BrowserObjectCustom;
     sessionId: string;
     initTime: number;
-    cdpCoverageCollector: CDPCoverageCollector | null;
 };
 
 const DEFAULT_CONFIG: SeleniumPluginConfig = {
@@ -53,7 +51,6 @@ const DEFAULT_CONFIG: SeleniumPluginConfig = {
         },
         'wdio:enforceWebDriverClassic': true,
     } as any,
-    cdpCoverage: false,
     disableClientPing: false,
     localVersion: 'v3' as SeleniumVersion,
     seleniumArgs: [],
@@ -186,6 +183,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     private incrementWinId = 0;
 
+    private killed = false; // Flag to prevent operations after kill
+
     constructor(config: Partial<SeleniumPluginConfig> = {}) {
         this.config = this.createConfig(config);
 
@@ -246,8 +245,14 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     private setupProcessCleanup() {
+        process.on('exit', () => this.forceKillSelenium());
         process.on('SIGINT', () => this.forceKillSelenium());
         process.on('SIGTERM', () => this.forceKillSelenium());
+        
+        // Debug mode specific cleanup handlers
+        process.on('SIGUSR1', () => this.forceKillSelenium()); // Debugger disconnect
+        process.on('SIGUSR2', () => this.forceKillSelenium()); // Debugger disconnect alternative
+        
         // Note: SIGKILL cannot be caught or handled - it immediately terminates the process
     }
 
@@ -302,8 +307,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 'standalone', 
                 '--port', 
                 port.toString(),
-                '--bind-host',
-                'false',
+                '--host',
+                '127.0.0.1',
             );
         } else {
             args.push('-jar', seleniumJarPath, '-port', port.toString());
@@ -426,6 +431,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         applicant: string,
         config?: Partial<WebdriverIO.Config>,
     ): Promise<void> {
+        if (this.killed) {
+            throw new Error('SeleniumPlugin is being killed');
+        }
+        
         await this.waitForReadyState;
         const clientData = this.browserClients.get(applicant);
 
@@ -463,56 +472,15 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             client as BrowserObjectCustom,
         );
 
-        let cdpCoverageCollector;
-        if (this.config.cdpCoverage) {
-            this.logger.debug('Started to init cdp coverage....');
-            cdpCoverageCollector = await this.enableCDPCoverageClient(client);
-            this.logger.debug('ended to init cdp coverage....');
-        }
         this.browserClients.set(applicant, {
             client: customClient,
             sessionId,
             initTime: Date.now(),
-            cdpCoverageCollector: cdpCoverageCollector
-                ? cdpCoverageCollector
-                : null,
         });
 
         this.logger.debug(
             `Started session for applicant: ${applicant}. Session id: ${sessionId}`,
         );
-    }
-
-    private async enableCDPCoverageClient(client: BrowserObjectCustom) {
-        if (this.config.host === undefined) {
-            return null;
-        }
-        //accurate
-        if (!client.capabilities['se:cdp']) {
-            return null;
-        }
-        const cdpAddress = client.capabilities['se:cdp'];
-        const collector = new CDPCoverageCollector({
-            wsEndpoint: cdpAddress,
-        });
-        await collector.init();
-        await collector.start();
-        return collector;
-    }
-
-    public async getCdpCoverageFile(applicant: string) {
-        const clientData = this.browserClients.get(applicant);
-        this.logger.debug(`start upload coverage for applicant ${applicant}`);
-        if (!clientData) {
-            return;
-        }
-        const coverageCollector = clientData.cdpCoverageCollector;
-        if (!coverageCollector) {
-            return;
-        }
-        const {coverage} = await coverageCollector.collect();
-        await coverageCollector.stop();
-        return [Buffer.from(JSON.stringify(coverage))];
     }
 
     protected addCustromMethods(
@@ -674,6 +642,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     public async kill() {
         this.logger.debug('Kill command is called');
+        
+        // Set killed flag to prevent new operations
+        this.killed = true;
 
         // Close all browser sessions
         for (const applicant of this.browserClients.keys()) {
@@ -690,6 +661,12 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
 
         if (this.localSelenium) {
+            // Check if already killed
+            if (this.localSelenium.killed) {
+                this.logger.debug('Selenium process already killed');
+                return;
+            }
+            
             // remove listener
             if (this.localSelenium.stderr) {
                 this.localSelenium.stderr.removeAllListeners('data');
@@ -716,7 +693,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 });
             });
 
-            // Force kill if not exiting within 3 seconds
+            // Force kill if not exiting within 1 second (reduced from 3 seconds)
             const forceKill = new Promise<void>((resolve) => {
                 setTimeout(() => {
                     if (this.localSelenium && !this.localSelenium.killed) {
@@ -726,7 +703,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                         this.localSelenium.kill('SIGKILL');
                     }
                     resolve();
-                }, 3000);
+                }, 1000); // Reduced timeout for faster cleanup
             });
 
             // Wait for either normal exit or force kill
