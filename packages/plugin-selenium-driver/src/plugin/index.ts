@@ -186,6 +186,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     private incrementWinId = 0;
 
+    private killed = false; // Flag to prevent operations after kill
+
     constructor(config: Partial<SeleniumPluginConfig> = {}) {
         this.config = this.createConfig(config);
 
@@ -246,8 +248,14 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     private setupProcessCleanup() {
+        process.on('exit', () => this.forceKillSelenium());
         process.on('SIGINT', () => this.forceKillSelenium());
         process.on('SIGTERM', () => this.forceKillSelenium());
+        
+        // Debug mode specific cleanup handlers
+        process.on('SIGUSR1', () => this.forceKillSelenium()); // Debugger disconnect
+        process.on('SIGUSR2', () => this.forceKillSelenium()); // Debugger disconnect alternative
+        
         // Note: SIGKILL cannot be caught or handled - it immediately terminates the process
     }
 
@@ -302,8 +310,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 'standalone', 
                 '--port', 
                 port.toString(),
-                '--bind-host',
-                'false',
+                '--host',
+                '127.0.0.1',
             );
         } else {
             args.push('-jar', seleniumJarPath, '-port', port.toString());
@@ -426,6 +434,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         applicant: string,
         config?: Partial<WebdriverIO.Config>,
     ): Promise<void> {
+        if (this.killed) {
+            throw new Error('SeleniumPlugin is being killed');
+        }
+        
         await this.waitForReadyState;
         const clientData = this.browserClients.get(applicant);
 
@@ -674,6 +686,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     public async kill() {
         this.logger.debug('Kill command is called');
+        
+        // Set killed flag to prevent new operations
+        this.killed = true;
 
         // Close all browser sessions
         for (const applicant of this.browserClients.keys()) {
@@ -690,6 +705,12 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         }
 
         if (this.localSelenium) {
+            // Check if already killed
+            if (this.localSelenium.killed) {
+                this.logger.debug('Selenium process already killed');
+                return;
+            }
+            
             // remove listener
             if (this.localSelenium.stderr) {
                 this.localSelenium.stderr.removeAllListeners('data');
@@ -716,7 +737,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 });
             });
 
-            // Force kill if not exiting within 3 seconds
+            // Force kill if not exiting within 1 second (reduced from 3 seconds)
             const forceKill = new Promise<void>((resolve) => {
                 setTimeout(() => {
                     if (this.localSelenium && !this.localSelenium.killed) {
@@ -726,7 +747,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                         this.localSelenium.kill('SIGKILL');
                     }
                     resolve();
-                }, 3000);
+                }, 1000); // Reduced timeout for faster cleanup
             });
 
             // Wait for either normal exit or force kill
