@@ -20,6 +20,7 @@ import * as deepmerge from 'deepmerge';
 import {spawnWithPipes} from '@testring/child-process';
 import {loggerClient} from '@testring/logger';
 import {getCrxBase64} from '@testring/dwnld-collector-crx';
+import kill from 'tree-kill';
 
 import type {Cookie} from '@wdio/protocols';
 import type {ClickOptions, MockFilterOptions, WaitUntilOptions} from 'webdriverio';
@@ -257,9 +258,15 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     private forceKillSelenium() {
-        if (this.localSelenium && !this.localSelenium.killed) {
-            this.logger.debug('Force killing Selenium process due to signal');
-            this.localSelenium.kill('SIGKILL');
+        if (this.localSelenium && !this.localSelenium.killed && this.localSelenium.pid) {
+            this.logger.debug('Force killing Selenium process tree due to signal');
+            kill(this.localSelenium.pid, 'SIGKILL', (err: Error | undefined) => {
+                if (err) {
+                    this.logger.error(`Failed to force kill Selenium process tree: ${err.message}`);
+                } else {
+                    this.logger.debug('Selenium process tree force killed');
+                }
+            });
         }
     }
 
@@ -640,13 +647,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         this.customBrowserClientsConfigs.delete(applicant);
     }
 
-    public async kill() {
-        this.logger.debug('Kill command is called');
-        
-        // Set killed flag to prevent new operations
-        this.killed = true;
-
-        // Close all browser sessions
+    private async closeAllBrowserSessions() {
         for (const applicant of this.browserClients.keys()) {
             try {
                 await this.end(applicant);
@@ -654,6 +655,55 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 this.logger.error(e);
             }
         }
+    }
+
+    private cleanupSeleniumProcess() {
+        if (!this.localSelenium) {
+            return;
+        }
+
+        // remove listener
+        if (this.localSelenium.stderr) {
+            this.localSelenium.stderr.removeAllListeners('data');
+            this.localSelenium.stdout?.removeAllListeners();
+        }
+
+        // Ensure all pipes are closed
+        this.localSelenium.stdout?.destroy();
+        this.localSelenium.stderr?.destroy();
+        this.localSelenium.stdin?.destroy();
+    }
+
+    private async killSeleniumProcessTree(pid: number): Promise<void> {
+        return new Promise<void>((resolve) => {
+            kill(pid, 'SIGTERM', (err: Error | undefined) => {
+                if (err) {
+                    this.logger.warn(`Failed to kill process tree with SIGTERM: ${err.message}`);
+                    // Fallback to SIGKILL if SIGTERM fails
+                    kill(pid, 'SIGKILL', (killErr: Error | undefined) => {
+                        if (killErr) {
+                            this.logger.error(`Failed to kill process tree with SIGKILL: ${killErr.message}`);
+                        } else {
+                            this.logger.debug('Process tree killed with SIGKILL');
+                        }
+                        resolve();
+                    });
+                } else {
+                    this.logger.debug('Process tree killed with SIGTERM');
+                    resolve();
+                }
+            });
+        });
+    }
+
+    public async kill() {
+        this.logger.debug('Kill command is called');
+        
+        // Set killed flag to prevent new operations
+        this.killed = true;
+
+        // Close all browser sessions
+        await this.closeAllBrowserSessions();
 
         // If using 'local' mode, stop all active sessions
         if (this.config.workerLimit === 'local') {
@@ -667,52 +717,25 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 return;
             }
             
-            // remove listener
-            if (this.localSelenium.stderr) {
-                this.localSelenium.stderr.removeAllListeners('data');
-                this.localSelenium.stdout?.removeAllListeners();
+            const pid = this.localSelenium.pid;
+            if (!pid) {
+                this.logger.warn('Selenium process has no PID, cannot kill process tree');
+                return;
             }
 
-            // Ensure all pipes are closed
-            this.localSelenium.stdout?.destroy();
-            this.localSelenium.stderr?.destroy();
-            this.localSelenium.stdin?.destroy();
+            this.cleanupSeleniumProcess();
 
             this.logger.debug(
-                `Stopping local Selenium server (PID: ${this.localSelenium.pid})`,
+                `Stopping local Selenium server and all child processes (PID: ${pid})`,
             );
 
-            // Try SIGTERM first
-            this.localSelenium.kill('SIGTERM');
-
-            // Wait for exit event with a timeout (ensures it does not hang forever)
-            const waitForExit = new Promise<void>((resolve) => {
-                this.localSelenium?.once('exit', () => {
-                    this.logger.debug('Selenium process exited.');
-                    resolve();
-                });
-            });
-
-            // Force kill if not exiting within 1 second (reduced from 3 seconds)
-            const forceKill = new Promise<void>((resolve) => {
-                setTimeout(() => {
-                    if (this.localSelenium && !this.localSelenium.killed) {
-                        this.logger.warn(
-                            `Selenium did not exit in time. Sending SIGKILL.`,
-                        );
-                        this.localSelenium.kill('SIGKILL');
-                    }
-                    resolve();
-                }, 1000); // Reduced timeout for faster cleanup
-            });
-
-            // Wait for either normal exit or force kill
-            await Promise.race([waitForExit, forceKill]);
+            // Use tree-kill to properly terminate the process tree
+            await this.killSeleniumProcessTree(pid);
 
             this.localSelenium.removeAllListeners();
 
             this.logger.debug(
-                'Selenium process and all associated pipes closed.',
+                'Selenium process tree and all associated pipes closed.',
             );
         }
     }
