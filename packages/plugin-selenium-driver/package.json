@@ -1,6 +1,6 @@
 {
   "name": "@testring/plugin-selenium-driver",
-  "version": "0.8.6",
+  "version": "0.8.7",
   "main": "./dist/index.js",
   "typings": "./src/index.ts",
   "repository": {
@@ -13,11 +13,11 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/child-process": "0.8.6",
-    "@testring/dwnld-collector-crx": "0.8.6",
-    "@testring/logger": "0.8.6",
-    "@testring/plugin-api": "0.8.6",
-    "@testring/types": "0.8.6",
+    "@testring/child-process": "0.8.7",
+    "@testring/dwnld-collector-crx": "0.8.7",
+    "@testring/logger": "0.8.7",
+    "@testring/plugin-api": "0.8.7",
+    "@testring/types": "0.8.7",
     "@types/deepmerge": "2.2.3",
     "@types/node": "22.8.5",
     "@wdio/types": "9.2.2",
