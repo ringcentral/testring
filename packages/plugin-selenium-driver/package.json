@@ -25,6 +25,7 @@
     "deepmerge": "4.3.1",
     "puppeteer-core": "22.3.0",
     "selenium-server": "3.141.59",
+    "tree-kill": "1.2.2",
     "webdriverio": "9.20.0"
   }
 }
