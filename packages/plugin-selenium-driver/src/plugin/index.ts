@@ -1252,7 +1252,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
         const element = await this.getElement(applicant, selector);
 
-        return client.takeElementScreenshot(element.elementId);
+        return client.takeElementScreenshot(await element.elementId);
     }
 
     public async uploadFile(
