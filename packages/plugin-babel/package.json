@@ -1,6 +1,6 @@
 {
   "name": "@testring/plugin-babel",
-  "version": "0.8.7",
+  "version": "0.8.8",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -15,7 +15,7 @@
   "dependencies": {
     "@babel/core": "7.26.0",
     "@babel/plugin-transform-modules-commonjs": "7.25.9",
-    "@testring/plugin-api": "0.8.7",
+    "@testring/plugin-api": "0.8.8",
     "@types/babel__core": "7.20.5"
   }
 }

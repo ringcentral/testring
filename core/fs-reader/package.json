@@ -1,6 +1,6 @@
 {
   "name": "@testring/fs-reader",
-  "version": "0.8.7",
+  "version": "0.8.8",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -14,9 +14,9 @@
     "build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "@testring/logger": "0.8.7",
-    "@testring/pluggable-module": "0.8.7",
-    "@testring/types": "0.8.7",
+    "@testring/logger": "0.8.8",
+    "@testring/pluggable-module": "0.8.8",
+    "@testring/types": "0.8.8",
     "fast-glob": "3.3.2",
     "p-limit": "3.1.0"
   }
