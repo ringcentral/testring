@@ -13,14 +13,14 @@ export type ShadowCssSelector = {
     isShadowElement: true;
 };
 
-export type Selector = 
+export type Selector =
     | XpathSelector
     | ShadowCssSelector;
 
-export const isXpathSelector = (selector: Selector): selector is XpathSelector => 
+export const isXpathSelector = (selector: Selector): selector is XpathSelector =>
     selector.type === 'xpath';
 
-export const isShadowCssSelector = (selector: Selector): selector is ShadowCssSelector => 
+export const isShadowCssSelector = (selector: Selector): selector is ShadowCssSelector =>
     selector.type === 'shadow-css';
 
 export interface IBrowserProxyController {
@@ -174,6 +174,8 @@ export interface IBrowserProxyPlugin {
     elementIdSelected(applicant: string, id: string): Promise<any>;
 
     makeScreenshot(applicant: string): Promise<string | void>;
+
+    makeElementScreenshot(applicant: string, selector: Selector): Promise<string | void>;
 
     uploadFile(applicant: string, filePath: string): Promise<string | void>;
 
