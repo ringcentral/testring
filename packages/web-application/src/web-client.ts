@@ -307,6 +307,10 @@ export class WebClient implements IWebApplicationClient {
         return this.makeRequest(BrowserProxyActions.makeScreenshot, []);
     }
 
+    public makeElementScreenshot(selector: Selector, scroll?: boolean) {
+        return this.makeRequest(BrowserProxyActions.makeElementScreenshot, [selector, scroll]);
+    }
+
     public uploadFile(path: string) {
         return this.makeRequest(BrowserProxyActions.uploadFile, [path]);
     }

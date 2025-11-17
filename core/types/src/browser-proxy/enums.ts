@@ -57,6 +57,7 @@ export const enum BrowserProxyActions {
     getText = 'getText',
     elementIdSelected = 'elementIdSelected',
     makeScreenshot = 'makeScreenshot',
+    makeElementScreenshot = 'makeElementScreenshot',
     uploadFile = 'uploadFile',
     end = 'end',
     kill = 'kill',

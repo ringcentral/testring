@@ -7,7 +7,7 @@ import {
     Selector,
     ShadowCssSelector,
     isXpathSelector,
-    isShadowCssSelector
+    isShadowCssSelector,
 } from '@testring/types';
 
 import {ChildProcess} from 'child_process';
@@ -78,17 +78,17 @@ function getSeleniumJarPath(version: SeleniumVersion): string {
     if (version === 'v4') {
         // For Selenium v4, we expect the JAR to be in a specific location
         const seleniumV4Path = path.join(__dirname, '..', 'selenium-server-v4', 'selenium-server-4.34.0.jar');
-        
+
         if (!fs.existsSync(seleniumV4Path)) {
             throw new Error(
                 `Selenium v4 JAR not found at expected path: ${seleniumV4Path}. ` +
-                'Please ensure selenium-server-4.34.0.jar is available in the package directory.'
+                'Please ensure selenium-server-4.34.0.jar is available in the package directory.',
             );
         }
-        
+
         return seleniumV4Path;
     }
-    
+
     // For v3 and other versions, use the original logic
     const seleniumServer = require('selenium-server');
     return seleniumServer.path;
@@ -100,7 +100,7 @@ function setupProcessListeners(
     resolve: () => void,
     reject: (error: Error) => void,
     version: SeleniumVersion,
-    logger: { verbose: (message: string) => void }
+    logger: {verbose: (message: string) => void},
 ) {
     if (!seleniumProcess.stderr && !seleniumProcess.stdout) {
         reject(new Error('There is no STDERR or STDOUT on selenium worker'));
@@ -120,9 +120,14 @@ function setupProcessListeners(
         v3: 'SeleniumServer.boot',
     };
 
-    const checkForReadyMessage = (message: string, stream: 'stdout' | 'stderr') => {
-        logger.verbose(`[Selenium ${version}] [${stream.toUpperCase()}] ${message.trim()}`);
-        
+    const checkForReadyMessage = (
+        message: string,
+        stream: 'stdout' | 'stderr',
+    ) => {
+        logger.verbose(
+            `[Selenium ${version}] [${stream.toUpperCase()}] ${message.trim()}`,
+        );
+
         if (message.includes(readyMessages[version])) {
             isReady = true;
             clearTimeout(timeout);
@@ -135,20 +140,24 @@ function setupProcessListeners(
         seleniumProcess.stdout?.on('data', (data) => {
             checkForReadyMessage(data.toString(), 'stdout');
         });
-        
+
         // Also listen to stderr for error messages
         seleniumProcess.stderr?.on('data', (data) => {
-            logger.verbose(`[Selenium ${version}] [STDERR] ${data.toString().trim()}`);
+            logger.verbose(
+                `[Selenium ${version}] [STDERR] ${data.toString().trim()}`,
+            );
         });
     } else {
         // For v3, ready message appears in stderr
         seleniumProcess.stderr?.on('data', (data) => {
             checkForReadyMessage(data.toString(), 'stderr');
         });
-        
+
         // Also listen to stdout for other messages
         seleniumProcess.stdout?.on('data', (data) => {
-            logger.verbose(`[Selenium ${version}] [STDOUT] ${data.toString().trim()}`);
+            logger.verbose(
+                `[Selenium ${version}] [STDOUT] ${data.toString().trim()}`,
+            );
         });
     }
 
@@ -160,7 +169,11 @@ function setupProcessListeners(
     seleniumProcess.on('exit', (code) => {
         if (!isReady) {
             clearTimeout(timeout);
-            reject(new Error(`Selenium process exited with code ${code} before becoming ready`));
+            reject(
+                new Error(
+                    `Selenium process exited with code ${code} before becoming ready`,
+                ),
+            );
         }
     });
 }
@@ -174,7 +187,8 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     private browserClients: Map<string, browserClientItem> = new Map();
 
-    private customBrowserClientsConfigs: Map<string, WebdriverIOConfig> = new Map();
+    private customBrowserClientsConfigs: Map<string, WebdriverIOConfig> =
+        new Map();
 
     private waitForReadyState: Promise<void> = Promise.resolve();
 
@@ -228,7 +242,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
     }
 
     private initIntervals() {
-        if (this.config.workerLimit !== 'local' && !this.config.disableClientPing) {
+        if (
+            this.config.workerLimit !== 'local' &&
+            !this.config.disableClientPing
+        ) {
             if (this.config.clientCheckInterval > 0) {
                 this.clientCheckInterval = setInterval(
                     () => this.checkClientsTimeout(),
@@ -249,24 +266,36 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         process.on('exit', () => this.forceKillSelenium());
         process.on('SIGINT', () => this.forceKillSelenium());
         process.on('SIGTERM', () => this.forceKillSelenium());
-        
+
         // Debug mode specific cleanup handlers
         process.on('SIGUSR1', () => this.forceKillSelenium()); // Debugger disconnect
         process.on('SIGUSR2', () => this.forceKillSelenium()); // Debugger disconnect alternative
-        
+
         // Note: SIGKILL cannot be caught or handled - it immediately terminates the process
     }
 
     private forceKillSelenium() {
-        if (this.localSelenium && !this.localSelenium.killed && this.localSelenium.pid) {
-            this.logger.debug('Force killing Selenium process tree due to signal');
-            kill(this.localSelenium.pid, 'SIGKILL', (err: Error | undefined) => {
-                if (err) {
-                    this.logger.error(`Failed to force kill Selenium process tree: ${err.message}`);
-                } else {
-                    this.logger.debug('Selenium process tree force killed');
-                }
-            });
+        if (
+            this.localSelenium &&
+            !this.localSelenium.killed &&
+            this.localSelenium.pid
+        ) {
+            this.logger.debug(
+                'Force killing Selenium process tree due to signal',
+            );
+            kill(
+                this.localSelenium.pid,
+                'SIGKILL',
+                (err: Error | undefined) => {
+                    if (err) {
+                        this.logger.error(
+                            `Failed to force kill Selenium process tree: ${err.message}`,
+                        );
+                    } else {
+                        this.logger.debug('Selenium process tree force killed');
+                    }
+                },
+            );
         }
     }
 
@@ -294,7 +323,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         if (this.config.chromeDriverPath) {
             return this.config.chromeDriverPath;
         }
-        
+
         return require('chromedriver').path;
     }
 
@@ -304,15 +333,20 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return [`-Dwebdriver.chrome.driver=${chromeDriverPath}`];
     }
 
-    private buildSeleniumArgs(seleniumJarPath: string, version: SeleniumVersion, port: number, chromeDriverArgs: string[]): string[] {
+    private buildSeleniumArgs(
+        seleniumJarPath: string,
+        version: SeleniumVersion,
+        port: number,
+        chromeDriverArgs: string[],
+    ): string[] {
         const args = [...chromeDriverArgs];
-        
+
         if (version === 'v4') {
             args.push(
-                '-jar', 
-                seleniumJarPath, 
-                'standalone', 
-                '--port', 
+                '-jar',
+                seleniumJarPath,
+                'standalone',
+                '--port',
                 port.toString(),
                 '--host',
                 '127.0.0.1',
@@ -320,12 +354,12 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         } else {
             args.push('-jar', seleniumJarPath, '-port', port.toString());
         }
-        
+
         // Append custom selenium arguments if provided
         if (this.config.seleniumArgs && this.config.seleniumArgs.length > 0) {
             args.push(...this.config.seleniumArgs);
         }
-        
+
         return args;
     }
 
@@ -336,15 +370,30 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         try {
             const seleniumJarPath = getSeleniumJarPath(version);
             const chromeDriverArgs = this.getChromeDriverArgs();
-            const seleniumArgs = this.buildSeleniumArgs(seleniumJarPath, version, this.config.port || 4444, chromeDriverArgs);
-            
-            this.logger.debug(`Starting Selenium with command: java ${seleniumArgs.join(' ')}`);
-            
+            const seleniumArgs = this.buildSeleniumArgs(
+                seleniumJarPath,
+                version,
+                this.config.port || 4444,
+                chromeDriverArgs,
+            );
+
+            this.logger.debug(
+                `Starting Selenium with command: java ${seleniumArgs.join(
+                    ' ',
+                )}`,
+            );
+
             this.localSelenium = spawnWithPipes('java', seleniumArgs);
 
             this.waitForReadyState = new Promise((resolve, reject) => {
                 if (this.localSelenium) {
-                    setupProcessListeners(this.localSelenium, resolve, reject, version, this.logger);
+                    setupProcessListeners(
+                        this.localSelenium,
+                        resolve,
+                        reject,
+                        version,
+                        this.logger,
+                    );
                 } else {
                     reject(new Error('Failed to spawn Selenium process'));
                 }
@@ -353,9 +402,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
             // Wait for the server to be ready
             await this.waitForReadyState;
             this.logger.debug(`Selenium server (${version}) is ready`);
-            
         } catch (err) {
-            this.logger.error(`Local selenium server init failed (version: ${version})`, err);
+            this.logger.error(
+                `Local selenium server init failed (version: ${version})`,
+                err,
+            );
             throw err; // Re-throw to allow upstream error handling
         }
     }
@@ -422,15 +473,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         applicant: string,
         config: WebdriverIOConfig,
     ) {
-        this.customBrowserClientsConfigs.set(
-            applicant,
-            config
-        );
+        this.customBrowserClientsConfigs.set(applicant, config);
     }
 
-    public getCustomBrowserClientConfig(
-        applicant: string,
-    ) {
+    public getCustomBrowserClientConfig(applicant: string) {
         return this.customBrowserClientsConfigs.get(applicant);
     }
 
@@ -441,7 +487,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         if (this.killed) {
             throw new Error('SeleniumPlugin is being killed');
         }
-        
+
         await this.waitForReadyState;
         const clientData = this.browserClients.get(applicant);
 
@@ -505,13 +551,16 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         } else if (isShadowCssSelector(selector)) {
             return this.getElementFromShadowCss(client, selector);
         }
-        
+
         throw new Error('Unknown selector type');
     }
 
-    private async getElementFromShadowCss(client: BrowserObjectCustom, selector: ShadowCssSelector) {
+    private async getElementFromShadowCss(
+        client: BrowserObjectCustom,
+        selector: ShadowCssSelector,
+    ) {
         const {css, parentSelectors} = selector;
-        
+
         // Error first: validate selector structure
         this.validateShadowCssSelector(selector);
 
@@ -520,7 +569,11 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         } catch (error) {
             // Provide more context in error messages
             if (error instanceof Error) {
-                throw new Error(`Shadow DOM traversal failed: ${error.message}. Selector: ${JSON.stringify(selector)}`);
+                throw new Error(
+                    `Shadow DOM traversal failed: ${
+                        error.message
+                    }. Selector: ${JSON.stringify(selector)}`,
+                );
             }
             throw error;
         }
@@ -528,43 +581,54 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     private validateShadowCssSelector(selector: ShadowCssSelector): void {
         const {css, parentSelectors} = selector;
-        
+
         if (!css || typeof css !== 'string') {
             throw new Error('Shadow CSS selector must have a valid CSS string');
         }
-        
+
         if (!Array.isArray(parentSelectors) || parentSelectors.length === 0) {
-            throw new Error('Shadow CSS selector must have at least one parent selector');
+            throw new Error(
+                'Shadow CSS selector must have at least one parent selector',
+            );
         }
-        
+
         // Validate all parent selectors are non-empty strings
         for (const [index, parentSelector] of parentSelectors.entries()) {
             if (!parentSelector || typeof parentSelector !== 'string') {
-                throw new Error(`Parent selector at index ${index} must be a non-empty string`);
+                throw new Error(
+                    `Parent selector at index ${index} must be a non-empty string`,
+                );
             }
         }
     }
 
-    private async traverseToLastParentSelector(client: BrowserObjectCustom, parentSelectors: string[]) {
+    private async traverseToLastParentSelector(
+        client: BrowserObjectCustom,
+        parentSelectors: string[],
+    ) {
         const [firstParentSelector, ...restParentSelectors] = parentSelectors;
-        
+
         // TypeScript assertion: we know firstParentSelector exists due to validation
         if (!firstParentSelector) {
             throw new Error('First parent selector is required');
         }
-        
+
         // Get the first parent element
         let currentElement = await client.$(firstParentSelector);
-        
+
         if (!currentElement) {
-            throw new Error(`Failed to find parent element with selector: ${firstParentSelector}`);
+            throw new Error(
+                `Failed to find parent element with selector: ${firstParentSelector}`,
+            );
         }
 
         // Traverse through shadow DOM hierarchy
         for (const parentSelector of restParentSelectors) {
             const shadowElement = await currentElement.shadow$(parentSelector);
             if (!shadowElement) {
-                throw new Error(`Failed to find shadow element with selector: ${parentSelector}`);
+                throw new Error(
+                    `Failed to find shadow element with selector: ${parentSelector}`,
+                );
             }
             currentElement = shadowElement;
         }
@@ -572,14 +636,23 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return currentElement;
     }
 
-    private async traverseShadowDom(client: BrowserObjectCustom, css: string, parentSelectors: string[]) {
+    private async traverseShadowDom(
+        client: BrowserObjectCustom,
+        css: string,
+        parentSelectors: string[],
+    ) {
         // Traverse to the last parent selector
-        const lastParentElement = await this.traverseToLastParentSelector(client, parentSelectors);
+        const lastParentElement = await this.traverseToLastParentSelector(
+            client,
+            parentSelectors,
+        );
 
         // Get the final target element within the shadow DOM
         const targetElement = await lastParentElement.shadow$(css);
         if (!targetElement) {
-            throw new Error(`Failed to find target element with CSS selector: ${css}`);
+            throw new Error(
+                `Failed to find target element with CSS selector: ${css}`,
+            );
         }
 
         return targetElement;
@@ -612,7 +685,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         } else {
             await this.logger.stepWarning(
                 `Stopping sessions for applicant warning ${applicant}. ` +
-                    `Session ids are not equal, started with - ${startingSessionID}, ended with - ${sessionID}`,
+                `Session ids are not equal, started with - ${startingSessionID}, ended with - ${sessionID}`,
                 async () => {
                     try {
                         if (startingSessionID) {
@@ -678,13 +751,19 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return new Promise<void>((resolve) => {
             kill(pid, 'SIGTERM', (err: Error | undefined) => {
                 if (err) {
-                    this.logger.warn(`Failed to kill process tree with SIGTERM: ${err.message}`);
+                    this.logger.warn(
+                        `Failed to kill process tree with SIGTERM: ${err.message}`,
+                    );
                     // Fallback to SIGKILL if SIGTERM fails
                     kill(pid, 'SIGKILL', (killErr: Error | undefined) => {
                         if (killErr) {
-                            this.logger.error(`Failed to kill process tree with SIGKILL: ${killErr.message}`);
+                            this.logger.error(
+                                `Failed to kill process tree with SIGKILL: ${killErr.message}`,
+                            );
                         } else {
-                            this.logger.debug('Process tree killed with SIGKILL');
+                            this.logger.debug(
+                                'Process tree killed with SIGKILL',
+                            );
                         }
                         resolve();
                     });
@@ -698,7 +777,7 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
 
     public async kill() {
         this.logger.debug('Kill command is called');
-        
+
         // Set killed flag to prevent new operations
         this.killed = true;
 
@@ -716,10 +795,12 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 this.logger.debug('Selenium process already killed');
                 return;
             }
-            
+
             const pid = this.localSelenium.pid;
             if (!pid) {
-                this.logger.warn('Selenium process has no PID, cannot kill process tree');
+                this.logger.warn(
+                    'Selenium process has no PID, cannot kill process tree',
+                );
                 return;
             }
 
@@ -875,7 +956,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         if (isXpathSelector(selector)) {
-            const elements = (await client.findElements('xpath', selector.xpath)) as unknown;
+            const elements = (await client.findElements(
+                'xpath',
+                selector.xpath,
+            )) as unknown;
             return (elements as Array<Record<string, string>>).map((o) => {
                 const keys = Object.keys(o);
                 const firstKey = keys[0];
@@ -885,13 +969,16 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
                 return {ELEMENT: o[firstKey]};
             });
         } else if (isShadowCssSelector(selector)) {
-            const lastParentElement = await this.traverseToLastParentSelector(client, selector.parentSelectors);
+            const lastParentElement = await this.traverseToLastParentSelector(
+                client,
+                selector.parentSelectors,
+            );
             const elements = lastParentElement.shadow$$(selector.css);
             return elements.map((element) => {
                 return {ELEMENT: element.elementId};
             });
         }
-        
+
         throw new Error('Unknown selector type');
     }
 
@@ -918,12 +1005,20 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return element.setValue(value);
     }
 
-    public async selectByIndex(applicant: string, selector: Selector, value: any) {
+    public async selectByIndex(
+        applicant: string,
+        selector: Selector,
+        value: any,
+    ) {
         const element = await this.getElement(applicant, selector);
         return element.selectByIndex(value);
     }
 
-    public async selectByValue(applicant: string, selector: Selector, value: any) {
+    public async selectByValue(
+        applicant: string,
+        selector: Selector,
+        value: any,
+    ) {
         const element = await this.getElement(applicant, selector);
         return element.selectByAttribute('value', value);
     }
@@ -1026,7 +1121,10 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         destinationSelector: Selector,
     ) {
         const sourceElement = await this.getElement(applicant, sourceSelector);
-        const destinationElement = await this.getElement(applicant, destinationSelector);
+        const destinationElement = await this.getElement(
+            applicant,
+            destinationSelector,
+        );
         return sourceElement.dragAndDrop(destinationElement);
     }
 
@@ -1147,6 +1245,14 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         const client = this.getBrowserClient(applicant);
 
         return client.takeScreenshot();
+    }
+
+    public async makeElementScreenshot(applicant: string, selector: Selector, scroll: boolean = true): Promise<string | void> {
+        await this.createClient(applicant);
+        const client = this.getBrowserClient(applicant);
+        const element = await this.getElement(applicant, selector);
+
+        return client.takeElementScreenshot(await element.elementId, scroll);
     }
 
     public async uploadFile(
@@ -1360,7 +1466,9 @@ export class SeleniumPlugin implements IBrowserProxyPlugin {
         return client.setTimeZone(timeZone);
     }
 
-    public async getWindowSize(applicant: string): Promise<{width: number; height: number}> {
+    public async getWindowSize(
+        applicant: string,
+    ): Promise<{width: number; height: number}> {
         await this.createClient(applicant);
         const client = this.getBrowserClient(applicant);
         return client.getWindowSize();
