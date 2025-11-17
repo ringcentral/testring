@@ -175,7 +175,7 @@ export interface IBrowserProxyPlugin {
 
     makeScreenshot(applicant: string): Promise<string | void>;
 
-    makeElementScreenshot(applicant: string, selector: Selector): Promise<string | void>;
+    makeElementScreenshot(applicant: string, selector: Selector, scroll?: boolean): Promise<string | void>;
 
     uploadFile(applicant: string, filePath: string): Promise<string | void>;
 
