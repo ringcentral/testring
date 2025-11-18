@@ -199,7 +199,7 @@ export class WebApplication extends PluggableModule {
         if (typeof selector === 'string') {
             return { type: 'xpath', xpath: selector } as XpathSelector;
         }
-        
+
         if (this.isShadowElementPathProxy(selector)) {
             return { type: 'shadow-css', css: selector.toShadowCSSSelector(), parentSelectors: selector.getParentSelectors(), isShadowElement: true } as ShadowCssSelector;
         }
@@ -458,7 +458,7 @@ export class WebApplication extends PluggableModule {
         return result;
     }
 
-    
+
     @stepLog(function (this: WebApplication, xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT) {
         return `Checking if ${this.formatXpath(xpath)} is visible for ${timeout}`;
     })
@@ -1712,6 +1712,16 @@ export class WebApplication extends PluggableModule {
             return filePath;
         }
         return null;
+    }
+
+    @stepLog(function (this: WebApplication, xpath: ElementPath) {
+        return `Making screenshot of ${this.formatXpath(xpath)}`;
+    })
+    public async makeElementScreenshot(xpath: ElementPath, timeout: number = this.WAIT_TIMEOUT): Promise<string | null> {
+        await this.waitForExist(xpath, timeout);
+
+        const normalizedXPath = this.normalizeSelector(xpath);
+        return await this.client.makeElementScreenshot(normalizedXPath);
     }
 
     @stepLog(function (this: WebApplication, fullPath: string) {
