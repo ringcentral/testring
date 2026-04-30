@@ -13,7 +13,7 @@ export interface IStack<T> {
 export interface IQueue<T> {
     push(...elements: Array<T>): void;
 
-    shift(): T | void;
+    shift(): T | undefined;
 
     clean(): void;
 

@@ -15,7 +15,7 @@ export class Queue<T> implements IQueue<T> {
         this.array.push(...elements);
     }
 
-    public shift(): T | void {
+    public shift(): T | undefined {
         return this.array.shift();
     }
 
