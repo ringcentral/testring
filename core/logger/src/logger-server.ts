@@ -56,7 +56,7 @@ export class LoggerServer extends PluggableModule implements ILoggerServer {
     ): Promise<void> {
         const queueItem = this.queue.shift();
 
-        if (queueItem === undefined) {
+        if (!queueItem) {
             this.status = LogQueueStatus.EMPTY;
             return;
         }

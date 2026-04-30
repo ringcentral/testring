@@ -19,6 +19,7 @@ import {
     XpathSelector,
     ShadowCssSelector,
     Selector,
+    isXpathSelector,
 } from '@testring/types';
 
 import {asyncBreakpoints} from '@testring/async-breakpoints';
@@ -225,12 +226,18 @@ export class WebApplication extends PluggableModule {
 
         if (this.config.devtool) {
             try {
-                if (normalizedXPath && normalizedXPath.type !== 'xpath') {
-                    throw new Error(
-                        `devtoolHighlight only supports xpath selectors. Received type: ${normalizedXPath.type}, value: ${JSON.stringify(normalizedXPath)}`
-                    );
+                let xpathString: string | null = null;
+
+                if (normalizedXPath) {
+                    if (!isXpathSelector(normalizedXPath)) {
+                        throw new Error(
+                            `devtoolHighlight only supports xpath selectors. Received type: ${normalizedXPath.type}, value: ${JSON.stringify(normalizedXPath)}`
+                        );
+                    }
+
+                    xpathString = normalizedXPath.xpath;
                 }
-                const xpathString = normalizedXPath ? normalizedXPath.xpath : null;
+
                 await this.client.execute((addHighlightXpath: string) => {
                     window.postMessage(
                         {
