@@ -27,7 +27,6 @@ jobs:
           git config --global user.name "${{ github.actor }}"
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
 
-      - run: npm install -g npm@^11.10.0
       - run: npm ci
       - run: npm run build:main
       - run: npm run publish:version ${{ github.event.inputs.version }}
