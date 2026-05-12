@@ -5,7 +5,11 @@
   "types": "./src/index.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ringcentral/testring.git"
+    "url": "https://github.com/ringcentral/testring.git",
+    "directory": "core/child-process"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "@testring/types": "0.8.10",

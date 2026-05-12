@@ -6,7 +6,11 @@
   "types": "./src/index.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ringcentral/testring.git"
+    "url": "https://github.com/ringcentral/testring.git",
+    "directory": "packages/plugin-fs-store"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "author": "RingCentral",
   "license": "MIT",

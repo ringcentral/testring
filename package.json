@@ -74,7 +74,6 @@
     "core/*"
   ],
   "devDependencies": {
-    "@jsdevtools/npm-publish": "3.1.1",
     "@lerna/batch-packages": "3.16.0",
     "@lerna/filter-packages": "6.4.1",
     "@lerna/project": "6.4.1",
