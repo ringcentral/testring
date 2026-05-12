@@ -5,7 +5,11 @@
   "typings": "./src/index.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ringcentral/testring.git"
+    "url": "https://github.com/ringcentral/testring.git",
+    "directory": "packages/plugin-selenium-driver"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && node copy-selenium-server.js"

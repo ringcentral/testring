@@ -5,7 +5,11 @@
     "types": "./index.d.ts",
     "repository": {
         "type": "git",
-        "url": "https://github.com/ringcentral/testring.git"
+        "url": "https://github.com/ringcentral/testring.git",
+        "directory": "packages/download-collector-crx"
+    },
+    "publishConfig": {
+        "access": "public"
     },
     "author": "RingCentral",
     "license": "MIT",

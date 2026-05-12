@@ -4,7 +4,8 @@
   "version": "0.8.10",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ringcentral/testring.git"
+    "url": "https://github.com/ringcentral/testring.git",
+    "directory": "packages/e2e-test-app"
   },
   "author": "RingCentral",
   "license": "MIT",
