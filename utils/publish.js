@@ -4,13 +4,18 @@ const {filterPackages} = require('@lerna/filter-packages');
 const runParallelBatches = require('@lerna/run-parallel-batches');
 const {getPackages} = require('@lerna/project');
 
-// Parse --exclude argument
+// Parse --exclude, --include, --dry-run arguments
 const argv = process.argv.slice(2);
 let excludeList = [];
+let includeList = [];
 let isDryRun = false;
 for (let i = 0; i < argv.length; i++) {
     if (argv[i].startsWith('--exclude=')) {
-        excludeList = argv[i].replace('--exclude=', '').split(',').map(s => s.trim());
+        excludeList = argv[i].replace('--exclude=', '').split(',').map(s => s.trim()).filter(Boolean);
+    }
+
+    if (argv[i].startsWith('--include=')) {
+        includeList = argv[i].replace('--include=', '').split(',').map(s => s.trim()).filter(Boolean);
     }
 
     if (argv[i] === '--dry-run') {
@@ -88,7 +93,7 @@ async function task(pkg) {
 
 async function main() {
     const packages = await getPackages(__dirname);
-    const filtered = filterPackages(packages, [], excludeList, false);
+    const filtered = filterPackages(packages, includeList, excludeList, false);
     const batchedPackages = batchPackages(filtered);
 
     try {

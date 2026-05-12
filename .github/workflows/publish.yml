@@ -7,6 +7,10 @@ on:
         description: Version
         default: 0.6.0
         required: true
+      packages:
+        description: 'Comma-separated list of packages to publish (e.g. @testring/cli,@testring/api). Leave empty to publish all.'
+        required: false
+        default: ''
 
 jobs:
   build:
@@ -30,6 +34,11 @@ jobs:
       - run: npm run build:main
       - run: npm run publish:version ${{ github.event.inputs.version }}
       - name: Publish to npm
-        run: npm run publish:ci
+        run: |
+          ARGS="--exclude=@testring/devtool-frontend,@testring/devtool-backend,@testring/devtool-extension"
+          if [ -n "${{ github.event.inputs.packages }}" ]; then
+            ARGS="$ARGS --include=${{ github.event.inputs.packages }}"
+          fi
+          node ./utils/publish.js $ARGS
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
