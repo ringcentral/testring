@@ -14,6 +14,7 @@ export const defaultConfiguration: IConfig = {
     maxWriteThreadCount: 2,
     plugins: [],
     retryCount: 3,
+    forceRetryCount: 0,
     retryDelay: 2000,
     testTimeout: 15 * 60 * 1000,
     logLevel: LogLevel.info,

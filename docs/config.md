@@ -19,6 +19,7 @@ if it's exists, CLI arguments overrides everything.
 * [bail](#bail)
 * [workerLimit](#workerlimit)
 * [retryCount](#retrycount)
+* [forceRetryCount](#forceretrycount)
 * [retryDelay](#retrydelay)
 * [testTimeout](#testtimeout)
 * [screenshots](#screenshots)
@@ -171,6 +172,26 @@ $ testring run --retry-count 5
 ```json
 {
   "retryCount": 5
+}
+```
+
+<br/>
+
+## `forceRetryCount`
+
+###### `0` <sup>default</sup>
+
+Total forced executions per test. When greater than `0`, every queued test
+runs exactly this many attempts regardless of pass/fail, and normal
+failure-driven `retryCount` is ignored.
+
+```
+$ testring run --force-retry-count 3
+```
+
+```json
+{
+  "forceRetryCount": 3
 }
 ```
 
