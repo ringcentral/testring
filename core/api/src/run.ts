@@ -21,15 +21,7 @@ export async function run(...tests: Array<TestFunction>) {
 
     const api = new TestContext(testParameters.runData);
     let passed = false;
-    let catchedError;
-
-    afterRun(async () => {
-        try {
-            await api.end();
-        } catch (err) {
-            loggerClient.error(err);
-        }
-    });
+    let catchedError: Error | null = null;
 
     try {
         await bus.startedTest();
@@ -46,7 +38,16 @@ export async function run(...tests: Array<TestFunction>) {
     } catch (error) {
         catchedError = restructureError(error as Error);
     } finally {
-        if (passed) {
+        try {
+            await api.end();
+        } catch (error) {
+            if (!catchedError) {
+                catchedError = restructureError(error as Error);
+                passed = false;
+            }
+        }
+
+        if (passed && !catchedError) {
             loggerClient.endStep(testID, 'Test passed');
 
             await bus.finishedTest();

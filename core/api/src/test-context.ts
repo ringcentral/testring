@@ -109,8 +109,9 @@ export class TestContext {
             }
         }
 
-        return Promise.all(requests).catch((error) => {
-            this.logError(error);
+        return Promise.all(requests).catch(async (error) => {
+            await this.logWarning(error);
+            throw error;
         });
     }
 
