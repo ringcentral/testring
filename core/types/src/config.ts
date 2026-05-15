@@ -22,6 +22,7 @@ export interface IConfig extends IConfigLogger {
     workerLimit: number | 'local';
     maxWriteThreadCount?: number;
     retryCount: number;
+    forceRetryCount?: number;
     retryDelay: number;
     testTimeout: number;
     tests: string;

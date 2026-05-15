@@ -227,6 +227,40 @@ export class TestRunController
         };
     }
 
+    private getForceRetryCount(): number {
+        const forceRetryCount = Number(this.config.forceRetryCount);
+
+        if (!Number.isInteger(forceRetryCount) || forceRetryCount <= 0) {
+            return 0;
+        }
+
+        return forceRetryCount;
+    }
+
+    private isForceRetryMode(): boolean {
+        return this.getForceRetryCount() > 0;
+    }
+
+    private shouldScheduleNextForcedAttempt(queueItem: IQueuedTest): boolean {
+        return queueItem.retryCount < this.getForceRetryCount() - 1;
+    }
+
+    private getNextRetryQueueItem(queueItem: IQueuedTest): IQueuedTest {
+        return this.getQueueItemWithRunData({
+            ...queueItem,
+            retryCount: queueItem.retryCount + 1,
+        });
+    }
+
+    private scheduleNextForcedAttempt(
+        queueItem: IQueuedTest,
+        queue: TestQueue,
+    ): void {
+        if (this.shouldScheduleNextForcedAttempt(queueItem)) {
+            queue.push(this.getNextRetryQueueItem(queueItem));
+        }
+    }
+
     private async prepareTests(testFiles: Array<IFile>): Promise<TestQueue> {
         const testQueue = new Array(testFiles.length);
 
@@ -265,6 +299,32 @@ export class TestRunController
             throw error;
         }
 
+        if (this.isForceRetryMode()) {
+            this.errors.push(error);
+
+            if (this.shouldScheduleNextForcedAttempt(queueItem)) {
+                await delay(this.config.retryDelay || 0);
+
+                await this.callHook(
+                    TestRunControllerPlugins.beforeTestRetry,
+                    queueItem,
+                    error,
+                    this.getWorkerMeta(worker),
+                );
+
+                queue.push(this.getNextRetryQueueItem(queueItem));
+            } else {
+                await this.callHook(
+                    TestRunControllerPlugins.afterTest,
+                    queueItem,
+                    error,
+                    this.getWorkerMeta(worker),
+                );
+            }
+
+            return;
+        }
+
         const shouldNotRetry = await this.callHook(
             TestRunControllerPlugins.shouldNotRetry,
             false,
@@ -278,10 +338,7 @@ export class TestRunController
         ) {
             await delay(this.config.retryDelay || 0);
 
-            const copyQueueItem = this.getQueueItemWithRunData({
-                ...queueItem,
-                retryCount: queueItem.retryCount + 1,
-            });
+            const copyQueueItem = this.getNextRetryQueueItem(queueItem);
 
             queue.push(copyQueueItem);
 
@@ -369,6 +426,10 @@ export class TestRunController
                 null,
                 this.getWorkerMeta(worker),
             );
+
+            if (this.isForceRetryMode()) {
+                this.scheduleNextForcedAttempt(queuedTest, queue);
+            }
         } catch (error) {
             if (isRejectedByTimeout) {
                 await worker.kill('SIGABRT');

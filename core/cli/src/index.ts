@@ -35,6 +35,12 @@ createField('retryCount', {
     type: 'number',
 });
 
+createField('forceRetryCount', {
+    describe:
+        'Total forced attempts for every test; 0 disables force retry mode',
+    type: 'number',
+});
+
 createField('retryDelay', {
     describe: 'Time of delay before retry',
     type: 'number',

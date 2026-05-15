@@ -22,6 +22,8 @@ describe('argument parser', () => {
         const pluginsSet = ['plugin1', 'plugin2', 'plugin3'];
         const customFieldSet = '#P0,#P1,#P2';
         const customField = '#P0';
+        const forceRetryCount = 3;
+        const rcForceRetryCount = 4;
 
         const argv = [
             '',
@@ -32,6 +34,7 @@ describe('argument parser', () => {
             `--plugins=${pluginsSet[0]}`,
             `--plugins=${pluginsSet[1]}`,
             `--plugins=${pluginsSet[2]}`,
+            `--force-retry-count=${forceRetryCount}`,
             // value without assign
             '--tests',
             customTestsPath,
@@ -41,6 +44,8 @@ describe('argument parser', () => {
             customFieldSet,
             '--my-namespaced.second-custom-field',
             customField,
+            '--rc.force-retry-count',
+            `${rcForceRetryCount}`,
         ];
 
         const args = getArguments(argv);
@@ -49,6 +54,7 @@ describe('argument parser', () => {
             config: customConfigPath,
             tests: customTestsPath,
             plugins: pluginsSet,
+            forceRetryCount,
             customField: customFieldSet,
             /* are the following needed ??? - looks like undocumented feature for early version
             // myNamespacedCustomField: customFieldSet,
@@ -57,6 +63,9 @@ describe('argument parser', () => {
             myNamespaced: {
                 customField: customFieldSet,
                 secondCustomField: customField,
+            },
+            rc: {
+                forceRetryCount: rcForceRetryCount,
             },
         };
 

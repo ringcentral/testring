@@ -63,6 +63,19 @@ describe('Get config', () => {
         chai.expect(config).to.have.property('workerLimit', override);
     });
 
+    it('should override force retry count with arguments', async () => {
+        const forceRetryCount = 7;
+
+        const config = await getConfig([
+            `--force-retry-count=${forceRetryCount}`,
+        ]);
+
+        chai.expect(config).to.have.property(
+            'forceRetryCount',
+            forceRetryCount,
+        );
+    });
+
     it('should override every resolved config fields with arguments', async () => {
         const override = 'argumentsConfig';
 
