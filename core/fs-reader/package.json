@@ -22,6 +22,6 @@
     "@testring/pluggable-module": "0.8.11",
     "@testring/types": "0.8.11",
     "fast-glob": "3.3.2",
-    "p-limit": "3.1.0"
+    "p-limit": "7.3.1"
   }
 }
