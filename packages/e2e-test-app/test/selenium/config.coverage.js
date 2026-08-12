@@ -12,24 +12,6 @@ module.exports = async (config) => {
     console.log('Chromedriver:', chromedriver.executablePath);
     const local = !config.headless;
 
-    const babelConfig = {
-        presets: [
-            [
-                '@babel/preset-env',
-                {
-                    targets: {
-                        node: 'current',
-                    },
-                },
-            ],
-        ],
-    };
-
-    if (config.debug) {
-        babelConfig.presets[0][1].debug = true;
-        babelConfig.sourceMaps = 'inline';
-    }
-
     return {
         screenshotPath: './_tmp/',
         workerLimit: 'local',
@@ -62,7 +44,6 @@ module.exports = async (config) => {
                         },
                 },
             ],
-            ['babel', babelConfig],
         ],
     };
 };
