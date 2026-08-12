@@ -119,10 +119,32 @@ export class TestRunController
         return null;
     }
 
+    /**
+     * Normalizes the `restartWorker` config field (validated at config-load
+     * time by `@testring/cli-config`) into a recycle-after-every-N-executions
+     * threshold. `null` means never recycle based on test count.
+     */
+    private getRestartWorkerThreshold(): number | null {
+        const {restartWorker} = this.config;
+
+        if (restartWorker === true || restartWorker === 'always') {
+            return 1;
+        }
+
+        if (typeof restartWorker === 'number') {
+            // 0 and 1 both mean "recycle after every test file".
+            return restartWorker === 0 ? 1 : restartWorker;
+        }
+
+        // `false`, `undefined`, or any other unexpected value -> never
+        // recycle based on test count (today's default, unchanged).
+        return null;
+    }
+
     private async runLocalWorker(testQueue: TestQueue): Promise<void> {
         this.logger.debug('Run controller: Local worker is used.');
 
-        if (this.config.restartWorker) {
+        if (this.getRestartWorkerThreshold() !== null) {
             this.logger.warn('Workers won`t be restarted on every test end.');
         }
 
@@ -144,15 +166,24 @@ export class TestRunController
     ): Promise<void> {
         this.logger.debug(`Run controller: ${workerLimit} worker(s) created.`);
 
+        const restartWorkerThreshold = this.getRestartWorkerThreshold();
+
         this.workers = this.createWorkers(workerLimit);
 
         await Promise.all(
             this.workers.map(async (worker) => {
+                let executionsSinceRestart = 0;
+
                 while (testQueue.length > 0) {
                     await this.executeWorker(worker, testQueue);
+                    executionsSinceRestart++;
 
-                    if (this.config.restartWorker) {
+                    if (
+                        restartWorkerThreshold !== null &&
+                        executionsSinceRestart >= restartWorkerThreshold
+                    ) {
                         await worker.kill();
+                        executionsSinceRestart = 0;
                     }
                 }
                 await worker.kill();

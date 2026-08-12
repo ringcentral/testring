@@ -134,4 +134,25 @@ describe('Get config', () => {
 
         chai.expect(config).to.have.property('workerLimit', override);
     });
+
+    it('should accept a numeric --restart-worker argument', async () => {
+        const config = await getConfig(['--restart-worker=3']);
+
+        chai.expect(config).to.have.property('restartWorker', 3);
+    });
+
+    it('should fail fast on an invalid --restart-worker argument', async () => {
+        let caughtError: Error | null = null;
+
+        try {
+            await getConfig(['--restart-worker=-2']);
+        } catch (error) {
+            caughtError = error as Error;
+        }
+
+        chai.expect(caughtError).to.be.instanceOf(Error);
+        chai.expect((caughtError as Error).message).to.match(
+            /Invalid "restartWorker"/,
+        );
+    });
 });

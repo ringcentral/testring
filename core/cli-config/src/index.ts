@@ -4,6 +4,7 @@ import {getArguments} from './arguments-parser';
 import {getFileConfig} from './config-file-reader';
 import {defaultConfiguration} from './default-config';
 import {mergeConfigs} from './merge-configs';
+import {validateRestartWorker} from './validate-restart-worker';
 
 const isDebugging = () => !!inspector.url();
 
@@ -26,13 +27,17 @@ async function getConfig(argv: Array<string> = []): Promise<IConfig> {
         temporaryConfig,
     );
 
-    return mergeConfigs(
+    const config = mergeConfigs(
         defaultConfiguration,
         envConfig || {},
         fileConfig || {},
         args || {},
         debugProperty,
     );
+
+    validateRestartWorker(config);
+
+    return config;
 }
 
 export {defaultConfiguration, getConfig};
