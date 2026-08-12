@@ -1,14 +1,9 @@
 import * as path from 'path';
 import {loggerClient} from '@testring/logger';
-import {FSReader} from '@testring/fs-reader';
 import {FSStoreClient, FSClientGet} from '@testring/fs-store';
 import {fork} from '@testring/child-process';
 import {generateUniqId} from '@testring/utils';
 import {TestWorkerLocal} from './test-worker-local';
-import {
-    buildDependencyDictionary,
-    mergeDependencyDictionaries,
-} from '@testring/dependencies-builder';
 import {
     IFile,
     ITransport,
@@ -35,8 +30,6 @@ const delay = (timeout: number) =>
 
 export class TestWorkerInstance implements ITestWorkerInstance {
     private config: ITestWorkerConfig;
-
-    private fsReader = new FSReader();
 
     private compileCache: Map<string, string> = new Map();
 
@@ -157,6 +150,12 @@ export class TestWorkerInstance implements ITestWorkerInstance {
             }
 
             this.logger.debug(`Killed child process ${this.getWorkerID()}`);
+
+            // Rotate the worker ID now, so any respawn triggered by a
+            // subsequent execute() call (and any hook meta read before that
+            // respawn happens) reflects the new underlying child process
+            // rather than the one that was just killed (FR-014/FR-017).
+            this.workerID = `worker/${generateUniqId()}`;
         }
     }
 
@@ -165,55 +164,27 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         parameters: any,
         envParameters: any,
     ) {
-        const additionalFiles = await this.beforeCompile(
-            [],
-            file.path,
-            file.content,
-        );
+        // beforeCompile/compile remain as generic plugin extensibility
+        // hooks (e.g. a future non-Babel source-transform plugin); both are
+        // no-op passthroughs today since no plugin registers either
+        // TestWorkerPlugin hook anymore. Their former sole purpose — paths
+        // buildDependencyDictionary consumed to build a static require()
+        // dictionary for the (now-deleted) sandbox — no longer applies:
+        // native ESM resolves its own dependency graph at runtime.
+        await this.beforeCompile([], file.path, file.content);
 
-        // Calling external hooks to compile source
         const compiledSource = await this.compileSource(
             file.content,
             file.path,
         );
 
-        const compiledFile = {
-            path: file.path,
-            content: compiledSource,
-        };
-
-        let dependencies = await buildDependencyDictionary(
-            compiledFile,
-            this.readDependency.bind(this),
-        );
-
-        for (let i = 0, len = additionalFiles.length; i < len; i++) {
-            const additionalFilePath = additionalFiles[i];
-            if (typeof additionalFilePath === 'string') {
-                const additionalFile = await this.fsReader.readFile(
-                    additionalFilePath,
-                );
-
-                if (additionalFile) {
-                    const additionalDependencies = await buildDependencyDictionary(
-                        additionalFile,
-                        this.readDependency.bind(this),
-                    );
-
-                    dependencies = await mergeDependencyDictionaries(
-                        dependencies,
-                        additionalDependencies,
-                    );
-                }
-            }
-        }
-
         return {
             waitForRelease: this.config.waitForRelease,
-            ...compiledFile,
-            dependencies,
+            path: file.path,
+            content: compiledSource,
             parameters,
             envParameters,
+            workerId: this.getWorkerID(),
         };
     }
 
@@ -390,13 +361,6 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         this.logger.debug(`Registered child process ${this.getWorkerID()}`);
 
         return worker;
-    }
-
-    private async readDependency(dependencyPath: string): Promise<string> {
-        const rawFile = await this.fsReader.readFile(dependencyPath);
-        const rawContent = rawFile ? rawFile.content : '';
-
-        return this.compile(rawContent, dependencyPath);
     }
 
     private clearWorkerHandlers() {

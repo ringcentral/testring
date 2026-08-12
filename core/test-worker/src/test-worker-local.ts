@@ -1,6 +1,7 @@
 import {EventEmitter} from 'events';
 import {testAPIController} from '@testring/api';
 import {WorkerController} from './worker/worker-controller';
+import {registerEsmLoaderHooks} from './worker/esm-loader-hooks';
 import {
     ITransport,
     TestWorkerAction,
@@ -13,6 +14,13 @@ export class TestWorkerLocal extends EventEmitter implements IWorkerEmitter {
 
     constructor(private transportInstance: ITransport) {
         super();
+
+        // A forked worker gets these hooks via ./worker/index.ts's own
+        // bootstrap; local mode runs autotests in this same process without
+        // going through that entry point, so it has to register them here
+        // instead (FR-009: extensionless relative imports must keep working
+        // regardless of local vs child-process worker mode).
+        registerEsmLoaderHooks();
 
         this.workerController = new WorkerController(
             this.transportInstance,

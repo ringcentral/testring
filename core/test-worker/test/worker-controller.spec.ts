@@ -2,6 +2,9 @@
 /* eslint sonarjs/no-identical-functions: 0 */
 
 import * as chai from 'chai';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import {TransportMock} from '@testring/test-utils';
 import {testAPIController, TestAPIController} from '@testring/api';
 import {
@@ -13,6 +16,23 @@ import {
 import {WorkerController} from '../src/worker/worker-controller';
 
 const TESTRING_API_ABSOLUTE_PATH = require.resolve('@testring/api');
+
+// Native `import()` requires a real file on disk (unlike the deleted
+// vm-sandbox, which could execute an arbitrary in-memory content string
+// under a synthetic path) — so these fixtures are written out and imported
+// by their real path.
+let fixtureCounter = 0;
+
+function writeFixture(content: string): string {
+    const filePath = path.join(
+        os.tmpdir(),
+        `testring-worker-controller-spec-${process.pid}-${fixtureCounter++}.js`,
+    );
+
+    fs.writeFileSync(filePath, content);
+
+    return filePath;
+}
 
 describe('WorkerController', () => {
     it('should run sync test', (callback) => {
@@ -35,18 +55,20 @@ describe('WorkerController', () => {
             },
         );
 
+        const content = `
+            function test () {}
+            test();
+        `;
+
         transportMock.broadcast<ITestExecutionMessage>(
             TestWorkerAction.executeTest,
             {
                 waitForRelease: false,
-                content: `
-                function test () {}
-                test();
-            `,
-                path: 'test.js',
-                dependencies: {},
+                content,
+                path: writeFixture(content),
                 parameters: {},
                 envParameters: null,
+                workerId: 'worker/test',
             },
         );
     });
@@ -76,15 +98,17 @@ describe('WorkerController', () => {
             },
         );
 
+        const content = `throw new Error("${ERROR_TEXT}")`;
+
         transportMock.broadcast<ITestExecutionMessage>(
             TestWorkerAction.executeTest,
             {
                 waitForRelease: false,
-                content: `throw new Error("${ERROR_TEXT}")`,
-                path: 'test.js',
-                dependencies: {},
+                content,
+                path: writeFixture(content),
                 parameters: {},
                 envParameters: null,
+                workerId: 'worker/test',
             },
         );
     });
@@ -108,12 +132,8 @@ describe('WorkerController', () => {
             },
         );
 
-        transportMock.broadcast<ITestExecutionMessage>(
-            TestWorkerAction.executeTest,
-            {
-                waitForRelease: false,
-                content: `
-                var api = require('${TESTRING_API_ABSOLUTE_PATH}');
+        const content = `
+                const api = (await import('${TESTRING_API_ABSOLUTE_PATH}')).default;
 
                 async function runMock () {
                     var fns = Array.prototype.slice.apply(arguments);
@@ -135,11 +155,17 @@ describe('WorkerController', () => {
                 }
 
                 runMock(test);
-            `,
-                path: 'test.js',
-                dependencies: {},
+            `;
+
+        transportMock.broadcast<ITestExecutionMessage>(
+            TestWorkerAction.executeTest,
+            {
+                waitForRelease: false,
+                content,
+                path: writeFixture(content),
                 parameters: {},
                 envParameters: null,
+                workerId: 'worker/test',
             },
         );
     });
@@ -168,12 +194,8 @@ describe('WorkerController', () => {
             },
         );
 
-        transportMock.broadcast<ITestExecutionMessage>(
-            TestWorkerAction.executeTest,
-            {
-                waitForRelease: false,
-                content: `
-                var api = require('${TESTRING_API_ABSOLUTE_PATH}');
+        const content = `
+                const api = (await import('${TESTRING_API_ABSOLUTE_PATH}')).default;
 
                 async function runMock () {
                     var fns = Array.prototype.slice.apply(arguments);
@@ -196,11 +218,17 @@ describe('WorkerController', () => {
                 }
 
                 runMock(test);
-            `,
-                path: 'test.js',
-                dependencies: {},
+            `;
+
+        transportMock.broadcast<ITestExecutionMessage>(
+            TestWorkerAction.executeTest,
+            {
+                waitForRelease: false,
+                content,
+                path: writeFixture(content),
                 parameters: {},
                 envParameters: null,
+                workerId: 'worker/test',
             },
         );
     });
@@ -224,12 +252,8 @@ describe('WorkerController', () => {
             },
         );
 
-        transportMock.broadcast<ITestExecutionMessage>(
-            TestWorkerAction.executeTest,
-            {
-                waitForRelease: false,
-                content: `
-                var api = require('${TESTRING_API_ABSOLUTE_PATH}');
+        const content = `
+                const api = (await import('${TESTRING_API_ABSOLUTE_PATH}')).default;
 
                 async function runMock () {
                     var fns = Array.prototype.slice.apply(arguments);
@@ -252,11 +276,17 @@ describe('WorkerController', () => {
                 }
 
                 runMock(test);
-            `,
-                path: 'test.js',
-                dependencies: {},
+            `;
+
+        transportMock.broadcast<ITestExecutionMessage>(
+            TestWorkerAction.executeTest,
+            {
+                waitForRelease: false,
+                content,
+                path: writeFixture(content),
                 parameters: {},
                 envParameters: null,
+                workerId: 'worker/test',
             },
         );
     });
