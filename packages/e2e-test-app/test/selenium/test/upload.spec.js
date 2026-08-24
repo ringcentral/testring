@@ -1,6 +1,9 @@
 import {run} from 'testring';
 import {getTargetUrl} from './utils';
 import * as path from 'path';
+import {fileURLToPath} from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 run(async (api) => {
     let app = api.application;

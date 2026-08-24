@@ -393,6 +393,77 @@ describe('TestRunController', () => {
         );
     });
 
+    it('should recycle a worker after every N executions when restartWorker is a threshold > 1 (FR-014)', async () => {
+        const workerLimit = 1;
+        const restartWorker = 4;
+        const testsCount = 12;
+        const config = {
+            bail: false,
+            workerLimit,
+            timeout: DEFAULT_TIMEOUT,
+            restartWorker,
+        } as any;
+
+        const tests = generateTestFiles(testsCount);
+
+        const testWorkerMock = new TestWorkerMock();
+        const testRunController = new TestRunController(config, testWorkerMock);
+
+        await testRunController.runQueue(tests);
+
+        chai.expect(testWorkerMock.$getSpawnedCount()).to.be.equal(workerLimit);
+
+        // Recycled after every 4th execution (3 times over 12 tests), plus
+        // the final kill() at the end of the run.
+        chai.expect(testWorkerMock.$getKillCallsCount()).to.be.equal(
+            testsCount / restartWorker + workerLimit,
+        );
+    });
+
+    it("should treat restartWorker: 1 the same as restartWorker: true/'always' (FR-014)", async () => {
+        const workerLimit = 5;
+        const testsCount = 10;
+        const config = {
+            bail: false,
+            workerLimit,
+            timeout: DEFAULT_TIMEOUT,
+            restartWorker: 1,
+        } as any;
+
+        const tests = generateTestFiles(testsCount);
+
+        const testWorkerMock = new TestWorkerMock();
+        const testRunController = new TestRunController(config, testWorkerMock);
+
+        await testRunController.runQueue(tests);
+
+        chai.expect(testWorkerMock.$getKillCallsCount()).to.be.equal(
+            testsCount + workerLimit,
+        );
+    });
+
+    it('should treat restartWorker: 0 the same as restartWorker: 1 (FR-014)', async () => {
+        const workerLimit = 5;
+        const testsCount = 10;
+        const config = {
+            bail: false,
+            workerLimit,
+            timeout: DEFAULT_TIMEOUT,
+            restartWorker: 0,
+        } as any;
+
+        const tests = generateTestFiles(testsCount);
+
+        const testWorkerMock = new TestWorkerMock();
+        const testRunController = new TestRunController(config, testWorkerMock);
+
+        await testRunController.runQueue(tests);
+
+        chai.expect(testWorkerMock.$getKillCallsCount()).to.be.equal(
+            testsCount + workerLimit,
+        );
+    });
+
     it('should use retries when test fails', async () => {
         const testsCount = 3;
         const retriesCount = 5;

@@ -1,6 +1,6 @@
 import process from 'node:process';
 import * as path from 'path';
-
+import {pathToFileURL} from 'node:url';
 import {
     ITransport,
     ITestEvaluationMessage,
@@ -12,11 +12,20 @@ import {
     TestEvents,
 } from '@testring/types';
 import {restructureError} from '@testring/utils';
-
-import {Sandbox} from '@testring/sandbox';
 import {testAPIController, TestAPIController} from '@testring/api';
 import {asyncBreakpoints, BreakStackError} from '@testring/async-breakpoints';
 import {loggerClient, LoggerClient} from '@testring/logger';
+
+// TypeScript downlevels a literal `await import(...)` expression to a
+// `require()` call under `module: "commonjs"` (this repo's target), which
+// cannot load a `file://` URL. Constructing the dynamic import via
+// `new Function` keeps the `import()` keyword inside a string until
+// runtime, so tsc never sees it to downlevel, and Node evaluates a genuine
+// native dynamic import.
+const dynamicImport: (specifier: string) => Promise<unknown> = new Function(
+    'specifier',
+    'return import(specifier);',
+) as (specifier: string) => Promise<unknown>;
 
 export class WorkerController {
     private logger: LoggerClient = loggerClient.withPrefix(
@@ -24,6 +33,18 @@ export class WorkerController {
     );
 
     private isDevtoolsInitialized = false;
+
+    // Set from each ITestExecutionMessage.workerId as it arrives, so the
+    // completion message (built after the fact, with no message of its own
+    // to read from) can still attribute the result to the correct worker.
+    private currentWorkerId = '';
+
+    // Cache-busts every native `import()` call so a retried/re-evaluated
+    // test file always re-executes its top-level code fresh, matching the
+    // deleted vm-sandbox's per-execution `clearCache()` behavior — Node's
+    // ESM module registry otherwise caches by resolved URL for the lifetime
+    // of the process.
+    private importCounter = 0;
 
     private executionState: ITestControllerExecutionState = {
         paused: false,
@@ -105,7 +126,6 @@ export class WorkerController {
         } catch (e) {
             this.logger.error('Failed to release tests execution');
         }
-        Sandbox.clearCache();
 
         this.transport.broadcastUniversally(TestWorkerAction.unregister, {});
 
@@ -114,6 +134,7 @@ export class WorkerController {
             {
                 status: TestStatus.done,
                 error: null,
+                workerId: this.currentWorkerId,
             },
         );
     }
@@ -142,10 +163,9 @@ export class WorkerController {
             {
                 status: TestStatus.failed,
                 error,
+                workerId: this.currentWorkerId,
             },
         );
-
-        Sandbox.clearCache();
 
         this.transport.broadcastUniversally(
             TestWorkerAction.unregister,
@@ -154,6 +174,8 @@ export class WorkerController {
     }
 
     public async executeTest(message: ITestExecutionMessage): Promise<void> {
+        this.currentWorkerId = message.workerId;
+
         this.transport.broadcastUniversally(
             TestWorkerAction.register,
             this.executionState,
@@ -183,11 +205,15 @@ export class WorkerController {
     }
 
     private evaluateCode(message: ITestEvaluationMessage) {
-        this.setPendingState(true);
-        Sandbox.evaluateScript(message.path, message.content).catch((err) =>
-            this.logger.error(err),
+        // Devtool's interactive code-evaluation feature relied entirely on
+        // the deleted vm-sandbox's re-runnable execution context. Devtool is
+        // an out-of-scope, deprecated module for this migration (see
+        // spec.md Clarifications) — there is no native-ESM equivalent
+        // context to re-evaluate code in, so this is a no-op rather than a
+        // reimplementation.
+        this.logger.warn(
+            `[worker-controller] devtool code evaluation is not supported: ${message.path}`,
         );
-        this.setPendingState(false);
     }
 
     private async setDevtoolListeners(): Promise<void> {
@@ -225,11 +251,6 @@ export class WorkerController {
         // TODO (flops) pass message.parameters somewhere inside web application
         const testID = path.relative(process.cwd(), message.path);
 
-        const sandbox = new Sandbox(
-            message.content,
-            message.path,
-            message.dependencies,
-        );
         const bus = this.testAPI.getBus();
 
         this.testAPI.setEnvironmentParameters(message.envParameters);
@@ -237,51 +258,86 @@ export class WorkerController {
         this.testAPI.setTestID(testID);
 
         // Test becomes async, when run method called
-        // In all other cases it's plane sync file execution
-        let isAsync = false;
+        // In all other cases it's plane sync file execution.
+        //
+        // NOTE: with the deleted vm-sandbox, `sandbox.execute()` ran a test
+        // file's top-level code synchronously, so `started`/`finished`
+        // always fired well after this method had already attached its
+        // real listeners. Native `import()` genuinely resolves over
+        // multiple ticks (real module resolution/IO), so a fast/trivial
+        // test's `started`+`finished` pair can now fire *before*
+        // `importTestFile()` resolves. Settling via a single idempotent
+        // finish/fail pair — reachable from either the import() resolving
+        // or a bus event firing, whichever happens first — makes this
+        // order-independent instead of relying on listener reassignment
+        // happening in time.
+        return new Promise<void>((resolve, reject) => {
+            let isAsync = false;
+            let settled = false;
 
-        let finishCallback = () => {
-            /* empty */
-        };
-        let failCallback = (_error: Error) => {
-            /* empty */
-        };
+            const finish = () => {
+                if (settled) {
+                    return;
+                }
+                settled = true;
+                removeListeners();
+                resolve();
+            };
 
-        const startHandler = () => (isAsync = true);
-        const finishHandler = () => finishCallback();
-        const failHandler = (error: Error) => failCallback(error);
+            const fail = (error: Error) => {
+                if (settled) {
+                    return;
+                }
+                settled = true;
+                removeListeners();
+                reject(restructureError(error));
+            };
 
-        const removeListeners = () => {
-            bus.removeListener(TestEvents.started, startHandler);
-            bus.removeListener(TestEvents.finished, finishHandler);
-            bus.removeListener(TestEvents.failed, failHandler);
-        };
+            const startHandler = () => {
+                isAsync = true;
+            };
+            const finishHandler = () => finish();
+            const failHandler = (error: Error) => fail(error);
 
-        bus.on(TestEvents.started, startHandler);
-        bus.on(TestEvents.finished, finishHandler);
-        bus.on(TestEvents.failed, failHandler);
+            const removeListeners = () => {
+                bus.removeListener(TestEvents.started, startHandler);
+                bus.removeListener(TestEvents.finished, finishHandler);
+                bus.removeListener(TestEvents.failed, failHandler);
+            };
 
-        // Test file execution, should throw exception,
-        // if something goes wrong
-        try {
-            await sandbox.execute();
-        } catch (err) {
-            throw restructureError(err as Error);
-        }
+            bus.on(TestEvents.started, startHandler);
+            bus.on(TestEvents.finished, finishHandler);
+            bus.on(TestEvents.failed, failHandler);
 
-        if (isAsync) {
-            return new Promise<void>((resolve, reject) => {
-                finishCallback = () => {
-                    resolve();
-                    removeListeners();
-                };
-                failCallback = (error) => {
-                    reject(error);
-                    removeListeners();
-                };
-            });
-        }
+            // Test file execution, should throw exception,
+            // if something goes wrong
+            this.importTestFile(message.path).then(
+                () => {
+                    // A synchronous test (no `run()` call) is done as soon
+                    // as its top-level code finished executing. An async
+                    // test's completion is signalled by finished/failed
+                    // instead — which, per the note above, may already
+                    // have fired by now.
+                    if (!isAsync) {
+                        finish();
+                    }
+                },
+                (err) => fail(err as Error),
+            );
+        });
+    }
 
-        removeListeners();
+    // Native replacement for the deleted vm-sandbox: imports the autotest
+    // file directly from disk by its real path (via ./esm-loader-hooks,
+    // registered at worker startup), so Node's own module resolution
+    // builds the dependency graph and reported stack traces point at the
+    // exact authored file/line (FR-002) instead of a synthesized context.
+    // The cache-busting query string forces a fresh evaluation every call,
+    // even for the same path (e.g. a retry), matching the sandbox's
+    // per-execution clearCache() behavior.
+    private async importTestFile(filePath: string): Promise<void> {
+        const moduleUrl = `${pathToFileURL(filePath).href}?testringExecution=${this.importCounter++}`;
+
+        await dynamicImport(moduleUrl);
     }
 }
