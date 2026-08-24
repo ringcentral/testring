@@ -1,6 +1,6 @@
 {
   "name": "@testring/browser-proxy",
-  "version": "0.8.13",
+  "version": "0.9.0",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "repository": {
@@ -17,16 +17,16 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/child-process": "0.8.13",
-    "@testring/logger": "0.8.13",
-    "@testring/pluggable-module": "0.8.13",
-    "@testring/transport": "0.8.13",
-    "@testring/types": "0.8.13",
-    "@testring/utils": "0.8.13",
+    "@testring/child-process": "0.9.0",
+    "@testring/logger": "0.9.0",
+    "@testring/pluggable-module": "0.9.0",
+    "@testring/transport": "0.9.0",
+    "@testring/types": "0.9.0",
+    "@testring/utils": "0.9.0",
     "@types/yargs": "17.0.33",
     "yargs": "17.7.2"
   },
   "devDependencies": {
-    "@testring/test-utils": "0.8.13"
+    "@testring/test-utils": "0.9.0"
   }
 }
