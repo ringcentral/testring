@@ -22,9 +22,11 @@ const testDelay = (milliseconds: number) =>
     new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 type ShouldFailAttempt = (path: string, attempt: number) => boolean;
+type AttemptDelay = (path: string, attempt: number) => number;
 
 interface IRecordingTestWorkerOptions {
-    executionDelay?: number;
+    executionDelay?: number | AttemptDelay;
+    shouldHangAttempt?: ShouldFailAttempt;
     shouldFailAttempt?: ShouldFailAttempt;
 }
 
@@ -40,6 +42,11 @@ class RecordingTestWorkerState {
     public readonly maxActiveByPath = new Map<string, number>();
 
     public readonly errors: Error[] = [];
+
+    public readonly replacements: Array<{
+        previousWorkerID: string;
+        replacementWorkerID: string;
+    }> = [];
 
     private totalActive = 0;
 
@@ -58,8 +65,17 @@ class RecordingTestWorkerState {
         this.start(file.path);
 
         try {
-            if (this.options.executionDelay) {
-                await testDelay(this.options.executionDelay);
+            if (this.options.shouldHangAttempt?.(file.path, attempt)) {
+                await new Promise(() => undefined);
+            }
+
+            const executionDelay =
+                typeof this.options.executionDelay === 'function'
+                    ? this.options.executionDelay(file.path, attempt)
+                    : this.options.executionDelay;
+
+            if (executionDelay) {
+                await testDelay(executionDelay);
             }
 
             if (this.options.shouldFailAttempt?.(file.path, attempt)) {
@@ -104,7 +120,9 @@ class RecordingTestWorkerState {
 class RecordingTestWorkerInstance implements ITestWorkerInstance {
     private readonly state: RecordingTestWorkerState;
 
-    private readonly workerID: string;
+    private workerID: string;
+
+    private replacementCount = 0;
 
     constructor(
         state: RecordingTestWorkerState,
@@ -126,8 +144,18 @@ class RecordingTestWorkerInstance implements ITestWorkerInstance {
         return this.state.execute(file, parameters);
     }
 
-    public async kill(): Promise<void> {
+    public async kill(signal?: NodeJS.Signals): Promise<void> {
         this.state.killCalls++;
+
+        if (signal === 'SIGABRT') {
+            const previousWorkerID = this.workerID;
+            this.replacementCount++;
+            this.workerID = `${previousWorkerID}/replacement-${this.replacementCount}`;
+            this.state.replacements.push({
+                previousWorkerID,
+                replacementWorkerID: this.workerID,
+            });
+        }
     }
 }
 
@@ -168,6 +196,21 @@ class RecordingTestWorker implements ITestWorker {
         );
     }
 }
+
+const captureControllerLogs = (testRunController: TestRunController) => {
+    const events: Array<{level: string; event: string; fields?: any}> = [];
+    const logger = Object.fromEntries(
+        ['debug', 'info', 'warn', 'error'].map((level) => [
+            level,
+            (event: string, fields?: any) =>
+                events.push({level, event, fields}),
+        ]),
+    );
+
+    (testRunController as any).logger = logger;
+
+    return events;
+};
 
 describe('TestRunController', () => {
     it('should fail if zero workers are passed', async () => {
@@ -277,7 +320,7 @@ describe('TestRunController', () => {
 
         const errors = await testRunController.runQueue(tests);
 
-        chai.expect(errors).to.be.lengthOf(1);
+        chai.expect(errors).to.be.lengthOf(config.workerLimit);
     });
 
     it('should run spawn workers according the limit and kill them in the end of the run', async () => {
@@ -316,6 +359,7 @@ describe('TestRunController', () => {
 
         const testWorkerMock = new TestWorkerMock(false, 500);
         const testRunController = new TestRunController(config, testWorkerMock);
+        const events = captureControllerLogs(testRunController);
 
         const runQueue = testRunController.runQueue(tests);
 
@@ -339,6 +383,12 @@ describe('TestRunController', () => {
         chai.expect(testWorkerMock.$getKillCallsCount()).to.be.equal(
             workerLimit * 2,
         );
+        chai.expect(events.at(-1)?.fields).to.include({
+            outcome: 'BAILED',
+            activeWorkers: 0,
+            queueRemaining: 0,
+            stopReason: 'cancelled',
+        });
     });
 
     it('should run spawn workers and kill by testTimeout delay', async () => {
@@ -843,5 +893,239 @@ describe('TestRunController', () => {
         chai.expect(errors[0]).to.be.deep.equal(
             testWorkerMock.$getErrorInstance(),
         );
+    });
+
+    it('timeout preserves attempt identity and settles all work before the summary', async () => {
+        const config = {
+            bail: false,
+            workerLimit: 2,
+            retryCount: 1,
+            retryDelay: 0,
+            testTimeout: 20,
+        } as any;
+        const tests = generateTestFiles(3);
+        const testWorker = new RecordingTestWorker({
+            executionDelay: (path) => (path === tests[1]?.path ? 15 : 0),
+            shouldHangAttempt: (path, attempt) =>
+                path === tests[0]?.path && attempt === 0,
+        });
+        const controller = new TestRunController(config, testWorker);
+        const events = captureControllerLogs(controller);
+        const hookEvents: Array<{hook: string; path?: string; processID?: string}> = [];
+
+        controller
+            .getHook(TestRunControllerPlugins.beforeTest)
+            ?.readHook('identity', (item: any, meta: any) => {
+                hookEvents.push({
+                    hook: 'beforeTest',
+                    path: item.test.path,
+                    processID: meta.processID,
+                });
+            });
+        controller
+            .getHook(TestRunControllerPlugins.shouldNotRetry)
+            ?.readHook('identity', (_state: boolean, item: any, meta: any) => {
+                hookEvents.push({
+                    hook: 'shouldNotRetry',
+                    path: item.test.path,
+                    processID: meta.processID,
+                });
+            });
+        controller
+            .getHook(TestRunControllerPlugins.beforeTestRetry)
+            ?.readHook('identity', (item: any, _error: Error, meta: any) => {
+                hookEvents.push({
+                    hook: 'beforeTestRetry',
+                    path: item.test.path,
+                    processID: meta.processID,
+                });
+            });
+        controller
+            .getHook(TestRunControllerPlugins.afterRun)
+            ?.readHook('ordering', () => hookEvents.push({hook: 'afterRun'}));
+
+        await controller.runQueue(tests);
+
+        const originalID = testWorker.state.replacements[0]?.previousWorkerID;
+        const failedAttemptIDs = hookEvents
+            .filter(
+                ({path, hook}) =>
+                    path === tests[0]?.path && hook !== 'beforeTest',
+            )
+            .map(({processID}) => processID);
+        chai.expect(originalID).to.be.a('string');
+        chai.expect(failedAttemptIDs).to.deep.equal([originalID, originalID]);
+        chai.expect(testWorker.getTotalAttemptCount()).to.equal(4);
+        chai.expect(hookEvents.at(-1)?.hook).to.equal('afterRun');
+
+        const timeout = events.find(({event}) => event === 'TEST_TIMEOUT');
+        const replacement = events.find(
+            ({event}) => event === 'WORKER_REPLACED',
+        );
+        const retry = events.find(({event}) => event === 'RETRY_DECISION');
+        const summaries = events.filter(({event}) => event === 'RUN_SUMMARY');
+        chai.expect(
+            events.filter(({event}) => event === 'TEST_TIMEOUT'),
+        ).to.have.lengthOf(1);
+        chai.expect(
+            events.filter(({event}) => event === 'WORKER_REPLACED'),
+        ).to.have.lengthOf(1);
+        chai.expect(
+            events.filter(({event}) => event === 'RETRY_DECISION'),
+        ).to.have.lengthOf(1);
+        chai.expect(timeout?.fields).to.include({
+            testPath: tests[0]?.path,
+            retryCount: 0,
+            attempt: 1,
+            processID: originalID,
+            workerID: originalID,
+            timeoutMs: 20,
+            signal: 'SIGABRT',
+        });
+        chai.expect(timeout?.fields.queueRemaining).to.be.a('number');
+        chai.expect(timeout?.fields.error).to.be.instanceOf(Error);
+        chai.expect(timeout?.fields.error.stack).to.be.a('string');
+        chai.expect(replacement?.fields).to.include({
+            reason: 'test_timeout',
+            processID: originalID,
+            previousWorkerID: originalID,
+            replacementWorkerID:
+                testWorker.state.replacements[0]?.replacementWorkerID,
+        });
+        chai.expect(retry?.fields).to.include({
+            testPath: tests[0]?.path,
+            processID: originalID,
+            decision: 'scheduled',
+            nextRetry: 1,
+        });
+        chai.expect(summaries).to.have.lengthOf(1);
+        chai.expect(summaries[0]?.fields).to.include({
+            outcome: 'COMPLETE',
+            plannedInitial: 3,
+            startedInitial: 3,
+            completedInitial: 3,
+            retriesEligible: 1,
+            retriesScheduled: 1,
+            retriesCompleted: 1,
+            activeWorkers: 0,
+            queueRemaining: 0,
+            errors: 1,
+            stopReason: 'none',
+        });
+        chai.expect(events.at(-1)?.event).to.equal('RUN_SUMMARY');
+    });
+
+    it('contains a non-bail hook failure and drains unrelated work', async () => {
+        const tests = generateTestFiles(3);
+        const worker = new RecordingTestWorker({
+            executionDelay: (path) => (path === tests[1]?.path ? 20 : 0),
+        });
+        const controller = new TestRunController(
+            {
+                bail: false,
+                workerLimit: 2,
+                retryCount: 1,
+                testTimeout: DEFAULT_TIMEOUT,
+            } as any,
+            worker,
+        );
+        const events = captureControllerLogs(controller);
+        controller
+            .getHook(TestRunControllerPlugins.afterTest)
+            ?.writeHook('broken-after-test', (item: any) => {
+                if (item.test.path === tests[0]?.path) {
+                    throw new Error('afterTest failed');
+                }
+                return item;
+            });
+
+        const errors = (await controller.runQueue(tests)) as Error[];
+
+        chai.expect(worker.getTotalAttemptCount()).to.equal(3);
+        chai.expect(errors.some(({message}) => message === 'afterTest failed')).to.equal(
+            true,
+        );
+        chai.expect(
+            events.find(({event}) => event === 'HOOK_FAILED')?.fields,
+        ).to.include({
+            hook: TestRunControllerPlugins.afterTest,
+            testPath: tests[0]?.path,
+            retryCount: 0,
+            processID: 'worker/1',
+            workerID: 'worker/1',
+        });
+        const hookFailure = events.find(
+            ({event}) => event === 'HOOK_FAILED',
+        )?.fields;
+        chai.expect(hookFailure.queueRemaining).to.be.a('number');
+        chai.expect(hookFailure.activeWorkers).to.be.a('number');
+        chai.expect(hookFailure.error).to.be.instanceOf(Error);
+        chai.expect(hookFailure.error.stack).to.be.a('string');
+        chai.expect(events.at(-1)?.event).to.equal('RUN_SUMMARY');
+    });
+
+    it('bail stops new starts but waits for active work', async () => {
+        const tests = generateTestFiles(3);
+        const worker = new RecordingTestWorker({
+            executionDelay: (path) => (path === tests[1]?.path ? 20 : 0),
+            shouldFailAttempt: (path) => path === tests[0]?.path,
+        });
+        const controller = new TestRunController(
+            {
+                bail: true,
+                workerLimit: 2,
+                retryCount: 1,
+                testTimeout: DEFAULT_TIMEOUT,
+            } as any,
+            worker,
+        );
+        const events = captureControllerLogs(controller);
+
+        const errors = (await controller.runQueue(tests)) as Error[];
+
+        chai.expect(errors).to.have.lengthOf(1);
+        chai.expect(worker.getTotalAttemptCount()).to.equal(2);
+        chai.expect(events.at(-1)?.fields).to.include({
+            outcome: 'BAILED',
+            activeWorkers: 0,
+            queueRemaining: 1,
+            stopReason: 'bail',
+        });
+    });
+
+    it('timeout preserves attempt identity for 100 deterministic repetitions', async () => {
+        for (let repetition = 0; repetition < 100; repetition++) {
+            const tests = generateTestFiles(3);
+            const worker = new RecordingTestWorker({
+                shouldHangAttempt: (path, attempt) =>
+                    path === tests[0]?.path && attempt === 0,
+            });
+            const controller = new TestRunController(
+                {
+                    bail: false,
+                    workerLimit: 2,
+                    retryCount: 1,
+                    retryDelay: 0,
+                    testTimeout: 1,
+                } as any,
+                worker,
+            );
+            const events = captureControllerLogs(controller);
+            const retryIDs: string[] = [];
+            controller
+                .getHook(TestRunControllerPlugins.beforeTestRetry)
+                ?.readHook('identity', (_item: any, _error: Error, meta: any) =>
+                    retryIDs.push(meta.processID),
+                );
+
+            await controller.runQueue(tests);
+
+            chai.expect(retryIDs).to.deep.equal([
+                worker.state.replacements[0]?.previousWorkerID,
+            ]);
+            chai.expect(worker.getTotalAttemptCount()).to.equal(4);
+            chai.expect(events.at(-1)?.event).to.equal('RUN_SUMMARY');
+            chai.expect(events.at(-1)?.fields.outcome).to.equal('COMPLETE');
+        }
     });
 });
