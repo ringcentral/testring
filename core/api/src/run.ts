@@ -41,9 +41,16 @@ export async function run(...tests: Array<TestFunction>) {
         try {
             await api.end();
         } catch (error) {
+            const cleanupError = restructureError(error as Error);
             if (!catchedError) {
-                catchedError = restructureError(error as Error);
+                catchedError = cleanupError;
                 passed = false;
+            } else {
+                Object.assign(catchedError, {
+                    cleanupErrors: (cleanupError as any).cleanupErrors || [
+                        cleanupError,
+                    ],
+                });
             }
         }
 

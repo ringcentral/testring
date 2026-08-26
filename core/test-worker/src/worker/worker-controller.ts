@@ -12,7 +12,7 @@ import {
     TestEvents,
 } from '@testring/types';
 import {restructureError} from '@testring/utils';
-import {testAPIController, TestAPIController} from '@testring/api';
+import {TestAPIController} from '@testring/api';
 import {asyncBreakpoints, BreakStackError} from '@testring/async-breakpoints';
 import {loggerClient, LoggerClient} from '@testring/logger';
 
@@ -118,59 +118,56 @@ export class WorkerController {
         asyncBreakpoints.resolveAfterInstructionBreakpoint();
     }
 
-    private async completeExecutionSuccessfully() {
+    private async completeExecution(error: Error | null) {
+        if (error) {
+            this.logger.error(error, 'Error during test execution');
+        }
         this.releasePauseMode();
 
         try {
-            await testAPIController.flushAfterRunCallbacks();
-        } catch (e) {
-            this.logger.error('Failed to release tests execution');
+            await this.testAPI.flushAfterRunCallbacks();
+        } catch (callbackError) {
+            const normalizedError = restructureError(callbackError as Error);
+            this.logger.error(
+                normalizedError,
+                'Failed to release tests execution',
+            );
+            if (error) {
+                const lifecycleCallbackErrors = [
+                    ...((error as any).lifecycleCallbackErrors || []),
+                    normalizedError,
+                ];
+                Object.assign(error, {lifecycleCallbackErrors});
+            } else {
+                error = normalizedError;
+            }
         }
 
-        this.transport.broadcastUniversally(TestWorkerAction.unregister, {});
+        if (!error) {
+            this.transport.broadcastUniversally(TestWorkerAction.unregister, {});
+        }
 
         this.transport.broadcastUniversally<ITestExecutionCompleteMessage>(
             TestWorkerAction.executionComplete,
             {
-                status: TestStatus.done,
-                error: null,
+                status: error ? TestStatus.failed : TestStatus.done,
+                error,
                 workerId: this.currentWorkerId,
             },
         );
+        if (error) {
+            this.transport.broadcastUniversally(
+                TestWorkerAction.unregister,
+                this.executionState,
+            );
+        }
     }
 
     private async releaseTestExecution() {
         if (this.executionState.pending) {
             asyncBreakpoints.breakStack();
-            await this.completeExecutionSuccessfully();
-        } else {
-            await this.completeExecutionSuccessfully();
         }
-    }
-
-    private async completeExecutionFailed(error: Error) {
-        this.logger.error(error, 'Error during test execution');
-        this.releasePauseMode();
-
-        try {
-            await testAPIController.flushAfterRunCallbacks();
-        } catch (e) {
-            this.logger.error('Failed to release tests execution');
-        }
-
-        this.transport.broadcastUniversally<ITestExecutionCompleteMessage>(
-            TestWorkerAction.executionComplete,
-            {
-                status: TestStatus.failed,
-                error,
-                workerId: this.currentWorkerId,
-            },
-        );
-
-        this.transport.broadcastUniversally(
-            TestWorkerAction.unregister,
-            this.executionState,
-        );
+        await this.completeExecution(null);
     }
 
     public async executeTest(message: ITestExecutionMessage): Promise<void> {
@@ -191,14 +188,14 @@ export class WorkerController {
             this.setPendingState(false);
 
             if (!message.waitForRelease) {
-                await this.completeExecutionSuccessfully();
+                await this.completeExecution(null);
             }
         } catch (error) {
             if (!message.waitForRelease) {
                 if (error instanceof BreakStackError) {
-                    await this.completeExecutionSuccessfully();
+                    await this.completeExecution(null);
                 } else {
-                    await this.completeExecutionFailed(error as Error);
+                    await this.completeExecution(error as Error);
                 }
             }
         }

@@ -4,6 +4,58 @@ import * as chai from 'chai';
 import {serialize, deserialize} from '../src/serialize';
 
 describe('serialize', () => {
+    const roundTrip = (value: any) => deserialize(serialize(value));
+
+    it('should preserve every byte and an empty buffer', () => {
+        const bytes = Buffer.from(Array.from({length: 256}, (_, index) => index));
+
+        chai.expect(roundTrip(bytes)).to.deep.equal(bytes);
+        chai.expect(roundTrip(Buffer.alloc(0))).to.deep.equal(Buffer.alloc(0));
+    });
+
+    it('should preserve JSON-unsafe scalar values and bigint', () => {
+        const values = [
+            undefined,
+            NaN,
+            Infinity,
+            -Infinity,
+            -0,
+            BigInt('0'),
+            BigInt('9007199254740993'),
+        ];
+        const result = roundTrip(values);
+
+        values.forEach((value, index) => {
+            chai.expect(Object.is(result[index], value)).to.equal(true);
+        });
+    });
+
+    it('should serialize repeated references without marking them circular', () => {
+        const repeated = {value: 1};
+
+        chai.expect(roundTrip([repeated, repeated])).to.deep.equal([
+            {value: 1},
+            {value: 1},
+        ]);
+    });
+
+    it('should include only own enumerable string keys', () => {
+        const inherited = {inherited: true};
+        const value = Object.assign(Object.create(inherited), {own: true});
+
+        chai.expect(roundTrip(value)).to.deep.equal({own: true});
+
+        const symbol = Symbol('diagnostic');
+        Object.defineProperty(value, symbol, {value: true, enumerable: true});
+        chai.expect(() => serialize(value)).to.throw(TypeError);
+    });
+
+    it('should reject unsupported payload values explicitly', () => {
+        for (const value of [Symbol('value'), new Map(), /value/]) {
+            chai.expect(() => serialize(value)).to.throw(TypeError);
+        }
+    });
+
     it('should serialize array without data loss', () => {
         const data = [
             0,
@@ -55,6 +107,28 @@ describe('serialize', () => {
         chai.expect(deserializedError.name).to.be.equal('Error');
         chai.expect(deserializedError.message).to.be.equal(error.message);
         chai.expect(deserializedError.stack).to.be.equal(error.stack);
+    });
+
+    it('should preserve recursive error diagnostics without inherited fields', () => {
+        const cause = new TypeError('cause');
+        const prototype = {inherited: 'omit'};
+        const error = Object.assign(new Error('primary'), {
+            cleanupErrors: [cause],
+            detail: {value: 1},
+        });
+        Object.defineProperty(error, 'cause', {value: cause});
+        Object.setPrototypeOf(error, Object.assign(Object.create(Error.prototype), prototype));
+
+        const result = roundTrip(error) as Error & Record<string, any>;
+
+        chai.expect(result.name).to.equal(error.name);
+        chai.expect(result.message).to.equal(error.message);
+        chai.expect(result.stack).to.equal(error.stack);
+        chai.expect(result['cause']).to.be.instanceOf(TypeError);
+        chai.expect(result['cause'].message).to.equal('cause');
+        chai.expect(result['cleanupErrors'][0]).to.be.instanceOf(TypeError);
+        chai.expect(result['detail']).to.deep.equal({value: 1});
+        chai.expect(result).not.to.have.own.property('inherited');
     });
 
     it('should serialize arrow function', () => {
