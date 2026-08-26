@@ -86,12 +86,25 @@ export class TestRunController
 
     public async kill(): Promise<void> {
         this.stopReason = 'cancelled';
-        await Promise.all(this.workers.map((worker) => worker.kill()));
+        const terminations = await Promise.allSettled(
+            this.workers.map((worker) => worker.kill()),
+        );
 
         this.workers.length = 0;
 
         if (this.currentQueue) {
             this.currentQueue.clean();
+        }
+
+        const errors = terminations
+            .filter(
+                (result): result is PromiseRejectedResult =>
+                    result.status === 'rejected',
+            )
+            .map(({reason}) => reason as Error);
+        if (errors[0]) {
+            Object.assign(errors[0], {terminationErrors: errors});
+            throw errors[0];
         }
     }
 
@@ -212,19 +225,34 @@ export class TestRunController
         const workerLoops = await Promise.allSettled(
             this.workers.map(async (worker) => {
                 let executionsSinceRestart = 0;
+                let workerUsable = true;
 
                 while (
-                    testQueue.length > 0 &&
+                    (testQueue.length > 0 ||
+                        this.accounting.activeWorkers > 0) &&
                     this.stopReason === 'none'
                 ) {
+                    if (testQueue.length === 0) {
+                        await delay(0);
+                        continue;
+                    }
+
                     try {
-                        await this.executeWorker(worker, testQueue);
+                        workerUsable = await this.executeWorker(
+                            worker,
+                            testQueue,
+                        );
                     } catch (error) {
                         if (this.config.bail) {
                             this.stopReason = 'bail';
                             throw error;
                         }
                         this.recordError(error as Error);
+                        workerUsable = false;
+                    }
+
+                    if (!workerUsable) {
+                        break;
                     }
                     executionsSinceRestart++;
 
@@ -236,14 +264,18 @@ export class TestRunController
                             await worker.kill();
                         } catch (error) {
                             this.recordError(error as Error);
+                            workerUsable = false;
+                            break;
                         }
                         executionsSinceRestart = 0;
                     }
                 }
-                try {
-                    await worker.kill();
-                } catch (error) {
-                    this.recordError(error as Error);
+                if (workerUsable) {
+                    try {
+                        await worker.kill();
+                    } catch (error) {
+                        this.recordError(error as Error);
+                    }
                 }
             }),
         );
@@ -515,16 +547,17 @@ export class TestRunController
     private async executeWorker(
         worker: ITestWorkerInstance,
         queue: TestQueue,
-    ): Promise<void> {
+    ): Promise<boolean> {
         const queuedTest = queue.shift();
 
         if (!queuedTest) {
-            return;
+            return true;
         }
 
         const meta = this.getWorkerMeta(worker);
         let timer;
         let isRejectedByTimeout = false;
+        let workerUsable = true;
         this.accounting.activeWorkers++;
 
         try {
@@ -542,7 +575,7 @@ export class TestRunController
             );
 
             if (startGuard.error || !!startGuard.value) {
-                return;
+                return workerUsable;
             }
 
             const beforeTest = await this.callAttemptHook(
@@ -555,7 +588,7 @@ export class TestRunController
             );
 
             if (beforeTest.error) {
-                return;
+                return workerUsable;
             }
 
             if (queuedTest.retryCount === 0) {
@@ -630,6 +663,7 @@ export class TestRunController
                     });
                 } catch (killError) {
                     this.recordError(killError as Error);
+                    workerUsable = false;
                 }
             }
 
@@ -652,6 +686,8 @@ export class TestRunController
                 this.accounting.retriesCompleted++;
             }
         }
+
+        return workerUsable;
     }
 
     private async callAttemptHook<T = any>(

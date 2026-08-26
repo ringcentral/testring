@@ -28,6 +28,7 @@ interface IRecordingTestWorkerOptions {
     executionDelay?: number | AttemptDelay;
     shouldHangAttempt?: ShouldFailAttempt;
     shouldFailAttempt?: ShouldFailAttempt;
+    shouldFailKill?: (workerID: string, signal?: NodeJS.Signals) => boolean;
 }
 
 class RecordingTestWorkerState {
@@ -47,6 +48,10 @@ class RecordingTestWorkerState {
         previousWorkerID: string;
         replacementWorkerID: string;
     }> = [];
+
+    public shouldFailKill(workerID: string, signal?: NodeJS.Signals): boolean {
+        return !!this.options.shouldFailKill?.(workerID, signal);
+    }
 
     private totalActive = 0;
 
@@ -147,6 +152,10 @@ class RecordingTestWorkerInstance implements ITestWorkerInstance {
     public async kill(signal?: NodeJS.Signals): Promise<void> {
         this.state.killCalls++;
 
+        if (this.state.shouldFailKill(this.workerID, signal)) {
+            throw new Error(`Failed to terminate ${this.workerID}`);
+        }
+
         if (signal === 'SIGABRT') {
             const previousWorkerID = this.workerID;
             this.replacementCount++;
@@ -213,6 +222,29 @@ const captureControllerLogs = (testRunController: TestRunController) => {
 };
 
 describe('TestRunController', () => {
+    it('should await and retain every public shutdown failure', async () => {
+        const controller = new TestRunController({} as any, {} as any);
+        const errors = [new Error('first kill'), new Error('second kill')];
+        let killCalls = 0;
+        (controller as any).workers = errors.map((error, index) => ({
+            getWorkerID: () => `worker/${index}`,
+            execute: () => Promise.resolve(),
+            kill: async () => {
+                killCalls++;
+                throw error;
+            },
+        }));
+
+        const [result] = await Promise.allSettled([controller.kill()]);
+
+        chai.expect(killCalls).to.equal(2);
+        chai.expect(result?.status).to.equal('rejected');
+        chai.expect((result as PromiseRejectedResult).reason).to.equal(errors[0]);
+        chai.expect(
+            (result as PromiseRejectedResult).reason.terminationErrors,
+        ).to.deep.equal(errors);
+    });
+
     it('should fail if zero workers are passed', async () => {
         const workerLimit = 0;
         const config = {
@@ -893,6 +925,85 @@ describe('TestRunController', () => {
         chai.expect(errors[0]).to.be.deep.equal(
             testWorkerMock.$getErrorInstance(),
         );
+    });
+
+    it('should retire only a worker whose timeout termination fails', async () => {
+        const tests = generateTestFiles(2);
+        const testWorker = new RecordingTestWorker({
+            shouldHangAttempt: (path, attempt) =>
+                path === tests[0]?.path && attempt === 0,
+            shouldFailKill: (workerID, signal) =>
+                workerID === 'worker/1' && signal === 'SIGABRT',
+        });
+        const controller = new TestRunController(
+            {
+                bail: false,
+                workerLimit: 2,
+                retryCount: 1,
+                testTimeout: 10,
+            } as any,
+            testWorker,
+        );
+
+        const errors = (await controller.runQueue(tests)) as Error[];
+
+        chai.expect(testWorker.getAttemptCount(tests[0]?.path || '')).to.equal(2);
+        chai.expect(testWorker.getAttemptCount(tests[1]?.path || '')).to.equal(1);
+        chai.expect(errors.map(({message}) => message)).to.deep.equal([
+            'Failed to terminate worker/1',
+        ]);
+    });
+
+    it('should preserve bail after timeout termination failure while settling active siblings', async () => {
+        const tests = generateTestFiles(3);
+        const testWorker = new RecordingTestWorker({
+            executionDelay: 30,
+            shouldHangAttempt: (path) => path === tests[0]?.path,
+            shouldFailKill: (workerID, signal) =>
+                workerID === 'worker/1' && signal === 'SIGABRT',
+        });
+        const controller = new TestRunController(
+            {
+                bail: true,
+                workerLimit: 2,
+                retryCount: 2,
+                testTimeout: 10,
+            } as any,
+            testWorker,
+        );
+
+        const errors = (await controller.runQueue(tests)) as Error[];
+
+        chai.expect(testWorker.getTotalAttemptCount()).to.equal(2);
+        chai.expect(errors.map(({message}) => message)).to.include.members([
+            'Failed to terminate worker/1',
+            'Test timeout exceeded 10ms',
+        ]);
+    });
+
+    it('should retire a worker after recycle termination failure and finish queued work on its sibling', async () => {
+        const tests = generateTestFiles(4);
+        const testWorker = new RecordingTestWorker({
+            executionDelay: 2,
+            shouldFailKill: (workerID, signal) =>
+                workerID === 'worker/1' && signal === undefined,
+        });
+        const controller = new TestRunController(
+            {
+                bail: false,
+                workerLimit: 2,
+                restartWorker: true,
+                testTimeout: DEFAULT_TIMEOUT,
+            } as any,
+            testWorker,
+        );
+
+        const errors = (await controller.runQueue(tests)) as Error[];
+
+        chai.expect(testWorker.getTotalAttemptCount()).to.equal(tests.length);
+        chai.expect(errors.map(({message}) => message)).to.deep.equal([
+            'Failed to terminate worker/1',
+        ]);
     });
 
     it('timeout preserves attempt identity and settles all work before the summary', async () => {

@@ -17,10 +17,17 @@ export function serializeObject(
 ): ISerializedObject {
     const dictionary: Record<string, unknown> = {};
 
-    for (const key in object) {
-        if (key in object) {
-            dictionary[key] = serialize(object[key]);
-        }
+    if (
+        Object.getOwnPropertySymbols(object).some(
+            (symbol) =>
+                Object.prototype.propertyIsEnumerable.call(object, symbol),
+        )
+    ) {
+        throw new TypeError('Enumerable symbol keys are not supported');
+    }
+
+    for (const key of Object.keys(object)) {
+        dictionary[key] = serialize(object[key]);
     }
 
     return {

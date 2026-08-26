@@ -35,6 +35,81 @@ function writeFixture(content: string): string {
 }
 
 describe('WorkerController', () => {
+    it('should fail a passing execution on after-run callback failure without leaking it', async () => {
+        const transport = new TransportMock();
+        const api = new TestAPIController();
+        const controller = new WorkerController(transport, api);
+        const callbackError = new Error('after-run failed');
+        let callbackCalls = 0;
+        const messages: ITestExecutionCompleteMessage[] = [];
+        transport.on<ITestExecutionCompleteMessage>(
+            TestWorkerAction.executionComplete,
+            (message) => messages.push(message),
+        );
+        const content = 'export {};';
+        const filePath = writeFixture(content);
+        const failAfterRun = () => {
+            callbackCalls++;
+            throw callbackError;
+        };
+        const execute = () =>
+            controller.executeTest({
+                waitForRelease: false,
+                content,
+                path: filePath,
+                parameters: {},
+                envParameters: null,
+                workerId: 'worker/test',
+            });
+
+        for (let repetition = 0; repetition < 100; repetition++) {
+            api.registerAfterRunCallback(failAfterRun);
+            await execute();
+            await execute();
+        }
+
+        chai.expect(
+            messages.every(
+                ({status}, index) =>
+                    status ===
+                    (index % 2 === 0 ? TestStatus.failed : TestStatus.done),
+            ),
+        ).to.equal(true);
+        chai.expect(messages[0]?.error).to.equal(callbackError);
+        chai.expect(callbackCalls).to.equal(100);
+    });
+
+    it('should keep a test error primary and attach after-run callback diagnostics', async () => {
+        const transport = new TransportMock();
+        const api = new TestAPIController();
+        const controller = new WorkerController(transport, api);
+        const callbackError = new Error('after-run failed');
+        let message: ITestExecutionCompleteMessage | undefined;
+        transport.on<ITestExecutionCompleteMessage>(
+            TestWorkerAction.executionComplete,
+            (value) => (message = value),
+        );
+        api.registerAfterRunCallback(() => {
+            throw callbackError;
+        });
+
+        const content = 'throw new Error("test failed")';
+        await controller.executeTest({
+            waitForRelease: false,
+            content,
+            path: writeFixture(content),
+            parameters: {},
+            envParameters: null,
+            workerId: 'worker/test',
+        });
+
+        chai.expect(message?.status).to.equal(TestStatus.failed);
+        chai.expect(message?.error?.message).to.equal('test failed');
+        chai.expect((message?.error as any).lifecycleCallbackErrors).to.deep.equal([
+            callbackError,
+        ]);
+    });
+
     it('should run sync test', (callback) => {
         const transportMock = new TransportMock();
         const nTestAPIController = new TestAPIController();
