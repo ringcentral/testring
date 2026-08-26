@@ -25,8 +25,7 @@ const WORKER_DEFAULT_CONFIG: ITestWorkerConfig = {
     localWorker: false,
 };
 
-const delay = (timeout: number) =>
-    new Promise<void>((resolve) => setTimeout(resolve, timeout));
+const TERMINATION_TIMEOUT = 5000;
 
 export class TestWorkerInstance implements ITestWorkerInstance {
     private config: ITestWorkerConfig;
@@ -41,6 +40,14 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private queuedWorker: Promise<IWorkerEmitter> | null = null;
 
+    private terminationPromise: Promise<void> | null = null;
+
+    private terminationInProgress = false;
+
+    private terminationError: Error | null = null;
+
+    private executionSetup: Promise<void> | null = null;
+
     private workerID = `worker/${generateUniqId()}`;
 
     private logger = loggerClient;
@@ -53,11 +60,15 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         this.worker = null;
 
         if (this.abortTestExecution !== null) {
-            this.abortTestExecution(
-                new Error(
-                    `[${this.getWorkerID()}] unexpected worker shutdown. Exit Code: ${exitCode}`,
-                ),
-            );
+            if (this.terminationInProgress) {
+                this.successTestExecution?.();
+            } else {
+                this.abortTestExecution(
+                    new Error(
+                        `[${this.getWorkerID()}] unexpected worker shutdown. Exit Code: ${exitCode}`,
+                    ),
+                );
+            }
 
             this.successTestExecution = null;
             this.abortTestExecution = null;
@@ -66,7 +77,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
 
     private workerErrorHandler = (error: any) => {
         this.fsWriterClient.releaseAllWorkerActions();
-        if (this.abortTestExecution !== null) {
+        if (!this.terminationInProgress && this.abortTestExecution !== null) {
             this.abortTestExecution(error);
 
             this.successTestExecution = null;
@@ -102,10 +113,28 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         parameters: any,
         envParameters: any,
     ): Promise<void> {
+        if (this.terminationError) {
+            throw this.terminationError;
+        }
+
         return new Promise((resolve, reject) => {
-            this.makeExecutionRequest(file, parameters, envParameters, (err) =>
+            const setup = this.makeExecutionRequest(file, parameters, envParameters, (err) =>
                 err ? reject(err) : resolve(),
-            ).catch(reject);
+            );
+            this.executionSetup = setup;
+            setup.then(
+                () => {
+                    if (this.executionSetup === setup) {
+                        this.executionSetup = null;
+                    }
+                },
+                (error) => {
+                    if (this.executionSetup === setup) {
+                        this.executionSetup = null;
+                    }
+                    reject(error);
+                },
+            );
         });
     }
 
@@ -113,50 +142,147 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         return this.workerID;
     }
 
-    public async kill(signal: NodeJS.Signals = 'SIGTERM') {
-        if (this.queuedWorker !== null) {
-            await this.queuedWorker;
+    public kill(signal: NodeJS.Signals = 'SIGTERM'): Promise<void> {
+        if (this.terminationError) {
+            return Promise.reject(this.terminationError);
+        }
 
-            // Dirty hack for correct handling queued worker resolving.
-            // Adds gap between microtasks chain,
-            // that helps to execute sync code in "makeExecutionRequest" before this
-            await delay(100);
-            await this.kill(signal);
+        if (!this.terminationPromise) {
+            this.terminationPromise = this.terminate(signal);
+            this.terminationPromise.then(
+                () => (this.terminationPromise = null),
+                () => (this.terminationPromise = null),
+            );
+        }
 
-            this.logger.debug(`Waiting for queue ${this.getWorkerID()}`);
-        } else if (this.worker !== null) {
-            this.clearWorkerHandlers();
+        return this.terminationPromise;
+    }
 
-            const waitForKill = new Promise<void>((resolve) => {
-                if (this.worker !== null) {
-                    this.worker.once('exit', () => {
-                        resolve();
-                    });
-                } else {
-                    resolve();
-                }
-            });
+    private async terminate(signal: NodeJS.Signals): Promise<void> {
+        const workerID = this.getWorkerID();
+        const deadline = Date.now() + TERMINATION_TIMEOUT;
+        this.terminationInProgress = true;
 
-            this.worker.kill(signal);
-            await waitForKill;
-
-            this.worker = null;
-
-            if (this.successTestExecution !== null) {
-                this.successTestExecution();
-
-                this.successTestExecution = null;
-                this.abortTestExecution = null;
+        try {
+            if (this.queuedWorker) {
+                await this.withTerminationDeadline(
+                    this.queuedWorker,
+                    deadline,
+                    workerID,
+                    signal,
+                );
             }
 
-            this.logger.debug(`Killed child process ${this.getWorkerID()}`);
+            if (this.executionSetup) {
+                await this.withTerminationDeadline(
+                    this.executionSetup,
+                    deadline,
+                    workerID,
+                    signal,
+                );
+            }
 
-            // Rotate the worker ID now, so any respawn triggered by a
-            // subsequent execute() call (and any hook meta read before that
-            // respawn happens) reflects the new underlying child process
-            // rather than the one that was just killed (FR-014/FR-017).
+            const worker = this.worker;
+            if (!worker) {
+                return;
+            }
+
+            await this.waitForWorkerExit(
+                worker,
+                deadline,
+                workerID,
+                signal,
+            );
+
+            this.logger.debug(`Killed child process ${workerID}`);
             this.workerID = `worker/${generateUniqId()}`;
+        } catch (error) {
+            const reason = error instanceof Error ? error.message : String(error);
+            const terminationError = new Error(
+                `[${workerID}] failed to terminate with ${signal}: ${reason}`,
+            );
+            this.terminationError = terminationError;
+            this.fsWriterClient.releaseAllWorkerActions();
+            this.abortTestExecution?.(terminationError);
+            this.successTestExecution = null;
+            this.abortTestExecution = null;
+            throw terminationError;
+        } finally {
+            this.terminationInProgress = false;
         }
+    }
+
+    private withTerminationDeadline<T>(
+        promise: Promise<T>,
+        deadline: number,
+        workerID: string,
+        signal: NodeJS.Signals,
+    ): Promise<T> {
+        return new Promise((resolve, reject) => {
+            const timer = setTimeout(
+                () =>
+                    reject(
+                        new Error(
+                            `termination timed out after ${TERMINATION_TIMEOUT}ms for ${workerID} (${signal})`,
+                        ),
+                    ),
+                Math.max(0, deadline - Date.now()),
+            );
+            promise.then(
+                (value) => {
+                    clearTimeout(timer);
+                    resolve(value);
+                },
+                (error) => {
+                    clearTimeout(timer);
+                    reject(error);
+                },
+            );
+        });
+    }
+
+    private waitForWorkerExit(
+        worker: IWorkerEmitter,
+        deadline: number,
+        workerID: string,
+        signal: NodeJS.Signals,
+    ): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            const timer = setTimeout(() => {
+                cleanup();
+                reject(
+                    new Error(
+                        `termination timed out after ${TERMINATION_TIMEOUT}ms for ${workerID} (${signal})`,
+                    ),
+                );
+            }, Math.max(0, deadline - Date.now()));
+            const onExit = () => {
+                cleanup();
+                resolve();
+            };
+            const onError = (error: Error) => {
+                cleanup();
+                reject(error);
+            };
+            const cleanup = () => {
+                clearTimeout(timer);
+                worker.removeListener('exit', onExit);
+                worker.removeListener('error', onError);
+            };
+
+            worker.once('exit', onExit);
+            worker.once('error', onError);
+
+            try {
+                if ((worker.kill(signal) as unknown) === false) {
+                    cleanup();
+                    reject(new Error('worker refused the termination signal'));
+                }
+            } catch (error) {
+                cleanup();
+                reject(error);
+            }
+        });
     }
 
     private async getExecutionPayload(
@@ -195,6 +321,10 @@ export class TestWorkerInstance implements ITestWorkerInstance {
         callback: (err?: Error) => void,
     ): Promise<void> {
         const worker = await this.initWorker();
+
+        if (this.terminationError) {
+            throw this.terminationError;
+        }
 
         const relativePath = path.relative(process.cwd(), file.path);
 
@@ -291,7 +421,7 @@ export class TestWorkerInstance implements ITestWorkerInstance {
     private async initWorker(): Promise<IWorkerEmitter> {
         if (this.queuedWorker) {
             return this.queuedWorker;
-        } else if (this.config.localWorker) {
+        } else if (this.config.localWorker && this.worker === null) {
             this.queuedWorker = this.createLocalWorker().then((worker) => {
                 this.worker = worker;
                 this.queuedWorker = null;
