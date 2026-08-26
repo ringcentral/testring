@@ -1,6 +1,6 @@
 {
   "name": "@testring/plugin-fs-store",
-  "version": "0.8.13",
+  "version": "0.9.1",
   "description": "fs storage & default plugin",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
@@ -15,12 +15,12 @@
   "author": "RingCentral",
   "license": "MIT",
   "dependencies": {
-    "@testring/plugin-api": "0.8.13",
-    "@testring/types": "0.8.13",
-    "@testring/utils": "0.8.13"
+    "@testring/plugin-api": "0.9.1",
+    "@testring/types": "0.9.1",
+    "@testring/utils": "0.9.1"
   },
   "devDependencies": {
-    "@testring/transport": "0.8.13"
+    "@testring/transport": "0.9.1"
   },
   "scripts": {
     "test": "mocha",
