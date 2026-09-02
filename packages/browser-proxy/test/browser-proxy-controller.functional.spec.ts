@@ -138,6 +138,44 @@ describe('Browser proxy controller functional test', () => {
             .catch(callback);
     });
 
+    it('should preserve URL errors and keep the proxy usable', async () => {
+        const transport = new Transport();
+        const controller = new BrowserProxyController(transport, () => {
+            return fork(workerPath, [
+                '--name',
+                syncPlugin,
+                '--config',
+                JSON.stringify(null),
+            ]);
+        });
+
+        await controller.init();
+
+        try {
+            const error = await controller
+                .execute('test', {
+                    action: 'throwUrlError' as BrowserProxyActions,
+                    args: [],
+                })
+                .then(() => new Error('expected URL error'))
+                .catch((value) => value);
+
+            chai.expect(error).to.be.instanceOf(Error);
+            chai.expect(error.message).to.equal('WebDriver navigation failed');
+            chai.expect(error.url).to.be.instanceOf(URL);
+            chai.expect(error.url.href).to.equal(
+                'https://example.test/driver-failure?step=1',
+            );
+
+            await controller.execute('test', {
+                action: BrowserProxyActions.click,
+                args: ['still connected'],
+            });
+        } finally {
+            await controller.kill();
+        }
+    });
+
     it('should be able to run multiple workers', async () => {
         const transport = new Transport();
         const controller = new BrowserProxyController(

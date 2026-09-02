@@ -131,6 +131,54 @@ describe('serialize', () => {
         chai.expect(result).not.to.have.own.property('inherited');
     });
 
+    it('should preserve URL values directly and when nested', () => {
+        const value = {
+            direct: new URL('https://user:pass@example.test:8443/path?a=1#part'),
+            nested: [{url: new URL('https://example.test/nested')}],
+        };
+
+        const result = roundTrip(value) as any;
+
+        chai.expect(result.direct).to.be.instanceOf(URL);
+        chai.expect(result.direct.href).to.equal(value.direct.href);
+        chai.expect(result.nested[0].url).to.be.instanceOf(URL);
+        chai.expect(result.nested[0]!.url.href).to.equal(value.nested[0]!.url.href);
+    });
+
+    it('should preserve enumerable URL error properties and diagnostics', () => {
+        const cause = new TypeError('cause');
+        const error = Object.assign(new Error('primary'), {
+            url: new URL('https://example.test/failure?case=1#fragment'),
+            detail: {urls: [new URL('https://example.test/nested')]},
+        });
+        Object.defineProperty(error, 'cause', {value: cause});
+
+        const result = roundTrip(error) as Error & Record<string, any>;
+
+        chai.expect(result).to.be.instanceOf(Error);
+        chai.expect(result.name).to.equal(error.name);
+        chai.expect(result.message).to.equal(error.message);
+        chai.expect(result.stack).to.equal(error.stack);
+        chai.expect(result['cause']).to.be.instanceOf(TypeError);
+        chai.expect(result['url']).to.be.instanceOf(URL);
+        chai.expect(result['url'].href).to.equal(error.url.href);
+        chai.expect(result['detail']['urls'][0]).to.be.instanceOf(URL);
+        chai.expect(result['detail']['urls'][0]!.href).to.equal(error.detail.urls[0]!.href);
+    });
+
+    it('should preserve a sample of URL-bearing errors', () => {
+        for (let index = 0; index < 10; index++) {
+            const error = Object.assign(new Error(`failure-${index}`), {
+                url: new URL(`https://example.test/failure/${index}`),
+            });
+
+            const result = roundTrip(error) as Error & Record<string, any>;
+
+            chai.expect(result.message).to.equal(error.message);
+            chai.expect(result['url'].href).to.equal(error.url.href);
+        }
+    });
+
     it('should serialize arrow function', () => {
         const arrowFunction = (a: any, b: any) => {
             return a + b + 2;
