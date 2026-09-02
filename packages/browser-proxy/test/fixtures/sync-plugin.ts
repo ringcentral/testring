@@ -3,6 +3,12 @@ class SyncPlugin {
         return argument;
     }
 
+    throwUrlError() {
+        throw Object.assign(new Error('WebDriver navigation failed'), {
+            url: new URL('https://example.test/driver-failure?step=1'),
+        });
+    }
+
     kill() {
         /* empty */
     }

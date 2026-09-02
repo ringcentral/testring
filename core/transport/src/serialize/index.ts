@@ -39,6 +39,12 @@ import {
     deserializeDate,
     DATE_KEY,
 } from './date';
+import {
+    ISerializedURL,
+    serializeURL,
+    deserializeURL,
+    URL_KEY,
+} from './url';
 
 const UNDEFINED_KEY = 'Undefined';
 const NUMBER_KEY = 'Number';
@@ -96,6 +102,10 @@ export const serialize: TransportSerializer = (rootStruct: any) => {
 
             if (struct instanceof Date) {
                 return serializeDate(struct);
+            }
+
+            if (struct instanceof URL) {
+                return serializeURL(struct);
             }
 
             if (Array.isArray(struct)) {
@@ -167,6 +177,9 @@ export const deserialize: TransportDeserializer = (
 
         case DATE_KEY:
             return deserializeDate(struct as ISerializedDate);
+
+        case URL_KEY:
+            return deserializeURL(struct as ISerializedURL);
         default:
             return struct;
     }
