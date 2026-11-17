@@ -76,11 +76,11 @@ export class TestAPIController {
     public async flushBeforeRunCallbacks() {
         await asyncBreakpoints.waitBeforeInstructionBreakpoint();
 
-        for (const callback of this.beforeRunCallbacks) {
+        const callbacks = this.beforeRunCallbacks;
+        this.beforeRunCallbacks = [];
+        for (const callback of callbacks) {
             await callback();
         }
-
-        this.beforeRunCallbacks = [];
 
         await asyncBreakpoints.waitAfterInstructionBreakpoint();
     }
@@ -92,11 +92,11 @@ export class TestAPIController {
     public async flushAfterRunCallbacks() {
         await asyncBreakpoints.waitBeforeInstructionBreakpoint();
 
-        for (const callback of this.afterRunCallbacks) {
+        const callbacks = this.afterRunCallbacks;
+        this.afterRunCallbacks = [];
+        for (const callback of callbacks) {
             await callback();
         }
-
-        this.afterRunCallbacks = [];
 
         await asyncBreakpoints.waitAfterInstructionBreakpoint();
     }

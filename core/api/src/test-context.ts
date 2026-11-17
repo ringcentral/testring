@@ -3,6 +3,7 @@ import {loggerClient} from '@testring/logger';
 import {HttpClient} from '@testring/http-api';
 import {transport} from '@testring/transport';
 import {WebApplication} from '@testring/web-application';
+import {restructureError} from '@testring/utils';
 import {testAPIController} from './test-api-controller';
 
 const LOG_PREFIX = '[logged inside test]';
@@ -98,7 +99,7 @@ export class TestContext {
         return [...this.customApplications];
     }
 
-    public end(): Promise<any> {
+    public async end(): Promise<void> {
         const requests = this.application.isStopped()
             ? []
             : [this.application.end()];
@@ -109,10 +110,22 @@ export class TestContext {
             }
         }
 
-        return Promise.all(requests).catch(async (error) => {
+        const results = await Promise.allSettled(requests);
+        const cleanupErrors = results
+            .filter(
+                (result): result is PromiseRejectedResult =>
+                    result.status === 'rejected',
+            )
+            .map(({reason}) => restructureError(reason));
+
+        for (const error of cleanupErrors) {
             await this.logWarning(error);
-            throw error;
-        });
+        }
+
+        if (cleanupErrors[0]) {
+            Object.assign(cleanupErrors[0], {cleanupErrors});
+            throw cleanupErrors[0];
+        }
     }
 
     public cloneInstance<O>(obj: O): TestContext & O {

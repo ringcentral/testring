@@ -4,6 +4,8 @@ import * as chai from 'chai';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import {EventEmitter} from 'events';
+import sinon from 'sinon';
 import {Transport} from '@testring/transport';
 import {
     ScreenshotsConfig,
@@ -32,13 +34,220 @@ describe('TestWorkerInstance', () => {
         return filePath;
     }
 
+    async function expectRejection(promise: Promise<unknown>) {
+        let rejection: unknown;
+        try {
+            await promise;
+        } catch (error) {
+            rejection = error;
+        }
+        chai.expect(rejection).to.be.instanceOf(Error);
+    }
+
     const defaultConfig = {
         screenshots: 'disable' as ScreenshotsConfig,
         waitForRelease: false,
         localWorker: false,
     };
 
+    const attachWorker = (instance: any, worker: EventEmitter) => {
+        instance.worker = worker;
+        worker.on('error', instance.workerErrorHandler);
+        worker.once('exit', instance.workerExitHandler);
+    };
+
+    context('termination', () => {
+        it('should coalesce termination, signal once, and rotate identity once after exit', async () => {
+            const instance: any = new TestWorker(
+                new Transport(),
+                defaultConfig,
+            ).spawn();
+            const worker: any = new EventEmitter();
+            worker.kill = sinon.spy(() => {
+                worker.emit('exit', 0);
+                return true;
+            });
+            attachWorker(instance, worker);
+            const workerID = instance.getWorkerID();
+
+            const first = instance.kill('SIGTERM');
+            const second = instance.kill('SIGABRT');
+            await Promise.all([first, second]);
+
+            chai.expect(worker.kill.calledOnceWith('SIGTERM')).to.equal(true);
+            chai.expect(instance.getWorkerID()).not.to.equal(workerID);
+        });
+
+        it('should reject thrown and refused termination without rotating identity', async () => {
+            for (const kill of [
+                () => {
+                    throw new Error('kill failed');
+                },
+                () => false,
+            ]) {
+                const instance: any = new TestWorker(
+                    new Transport(),
+                    defaultConfig,
+                ).spawn();
+                const worker: any = new EventEmitter();
+                worker.kill = kill;
+                attachWorker(instance, worker);
+                const workerID = instance.getWorkerID();
+
+                await expectRejection(instance.kill('SIGABRT'));
+                chai.expect(instance.getWorkerID()).to.equal(workerID);
+            }
+        });
+
+        it('should reject an active execution after five seconds and still clean up a late exit', async () => {
+            const clock = sinon.useFakeTimers();
+            try {
+                const instance: any = new TestWorker(
+                    new Transport(),
+                    defaultConfig,
+                ).spawn();
+                const worker: any = new EventEmitter();
+                worker.kill = () => true;
+                attachWorker(instance, worker);
+                const workerID = instance.getWorkerID();
+                let executionError: Error | undefined;
+                instance.abortTestExecution = (error: Error) => {
+                    executionError = error;
+                };
+
+                const termination = instance.kill('SIGABRT');
+                await clock.tickAsync(5000);
+                await expectRejection(termination);
+
+                chai.expect(executionError?.message).to.include(workerID);
+                chai.expect(instance.getWorkerID()).to.equal(workerID);
+                chai.expect(instance.worker).to.equal(worker);
+
+                worker.emit('exit', 1);
+                chai.expect(instance.worker).to.equal(null);
+            } finally {
+                clock.restore();
+            }
+        });
+
+        it('should apply the same five-second deadline while worker initialization is queued', async () => {
+            const clock = sinon.useFakeTimers();
+            try {
+                const instance: any = new TestWorker(
+                    new Transport(),
+                    defaultConfig,
+                ).spawn();
+                instance.queuedWorker = new Promise(() => undefined);
+
+                const termination = instance.kill();
+                await clock.tickAsync(5000);
+                await expectRejection(termination);
+            } finally {
+                clock.restore();
+            }
+        });
+
+        it('should settle 100 missing-exit terminations without leaving an operation pending', async () => {
+            const clock = sinon.useFakeTimers();
+            try {
+                const terminations = Array.from({length: 100}, () => {
+                    const instance: any = new TestWorker(
+                        new Transport(),
+                        defaultConfig,
+                    ).spawn();
+                    const worker: any = new EventEmitter();
+                    worker.kill = () => true;
+                    attachWorker(instance, worker);
+                    return instance.kill();
+                });
+                const results = Promise.allSettled(terminations);
+
+                await clock.tickAsync(5000);
+
+                chai.expect(
+                    (await results).every(({status}) => status === 'rejected'),
+                ).to.equal(true);
+            } finally {
+                clock.restore();
+            }
+        });
+    });
+
     context('test execution', () => {
+        it('should freshly evaluate 100 consecutive attempts in one local worker', async () => {
+            const key = `__testring_100_attempts_${fixtureCounter}`;
+            const content = `
+                globalThis[${JSON.stringify(key)}] = (globalThis[${JSON.stringify(key)}] || 0) + 1;
+                if (globalThis[${JSON.stringify(key)}] % 2 === 0) throw new Error('even attempt');
+                export {};
+            `;
+            const file = {content, path: writeFixture(content)};
+            const instance = new TestWorker(new Transport(), {
+                ...defaultConfig,
+                localWorker: true,
+            }).spawn();
+
+            try {
+                for (let attempt = 1; attempt <= 100; attempt++) {
+                    if (attempt % 2 === 0) {
+                        await expectRejection(instance.execute(file, {}, null));
+                    } else {
+                        await instance.execute(file, {}, null);
+                    }
+                }
+            } finally {
+                await instance.kill();
+            }
+        });
+
+        for (const localWorker of [false, true]) {
+            const mode = localWorker ? 'local' : 'forked';
+
+            it(`should freshly evaluate the same path from pass to fail in a reused ${mode} worker`, async () => {
+                const key = `__testring_pass_fail_${mode}`;
+                const content = `
+                    globalThis[${JSON.stringify(key)}] = (globalThis[${JSON.stringify(key)}] || 0) + 1;
+                    if (globalThis[${JSON.stringify(key)}] === 2) throw new Error('second attempt');
+                    export {};
+                `;
+                const file = {content, path: writeFixture(content)};
+                const instance = new TestWorker(new Transport(), {
+                    ...defaultConfig,
+                    localWorker,
+                }).spawn();
+
+                await instance.execute(file, {}, null);
+
+                try {
+                    await expectRejection(instance.execute(file, {}, null));
+                } finally {
+                    await instance.kill();
+                }
+            });
+
+            it(`should freshly evaluate the same path from fail to pass in a reused ${mode} worker`, async () => {
+                const key = `__testring_fail_pass_${mode}`;
+                const content = `
+                    globalThis[${JSON.stringify(key)}] = (globalThis[${JSON.stringify(key)}] || 0) + 1;
+                    if (globalThis[${JSON.stringify(key)}] === 1) throw new Error('first attempt');
+                    export {};
+                `;
+                const file = {content, path: writeFixture(content)};
+                const instance = new TestWorker(new Transport(), {
+                    ...defaultConfig,
+                    localWorker,
+                }).spawn();
+
+                await expectRejection(instance.execute(file, {}, null));
+
+                try {
+                    await instance.execute(file, {}, null);
+                } finally {
+                    await instance.kill();
+                }
+            });
+        }
+
         it('should run sync test', async () => {
             const file = {
                 content: defaultSyncTestContent,

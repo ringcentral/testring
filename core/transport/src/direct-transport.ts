@@ -8,18 +8,24 @@ import {
 import {generateUniqId} from '@testring/utils';
 import {serialize, deserialize} from './serialize';
 
+interface PendingDelivery {
+    processID: string;
+    type: string;
+    resolve: () => void;
+    reject: (error: Error) => void;
+    timer: NodeJS.Timeout;
+}
+
+const DELIVERY_TIMEOUT = 5000;
+
 class DirectTransport {
     private static createMessageUID(processID: string) {
         return `${processID}|${generateUniqId()}`;
     }
 
-    private static isMessageFromProcess(processID: string, messageUID: string) {
-        return messageUID.startsWith(processID);
-    }
-
     private childRegistry: Map<string, IWorkerEmitter> = new Map();
 
-    private responseHandlers: Map<string, Function> = new Map();
+    private pendingDeliveries: Map<string, PendingDelivery> = new Map();
 
     constructor(private triggerListeners: TransportMessageHandler) {}
 
@@ -48,18 +54,41 @@ class DirectTransport {
                 uid,
             };
 
-            this.responseHandlers.set(uid, () => {
-                this.responseHandlers.delete(uid);
-                resolve();
+            const timer = setTimeout(() => {
+                this.settleDelivery(
+                    uid,
+                    new Error(
+                        `Message ${type} (${uid}) to ${processID} was not acknowledged within ${DELIVERY_TIMEOUT}ms`,
+                    ),
+                );
+            }, DELIVERY_TIMEOUT);
+            this.pendingDeliveries.set(uid, {
+                processID,
+                type,
+                resolve,
+                reject,
+                timer,
             });
 
-            child.send(message, (error) => {
-                if (error) {
-                    this.responseHandlers.delete(uid);
-
-                    reject(error);
-                }
-            });
+            try {
+                child.send(message, (error) => {
+                    if (error) {
+                        this.settleDelivery(
+                            uid,
+                            new Error(
+                                `Failed to send ${type} (${uid}) to ${processID}: ${error.message}`,
+                            ),
+                        );
+                    }
+                });
+            } catch (error) {
+                this.settleDelivery(
+                    uid,
+                    new Error(
+                        `Failed to send ${type} (${uid}) to ${processID}: ${(error as Error).message}`,
+                    ),
+                );
+            }
         });
     }
 
@@ -82,13 +111,14 @@ class DirectTransport {
         this.childRegistry.delete(processID);
 
         // Removing unfired handlers to avoid memory leak
-        const responseHandlers = Array.from(this.responseHandlers);
-
-        for (const [messageUID, responseHandler] of responseHandlers) {
-            if (DirectTransport.isMessageFromProcess(processID, messageUID)) {
-                this.responseHandlers.delete(messageUID);
-
-                responseHandler();
+        for (const [uid, delivery] of this.pendingDeliveries) {
+            if (delivery.processID === processID) {
+                this.settleDelivery(
+                    uid,
+                    new Error(
+                        `Process ${processID} exited before acknowledging ${delivery.type} (${uid})`,
+                    ),
+                );
             }
         }
     }
@@ -113,7 +143,7 @@ class DirectTransport {
 
         switch (message.type) {
             case TransportInternalMessageType.messageResponse:
-                this.handleMessageResponse(normalizedMessage);
+                this.handleMessageResponse(normalizedMessage, processID);
                 break;
 
             default:
@@ -121,13 +151,27 @@ class DirectTransport {
         }
     }
 
-    private handleMessageResponse(message: ITransportMessage<string>) {
+    private handleMessageResponse(
+        message: ITransportMessage<string>,
+        processID: string,
+    ) {
         const messageUID = message.payload;
-        const responseHandler = this.responseHandlers.get(messageUID);
+        const delivery = this.pendingDeliveries.get(messageUID);
 
-        if (typeof responseHandler === 'function') {
-            responseHandler();
+        if (delivery?.processID === processID) {
+            this.settleDelivery(messageUID);
         }
+    }
+
+    private settleDelivery(uid: string, error?: Error) {
+        const delivery = this.pendingDeliveries.get(uid);
+        if (!delivery) {
+            return;
+        }
+
+        this.pendingDeliveries.delete(uid);
+        clearTimeout(delivery.timer);
+        error ? delivery.reject(error) : delivery.resolve();
     }
 }
 

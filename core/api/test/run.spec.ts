@@ -8,7 +8,10 @@ import {TestEvents} from '@testring/types';
 
 import {run} from '../src/run';
 import {TestContext} from '../src/test-context';
-import {testAPIController} from '../src/test-api-controller';
+import {
+    testAPIController,
+    TestAPIController,
+} from '../src/test-api-controller';
 
 const TEST_ID = 'test.js';
 const LOG_PREFIX = '[logged inside test]';
@@ -104,6 +107,72 @@ describe('TestContext', () => {
         chai.expect(warn.calledOnceWithExactly(LOG_PREFIX, cleanupError)).to.be
             .equal(true);
     });
+
+    it('should await every cleanup and retain failures in application order', async () => {
+        const context = new TestContext({});
+        const firstError = new Error('primary cleanup failed');
+        const secondError = new Error('custom cleanup failed');
+        let finishDelayedCleanup!: () => void;
+        let delayedCleanupFinished = false;
+        const delayedCleanup = new Promise<void>((resolve) => {
+            finishDelayedCleanup = () => {
+                delayedCleanupFinished = true;
+                resolve();
+            };
+        });
+        const applications = [
+            {isStopped: () => false, end: () => Promise.reject(firstError)},
+            {isStopped: () => false, end: () => delayedCleanup},
+            {isStopped: () => false, end: () => Promise.reject(secondError)},
+        ];
+        const warn = track(restorables, sinon.stub(loggerClient, 'warn'));
+        Object.defineProperty(context, 'application', {
+            value: applications[0],
+            configurable: true,
+        });
+        (context as any).customApplications.add(applications[1]);
+        (context as any).customApplications.add(applications[2]);
+
+        const cleanup = context.end();
+        await Promise.resolve();
+        finishDelayedCleanup();
+        const [result] = await Promise.allSettled([cleanup]);
+
+        chai.expect(delayedCleanupFinished).to.equal(true);
+        chai.expect(result?.status).to.equal('rejected');
+        const error = (result as PromiseRejectedResult).reason;
+        chai.expect(error).to.equal(firstError);
+        chai.expect(error.cleanupErrors).to.deep.equal([
+            firstError,
+            secondError,
+        ]);
+        chai.expect(warn.callCount).to.equal(2);
+    });
+});
+
+describe('TestAPIController callbacks', () => {
+    for (const stage of ['Before', 'After'] as const) {
+        it(`should detach and discard a failed ${stage.toLowerCase()}-run batch while retaining new registrations`, async () => {
+            const controller = new TestAPIController() as any;
+            const calls: string[] = [];
+            const register = `register${stage}RunCallback`;
+            const flush = `flush${stage}RunCallbacks`;
+
+            controller[register](() => {
+                calls.push('failed');
+                controller[register](() => calls.push('next'));
+                throw new Error('callback failed');
+            });
+            controller[register](() => calls.push('discarded'));
+
+            const [first] = await Promise.allSettled([controller[flush]()]);
+            chai.expect(first?.status).to.equal('rejected');
+            await controller[flush]();
+            await controller[flush]();
+
+            chai.expect(calls).to.deep.equal(['failed', 'next']);
+        });
+    }
 });
 
 describe('run', () => {
@@ -169,6 +238,9 @@ describe('run', () => {
         chai.expect(end.calledOnce).to.equal(true);
         chai.expect(events.getFinishedCount()).to.equal(0);
         chai.expect(events.failedErrors).to.deep.equal([bodyError]);
+        chai.expect((bodyError as any).cleanupErrors).to.deep.equal([
+            cleanupError,
+        ]);
         chai.expect(
             endStep.calledOnceWithExactly(TEST_ID, 'Test failed', bodyError),
         ).to.equal(true);
