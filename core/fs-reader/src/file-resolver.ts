@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import {IFile} from '@testring/types';
+import type pLimit from 'p-limit';
 
 // p-limit has been ESM-only since v4; this package's tsconfig targets
 // CommonJS output, so a plain `import`/`require()` can't load it. Loading
@@ -13,13 +14,11 @@ const dynamicImport: (specifier: string) => Promise<unknown> = new Function(
     'return import(specifier);',
 ) as (specifier: string) => Promise<unknown>;
 
-let pLimitModulePromise: Promise<typeof import('p-limit')> | null = null;
+let pLimitModulePromise: Promise<{default: typeof pLimit}> | null = null;
 
-function importPLimit(): Promise<typeof import('p-limit')> {
+function importPLimit(): Promise<{default: typeof pLimit}> {
     if (pLimitModulePromise === null) {
-        pLimitModulePromise = dynamicImport('p-limit') as Promise<
-            typeof import('p-limit')
-        >;
+        pLimitModulePromise = dynamicImport('p-limit') as Promise<{default: typeof pLimit}>;
     }
 
     return pLimitModulePromise;
