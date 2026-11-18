@@ -16,6 +16,32 @@ import {HttpServer} from '../src/http-server';
 // TODO (flops) add tests for cookies
 
 describe('HttpServer', () => {
+    it('does not warn for rejected HTTP requests', async () => {
+        const transport = new TransportMock();
+        const server = new HttpServer(
+            transport,
+            () => Promise.reject(new Error('request failed')),
+        );
+        const warnings: any[] = [];
+        (server as any).logger = {
+            warn: (...args: any[]) => warnings.push(args),
+            error: () => undefined,
+            verbose: () => undefined,
+        };
+        const rejection = new Promise<any>((resolve) =>
+            transport.on(HttpMessageType.reject, resolve),
+        );
+        transport.broadcast(HttpMessageType.send, {
+            uid: 'rejected-request',
+            request: {method: 'GET', url: 'https://example.com'},
+        });
+
+        const message = await rejection;
+        server.kill();
+        chai.expect(message.error.message).to.equal('request failed');
+        chai.expect(warnings).to.have.lengthOf(0);
+    });
+
     it('sends portable HTTP errors with safe response diagnostics', async () => {
         class RequestJar {}
         class RawResponse {}
