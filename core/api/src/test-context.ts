@@ -18,7 +18,7 @@ export class TestContext {
     constructor(config: any) {
         this.http = new HttpClient(transport, {
             httpThrottle: config.httpThrottle,
-            httpResponseTimeout: config.httpResponseTimeout,
+            httpResponseTimeout: config.httpResponseTimeout ?? 120_000,
         });
     }
 
