@@ -314,6 +314,20 @@ $ testring run --http-throttle 500
 
 <br/>
 
+## `httpResponseTimeout`
+
+###### `120000` <sup>default</sup>
+
+Maximum time in milliseconds to wait for an HTTP response or rejection from a worker request. The value must be a positive finite number.
+
+```json
+{
+  "httpResponseTimeout": 120000
+}
+```
+
+<br/>
+
 ## `plugins`
 
 ###### `void` <sup>default</sup>

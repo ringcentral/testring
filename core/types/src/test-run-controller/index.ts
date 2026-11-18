@@ -17,6 +17,7 @@ export interface ITestQueuedTestRunData {
     debug: boolean;
     logLevel: LogLevel;
     httpThrottle: number;
+    httpResponseTimeout: number;
     screenshotsEnabled: boolean;
     isRetryRun: boolean;
     devtool: IDevtoolRuntimeConfiguration | null;

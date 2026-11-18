@@ -1,3 +1,4 @@
+import process from 'node:process';
 import {
     HttpMessageType,
     ITransport,
@@ -13,6 +14,7 @@ import {
 import {LoggerClient, loggerClient} from '@testring/logger';
 import {Queue, generateUniqId} from '@testring/utils';
 import {HttpCookieJar} from './cookie-jar';
+import {safeUrl} from './safe-url';
 
 const toString = (c: any) => c.toString();
 
@@ -26,9 +28,18 @@ export abstract class AbstractHttpClient implements IHttpClient {
 
     private params: HttpClientParams = {
         httpThrottle: 0,
+        httpResponseTimeout: 120_000,
     };
 
     private queueRunning = false;
+
+    protected log(level: 'debug' | 'warn' | 'error', ...args: any[]) {
+        try {
+            this.loggerClient[level](...args);
+        } catch {
+            // Diagnostics must not keep an HTTP request pending.
+        }
+    }
 
     constructor(
         protected transportInstance: ITransport,
@@ -40,6 +51,15 @@ export abstract class AbstractHttpClient implements IHttpClient {
             HttpClientParams,
             Partial<HttpClientParams>
         >(this.params, params);
+
+        if (
+            !Number.isFinite(this.params.httpResponseTimeout) ||
+            this.params.httpResponseTimeout <= 0
+        ) {
+            throw new RangeError(
+                'httpResponseTimeout must be a positive finite number',
+            );
+        }
     }
 
     public post(
@@ -158,9 +178,30 @@ export abstract class AbstractHttpClient implements IHttpClient {
         }
 
         const requestUID = generateUniqId();
+        const method = requestParameters.method || 'GET';
+        const url = safeUrl(requestParameters.url);
 
         return new Promise((resolve, reject) => {
-            const removeResponseHandler = this.transportInstance.on(
+            let removeResponseHandler: () => void = (): void => undefined;
+            let removeRejectHandler: () => void = (): void => undefined;
+            let settled = false;
+            const timeout: {timer?: NodeJS.Timeout} = {};
+            const cleanup = () => {
+                clearTimeout(timeout.timer);
+                removeResponseHandler();
+                removeRejectHandler();
+            };
+            const finish = (
+                callback: typeof resolve | typeof reject,
+                value: any,
+            ) => {
+                if (!settled) {
+                    settled = true;
+                    cleanup();
+                    callback(value);
+                }
+            };
+            removeResponseHandler = this.transportInstance.on(
                 HttpMessageType.response,
                 (response: IHttpResponseMessage) => {
                     if (!response.uid) {
@@ -169,10 +210,14 @@ export abstract class AbstractHttpClient implements IHttpClient {
                     }
 
                     if (response.uid === requestUID) {
-                        removeResponseHandler();
-                        // eslint-disable-next-line no-use-before-define
-                        removeRejectHandler();
-
+                        this.log('debug', 'HTTP request completed', {
+                            event: 'http_request_completed',
+                            uid: requestUID,
+                            source: String(process.pid),
+                            method,
+                            url,
+                            messageType: HttpMessageType.response,
+                        });
                         if (cookieJar) {
                             cookieJar.setCookies(
                                 response.response.cookies,
@@ -181,15 +226,15 @@ export abstract class AbstractHttpClient implements IHttpClient {
                         }
 
                         if (requestParameters.resolveWithFullResponse) {
-                            resolve(response.response);
+                            finish(resolve, response.response);
                         } else {
-                            resolve(response.response.body);
+                            finish(resolve, response.response.body);
                         }
                     }
                 },
             );
 
-            const removeRejectHandler = this.transportInstance.on(
+            removeRejectHandler = this.transportInstance.on(
                 HttpMessageType.reject,
                 (response: IHttpResponseRejectMessage) => {
                     if (!response.uid) {
@@ -198,17 +243,60 @@ export abstract class AbstractHttpClient implements IHttpClient {
                     }
 
                     if (response.uid === requestUID) {
-                        removeRejectHandler();
-                        removeResponseHandler();
-                        reject(response.error);
+                        this.log('warn', 'HTTP request rejected', {
+                            event: 'http_request_rejected',
+                            uid: requestUID,
+                            source: String(process.pid),
+                            method,
+                            url,
+                            messageType: HttpMessageType.reject,
+                            requestFailure: {
+                                name: response.error?.name,
+                                statusCode: (response.error as any)?.statusCode,
+                                code: (response.error as any)?.code,
+                            },
+                        });
+                        finish(reject, response.error);
                     }
                 },
             );
 
-            this.broadcast({
-                uid: requestUID,
-                request: requestParameters,
-            });
+            timeout.timer = setTimeout(() => {
+                const error = new Error(
+                    `HTTP request ${method} ${url} (${requestUID}) timed out after ${this.params.httpResponseTimeout}ms`,
+                );
+                error.name = 'HTTP_RESPONSE_TIMEOUT';
+                (error as any).code = 'HTTP_RESPONSE_TIMEOUT';
+                (error as any).uid = requestUID;
+                this.log('error', 'HTTP response timeout', {
+                    event: 'http_response_timeout',
+                    uid: requestUID,
+                    source: String(process.pid),
+                    method,
+                    url,
+                    messageType: `${HttpMessageType.response}|${HttpMessageType.reject}`,
+                    phase: 'timeout',
+                    timeoutMs: this.params.httpResponseTimeout,
+                });
+                finish(reject, error);
+            }, this.params.httpResponseTimeout);
+
+            try {
+                this.log('debug', 'HTTP request started', {
+                    event: 'http_request_started',
+                    uid: requestUID,
+                    source: String(process.pid),
+                    method,
+                    url,
+                    messageType: HttpMessageType.send,
+                });
+                this.broadcast({
+                    uid: requestUID,
+                    request: requestParameters,
+                });
+            } catch (error) {
+                finish(reject, error);
+            }
         });
     }
 }

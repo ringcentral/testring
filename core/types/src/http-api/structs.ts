@@ -34,9 +34,10 @@ export interface IHttpResponseMessage {
 
 export interface IHttpResponseRejectMessage {
     uid: string;
-    error: IHttpResponse;
+    error: Error;
 }
 
 export type HttpClientParams = {
     httpThrottle: number;
+    httpResponseTimeout: number;
 };
