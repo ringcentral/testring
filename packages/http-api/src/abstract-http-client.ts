@@ -26,6 +26,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
 
     private params: HttpClientParams = {
         httpThrottle: 0,
+        httpResponseTimeout: 60_000,
     };
 
     private queueRunning = false;
@@ -40,6 +41,15 @@ export abstract class AbstractHttpClient implements IHttpClient {
             HttpClientParams,
             Partial<HttpClientParams>
         >(this.params, params);
+
+        if (
+            !Number.isFinite(this.params.httpResponseTimeout) ||
+            this.params.httpResponseTimeout <= 0
+        ) {
+            throw new RangeError(
+                'httpResponseTimeout must be a positive finite number',
+            );
+        }
     }
 
     public post(
@@ -160,7 +170,26 @@ export abstract class AbstractHttpClient implements IHttpClient {
         const requestUID = generateUniqId();
 
         return new Promise((resolve, reject) => {
-            const removeResponseHandler = this.transportInstance.on(
+            let removeResponseHandler: () => void = (): void => undefined;
+            let removeRejectHandler: () => void = (): void => undefined;
+            let settled = false;
+            const timeout: {timer?: NodeJS.Timeout} = {};
+            const cleanup = () => {
+                clearTimeout(timeout.timer);
+                removeResponseHandler();
+                removeRejectHandler();
+            };
+            const finish = (
+                callback: typeof resolve | typeof reject,
+                value: any,
+            ) => {
+                if (!settled) {
+                    settled = true;
+                    cleanup();
+                    callback(value);
+                }
+            };
+            removeResponseHandler = this.transportInstance.on(
                 HttpMessageType.response,
                 (response: IHttpResponseMessage) => {
                     if (!response.uid) {
@@ -169,10 +198,6 @@ export abstract class AbstractHttpClient implements IHttpClient {
                     }
 
                     if (response.uid === requestUID) {
-                        removeResponseHandler();
-                        // eslint-disable-next-line no-use-before-define
-                        removeRejectHandler();
-
                         if (cookieJar) {
                             cookieJar.setCookies(
                                 response.response.cookies,
@@ -181,15 +206,15 @@ export abstract class AbstractHttpClient implements IHttpClient {
                         }
 
                         if (requestParameters.resolveWithFullResponse) {
-                            resolve(response.response);
+                            finish(resolve, response.response);
                         } else {
-                            resolve(response.response.body);
+                            finish(resolve, response.response.body);
                         }
                     }
                 },
             );
 
-            const removeRejectHandler = this.transportInstance.on(
+            removeRejectHandler = this.transportInstance.on(
                 HttpMessageType.reject,
                 (response: IHttpResponseRejectMessage) => {
                     if (!response.uid) {
@@ -198,17 +223,44 @@ export abstract class AbstractHttpClient implements IHttpClient {
                     }
 
                     if (response.uid === requestUID) {
-                        removeRejectHandler();
-                        removeResponseHandler();
-                        reject(response.error);
+                        finish(reject, response.error);
                     }
                 },
             );
 
-            this.broadcast({
-                uid: requestUID,
-                request: requestParameters,
-            });
+            timeout.timer = setTimeout(() => {
+                const method = requestParameters.method || 'GET';
+                const safeUrl = (() => {
+                    try {
+                        const url = new URL(requestParameters.url);
+                        return `${url.origin}${url.pathname}`;
+                    } catch {
+                        return (
+                            requestParameters.url
+                                .split(/[?#]/, 1)[0]
+                                ?.replace(
+                                    /^([a-z][a-z\d+.-]*:\/\/)[^/]*@/i,
+                                    '$1',
+                                ) || ''
+                        );
+                    }
+                })();
+                finish(
+                    reject,
+                    new Error(
+                        `HTTP request ${method} ${safeUrl} (${requestUID}) timed out after ${this.params.httpResponseTimeout}ms`,
+                    ),
+                );
+            }, this.params.httpResponseTimeout);
+
+            try {
+                this.broadcast({
+                    uid: requestUID,
+                    request: requestParameters,
+                });
+            } catch (error) {
+                finish(reject, error);
+            }
         });
     }
 }

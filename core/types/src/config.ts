@@ -30,4 +30,5 @@ export interface IConfig extends IConfigLogger {
     envParameters?: any;
     plugins: Array<ConfigPluginDescriptor>;
     httpThrottle: number;
+    httpResponseTimeout: number;
 }

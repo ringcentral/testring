@@ -89,6 +89,7 @@ class RunCommand implements ICLICommand {
         const fsReader = new FSReader();
         const httpClient = new HttpClient(this.transport, {
             httpThrottle: this.config.httpThrottle,
+            httpResponseTimeout: this.config.httpResponseTimeout,
         });
 
         applyPlugins(

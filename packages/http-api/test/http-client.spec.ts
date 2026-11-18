@@ -111,6 +111,55 @@ describe('HttpClient', () => {
         }
     });
 
+    it('rejects missing replies and continues with the next queued request', async () => {
+        const transport = new TransportMock();
+        const httpClient = new HttpClient(transport, {
+            httpThrottle: 0,
+            httpResponseTimeout: 20,
+        });
+        let requests = 0;
+        transport.on(
+            HttpMessageType.send,
+            (data: IHttpRequestMessage, src?: string) => {
+                requests++;
+                if (requests === 2) {
+                    transport.send(src as string, HttpMessageType.response, {
+                        uid: data.uid,
+                        response: DEFAULT_RESPONSE,
+                    });
+                }
+            },
+        );
+
+        try {
+            await httpClient.get({
+                url: 'https://user:secret@example.com/path?token=secret',
+            });
+            throw new Error('Request unexpectedly resolved');
+        } catch (error) {
+            chai.expect(error).instanceOf(Error);
+            chai.expect((error as Error).message).to.include(
+                'GET https://example.com/path',
+            );
+            chai.expect((error as Error).message).not.to.include('secret');
+        }
+        chai.expect(transport.listenerCount(HttpMessageType.response)).to.equal(0);
+        chai.expect(transport.listenerCount(HttpMessageType.reject)).to.equal(0);
+
+        chai.expect(await httpClient.get({url: DEFAULT_URL})).to.equal(
+            DEFAULT_RESPONSE.body,
+        );
+    });
+
+    it('requires a positive finite response timeout', () => {
+        chai.expect(
+            () =>
+                new HttpClient(new TransportMock(), {
+                    httpResponseTimeout: 0,
+                }),
+        ).to.throw(RangeError);
+    });
+
     it('should get an error if response has no uid', (callback) => {
         const transport = new TransportMock();
         const httpClient = new HttpClient(transport);
