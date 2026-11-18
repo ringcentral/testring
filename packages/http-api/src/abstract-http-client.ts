@@ -33,7 +33,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
 
     private queueRunning = false;
 
-    protected log(level: 'debug' | 'warn' | 'error', ...args: any[]) {
+    protected log(level: 'verbose' | 'debug' | 'warn' | 'error', ...args: any[]) {
         try {
             this.loggerClient[level](...args);
         } catch {
@@ -210,7 +210,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
                     }
 
                     if (response.uid === requestUID) {
-                        this.log('debug', 'HTTP request completed', {
+                        this.log('verbose', 'HTTP request completed', {
                             event: 'http_request_completed',
                             uid: requestUID,
                             source: String(process.pid),
@@ -282,7 +282,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
             }, this.params.httpResponseTimeout);
 
             try {
-                this.log('debug', 'HTTP request started', {
+                this.log('verbose', 'HTTP request started', {
                     event: 'http_request_started',
                     uid: requestUID,
                     source: String(process.pid),

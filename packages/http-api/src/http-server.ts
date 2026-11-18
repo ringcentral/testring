@@ -106,7 +106,7 @@ export class HttpServer
 
     private isKilled = false;
 
-    private log(level: 'debug' | 'warn' | 'error', ...args: any[]) {
+    private log(level: 'verbose' | 'debug' | 'warn' | 'error', ...args: any[]) {
         try {
             this.logger[level](...args);
         } catch {
@@ -157,12 +157,12 @@ export class HttpServer
             };
 
             try {
-                this.log('debug', 'HTTP request started', {
+                this.log('verbose', 'HTTP request started', {
                     event: 'http_request_started',
                     ...context,
                     messageType: HttpMessageType.send,
                 });
-                this.log('debug', 'Sending HTTP request', context);
+                this.log('verbose', 'Sending HTTP request', context);
 
                 const requestAfterHook = await this.callHook(
                     HttpServerPlugins.beforeRequest,
@@ -186,7 +186,7 @@ export class HttpServer
                     requestAfterHook,
                 );
 
-                this.log('debug', 'HTTP request completed', {
+                this.log('verbose', 'HTTP request completed', {
                     event: 'http_request_completed',
                     ...context,
                     messageType: HttpMessageType.response,
@@ -313,7 +313,7 @@ export class HttpServer
                 );
             }
         }
-        this.log('debug', 'HTTP reply sent', {
+        this.log('verbose', 'HTTP reply sent', {
             event: 'http_reply_sent',
             uid: (payload as any)?.uid,
             source,

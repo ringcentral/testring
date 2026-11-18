@@ -6,7 +6,7 @@ export class HttpClient extends AbstractHttpClient {
     protected broadcast(request: IHttpRequestMessage) {
         if (this.transportInstance.isChildProcess()) {
             this.log(
-                'debug',
+                'verbose',
                 'send message to parent process',
                 {
                     uid: request.uid,
@@ -16,7 +16,7 @@ export class HttpClient extends AbstractHttpClient {
             );
         } else {
             this.log(
-                'debug',
+                'verbose',
                 'send message inside root process',
                 {
                     uid: request.uid,
