@@ -20,5 +20,5 @@ export const defaultConfiguration: IConfig = {
     logLevel: LogLevel.info,
     envParameters: {},
     httpThrottle: 0,
-    httpResponseTimeout: 60_000,
+    httpResponseTimeout: 120_000,
 };

@@ -1,17 +1,28 @@
 import {IHttpRequestMessage, HttpMessageType} from '@testring/types';
 import {AbstractHttpClient} from './abstract-http-client';
+import {safeUrl} from './safe-url';
 
 export class HttpClient extends AbstractHttpClient {
     protected broadcast(request: IHttpRequestMessage) {
         if (this.transportInstance.isChildProcess()) {
-            this.loggerClient.verbose(
+            this.log(
+                'debug',
                 'send message to parent process',
-                request,
+                {
+                    uid: request.uid,
+                    method: request.request.method || 'GET',
+                    url: safeUrl(request.request.url),
+                },
             );
         } else {
-            this.loggerClient.verbose(
+            this.log(
+                'debug',
                 'send message inside root process',
-                request,
+                {
+                    uid: request.uid,
+                    method: request.request.method || 'GET',
+                    url: safeUrl(request.request.url),
+                },
             );
         }
 

@@ -1,3 +1,4 @@
+import process from 'node:process';
 import {
     HttpMessageType,
     ITransport,
@@ -13,6 +14,7 @@ import {
 import {LoggerClient, loggerClient} from '@testring/logger';
 import {Queue, generateUniqId} from '@testring/utils';
 import {HttpCookieJar} from './cookie-jar';
+import {safeUrl} from './safe-url';
 
 const toString = (c: any) => c.toString();
 
@@ -26,10 +28,18 @@ export abstract class AbstractHttpClient implements IHttpClient {
 
     private params: HttpClientParams = {
         httpThrottle: 0,
-        httpResponseTimeout: 60_000,
+        httpResponseTimeout: 120_000,
     };
 
     private queueRunning = false;
+
+    protected log(level: 'debug' | 'warn' | 'error', ...args: any[]) {
+        try {
+            this.loggerClient[level](...args);
+        } catch {
+            // Diagnostics must not keep an HTTP request pending.
+        }
+    }
 
     constructor(
         protected transportInstance: ITransport,
@@ -168,6 +178,8 @@ export abstract class AbstractHttpClient implements IHttpClient {
         }
 
         const requestUID = generateUniqId();
+        const method = requestParameters.method || 'GET';
+        const url = safeUrl(requestParameters.url);
 
         return new Promise((resolve, reject) => {
             let removeResponseHandler: () => void = (): void => undefined;
@@ -198,6 +210,14 @@ export abstract class AbstractHttpClient implements IHttpClient {
                     }
 
                     if (response.uid === requestUID) {
+                        this.log('debug', 'HTTP request completed', {
+                            event: 'http_request_completed',
+                            uid: requestUID,
+                            source: String(process.pid),
+                            method,
+                            url,
+                            messageType: HttpMessageType.response,
+                        });
                         if (cookieJar) {
                             cookieJar.setCookies(
                                 response.response.cookies,
@@ -223,37 +243,53 @@ export abstract class AbstractHttpClient implements IHttpClient {
                     }
 
                     if (response.uid === requestUID) {
+                        this.log('warn', 'HTTP request rejected', {
+                            event: 'http_request_rejected',
+                            uid: requestUID,
+                            source: String(process.pid),
+                            method,
+                            url,
+                            messageType: HttpMessageType.reject,
+                            requestFailure: {
+                                name: response.error?.name,
+                                statusCode: (response.error as any)?.statusCode,
+                                code: (response.error as any)?.code,
+                            },
+                        });
                         finish(reject, response.error);
                     }
                 },
             );
 
             timeout.timer = setTimeout(() => {
-                const method = requestParameters.method || 'GET';
-                const safeUrl = (() => {
-                    try {
-                        const url = new URL(requestParameters.url);
-                        return `${url.origin}${url.pathname}`;
-                    } catch {
-                        return (
-                            requestParameters.url
-                                .split(/[?#]/, 1)[0]
-                                ?.replace(
-                                    /^([a-z][a-z\d+.-]*:\/\/)[^/]*@/i,
-                                    '$1',
-                                ) || ''
-                        );
-                    }
-                })();
-                finish(
-                    reject,
-                    new Error(
-                        `HTTP request ${method} ${safeUrl} (${requestUID}) timed out after ${this.params.httpResponseTimeout}ms`,
-                    ),
+                const error = new Error(
+                    `HTTP request ${method} ${url} (${requestUID}) timed out after ${this.params.httpResponseTimeout}ms`,
                 );
+                error.name = 'HTTP_RESPONSE_TIMEOUT';
+                (error as any).code = 'HTTP_RESPONSE_TIMEOUT';
+                (error as any).uid = requestUID;
+                this.log('error', 'HTTP response timeout', {
+                    event: 'http_response_timeout',
+                    uid: requestUID,
+                    source: String(process.pid),
+                    method,
+                    url,
+                    messageType: `${HttpMessageType.response}|${HttpMessageType.reject}`,
+                    phase: 'timeout',
+                    timeoutMs: this.params.httpResponseTimeout,
+                });
+                finish(reject, error);
             }, this.params.httpResponseTimeout);
 
             try {
+                this.log('debug', 'HTTP request started', {
+                    event: 'http_request_started',
+                    uid: requestUID,
+                    source: String(process.pid),
+                    method,
+                    url,
+                    messageType: HttpMessageType.send,
+                });
                 this.broadcast({
                     uid: requestUID,
                     request: requestParameters,

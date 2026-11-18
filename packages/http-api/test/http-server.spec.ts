@@ -207,7 +207,8 @@ describe('HttpServer', () => {
             'HTTP response could not be delivered',
         );
         chai.expect(JSON.stringify(logs)).to.include('response-delivery-uid');
-        chai.expect(JSON.stringify(logs)).to.include('"phase":"response"');
+        chai.expect(JSON.stringify(logs)).to.include('"attempt":"response"');
+        chai.expect(JSON.stringify(logs)).to.include('"phase":"send"');
         chai.expect(JSON.stringify(logs)).not.to.include('Request failed');
     });
     describe('General', () => {

@@ -316,7 +316,7 @@ $ testring run --http-throttle 500
 
 ## `httpResponseTimeout`
 
-###### `60000` <sup>default</sup>
+###### `120000` <sup>default</sup>
 
 Maximum time in milliseconds to wait for an HTTP response or rejection from a worker request. The value must be a positive finite number.
 
