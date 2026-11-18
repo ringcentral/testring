@@ -233,12 +233,6 @@ export class HttpServer
                     statusCode: (portableError as any).statusCode,
                     code: (portableError as any).code,
                 };
-                this.log('warn', 'HTTP request rejected', {
-                    event: 'http_request_rejected',
-                    ...context,
-                    messageType: HttpMessageType.reject,
-                    requestFailure,
-                });
                 try {
                     await this.sendResponse<IHttpResponseRejectMessage>(
                         rSrc,
