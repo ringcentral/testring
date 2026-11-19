@@ -6,6 +6,11 @@ class SyncPlugin {
     throwUrlError() {
         throw Object.assign(new Error('WebDriver navigation failed'), {
             url: new URL('https://example.test/driver-failure?step=1'),
+            opts: {
+                signal: new AbortController().signal,
+                headers: {authorization: 'secret'},
+            },
+            details: {step: 1},
         });
     }
 

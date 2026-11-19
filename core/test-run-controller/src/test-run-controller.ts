@@ -12,7 +12,7 @@ import {
 } from '@testring/types';
 import {loggerClient} from '@testring/logger';
 import {PluggableModule} from '@testring/pluggable-module';
-import {Queue} from '@testring/utils';
+import {addErrorDetails, Queue} from '@testring/utils';
 
 type TestQueue = Queue<IQueuedTest>;
 type StopReason = 'none' | 'bail' | 'cancelled' | 'unexpected';
@@ -103,7 +103,7 @@ export class TestRunController
             )
             .map(({reason}) => reason as Error);
         if (errors[0]) {
-            Object.assign(errors[0], {terminationErrors: errors});
+            addErrorDetails(errors[0], {terminationErrors: errors});
             throw errors[0];
         }
     }

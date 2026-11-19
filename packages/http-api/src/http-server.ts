@@ -11,6 +11,7 @@ import {
 } from '@testring/types';
 import {PluggableModule} from '@testring/pluggable-module';
 import {LoggerClient, loggerClient} from '@testring/logger';
+import {addErrorDetails} from '@testring/utils';
 import {safeUrl} from './safe-url';
 
 type MakeRequest = (request: IHttpRequest) => Promise<IHttpResponse>;
@@ -82,15 +83,19 @@ function normalizeHttpError(error: any): Error {
     normalized.name =
         typeof error?.name === 'string' ? error.name : 'Error';
 
+    const details: Record<string, unknown> = {};
     const statusCode = error?.statusCode ?? error?.response?.statusCode;
     if (Number.isFinite(statusCode)) {
-        (normalized as any).statusCode = statusCode;
+        details['statusCode'] = statusCode;
     }
 
     const responseBody = error?.response?.body ?? error?.error;
     const portableBody = portableValue(responseBody);
     if (portableBody !== undefined) {
-        (normalized as any).responseBody = portableBody;
+        details['responseBody'] = portableBody;
+    }
+    if (Object.keys(details).length) {
+        addErrorDetails(normalized, details);
     }
 
     return normalized;

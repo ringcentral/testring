@@ -166,6 +166,11 @@ describe('Browser proxy controller functional test', () => {
             chai.expect(error.url.href).to.equal(
                 'https://example.test/driver-failure?step=1',
             );
+            chai.expect(error.details).to.deep.equal({
+                step: 1,
+                url: new URL('https://example.test/driver-failure?step=1'),
+            });
+            chai.expect(error).not.to.have.own.property('opts');
 
             await controller.execute('test', {
                 action: BrowserProxyActions.click,

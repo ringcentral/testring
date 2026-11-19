@@ -3,47 +3,112 @@ import {
     TransportDeserializer,
     TransportSerializer,
 } from '@testring/types';
+import {addErrorDetails} from '@testring/utils';
 
 export interface ISerializedError extends ITransportSerializedStruct {
     $key: string;
     name: string;
     message: string;
     stack: string | void;
+    code?: string;
     cause?: ITransportSerializedStruct;
-    dictionary: Record<string, ITransportSerializedStruct>;
+    causeOmitted?: true;
+    details?: ITransportSerializedStruct;
+    detailsOmitted?: true;
+    dictionary?: Record<string, ITransportSerializedStruct>;
+    type?: string;
 }
 
 export const ERROR_KEY = 'Error';
+const MAX_CAUSE_DEPTH = 5;
+const isRecord = (value: any): value is Record<string, unknown> => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return false;
+    }
+
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+};
+
+function serializeCause(
+    error: Error,
+    serialize: TransportSerializer,
+    causeDepth: number,
+): Pick<ISerializedError, 'cause' | 'causeOmitted'> {
+    const descriptor = Object.getOwnPropertyDescriptor(error, 'cause');
+    if (!descriptor) {
+        return {};
+    }
+    if (!('value' in descriptor)) {
+        return {causeOmitted: true};
+    }
+
+    try {
+        if (descriptor.value instanceof Error) {
+            return causeDepth < MAX_CAUSE_DEPTH
+                ? {
+                      cause: serializeError(
+                          descriptor.value,
+                          serialize,
+                          causeDepth + 1,
+                      ),
+                  }
+                : {causeOmitted: true};
+        }
+        return {cause: serialize(descriptor.value)};
+    } catch {
+        return {causeOmitted: true};
+    }
+}
+
+function serializeDetails(
+    error: Error,
+    serialize: TransportSerializer,
+): Pick<ISerializedError, 'details' | 'detailsOmitted'> {
+    const descriptor = Object.getOwnPropertyDescriptor(error, 'details');
+    if (!descriptor) {
+        return {};
+    }
+    if (!('value' in descriptor) || !isRecord(descriptor.value)) {
+        return {detailsOmitted: true};
+    }
+
+    try {
+        return {details: serialize(descriptor.value)};
+    } catch {
+        return {detailsOmitted: true};
+    }
+}
 
 export function serializeError(
     error: Error,
     serialize: TransportSerializer,
+    causeDepth = 0,
 ): ISerializedError {
-    if (
-        Object.getOwnPropertySymbols(error).some((symbol) =>
-            Object.prototype.propertyIsEnumerable.call(error, symbol),
-        )
-    ) {
-        throw new TypeError('Enumerable symbol keys are not supported');
-    }
-
-    const dictionary: Record<string, ITransportSerializedStruct> = {};
-    for (const key of Object.keys(error)) {
-        if (!['name', 'message', 'stack', 'cause'].includes(key)) {
-            dictionary[key] = serialize((error as any)[key]);
-        }
-    }
-
     const serialized: ISerializedError = {
         $key: ERROR_KEY,
         name: error.name,
+        type: error.name,
         message: error.message,
         stack: error.stack,
-        dictionary,
     };
 
-    if (Object.prototype.hasOwnProperty.call(error, 'cause')) {
-        serialized.cause = serialize((error as any).cause);
+    if ((error as Error & {causeOmitted?: boolean}).causeOmitted) {
+        serialized.causeOmitted = true;
+    }
+    if ((error as Error & {detailsOmitted?: boolean}).detailsOmitted) {
+        serialized.detailsOmitted = true;
+    }
+
+    Object.assign(
+        serialized,
+        serializeCause(error, serialize, causeDepth),
+        serializeDetails(error, serialize),
+    );
+
+    const code = Object.getOwnPropertyDescriptor(error, 'code');
+    if (code && 'value' in code && typeof code.value === 'string') {
+        serialized.code = code.value;
     }
 
     return serialized;
@@ -55,7 +120,7 @@ export function deserializeError(
 ): Error {
     let Constructor;
 
-    switch (serializedError.name) {
+    switch (serializedError.name || serializedError.type) {
         case 'EvalError':
             Constructor = EvalError;
             break;
@@ -85,7 +150,7 @@ export function deserializeError(
     }
 
     const error = new Constructor(serializedError.message);
-    error.name = serializedError.name;
+    error.name = serializedError.name || serializedError.type || 'Error';
 
     if (typeof serializedError.stack === 'string') {
         error.stack = serializedError.stack;
@@ -101,6 +166,29 @@ export function deserializeError(
         });
     }
 
+    if (typeof serializedError.code === 'string') {
+        (error as Error & {code?: string}).code = serializedError.code;
+    }
+
+    if ('details' in serializedError) {
+        const details = deserialize(
+            serializedError.details as ITransportSerializedStruct,
+        );
+        if (isRecord(details)) {
+            addErrorDetails(error, details);
+        } else {
+            (error as Error & {detailsOmitted?: boolean}).detailsOmitted = true;
+        }
+    }
+
+    if (serializedError.causeOmitted) {
+        (error as Error & {causeOmitted?: boolean}).causeOmitted = true;
+    }
+    if (serializedError.detailsOmitted) {
+        (error as Error & {detailsOmitted?: boolean}).detailsOmitted = true;
+    }
+
+    // Read errors produced by the previous codec while rolling packages forward.
     for (const [key, value] of Object.entries(
         serializedError.dictionary || {},
     )) {

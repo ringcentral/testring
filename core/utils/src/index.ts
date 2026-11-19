@@ -24,3 +24,4 @@ export {getMemoryReport, getHeapReport} from './memory-usage';
 export {throttle} from './throttle';
 
 export {restructureError} from './restructure-error';
+export {addErrorDetails} from './add-error-details';
