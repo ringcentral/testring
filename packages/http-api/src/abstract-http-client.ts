@@ -243,7 +243,7 @@ export abstract class AbstractHttpClient implements IHttpClient {
                     }
 
                     if (response.uid === requestUID) {
-                        this.log('warn', 'HTTP request rejected', {
+                        this.log('verbose', 'HTTP request rejected', {
                             event: 'http_request_rejected',
                             uid: requestUID,
                             source: String(process.pid),
