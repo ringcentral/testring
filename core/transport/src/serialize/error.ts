@@ -13,6 +13,11 @@ export interface ISerializedError extends ITransportSerializedStruct {
     code?: string;
     cause?: ITransportSerializedStruct;
     causeOmitted?: true;
+    /**
+     * Caller-selected portable data; callers use `url` and lifecycle error
+     * arrays (`cleanupErrors`, `terminationErrors`, `lifecycleCallbackErrors`).
+     * Incidental Error fields never cross.
+     */
     details?: ITransportSerializedStruct;
     detailsOmitted?: true;
     dictionary?: Record<string, ITransportSerializedStruct>;
@@ -21,6 +26,7 @@ export interface ISerializedError extends ITransportSerializedStruct {
 
 export const ERROR_KEY = 'Error';
 const MAX_CAUSE_DEPTH = 5;
+const MAX_CAUSE_SIZE = 16 * 1024;
 const isRecord = (value: any): value is Record<string, unknown> => {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
         return false;
@@ -44,18 +50,23 @@ function serializeCause(
     }
 
     try {
+        let cause: ITransportSerializedStruct;
         if (descriptor.value instanceof Error) {
-            return causeDepth < MAX_CAUSE_DEPTH
-                ? {
-                      cause: serializeError(
-                          descriptor.value,
-                          serialize,
-                          causeDepth + 1,
-                      ),
-                  }
-                : {causeOmitted: true};
+            if (causeDepth >= MAX_CAUSE_DEPTH) {
+                return {causeOmitted: true};
+            }
+            cause = serializeError(
+                descriptor.value,
+                serialize,
+                causeDepth + 1,
+            );
+        } else {
+            cause = serialize(descriptor.value);
         }
-        return {cause: serialize(descriptor.value)};
+
+        return JSON.stringify(cause).length <= MAX_CAUSE_SIZE
+            ? {cause}
+            : {causeOmitted: true};
     } catch {
         return {causeOmitted: true};
     }

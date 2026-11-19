@@ -203,6 +203,19 @@ describe('serialize', () => {
         chai.expect(cause.causeOmitted).to.equal(true);
     });
 
+    it('should omit causes larger than the transport size limit', () => {
+        const error = new Error('driver failed');
+        Object.defineProperty(error, 'cause', {
+            value: new Error('x'.repeat(16 * 1024)),
+        });
+
+        const result = roundTrip(error) as Error & Record<string, any>;
+
+        chai.expect(result.message).to.equal('driver failed');
+        chai.expect(result['causeOmitted']).to.equal(true);
+        chai.expect(result).not.to.have.own.property('cause');
+    });
+
     it('should preserve URL values directly and when nested', () => {
         const value = {
             direct: new URL('https://user:pass@example.test:8443/path?a=1#part'),
