@@ -7,3 +7,5 @@ const transport = new Transport(process);
 transport.on(REQUEST_NAME, () => {
     transport.broadcast(RESPONSE_NAME, PAYLOAD);
 });
+
+process.send?.({type: 'ready'});

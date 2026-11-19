@@ -15,7 +15,10 @@ import {Transport} from '../src/transport';
 describe('Transport functional test', () => {
     it('should create connection between child and parent process', (callback) => {
         const childEntryPath = path.resolve(__dirname, './fixtures/child.ts');
-        fork(childEntryPath).then((childProcess) => {
+        fork(childEntryPath).then(async (childProcess) => {
+            const ready = new Promise<void>((resolve) => {
+                childProcess.once('message', resolve);
+            });
             const transport = new Transport(process);
 
             if (childProcess.stderr) {
@@ -27,6 +30,7 @@ describe('Transport functional test', () => {
             }
 
             transport.registerChild(CHILD_PROCESS_NAME, childProcess);
+            await ready;
 
             const removeCallback = transport.on(RESPONSE_NAME, (payload) => {
                 childProcess.kill();
