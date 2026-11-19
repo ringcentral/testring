@@ -3,7 +3,7 @@ import {loggerClient} from '@testring/logger';
 import {HttpClient} from '@testring/http-api';
 import {transport} from '@testring/transport';
 import {WebApplication} from '@testring/web-application';
-import {restructureError} from '@testring/utils';
+import {addErrorDetails, restructureError} from '@testring/utils';
 import {testAPIController} from './test-api-controller';
 
 const LOG_PREFIX = '[logged inside test]';
@@ -124,7 +124,7 @@ export class TestContext {
         }
 
         if (cleanupErrors[0]) {
-            Object.assign(cleanupErrors[0], {cleanupErrors});
+            addErrorDetails(cleanupErrors[0], {cleanupErrors});
             throw cleanupErrors[0];
         }
     }

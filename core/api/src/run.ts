@@ -1,5 +1,5 @@
 import {loggerClient} from '@testring/logger';
-import {restructureError} from '@testring/utils';
+import {addErrorDetails, restructureError} from '@testring/utils';
 
 import {TestContext} from './test-context';
 import {testAPIController} from './test-api-controller';
@@ -46,7 +46,7 @@ export async function run(...tests: Array<TestFunction>) {
                 catchedError = cleanupError;
                 passed = false;
             } else {
-                Object.assign(catchedError, {
+                addErrorDetails(catchedError, {
                     cleanupErrors: (cleanupError as any).cleanupErrors || [
                         cleanupError,
                     ],

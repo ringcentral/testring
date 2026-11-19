@@ -11,7 +11,7 @@ import {
     TestStatus,
     TestEvents,
 } from '@testring/types';
-import {restructureError} from '@testring/utils';
+import {addErrorDetails, restructureError} from '@testring/utils';
 import {TestAPIController} from '@testring/api';
 import {asyncBreakpoints, BreakStackError} from '@testring/async-breakpoints';
 import {loggerClient, LoggerClient} from '@testring/logger';
@@ -137,7 +137,7 @@ export class WorkerController {
                     ...((error as any).lifecycleCallbackErrors || []),
                     normalizedError,
                 ];
-                Object.assign(error, {lifecycleCallbackErrors});
+                addErrorDetails(error, {lifecycleCallbackErrors});
             } else {
                 error = normalizedError;
             }

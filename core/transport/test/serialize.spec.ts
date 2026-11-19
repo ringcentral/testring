@@ -113,8 +113,10 @@ describe('serialize', () => {
         const cause = new TypeError('cause');
         const prototype = {inherited: 'omit'};
         const error = Object.assign(new Error('primary'), {
-            cleanupErrors: [cause],
-            detail: {value: 1},
+            details: {
+                cleanupErrors: [cause],
+                detail: {value: 1},
+            },
         });
         Object.defineProperty(error, 'cause', {value: cause});
         Object.setPrototypeOf(error, Object.assign(Object.create(Error.prototype), prototype));
@@ -128,7 +130,90 @@ describe('serialize', () => {
         chai.expect(result['cause'].message).to.equal('cause');
         chai.expect(result['cleanupErrors'][0]).to.be.instanceOf(TypeError);
         chai.expect(result['detail']).to.deep.equal({value: 1});
+        chai.expect(result['details']).to.deep.equal({
+            cleanupErrors: result['cleanupErrors'],
+            detail: {value: 1},
+        });
         chai.expect(result).not.to.have.own.property('inherited');
+    });
+
+    it('should ignore incidental error fields that contain runtime objects', () => {
+        class RequestJar {}
+        const error = Object.assign(new Error('request failed'), {
+            options: {
+                jar: new RequestJar(),
+                auth: {password: 'secret'},
+                signal: new AbortController().signal,
+            },
+        });
+
+        const serialized = serialize(error);
+        const result = deserialize(serialized) as Error & Record<string, any>;
+
+        chai.expect(result.message).to.equal('request failed');
+        chai.expect(result).not.to.have.own.property('options');
+        chai.expect(JSON.stringify(serialized)).not.to.contain('secret');
+    });
+
+    it('should keep the base error when explicit details are unsupported', () => {
+        const error = Object.assign(new Error('driver failed'), {
+            details: {
+                url: new URL('https://example.test/driver-failure'),
+                signal: new AbortController().signal,
+            },
+        });
+
+        const result = roundTrip(error) as Error & Record<string, any>;
+
+        chai.expect(result.message).to.equal('driver failed');
+        chai.expect(result['detailsOmitted']).to.equal(true);
+        chai.expect(result).not.to.have.own.property('url');
+    });
+
+    it('should keep the base error when its cause is unsupported', () => {
+        const error = new Error('driver failed');
+        Object.defineProperty(error, 'cause', {
+            value: new AbortController().signal,
+        });
+
+        const result = roundTrip(error) as Error & Record<string, any>;
+
+        chai.expect(result.message).to.equal('driver failed');
+        chai.expect(result['causeOmitted']).to.equal(true);
+        chai.expect(result).not.to.have.own.property('cause');
+    });
+
+    it('should bound error cause chains and mark truncation', () => {
+        let error: Error = new Error('cause 0');
+        for (let index = 1; index < 10; index++) {
+            const nextError = new Error(`cause ${index}`);
+            Object.defineProperty(nextError, 'cause', {value: error});
+            error = nextError;
+        }
+
+        const result = roundTrip(error) as Error & Record<string, any>;
+        let cause: any = result;
+        let depth = 0;
+        while (cause.cause instanceof Error) {
+            cause = cause.cause;
+            depth++;
+        }
+
+        chai.expect(depth).to.equal(5);
+        chai.expect(cause.causeOmitted).to.equal(true);
+    });
+
+    it('should omit causes larger than the transport size limit', () => {
+        const error = new Error('driver failed');
+        Object.defineProperty(error, 'cause', {
+            value: new Error('x'.repeat(16 * 1024)),
+        });
+
+        const result = roundTrip(error) as Error & Record<string, any>;
+
+        chai.expect(result.message).to.equal('driver failed');
+        chai.expect(result['causeOmitted']).to.equal(true);
+        chai.expect(result).not.to.have.own.property('cause');
     });
 
     it('should preserve URL values directly and when nested', () => {
@@ -145,11 +230,13 @@ describe('serialize', () => {
         chai.expect(result.nested[0]!.url.href).to.equal(value.nested[0]!.url.href);
     });
 
-    it('should preserve enumerable URL error properties and diagnostics', () => {
+    it('should preserve explicit URL error details', () => {
         const cause = new TypeError('cause');
         const error = Object.assign(new Error('primary'), {
-            url: new URL('https://example.test/failure?case=1#fragment'),
-            detail: {urls: [new URL('https://example.test/nested')]},
+            details: {
+                url: new URL('https://example.test/failure?case=1#fragment'),
+                detail: {urls: [new URL('https://example.test/nested')]},
+            },
         });
         Object.defineProperty(error, 'cause', {value: cause});
 
@@ -161,21 +248,28 @@ describe('serialize', () => {
         chai.expect(result.stack).to.equal(error.stack);
         chai.expect(result['cause']).to.be.instanceOf(TypeError);
         chai.expect(result['url']).to.be.instanceOf(URL);
-        chai.expect(result['url'].href).to.equal(error.url.href);
+        chai.expect(result['url'].href).to.equal(error.details.url.href);
         chai.expect(result['detail']['urls'][0]).to.be.instanceOf(URL);
-        chai.expect(result['detail']['urls'][0]!.href).to.equal(error.detail.urls[0]!.href);
+        chai.expect(result['detail']['urls'][0]!.href).to.equal(
+            error.details.detail.urls[0]!.href,
+        );
+        chai.expect(result['details']['url'].href).to.equal(error.details.url.href);
     });
 
     it('should preserve a sample of URL-bearing errors', () => {
         for (let index = 0; index < 10; index++) {
             const error = Object.assign(new Error(`failure-${index}`), {
-                url: new URL(`https://example.test/failure/${index}`),
+                code: 'WEBDRIVER_REQUEST_FAILED',
+                details: {
+                    url: new URL(`https://example.test/failure/${index}`),
+                },
             });
 
             const result = roundTrip(error) as Error & Record<string, any>;
 
             chai.expect(result.message).to.equal(error.message);
-            chai.expect(result['url'].href).to.equal(error.url.href);
+            chai.expect(result['code']).to.equal(error.code);
+            chai.expect(result['url'].href).to.equal(error.details.url.href);
         }
     });
 

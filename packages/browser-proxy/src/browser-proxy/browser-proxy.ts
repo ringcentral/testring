@@ -6,8 +6,59 @@ import {
     IBrowserProxyPlugin,
     ITransport,
 } from '@testring/types';
-import {requirePlugin} from '@testring/utils';
+import {addErrorDetails, requirePlugin} from '@testring/utils';
 import {loggerClient} from '@testring/logger';
+
+function normalizeErrorForTransport(value: unknown): Error {
+    if (!(value instanceof Error)) {
+        return new Error(String(value));
+    }
+
+    const error = new Error(value.message);
+    error.name = value.name;
+    if (typeof value.stack === 'string') {
+        error.stack = value.stack;
+    }
+
+    const source = value as Error & {
+        code?: unknown;
+        details?: unknown;
+        statusCode?: unknown;
+        url?: unknown;
+    };
+    if (typeof source.code === 'string') {
+        (error as Error & {code?: string}).code = source.code;
+    }
+
+    const details: Record<string, unknown> =
+        source.details &&
+        typeof source.details === 'object' &&
+        !Array.isArray(source.details)
+            ? {...source.details}
+            : {};
+    if (typeof source['url'] === 'string' || source['url'] instanceof URL) {
+        details['url'] = source['url'];
+    }
+    if (
+        typeof source['statusCode'] === 'number' &&
+        Number.isFinite(source['statusCode'])
+    ) {
+        details['statusCode'] = source['statusCode'];
+    }
+    if (Object.keys(details).length) {
+        addErrorDetails(error, details);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(value, 'cause')) {
+        Object.defineProperty(error, 'cause', {
+            value: (value as Error & {cause?: unknown}).cause,
+            configurable: true,
+            writable: true,
+        });
+    }
+
+    return error;
+}
 
 function resolvePlugin(pluginPath: string): IBrowserProxyPlugin {
     const resolvedPlugin = requirePlugin(pluginPath);
@@ -53,7 +104,7 @@ export class BrowserProxy {
                 this.logger.error(`Can't initialize plugin ${pluginPath}`, error);
                 this.transportInstance.broadcastUniversally(
                     BrowserProxyMessageTypes.exception,
-                    error instanceof Error ? error : new Error(String(error)),
+                    normalizeErrorForTransport(error),
                 );
             }
         }
@@ -117,7 +168,7 @@ export class BrowserProxy {
                 BrowserProxyMessageTypes.response,
                 {
                     uid,
-                    error: error instanceof Error ? error : new Error(String(error)),
+                    error: normalizeErrorForTransport(error),
                     response: null,
                 },
             );
