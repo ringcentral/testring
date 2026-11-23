@@ -2,6 +2,7 @@
 /* eslint sonarjs/no-identical-functions: 0 */
 
 import * as chai from 'chai';
+import sinon from 'sinon';
 import {TestWorkerMock} from '@testring/test-utils';
 import {IFile, ITestWorker, ITestWorkerInstance} from '@testring/types';
 import {TestRunControllerPlugins} from '@testring/types/src/test-run-controller';
@@ -20,6 +21,12 @@ const generateTestFiles = (count: number) =>
 
 const testDelay = (milliseconds: number) =>
     new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+const deferred = () => {
+    let resolve!: () => void;
+    const promise = new Promise<void>((done) => (resolve = done));
+    return {promise, resolve};
+};
 
 type ShouldFailAttempt = (path: string, attempt: number) => boolean;
 type AttemptDelay = (path: string, attempt: number) => number;
@@ -945,6 +952,7 @@ describe('TestRunController', () => {
             testWorker,
         );
 
+        const events = captureControllerLogs(controller);
         const errors = (await controller.runQueue(tests)) as Error[];
 
         chai.expect(testWorker.getAttemptCount(tests[0]?.path || '')).to.equal(2);
@@ -952,6 +960,26 @@ describe('TestRunController', () => {
         chai.expect(errors.map(({message}) => message)).to.deep.equal([
             'Failed to terminate worker/1',
         ]);
+        chai.expect(events.at(-1)?.fields).to.include({
+            retriesScheduled: 1,
+            retriesStarted: 1,
+            retriesCompleted: 1,
+            retriesNotStarted: 0,
+            retriesAbandoned: 0,
+        });
+        chai.expect(events.find(({event}) => event === 'RETRY_STARTED')?.fields).to.include({
+            testPath: tests[0]?.path,
+            retryCount: 1,
+            attempt: 2,
+            workerID: 'worker/2',
+        });
+        chai.expect(events.find(({event}) => event === 'RETRY_SETTLED')?.fields).to.include({
+            testPath: tests[0]?.path,
+            retryCount: 1,
+            attempt: 2,
+            workerID: 'worker/2',
+            outcome: 'passed',
+        });
     });
 
     it('should preserve bail after timeout termination failure while settling active siblings', async () => {
@@ -1173,6 +1201,186 @@ describe('TestRunController', () => {
         chai.expect(hookFailure.error).to.be.instanceOf(Error);
         chai.expect(hookFailure.error.stack).to.be.a('string');
         chai.expect(events.at(-1)?.event).to.equal('RUN_SUMMARY');
+    });
+
+    for (const blockedBy of ['shouldNotStart', 'beforeTest'] as const) {
+        it(`does not count a retry blocked by ${blockedBy} as executed`, async () => {
+            const test = generateTestFile(0);
+            const worker = new RecordingTestWorker({shouldFailAttempt: () => true});
+            const controller = new TestRunController(
+                {
+                    bail: false,
+                    workerLimit: 1,
+                    retryCount: 1,
+                    retryDelay: 0,
+                    testTimeout: DEFAULT_TIMEOUT,
+                } as any,
+                worker,
+            );
+            const events = captureControllerLogs(controller);
+
+            if (blockedBy === 'shouldNotStart') {
+                controller
+                    .getHook(TestRunControllerPlugins.shouldNotStart)
+                    ?.writeHook('block-retry', (_state: boolean, item: any) => item.retryCount > 0);
+            } else {
+                controller
+                    .getHook(TestRunControllerPlugins.beforeTest)
+                    ?.writeHook('block-retry', (item: any) => {
+                        if (item.retryCount > 0) {
+                            throw new Error('retry setup failed');
+                        }
+                        return item;
+                    });
+            }
+
+            await controller.runQueue([test]);
+
+            const disposition = events.find(({event}) => event === 'RETRY_DISPOSITION');
+            const summary = events.find(({event}) => event === 'RUN_SUMMARY')?.fields;
+            chai.expect(worker.state.attemptsByPath.get(test.path)).to.equal(1);
+            chai.expect(disposition?.fields).to.include({
+                testPath: test.path,
+                retryCount: 1,
+                disposition: 'not_started',
+                reason: blockedBy === 'shouldNotStart' ? 'should_not_start' : 'before_test_failed',
+            });
+            chai.expect(events.some(({event}) => event === 'RETRY_STARTED' || event === 'RETRY_SETTLED')).to.equal(false);
+            chai.expect(summary).to.include({
+                retriesScheduled: 1,
+                retriesStarted: 0,
+                retriesCompleted: 0,
+                retriesNotStarted: 1,
+                retriesAbandoned: 0,
+                outcome: 'COMPLETE',
+            });
+        });
+    }
+
+    it('settles a started retry timeout without recounting a late worker error', async () => {
+        const clock = sinon.useFakeTimers({now: 1000, toFake: ['Date', 'setTimeout', 'clearTimeout']});
+        const test = generateTestFile(0);
+        let executeCalls = 0;
+        let lateReject!: (error: Error) => void;
+        let workerID = 'worker/1';
+        const worker = {
+            spawn: () => ({
+                getWorkerID: () => workerID,
+                execute: async () => {
+                    executeCalls++;
+                    if (executeCalls === 1) {
+                        throw new Error('initial failure');
+                    }
+                    return new Promise<void>((_resolve, reject) => {
+                        lateReject = reject;
+                    });
+                },
+                kill: async (signal?: NodeJS.Signals) => {
+                    if (signal === 'SIGABRT') {
+                        workerID = 'worker/1/replacement-1';
+                    }
+                },
+            }),
+        };
+        const controller = new TestRunController(
+            {
+                bail: false,
+                workerLimit: 1,
+                retryCount: 1,
+                retryDelay: 0,
+                testTimeout: 10,
+            } as any,
+            worker as any,
+        );
+        const events = captureControllerLogs(controller);
+
+        try {
+            const run = controller.runQueue([test]);
+            await clock.tickAsync(0);
+            await clock.tickAsync(10);
+            await run;
+
+            chai.expect(executeCalls).to.equal(2);
+            chai.expect(events.at(-1)?.fields).to.include({
+                retriesScheduled: 1,
+                retriesStarted: 1,
+                retriesCompleted: 1,
+                retriesNotStarted: 0,
+                retriesAbandoned: 0,
+                activeWorkers: 0,
+                queueRemaining: 0,
+            });
+            chai.expect(events.find(({event}) => event === 'RETRY_STARTED')?.fields).to.include({
+                testPath: test.path,
+                retryCount: 1,
+                attempt: 2,
+                workerID: 'worker/1',
+            });
+            chai.expect(events.find(({event}) => event === 'RETRY_SETTLED')?.fields).to.include({
+                testPath: test.path,
+                retryCount: 1,
+                attempt: 2,
+                workerID: 'worker/1',
+                outcome: 'timed_out',
+            });
+            const eventCount = events.length;
+            lateReject(new Error('late worker error'));
+            await clock.tickAsync(0);
+            chai.expect(events).to.have.lengthOf(eventCount);
+            chai.expect(events.filter(({event}) => event === 'RUN_SUMMARY')).to.have.lengthOf(1);
+        } finally {
+            clock.restore();
+        }
+    });
+
+    it('accounts a queued retry abandoned during shutdown while retry logging is pending', async () => {
+        const test = generateTestFile(0);
+        const enteredRetryHook = deferred();
+        const releaseRetryHook = deferred();
+        const worker = new RecordingTestWorker({shouldFailAttempt: () => true});
+        const controller = new TestRunController(
+            {
+                bail: false,
+                workerLimit: 'local',
+                retryCount: 1,
+                retryDelay: 0,
+                testTimeout: DEFAULT_TIMEOUT,
+            } as any,
+            worker,
+        );
+        const events = captureControllerLogs(controller);
+        controller
+            .getHook(TestRunControllerPlugins.beforeTestRetry)
+            ?.writeHook('pending-retry-log', async () => {
+                enteredRetryHook.resolve();
+                await releaseRetryHook.promise;
+            });
+
+        const run = controller.runQueue([test]);
+        await enteredRetryHook.promise;
+        await controller.kill();
+        releaseRetryHook.resolve();
+        await run;
+
+        chai.expect(worker.getAttemptCount(test.path)).to.equal(1);
+        chai.expect(events.find(({event}) => event === 'RETRY_DISPOSITION')?.fields).to.include({
+            testPath: test.path,
+            retryCount: 1,
+            attempt: 2,
+            disposition: 'abandoned',
+            reason: 'cancelled',
+        });
+        chai.expect(events.some(({event}) => event === 'RETRY_STARTED' || event === 'RETRY_SETTLED')).to.equal(false);
+        chai.expect(events.at(-1)?.fields).to.include({
+            outcome: 'BAILED',
+            retriesScheduled: 1,
+            retriesStarted: 0,
+            retriesCompleted: 0,
+            retriesNotStarted: 0,
+            retriesAbandoned: 1,
+            queueRemaining: 0,
+            stopReason: 'cancelled',
+        });
     });
 
     it('bail stops new starts but waits for active work', async () => {
