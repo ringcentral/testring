@@ -23,7 +23,10 @@ const createRunAccounting = () => ({
     completedInitial: 0,
     retriesEligible: 0,
     retriesScheduled: 0,
+    retriesStarted: 0,
     retriesCompleted: 0,
+    retriesNotStarted: 0,
+    retriesAbandoned: 0,
     activeWorkers: 0,
     errors: 0,
 });
@@ -93,6 +96,7 @@ export class TestRunController
         this.workers.length = 0;
 
         if (this.currentQueue) {
+            this.disposeQueuedRetries(this.currentQueue, 'cancelled');
             this.currentQueue.clean();
         }
 
@@ -151,6 +155,11 @@ export class TestRunController
                 this.stopReason = this.config.bail ? 'bail' : 'unexpected';
             }
         }
+
+        this.disposeQueuedRetries(
+            testQueue,
+            this.stopReason === 'none' ? 'run_ended' : this.stopReason,
+        );
 
         try {
             await this.callHook(TestRunControllerPlugins.afterRun, runError);
@@ -562,9 +571,12 @@ export class TestRunController
         }
 
         const meta = this.getWorkerMeta(worker);
+        const attemptWorkerID = worker.getWorkerID();
         let timer;
         let isRejectedByTimeout = false;
         let workerUsable = true;
+        let executionStarted = false;
+        let executionOutcome: 'passed' | 'failed' | 'timed_out' | null = null;
         this.accounting.activeWorkers++;
 
         try {
@@ -582,6 +594,12 @@ export class TestRunController
             );
 
             if (startGuard.error || !!startGuard.value) {
+                this.recordRetryNotStarted(
+                    queuedTest,
+                    meta,
+                    attemptWorkerID,
+                    startGuard.error ? 'should_not_start_failed' : 'should_not_start',
+                );
                 return workerUsable;
             }
 
@@ -595,6 +613,12 @@ export class TestRunController
             );
 
             if (beforeTest.error) {
+                this.recordRetryNotStarted(
+                    queuedTest,
+                    meta,
+                    attemptWorkerID,
+                    'before_test_failed',
+                );
                 return workerUsable;
             }
 
@@ -602,6 +626,17 @@ export class TestRunController
                 this.accounting.startedInitial++;
             }
 
+            if (queuedTest.retryCount > 0) {
+                this.accounting.retriesStarted++;
+                this.logger.info('RETRY_STARTED', {
+                    testPath: queuedTest.test.path,
+                    retryCount: queuedTest.retryCount,
+                    attempt: queuedTest.retryCount + 1,
+                    processID: meta.processID,
+                    workerID: attemptWorkerID,
+                });
+            }
+            executionStarted = true;
             const raceQueue = [
                 worker.execute(
                     queuedTest.test,
@@ -624,6 +659,7 @@ export class TestRunController
             }
 
             await Promise.race(raceQueue);
+            executionOutcome = 'passed';
 
             // noinspection JSUnusedAssignment
             clearTimeout(timer);
@@ -642,6 +678,7 @@ export class TestRunController
                 this.scheduleNextForcedAttempt(queuedTest, queue);
             }
         } catch (error) {
+            executionOutcome = isRejectedByTimeout ? 'timed_out' : 'failed';
             if (isRejectedByTimeout) {
                 const previousWorkerID = worker.getWorkerID();
                 this.logger.error('TEST_TIMEOUT', {
@@ -689,8 +726,16 @@ export class TestRunController
             this.accounting.activeWorkers--;
             if (queuedTest.retryCount === 0) {
                 this.accounting.completedInitial++;
-            } else {
+            } else if (executionStarted) {
                 this.accounting.retriesCompleted++;
+                this.logger.info('RETRY_SETTLED', {
+                    testPath: queuedTest.test.path,
+                    retryCount: queuedTest.retryCount,
+                    attempt: queuedTest.retryCount + 1,
+                    processID: meta.processID,
+                    workerID: attemptWorkerID,
+                    outcome: executionOutcome,
+                });
             }
         }
 
@@ -769,6 +814,42 @@ export class TestRunController
         });
     }
 
+    private recordRetryNotStarted(
+        queueItem: IQueuedTest,
+        meta: ITestWorkerCallbackMeta,
+        workerID: string,
+        reason: string,
+    ): void {
+        if (queueItem.retryCount === 0) {
+            return;
+        }
+
+        this.accounting.retriesNotStarted++;
+        this.logger.warn('RETRY_DISPOSITION', {
+            testPath: queueItem.test.path,
+            retryCount: queueItem.retryCount,
+            attempt: queueItem.retryCount + 1,
+            processID: meta.processID,
+            workerID,
+            disposition: 'not_started',
+            reason,
+        });
+    }
+
+    private disposeQueuedRetries(queue: TestQueue, reason: string): void {
+        const abandoned = queue.extract((item) => item.retryCount > 0);
+        for (const queueItem of abandoned) {
+            this.accounting.retriesAbandoned++;
+            this.logger.warn('RETRY_DISPOSITION', {
+                testPath: queueItem.test.path,
+                retryCount: queueItem.retryCount,
+                attempt: queueItem.retryCount + 1,
+                disposition: 'abandoned',
+                reason,
+            });
+        }
+    }
+
     private logRunSummary(testQueue: TestQueue): void {
         const queueRemaining = testQueue.length;
         let outcome = 'INCOMPLETE';
@@ -779,7 +860,9 @@ export class TestRunController
             this.accounting.plannedInitial ===
                 this.accounting.completedInitial &&
             this.accounting.retriesScheduled ===
-                this.accounting.retriesCompleted &&
+                this.accounting.retriesCompleted +
+                    this.accounting.retriesNotStarted +
+                    this.accounting.retriesAbandoned &&
             this.accounting.activeWorkers === 0 &&
             queueRemaining === 0
         ) {
